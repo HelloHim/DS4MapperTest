@@ -152,7 +152,7 @@ Increment="10.0" Width="100" IsReadOnly="True" HorizontalAlignment="Left">
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="In Game Sens" />
-                    <hc:NumericUpDown Minimum="0.1" Maximum="10.0" Value="{Binding InGameSens}" DecimalPlaces="2"
+                    <hc:NumericUpDown Minimum="0.01" Maximum="10.0" Value="{Binding InGameSens}" DecimalPlaces="3"
 Increment="0.1" Width="100" Margin="8,0,0,0">
                         <hc:NumericUpDown.Style>
                             <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
@@ -189,7 +189,7 @@ Increment="0.1" Width="100" Margin="8,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Min Sens X" HorizontalAlignment="Left" />
 
-                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="2" Increment="0.1"
+                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
 Value="{Binding MinAccelXSens,FallbackValue='0.0'}" Margin="8,0,0,0">
                                 <hc:NumericUpDown.Style>
                                     <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
@@ -206,7 +206,7 @@ Value="{Binding MinAccelXSens,FallbackValue='0.0'}" Margin="8,0,0,0">
 
                             <Label Content="Min Sens Y" HorizontalAlignment="Left" Margin="8,0,0,0" />
 
-                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="2" Increment="0.1"
+                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
 Value="{Binding MinAccelYSens,FallbackValue='0.0'}" Margin="8,0,0,0">
                                 <hc:NumericUpDown.Style>
                                     <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
@@ -228,7 +228,7 @@ Value="{Binding MinAccelYSens,FallbackValue='0.0'}" Margin="8,0,0,0">
                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                         <Label Content="Max Sens X" />
 
-                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="2" Increment="0.1"
+                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
 Value="{Binding MaxAccelXSens,FallbackValue='1.0'}" Margin="8,0,0,0">
                             <hc:NumericUpDown.Style>
                                 <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
@@ -246,7 +246,7 @@ Value="{Binding MaxAccelXSens,FallbackValue='1.0'}" Margin="8,0,0,0">
 
                         <Label Content="Max Sens Y" HorizontalAlignment="Left" Margin="8,0,0,0" />
 
-                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="2" Increment="0.1"
+                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
 Value="{Binding MaxAccelYSens,FallbackValue='1.0'}" Margin="8,0,0,0">
                             <hc:NumericUpDown.Style>
                                 <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
