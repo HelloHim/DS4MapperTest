@@ -190,6 +190,8 @@ namespace DS4MapperTest.MapperUtil
             {JoypadActionCodes.X360_RT, "X360_RT"},
             {JoypadActionCodes.X360_LX_NEG, "X360_LX_NEG"},
             {JoypadActionCodes.X360_LX_POS, "X360_LX_POS"},
+            {JoypadActionCodes.X360_LY_NEG, "X360_LY_NEG"},
+            {JoypadActionCodes.X360_LY_POS, "X360_LY_POS"},
             {JoypadActionCodes.X360_RX_NEG, "X360_RX_NEG"},
             {JoypadActionCodes.X360_RX_POS, "X360_RX_POS"},
             {JoypadActionCodes.X360_RY_NEG, "X360_RY_NEG"},
