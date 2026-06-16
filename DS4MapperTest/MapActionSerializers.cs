@@ -1728,7 +1728,7 @@ namespace DS4MapperTest
                 get => touchMouseAct.Sensitivity;
                 set
                 {
-                    touchMouseAct.Sensitivity = Math.Clamp(value, 0.0, 10.0);
+                    touchMouseAct.Sensitivity = Math.Clamp(value, 0.0, 1000.0);
                     SensitivityChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
