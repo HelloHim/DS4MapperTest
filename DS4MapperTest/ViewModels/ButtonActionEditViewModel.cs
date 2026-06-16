@@ -1112,6 +1112,14 @@ namespace DS4MapperTest.ViewModels
                     new GamepadCodeItem("X360_DPad_Left", JoypadActionCodes.X360_DPAD_LEFT, tempInd++),
                     new GamepadCodeItem("X360_DPad_Right", JoypadActionCodes.X360_DPAD_RIGHT, tempInd++),
                     new GamepadCodeItem("DS4_Touchpad_Click", JoypadActionCodes.CenterPadClick, tempInd++),
+                    new GamepadCodeItem("LS Up", JoypadActionCodes.AxisLYNeg, tempInd++),
+                    new GamepadCodeItem("LS Down", JoypadActionCodes.AxisLYPos, tempInd++),
+                    new GamepadCodeItem("LS Left", JoypadActionCodes.AxisLXNeg, tempInd++),
+                    new GamepadCodeItem("LS Right", JoypadActionCodes.AxisLXPos, tempInd++),
+                    new GamepadCodeItem("RS Up", JoypadActionCodes.AxisRYNeg, tempInd++),
+                    new GamepadCodeItem("RS Down", JoypadActionCodes.AxisRYPos, tempInd++),
+                    new GamepadCodeItem("RS Left", JoypadActionCodes.AxisRXNeg, tempInd++),
+                    new GamepadCodeItem("RS Right", JoypadActionCodes.AxisRXPos, tempInd++),
                 });
 
                 gamepadIndexAliases = new Dictionary<JoypadActionCodes, int>();
