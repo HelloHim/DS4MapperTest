@@ -365,7 +365,7 @@ Value="{Binding PowerCurveExponent,FallbackValue='1.0'}" Margin="8,0,0,0">
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
                             Visibility="{Binding StaticSensUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
                     <Label Content="Sensitivity" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="1" Increment="0.1"
+                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
                                   Value="{Binding Sensitivity,FallbackValue='1.0'}" Margin="8,0,0,0">
                         <hc:NumericUpDown.Style>
                             <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
@@ -381,20 +381,64 @@ Value="{Binding PowerCurveExponent,FallbackValue='1.0'}" Margin="8,0,0,0">
                     <Label Content="RWS" Margin="2,0,0,0" BorderBrush="{x:Null}" />
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Vertical Scale" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="1" Increment="0.1"
-                                  Value="{Binding VerticalScale,FallbackValue='1.0'}" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                <StackPanel Orientation="Vertical" Margin="0,8,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Opacity" Value="1.0" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
+                                    <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
+                                        <Setter Property="Opacity" Value="0.4" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
+                        </StackPanel.Style>
+                        <RadioButton IsChecked="{Binding VerticalScaleIsAbsoluteMode}" VerticalAlignment="Center" />
+                        <Label Content="Vertical RWS" Margin="4,0,0,0" />
+                        <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
+                                          Value="{Binding VerticalScale, FallbackValue='1.0'}"
+                                          IsReadOnly="{Binding VerticalScaleIsMultiplierMode}"
+                                          Width="100" Margin="8,0,0,0" VerticalAlignment="Center">
+                            <hc:NumericUpDown.Style>
+                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
+                                            <Setter Property="Opacity" Value="0.7" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </hc:NumericUpDown.Style>
+                        </hc:NumericUpDown>
+                        <Label Content="RWS" Margin="2,0,0,0" BorderBrush="{x:Null}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Opacity" Value="1.0" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="True">
+                                        <Setter Property="Opacity" Value="0.4" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <RadioButton IsChecked="{Binding VerticalScaleIsMultiplierMode}" VerticalAlignment="Center" />
+                        <Label Content="Vertical Scale" Margin="4,0,0,0" />
+                        <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
+                                          Value="{Binding VerticalScaleMultiplier, FallbackValue='1.0'}"
+                                          IsReadOnly="{Binding VerticalScaleIsAbsoluteMode}"
+                                          Width="100" Margin="8,0,0,0" VerticalAlignment="Center">
+                            <hc:NumericUpDown.Style>
+                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
+                                            <Setter Property="Opacity" Value="0.7" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </hc:NumericUpDown.Style>
+                        </hc:NumericUpDown>
+                    </StackPanel>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
