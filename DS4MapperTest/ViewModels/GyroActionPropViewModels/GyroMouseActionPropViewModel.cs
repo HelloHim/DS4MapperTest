@@ -313,6 +313,52 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler VerticalScaleChanged;
 
+        private bool verticalScaleIsAbsoluteMode = true;
+        public bool VerticalScaleIsAbsoluteMode
+        {
+            get => verticalScaleIsAbsoluteMode;
+            set
+            {
+                if (verticalScaleIsAbsoluteMode == value) return;
+                verticalScaleIsAbsoluteMode = value;
+                VerticalScaleIsAbsoluteModeChanged?.Invoke(this, EventArgs.Empty);
+                VerticalScaleIsMultiplierModeChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler VerticalScaleIsAbsoluteModeChanged;
+
+        public bool VerticalScaleIsMultiplierMode
+        {
+            get => !verticalScaleIsAbsoluteMode;
+            set
+            {
+                if (verticalScaleIsAbsoluteMode == !value) return;
+                verticalScaleIsAbsoluteMode = !value;
+                VerticalScaleIsAbsoluteModeChanged?.Invoke(this, EventArgs.Empty);
+                VerticalScaleIsMultiplierModeChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler VerticalScaleIsMultiplierModeChanged;
+
+        public double VerticalScaleMultiplier
+        {
+            get
+            {
+                double sens = action.mouseParams.sensitivity;
+                if (Math.Abs(sens) < 1e-10) return action.mouseParams.verticalScale;
+                return Math.Round(action.mouseParams.verticalScale / sens, 4);
+            }
+            set
+            {
+                double sens = action.mouseParams.sensitivity;
+                double abs = Math.Abs(sens) < 1e-10 ? value : value * sens;
+                action.mouseParams.verticalScale = Math.Clamp(abs, 0.0, 10.0);
+                VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler VerticalScaleMultiplierChanged;
+
         private List<InvertChoiceItem> invertChoiceItems = new List<InvertChoiceItem>()
         {
             new InvertChoiceItem("None", InvertChocies.None),
@@ -950,8 +996,9 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             {
                 action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.VERTICAL_SCALE);
             });
-            
+
             HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+            VerticalScaleMultiplierChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void GyroMouseActionPropViewModel_SensitivityChanged(object sender, EventArgs e)
@@ -965,8 +1012,9 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             {
                 action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.SENSITIVITY);
             });
-            
+
             HighlightSensitivityChanged?.Invoke(this, EventArgs.Empty);
+            VerticalScaleMultiplierChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void GyroMouseActionPropViewModel_TriggerActivatesChanged(object sender, EventArgs e)

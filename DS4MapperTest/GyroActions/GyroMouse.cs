@@ -503,9 +503,12 @@ namespace DS4MapperTest.GyroActions
             yMotion = deltaAngVelY != 0 ? finalCoefficientY * (yAng * tempDouble)
                 + (normY * (offset * signY)) : 0;
 
-            if (mouseParams.verticalScale != 1.0)
+            double vertMultiplier = mouseParams.sensitivity > 0.0
+                ? mouseParams.verticalScale / mouseParams.sensitivity
+                : mouseParams.verticalScale;
+            if (vertMultiplier != 1.0)
             {
-                yMotion = mouseParams.verticalScale * yMotion;
+                yMotion = vertMultiplier * yMotion;
             }
 
             if (mouseParams.jitterCompensation)
