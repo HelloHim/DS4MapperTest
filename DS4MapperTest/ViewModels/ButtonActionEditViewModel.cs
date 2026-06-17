@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
 using DS4MapperTest.MapperUtil;
+using DS4MapperTest.Common;
 using System.Threading;
 
 namespace DS4MapperTest.ViewModels
@@ -23,6 +24,7 @@ namespace DS4MapperTest.ViewModels
             RelativeMouseDir,
             LayerOp,
             SetChange,
+            CameraTurn,
         }
 
         private Dictionary<JoypadActionCodes, int> gamepadIndexAliases;
@@ -319,6 +321,55 @@ namespace DS4MapperTest.ViewModels
         }
         public event EventHandler SelectedSetChangeConditionIndexChanged;
 
+        // Camera Turn
+        private double cameraTurnAngle = 90.0;
+        public double CameraTurnAngle
+        {
+            get => cameraTurnAngle;
+            set { cameraTurnAngle = value; CameraTurnAngleChanged?.Invoke(this, EventArgs.Empty); }
+        }
+        public event EventHandler CameraTurnAngleChanged;
+
+        private double cameraTurnDurationMs = 150.0;
+        public double CameraTurnDurationMs
+        {
+            get => cameraTurnDurationMs;
+            set { cameraTurnDurationMs = value; CameraTurnDurationMsChanged?.Invoke(this, EventArgs.Empty); }
+        }
+        public event EventHandler CameraTurnDurationMsChanged;
+
+        private double cameraTurnCounts360 = 1800.0;
+        public double CameraTurnCounts360
+        {
+            get => cameraTurnCounts360;
+            set { cameraTurnCounts360 = value; CameraTurnCounts360Changed?.Invoke(this, EventArgs.Empty); }
+        }
+        public event EventHandler CameraTurnCounts360Changed;
+
+        private bool showCameraTurnOptions;
+        public bool ShowCameraTurnOptions
+        {
+            get => showCameraTurnOptions;
+            set
+            {
+                if (showCameraTurnOptions == value) return;
+                showCameraTurnOptions = value;
+                ShowCameraTurnOptionsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler ShowCameraTurnOptionsChanged;
+
+        public bool CameraTurnActive
+        {
+            get
+            {
+                if (selectedSlotItemIndex < 0) return false;
+                return slotItems[selectedSlotItemIndex].Data.OutputType == OutputActionData.ActionType.CameraTurn;
+            }
+        }
+        public event EventHandler CameraTurnActiveChanged;
+
+
         private ObservableCollection<OutputSlotItem> slotItems;
         public ObservableCollection<OutputSlotItem> SlotItems => slotItems;
 
@@ -441,6 +492,9 @@ namespace DS4MapperTest.ViewModels
             SelectedLayerChangeConditionIndexChanged += ButtonActionEditViewModel_SelectedLayerChangeConditionIndexChanged;
             SelectedSetChoiceIndexChanged += ButtonActionEditViewModel_SelectedSetChoiceIndexChanged;
             SelectedSetChangeConditionIndexChanged += ButtonActionEditViewModel_SelectedSetChangeConditionIndexChanged;
+            CameraTurnAngleChanged += ButtonActionEditViewModel_CameraTurnAngleChanged;
+            CameraTurnDurationMsChanged += ButtonActionEditViewModel_CameraTurnDurationMsChanged;
+            CameraTurnCounts360Changed += ButtonActionEditViewModel_CameraTurnCounts360Changed;
         }
 
         private void UpdateMouseYSpeedOutput(object sender, EventArgs e)
@@ -810,6 +864,9 @@ namespace DS4MapperTest.ViewModels
             SelectedLayerChoiceIndexChanged -= ButtonActionEditViewModel_SelectedLayerChoiceIndexChanged;
             SelectedSetChoiceIndexChanged -= ButtonActionEditViewModel_SelectedSetChoiceIndexChanged;
             SelectedSetChangeConditionIndexChanged -= ButtonActionEditViewModel_SelectedSetChangeConditionIndexChanged;
+            CameraTurnAngleChanged -= ButtonActionEditViewModel_CameraTurnAngleChanged;
+            CameraTurnDurationMsChanged -= ButtonActionEditViewModel_CameraTurnDurationMsChanged;
+            CameraTurnCounts360Changed -= ButtonActionEditViewModel_CameraTurnCounts360Changed;
         }
 
         private void PostSlotChangeChecks()
@@ -933,6 +990,16 @@ namespace DS4MapperTest.ViewModels
                                 //SelectedLayerChoiceIndex = -1;
                             }
                         }
+                    }
+
+                    break;
+                case OutputActionData.ActionType.CameraTurn:
+                    {
+                        cameraTurnAngle = item.Data.cameraTurnAngle;
+                        cameraTurnDurationMs = item.Data.cameraTurnDurationMs;
+                        cameraTurnCounts360 = item.Data.cameraTurnCounts360;
+                        ShowCameraTurnOptions = true;
+                        CameraTurnActiveChanged?.Invoke(this, EventArgs.Empty);
                     }
 
                     break;
@@ -1081,6 +1148,11 @@ namespace DS4MapperTest.ViewModels
                 SelectedLayerChoiceIndex = -1;
                 ShowAvailableLayers = false;
                 SelectedLayerChangeConditionIndex = -1;
+            }
+
+            if (ignoreCombo != ActionComboBoxTypes.CameraTurn)
+            {
+                ShowCameraTurnOptions = false;
             }
         }
 
@@ -1312,6 +1384,64 @@ namespace DS4MapperTest.ViewModels
 
             ResetComboBoxIndex(ActionComboBoxTypes.None);
             PostSlotChangeChecks();
+        }
+
+        public void AssignCameraTurn()
+        {
+            if (selectedSlotItemIndex <= -1) return;
+
+            OutputSlotItem item = slotItems[selectedSlotItemIndex];
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                currentAction.Release(mapper, ignoreReleaseActions: true);
+                OutputActionData tempData = item.Data;
+                tempData.Reset();
+                tempData.OutputType = OutputActionData.ActionType.CameraTurn;
+                tempData.cameraTurnAngle = cameraTurnAngle;
+                tempData.cameraTurnDurationMs = cameraTurnDurationMs;
+                tempData.cameraTurnCounts360 = cameraTurnCounts360;
+            });
+
+            ResetComboBoxIndex(ActionComboBoxTypes.CameraTurn);
+            ShowCameraTurnOptions = true;
+            PostSlotChangeChecks();
+            CameraTurnActiveChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ButtonActionEditViewModel_CameraTurnAngleChanged(object sender, EventArgs e)
+        {
+            if (selectedSlotItemIndex < 0) return;
+            OutputSlotItem slotItem = slotItems[selectedSlotItemIndex];
+            if (slotItem.Data.OutputType != OutputActionData.ActionType.CameraTurn) return;
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                currentAction.Release(mapper, ignoreReleaseActions: true);
+                slotItem.Data.cameraTurnAngle = cameraTurnAngle;
+            });
+        }
+
+        private void ButtonActionEditViewModel_CameraTurnDurationMsChanged(object sender, EventArgs e)
+        {
+            if (selectedSlotItemIndex < 0) return;
+            OutputSlotItem slotItem = slotItems[selectedSlotItemIndex];
+            if (slotItem.Data.OutputType != OutputActionData.ActionType.CameraTurn) return;
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                currentAction.Release(mapper, ignoreReleaseActions: true);
+                slotItem.Data.cameraTurnDurationMs = cameraTurnDurationMs;
+            });
+        }
+
+        private void ButtonActionEditViewModel_CameraTurnCounts360Changed(object sender, EventArgs e)
+        {
+            if (selectedSlotItemIndex < 0) return;
+            OutputSlotItem slotItem = slotItems[selectedSlotItemIndex];
+            if (slotItem.Data.OutputType != OutputActionData.ActionType.CameraTurn) return;
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                currentAction.Release(mapper, ignoreReleaseActions: true);
+                slotItem.Data.cameraTurnCounts360 = cameraTurnCounts360;
+            });
         }
 
         public void RemoveOutputSlot(int ind)

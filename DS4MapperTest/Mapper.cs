@@ -117,6 +117,18 @@ namespace DS4MapperTest
             get => bindingList;
         }
 
+        private struct PendingFlick
+        {
+            public double totalCounts;
+            public double duration;
+            public double elapsed;
+            public double lastProgress;
+            // Sub-integer counts carried between ticks, managed entirely within the flick
+            // so accuracy never depends on mouseXRemainder (which is shared and can be reset)
+            public double subCountCarry;
+        }
+        private readonly List<PendingFlick> pendingFlicks = new List<PendingFlick>();
+
         protected Dictionary<string, InputBindingMeta> bindingDict = new Dictionary<string, InputBindingMeta>();
         public Dictionary<string, InputBindingMeta> BindingDict
         {
@@ -2286,6 +2298,33 @@ namespace DS4MapperTest
                     }
 
                     break;
+                case OutputActionData.ActionType.CameraTurn:
+                    {
+                        if (pressed && !actionData.cameraTurnActive)
+                        {
+                            // On first press: commit the full flick to the pending queue.
+                            // ProcessSyncEvents drives it to completion every tick regardless
+                            // of whether the button is still held.
+                            double durationSec = actionData.cameraTurnDurationMs / 1000.0;
+                            double totalCounts = (actionData.cameraTurnAngle / 360.0) * actionData.cameraTurnCounts360;
+                            pendingFlicks.Add(new PendingFlick
+                            {
+                                totalCounts = totalCounts,
+                                duration = durationSec,
+                                elapsed = 0.0,
+                                lastProgress = 0.0,
+                            });
+                            actionData.cameraTurnActive = true;
+                            actionData.activatedEvent = true;
+                        }
+                        else if (!pressed)
+                        {
+                            actionData.activatedEvent = false;
+                            actionData.cameraTurnActive = false;
+                        }
+                    }
+
+                    break;
                 default:
                     break;
             }
@@ -2579,6 +2618,41 @@ namespace DS4MapperTest
 
         public virtual void ProcessSyncEvents()
         {
+            // Advance any pending flick turns to completion independent of button state
+            for (int i = pendingFlicks.Count - 1; i >= 0; i--)
+            {
+                PendingFlick flick = pendingFlicks[i];
+                flick.elapsed += currentLatency;
+                bool done = flick.elapsed >= flick.duration;
+                double progress = done ? 1.0 : flick.elapsed / flick.duration;
+                double rawDelta = (progress - flick.lastProgress) * flick.totalCounts;
+                flick.lastProgress = progress;
+
+                // Accumulate sub-integer counts in the flick itself; only write whole counts to
+                // mouseX so accuracy is never affected by remainderCutoff or mouseXRemainder resets
+                double toSend = rawDelta + flick.subCountCarry;
+                int intToSend = (int)toSend;
+                flick.subCountCarry = toSend - intToSend;
+
+                if (done)
+                {
+                    // Round the residual sub-count on the final tick rather than discarding it
+                    if (Math.Abs(flick.subCountCarry) >= 0.5)
+                        intToSend += Math.Sign(flick.subCountCarry);
+                    pendingFlicks.RemoveAt(i);
+                }
+                else
+                {
+                    pendingFlicks[i] = flick;
+                }
+
+                if (intToSend != 0)
+                {
+                    mouseX += intToSend;
+                    mouseSync = true;
+                }
+            }
+
             if (mouseSync)
             {
                 //mouseReport.ResetMousePos();

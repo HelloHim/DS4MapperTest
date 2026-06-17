@@ -115,7 +115,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Real World Calibration" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="500.0" Value="{Binding RealWorldCalibration}" DecimalPlaces="4"
+                    <hc:NumericUpDown Minimum="0.0" Maximum="27777.7778" Value="{Binding RealWorldCalibration}" DecimalPlaces="4"
       Increment="0.5" Width="100" Margin="8,0,0,0" VerticalAlignment="Center">
                         <hc:NumericUpDown.Style>
                             <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
@@ -131,13 +131,13 @@
                     <StackPanel Orientation="Vertical" Margin="16,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Counts" />
-                            <hc:NumericUpDown Minimum="1.0" Maximum="100000.0" Value="{Binding FullTurnCounts}" DecimalPlaces="4"
+                            <hc:NumericUpDown Minimum="1.0" Maximum="999999.9999" Value="{Binding FullTurnCounts}" DecimalPlaces="4"
 Increment="10.0" Width="100" Margin="8,0,0,0">
                             </hc:NumericUpDown>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <hc:NumericUpDown Minimum="0.001" Maximum="100000.0" Value="{Binding CalculatedRWC}" DecimalPlaces="4"
+                            <hc:NumericUpDown Minimum="0.001" Maximum="27777.7778" Value="{Binding CalculatedRWC}" DecimalPlaces="4"
 Increment="10.0" Width="100" IsReadOnly="True" HorizontalAlignment="Left">
                             </hc:NumericUpDown>
 

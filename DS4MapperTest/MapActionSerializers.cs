@@ -8480,6 +8480,22 @@ namespace DS4MapperTest
 
                     resultInstance = new OutputActionDataSerializer(tempInstance);
                     break;
+                case ActionType.CameraTurn:
+                    tempInstance.OutputType = checkType;
+                    if (double.TryParse(j["Angle"]?.ToString(),
+                        System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out double camAngle))
+                        tempInstance.cameraTurnAngle = camAngle;
+                    if (double.TryParse(j["Duration"]?.ToString(),
+                        System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out double camDuration))
+                        tempInstance.cameraTurnDurationMs = camDuration;
+                    if (double.TryParse(j["Counts360"]?.ToString(),
+                        System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out double camCounts360))
+                        tempInstance.cameraTurnCounts360 = camCounts360;
+                    resultInstance = new OutputActionDataSerializer(tempInstance);
+                    break;
                 case ActionType.Empty:
                     tempInstance.OutputType = ActionType.Empty;
                     resultInstance = new OutputActionDataSerializer(tempInstance);
@@ -8593,6 +8609,11 @@ namespace DS4MapperTest
                         SerializeExtraJSONProperties(current.OutputData, tempJ);
                     }
 
+                    break;
+                case ActionType.CameraTurn:
+                    tempJ.Add("Angle", current.OutputData.cameraTurnAngle);
+                    tempJ.Add("Duration", current.OutputData.cameraTurnDurationMs);
+                    tempJ.Add("Counts360", current.OutputData.cameraTurnCounts360);
                     break;
                 default:
                     break;

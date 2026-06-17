@@ -31,10 +31,42 @@
                     </Style>
                 </Button.Style>
             </Button>
+            <Button x:Name="cameraTurnBtn" Content="Flick Turn Bind" Click="CameraTurnBtn_Click" Margin="8,0,0,0">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource ButtonDefault}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CameraTurnActive}" Value="True">
+                                <DataTrigger.Setters>
+                                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </StackPanel>
 
         <ScrollViewer DockPanel.Dock="Top">
             <StackPanel>
+                <StackPanel Visibility="{Binding ShowCameraTurnOptions, Mode=OneWay, Converter={StaticResource boolVisConv}}" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Angle" VerticalAlignment="Center" ToolTip="Signed degrees: positive = right, negative = left. Range: -180 to +180." />
+                        <hc:NumericUpDown Minimum="-180.0" Maximum="180.0" DecimalPlaces="1" Increment="1.0"
+                            Value="{Binding CameraTurnAngle, FallbackValue='90.0'}" Width="100" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        <Label Content="°" Margin="2,0,0,0" BorderBrush="{x:Null}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Label Content="Duration" VerticalAlignment="Center" />
+                        <hc:NumericUpDown Minimum="1.0" Maximum="10000.0" DecimalPlaces="0" Increment="10.0"
+                            Value="{Binding CameraTurnDurationMs, FallbackValue='150.0'}" Width="100" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        <Label Content="ms" Margin="2,0,0,0" BorderBrush="{x:Null}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Label Content="Counts / 360°" VerticalAlignment="Center" ToolTip="How many mouse counts your game needs for a full 360° camera turn at your actual in-game sensitivity. Match this to your Gyro Mouse calibration." />
+                        <hc:NumericUpDown Minimum="1.0" Maximum="9999999.0" DecimalPlaces="4" Increment="100.0"
+                            Value="{Binding CameraTurnCounts360, FallbackValue='1800.0'}" Width="120" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
                 <StackPanel Orientation="Horizontal" Height="40" DockPanel.Dock="Top">
                     <Label Content="Gamepad" VerticalAlignment="Top" />
                     <ComboBox ItemsSource="{Binding GamepadComboItems}" SelectedIndex="{Binding SelectedIndex, FallbackValue='0'}" DisplayMemberPath="DisplayName" Height="40" MinWidth="100" VerticalAlignment="Top" Margin="8,0,0,0">
@@ -126,6 +158,7 @@
                         <ComboBoxItem>Released</ComboBoxItem>
                     </ComboBox>
                 </StackPanel>
+
             </StackPanel>
         </ScrollViewer>
 

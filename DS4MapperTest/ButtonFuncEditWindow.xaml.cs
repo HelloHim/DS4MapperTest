@@ -51,7 +51,6 @@ namespace DS4MapperTest
                 btnFuncEditVM.IsTransformOutputVisible = true;
                 //DataContext = btnNoActVM;
             }
-
             SetupDisplayControl();
 
             btnFuncEditVM.SelectedTransformIndexChanged += BtnFuncEditVM_SelectedTransformIndexChanged;
