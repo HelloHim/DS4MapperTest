@@ -66,5 +66,14 @@ namespace DS4MapperTest.Views
 
             DataContext = buttonActionEditVM;
         }
+
+        private void CameraTurnBtn_Click(object sender, RoutedEventArgs e)
+        {
+            DataContext = null;
+
+            buttonActionEditVM.AssignCameraTurn();
+
+            DataContext = buttonActionEditVM;
+        }
     }
 }
