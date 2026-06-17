@@ -346,6 +346,48 @@ namespace DS4MapperTest.ViewModels
         }
         public event EventHandler CameraTurnCounts360Changed;
 
+        private double cameraTurnRWC = 0.0;
+        public double CameraTurnRWC
+        {
+            get => cameraTurnRWC;
+            set
+            {
+                if (cameraTurnRWC == value) return;
+                cameraTurnRWC = value;
+                CameraTurnRWCChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler CameraTurnRWCChanged;
+
+        private double cameraTurnInGameSens = 1.0;
+        public double CameraTurnInGameSens
+        {
+            get => cameraTurnInGameSens;
+            set
+            {
+                if (cameraTurnInGameSens == value) return;
+                cameraTurnInGameSens = value;
+                CameraTurnInGameSensChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler CameraTurnInGameSensChanged;
+
+        private double cameraTurnCalculatedRWC = 0.0;
+        public double CameraTurnCalculatedRWC
+        {
+            get => cameraTurnCalculatedRWC;
+            set
+            {
+                if (cameraTurnCalculatedRWC == value) return;
+                cameraTurnCalculatedRWC = value;
+                CameraTurnCalculatedRWCChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler CameraTurnCalculatedRWCChanged;
+
+        private BasicActionCommand copyFlickTurnRWCComm;
+        public BasicActionCommand CopyFlickTurnRWCComm => copyFlickTurnRWCComm;
+
         private bool showCameraTurnOptions;
         public bool ShowCameraTurnOptions
         {
@@ -451,6 +493,11 @@ namespace DS4MapperTest.ViewModels
                 SelectedSlotItemIndex = 0;
             }
 
+            copyFlickTurnRWCComm = new BasicActionCommand((parameter) =>
+            {
+                CameraTurnRWC = cameraTurnCalculatedRWC;
+            });
+
             SetupEvents();
         }
 
@@ -495,6 +542,8 @@ namespace DS4MapperTest.ViewModels
             CameraTurnAngleChanged += ButtonActionEditViewModel_CameraTurnAngleChanged;
             CameraTurnDurationMsChanged += ButtonActionEditViewModel_CameraTurnDurationMsChanged;
             CameraTurnCounts360Changed += ButtonActionEditViewModel_CameraTurnCounts360Changed;
+            CameraTurnRWCChanged += ButtonActionEditViewModel_CameraTurnRWCChanged;
+            CameraTurnInGameSensChanged += ButtonActionEditViewModel_CameraTurnInGameSensChanged;
         }
 
         private void UpdateMouseYSpeedOutput(object sender, EventArgs e)
@@ -867,6 +916,8 @@ namespace DS4MapperTest.ViewModels
             CameraTurnAngleChanged -= ButtonActionEditViewModel_CameraTurnAngleChanged;
             CameraTurnDurationMsChanged -= ButtonActionEditViewModel_CameraTurnDurationMsChanged;
             CameraTurnCounts360Changed -= ButtonActionEditViewModel_CameraTurnCounts360Changed;
+            CameraTurnRWCChanged -= ButtonActionEditViewModel_CameraTurnRWCChanged;
+            CameraTurnInGameSensChanged -= ButtonActionEditViewModel_CameraTurnInGameSensChanged;
         }
 
         private void PostSlotChangeChecks()
@@ -998,8 +1049,12 @@ namespace DS4MapperTest.ViewModels
                         cameraTurnAngle = item.Data.cameraTurnAngle;
                         cameraTurnDurationMs = item.Data.cameraTurnDurationMs;
                         cameraTurnCounts360 = item.Data.cameraTurnCounts360;
+                        cameraTurnCalculatedRWC = cameraTurnCounts360 > 0.0
+                            ? cameraTurnInGameSens / (360.0 / cameraTurnCounts360)
+                            : 0.0;
                         ShowCameraTurnOptions = true;
                         CameraTurnActiveChanged?.Invoke(this, EventArgs.Empty);
+                        CameraTurnCalculatedRWCChanged?.Invoke(this, EventArgs.Empty);
                     }
 
                     break;
@@ -1442,6 +1497,25 @@ namespace DS4MapperTest.ViewModels
                 currentAction.Release(mapper, ignoreReleaseActions: true);
                 slotItem.Data.cameraTurnCounts360 = cameraTurnCounts360;
             });
+            RecalculateCameraTurnRWC();
+        }
+
+        private void RecalculateCameraTurnRWC()
+        {
+            CameraTurnCalculatedRWC = cameraTurnCounts360 > 0.0
+                ? cameraTurnInGameSens / (360.0 / cameraTurnCounts360)
+                : 0.0;
+        }
+
+        private void ButtonActionEditViewModel_CameraTurnRWCChanged(object sender, EventArgs e)
+        {
+            if (cameraTurnInGameSens == 0.0) return;
+            CameraTurnCounts360 = (cameraTurnRWC * 360.0) / cameraTurnInGameSens;
+        }
+
+        private void ButtonActionEditViewModel_CameraTurnInGameSensChanged(object sender, EventArgs e)
+        {
+            RecalculateCameraTurnRWC();
         }
 
         public void RemoveOutputSlot(int ind)
