@@ -76,6 +76,15 @@ namespace DS4MapperTest
             set => lightbarSettings = value;
         }
 
+        private double calibRwc = 5.0;
+        public double CalibRwc { get => calibRwc; set => calibRwc = value; }
+
+        private double calibInGameSens = 1.0;
+        public double CalibInGameSens { get => calibInGameSens; set => calibInGameSens = value; }
+
+        private double calibCounts = 1800.0;
+        public double CalibCounts { get => calibCounts; set => calibCounts = value; }
+
         public bool dirty;
         public bool Dirty
         {

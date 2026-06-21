@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.GyroActions;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.Common;
 using System.Threading;
@@ -1049,6 +1050,8 @@ namespace DS4MapperTest.ViewModels
                         cameraTurnAngle = item.Data.cameraTurnAngle;
                         cameraTurnDurationMs = item.Data.cameraTurnDurationMs;
                         cameraTurnCounts360 = item.Data.cameraTurnCounts360;
+                        cameraTurnInGameSens = mapper.ActionProfile.CalibInGameSens;
+                        cameraTurnRWC = mapper.ActionProfile.CalibRwc;
                         cameraTurnCalculatedRWC = cameraTurnCounts360 > 0.0
                             ? cameraTurnInGameSens / (360.0 / cameraTurnCounts360)
                             : 0.0;
@@ -1498,6 +1501,7 @@ namespace DS4MapperTest.ViewModels
                 slotItem.Data.cameraTurnCounts360 = cameraTurnCounts360;
             });
             RecalculateCameraTurnRWC();
+            SyncCalibFromCameraTurnToProfile();
         }
 
         private void RecalculateCameraTurnRWC()
@@ -1505,6 +1509,34 @@ namespace DS4MapperTest.ViewModels
             CameraTurnCalculatedRWC = cameraTurnCounts360 > 0.0
                 ? cameraTurnInGameSens / (360.0 / cameraTurnCounts360)
                 : 0.0;
+        }
+
+        private void SyncCalibFromCameraTurnToProfile()
+        {
+            double counts = cameraTurnCounts360;
+            double inGameSens = cameraTurnInGameSens;
+            double rwc = inGameSens > 0.0 ? inGameSens * counts / 360.0 : 0.0;
+            mapper.ActionProfile.CalibCounts = counts;
+            mapper.ActionProfile.CalibInGameSens = inGameSens;
+            mapper.ActionProfile.CalibRwc = rwc;
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                foreach (var set in mapper.ActionProfile.ActionSets)
+                    foreach (var layer in set.ActionLayers)
+                        foreach (var mapAction in layer.normalActionDict.Values)
+                        {
+                            if (mapAction is GyroMouse gyroMouse)
+                            {
+                                gyroMouse.mouseParams.realWorldCalibration = rwc;
+                                gyroMouse.mouseParams.inGameSens = inGameSens;
+                            }
+                            if (mapAction is ButtonAction ba)
+                                foreach (var func in ba.ActionFuncs)
+                                    foreach (var data in func.OutputActions)
+                                        if (data.OutputType == OutputActionData.ActionType.CameraTurn)
+                                            data.cameraTurnCounts360 = counts;
+                        }
+            });
         }
 
         private void ButtonActionEditViewModel_CameraTurnRWCChanged(object sender, EventArgs e)
@@ -1516,6 +1548,7 @@ namespace DS4MapperTest.ViewModels
         private void ButtonActionEditViewModel_CameraTurnInGameSensChanged(object sender, EventArgs e)
         {
             RecalculateCameraTurnRWC();
+            SyncCalibFromCameraTurnToProfile();
         }
 
         public void RemoveOutputSlot(int ind)
