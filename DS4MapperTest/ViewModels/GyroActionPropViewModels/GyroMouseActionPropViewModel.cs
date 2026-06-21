@@ -7,6 +7,7 @@ using DS4MapperTest.StickActions;
 using DS4MapperTest.ViewModels.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -14,8 +15,9 @@ using System.Threading.Tasks;
 
 namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 {
-    public class GyroMouseActionPropViewModel : GyroActionPropVMBase
+    public class GyroMouseActionPropViewModel : GyroActionPropVMBase, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
         protected GyroMouse action;
         public GyroMouse Action
         {
@@ -95,6 +97,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.realWorldCalibration;
             set
             {
+                if (!_modelReady) return;
                 if (action.mouseParams.realWorldCalibration == value) return;
                 action.mouseParams.realWorldCalibration = value;
                 RealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
@@ -108,6 +111,12 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.inGameSens;
             set
             {
+                // Reject changes until after the window has rendered. HandyControl's
+                // NumericUpDown fires ValueChanged(Minimum) during control init before
+                // the binding has populated the control with the real value, which would
+                // corrupt CalibInGameSens. _modelReady is set via a low-priority
+                // dispatcher post that runs after all Loaded-priority control events.
+                if (!_modelReady) return;
                 if (action.mouseParams.inGameSens == value) return;
                 action.mouseParams.inGameSens = value;
                 InGameSensChanged?.Invoke(this, EventArgs.Empty);
@@ -296,6 +305,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.sensitivity;
             set
             {
+                if (!_modelReady) return;
                 action.mouseParams.sensitivity = Math.Clamp(value, 0.0, 10.0);
                 SensitivityChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
@@ -308,6 +318,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.verticalScale;
             set
             {
+                if (!_modelReady) return;
                 action.mouseParams.verticalScale = Math.Clamp(value, 0.0, 10.0);
                 VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
@@ -498,12 +509,15 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler SmoothingBetaChanged;
 
+        private bool _modelReady = false;
+
         private double fullTurnCounts = 10.0;
         public double FullTurnCounts
         {
             get => fullTurnCounts;
             set
             {
+                if (!_modelReady) return;
                 if (fullTurnCounts == value) return;
                 if (value == 0.0) return; // Avoid division by zero
                 fullTurnCounts = value;
@@ -535,6 +549,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 if (calculatedRWC == value) return;
                 calculatedRWC = value;
                 CalculatedRWCChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRWC)));
             }
         }
         public event EventHandler CalculatedRWCChanged;
@@ -770,6 +785,45 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             SmoothingEnabledChanged += GyroMouseActionPropViewModel_SmoothingEnabledChanged;
             SmoothingMinCutoffChanged += GyroMouseActionPropViewModel_SmoothingMinCutoffChanged;
             SmoothingBetaChanged += GyroMouseActionPropViewModel_SmoothingBetaChanged;
+
+            double savedInGameSens = this.action.mouseParams.inGameSens;
+            double savedRwc = this.action.mouseParams.realWorldCalibration;
+            double savedSensitivity = this.action.mouseParams.sensitivity;
+            double savedVerticalScale = this.action.mouseParams.verticalScale;
+            double savedCounts = fullTurnCounts;
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Background,
+                new Action(() =>
+                {
+                    this.action.mouseParams.inGameSens = savedInGameSens;
+                    this.action.mouseParams.realWorldCalibration = savedRwc;
+                    this.action.mouseParams.sensitivity = savedSensitivity;
+                    this.action.mouseParams.verticalScale = savedVerticalScale;
+                    fullTurnCounts = savedCounts;
+                    CalculateTestRWC();
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                        System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                        new Action(() =>
+                        {
+                            this.action.mouseParams.inGameSens = savedInGameSens;
+                            this.action.mouseParams.realWorldCalibration = savedRwc;
+                            this.action.mouseParams.sensitivity = savedSensitivity;
+                            this.action.mouseParams.verticalScale = savedVerticalScale;
+                            fullTurnCounts = savedCounts;
+                            CalculateTestRWC();
+                            _modelReady = true;
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                        }));
+                }));
         }
 
         private void CalculateTestRWC()

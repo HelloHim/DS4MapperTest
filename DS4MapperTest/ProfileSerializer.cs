@@ -281,7 +281,9 @@ namespace DS4MapperTest
                 tempProfile.ActionSets.Add(serializer.TempActionSet);
             }
 
-            // If calibration was not in the JSON, seed it from the first GyroMouse or CameraTurn action
+            // If calibration was not in the JSON, seed it from the first GyroMouse or CameraTurn action.
+            // Must iterate LayerActions (populated by PopulateLayer) not normalActionDict, which is
+            // still empty at this point — SyncActions() hasn't been called yet.
             if (!calibExplicitlySet)
             {
                 bool found = false;
@@ -289,7 +291,7 @@ namespace DS4MapperTest
                 {
                     foreach (ActionLayer layer in set.ActionLayers)
                     {
-                        foreach (MapAction mapAction in layer.normalActionDict.Values)
+                        foreach (MapAction mapAction in layer.LayerActions)
                         {
                             if (mapAction is GyroMouse gyroMouse)
                             {
@@ -312,7 +314,7 @@ namespace DS4MapperTest
                     {
                         foreach (ActionLayer layer in set.ActionLayers)
                         {
-                            foreach (MapAction mapAction in layer.normalActionDict.Values)
+                            foreach (MapAction mapAction in layer.LayerActions)
                             {
                                 if (mapAction is ButtonAction btnAction)
                                 {
@@ -341,12 +343,14 @@ namespace DS4MapperTest
                 }
             }
 
-            // Push profile calibration to all GyroMouse and CameraTurn action instances
+            // Push profile calibration to all GyroMouse and CameraTurn action instances.
+            // Must use LayerActions — normalActionDict is empty until SyncActions() runs after
+            // this method returns.
             foreach (ActionSet set in tempProfile.ActionSets)
             {
                 foreach (ActionLayer layer in set.ActionLayers)
                 {
-                    foreach (MapAction mapAction in layer.normalActionDict.Values)
+                    foreach (MapAction mapAction in layer.LayerActions)
                     {
                         if (mapAction is GyroMouse gyroMouse)
                         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,8 +14,9 @@ using System.Threading;
 
 namespace DS4MapperTest.ViewModels
 {
-    public class ButtonActionEditViewModel
+    public class ButtonActionEditViewModel : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
         public enum ActionComboBoxTypes
         {
             None,
@@ -360,12 +362,15 @@ namespace DS4MapperTest.ViewModels
         }
         public event EventHandler CameraTurnRWCChanged;
 
+        private bool _cameraTurnReady = false;
+
         private double cameraTurnInGameSens = 1.0;
         public double CameraTurnInGameSens
         {
             get => cameraTurnInGameSens;
             set
             {
+                if (!_cameraTurnReady) return;
                 if (cameraTurnInGameSens == value) return;
                 cameraTurnInGameSens = value;
                 CameraTurnInGameSensChanged?.Invoke(this, EventArgs.Empty);
@@ -397,6 +402,28 @@ namespace DS4MapperTest.ViewModels
             {
                 if (showCameraTurnOptions == value) return;
                 showCameraTurnOptions = value;
+                if (value)
+                {
+                    _cameraTurnReady = false;
+                    double savedCameraTurnInGameSens = cameraTurnInGameSens;
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                        System.Windows.Threading.DispatcherPriority.Background,
+                        new Action(() =>
+                        {
+                            cameraTurnInGameSens = savedCameraTurnInGameSens;
+                            PropertyChanged?.Invoke(this,
+                                new PropertyChangedEventArgs(nameof(CameraTurnInGameSens)));
+                            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                                System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                                new Action(() =>
+                                {
+                                    cameraTurnInGameSens = savedCameraTurnInGameSens;
+                                    _cameraTurnReady = true;
+                                    PropertyChanged?.Invoke(this,
+                                        new PropertyChangedEventArgs(nameof(CameraTurnInGameSens)));
+                                }));
+                        }));
+                }
                 ShowCameraTurnOptionsChanged?.Invoke(this, EventArgs.Empty);
             }
         }

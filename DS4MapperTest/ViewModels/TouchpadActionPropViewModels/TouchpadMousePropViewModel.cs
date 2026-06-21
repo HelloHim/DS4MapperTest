@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,8 +11,11 @@ using DS4MapperTest.TouchpadActions;
 
 namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 {
-    public class TouchpadMousePropViewModel : TouchpadActionPropVMBase
+    public class TouchpadMousePropViewModel : TouchpadActionPropVMBase, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private bool _modelReady = false;
         private TouchpadMouse action;
         public TouchpadMouse Action => action;
 
@@ -62,6 +66,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             get => action.Sensitivity;
             set
             {
+                if (!_modelReady) return;
+                if (action.Sensitivity == value) return;
                 action.Sensitivity = Math.Clamp(value, 0.0, 1000.0);
                 SensitivityChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
@@ -74,6 +80,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             get => action.VerticalScale;
             set
             {
+                if (!_modelReady) return;
+                if (action.VerticalScale == value) return;
                 action.VerticalScale = Math.Clamp(value, 0.0, 10.0);
                 VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
@@ -242,6 +250,28 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             SmoothingMinCutoffChanged += TouchpadMousePropViewModel_SmoothingMinCutoffChanged;
             SmoothingBetaChanged += TouchpadMousePropViewModel_SmoothingBetaChanged;
             ActionPropertyChanged += SetProfileDirty;
+
+            double savedSensitivity = this.action.Sensitivity;
+            double savedVerticalScale = this.action.VerticalScale;
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Background,
+                new Action(() =>
+                {
+                    this.action.Sensitivity = savedSensitivity;
+                    this.action.VerticalScale = savedVerticalScale;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                        System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                        new Action(() =>
+                        {
+                            this.action.Sensitivity = savedSensitivity;
+                            this.action.VerticalScale = savedVerticalScale;
+                            _modelReady = true;
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                        }));
+                }));
         }
 
         private void TouchpadMousePropViewModel_SmoothingMinCutoffChanged(object sender, EventArgs e)
