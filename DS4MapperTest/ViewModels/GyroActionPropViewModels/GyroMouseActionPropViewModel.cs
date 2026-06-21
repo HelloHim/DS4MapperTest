@@ -925,6 +925,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.IN_GAME_SENS);
             HighlightInGameSensChanged?.Invoke(this, EventArgs.Empty);
+            CalculateTestRWC();
             SyncCalibFromGyroMouseToProfile();
         }
 
