@@ -1,4 +1,6 @@
-﻿using DS4MapperTest.Common;
+﻿using DS4MapperTest.ActionUtil;
+using DS4MapperTest.ButtonActions;
+using DS4MapperTest.Common;
 using DS4MapperTest.GyroActions;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
@@ -503,9 +505,22 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             set
             {
                 if (fullTurnCounts == value) return;
-                if (fullTurnCounts == 0.0) return; // Avoid division by zero
+                if (value == 0.0) return; // Avoid division by zero
                 fullTurnCounts = value;
                 CalculateTestRWC();
+                double counts = value;
+                mapper.ActionProfile.CalibCounts = counts;
+                ExecuteInMapperThread(() =>
+                {
+                    foreach (var set in mapper.ActionProfile.ActionSets)
+                        foreach (var layer in set.ActionLayers)
+                            foreach (var mapAction in layer.normalActionDict.Values)
+                                if (mapAction is ButtonAction btnAction)
+                                    foreach (var func in btnAction.ActionFuncs)
+                                        foreach (var data in func.OutputActions)
+                                            if (data.OutputType == OutputActionData.ActionType.CameraTurn)
+                                                data.cameraTurnCounts360 = counts;
+                });
                 //FullTurnCountsChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -762,6 +777,30 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             CalculatedRWC = InGameSens / (360.0 / fullTurnCounts);
         }
 
+        private void SyncCalibFromGyroMouseToProfile()
+        {
+            double rwc = action.mouseParams.realWorldCalibration;
+            double inGameSens = action.mouseParams.inGameSens;
+            // Use fullTurnCounts (what the user typed) rather than deriving counts from RWC.
+            // Deriving from RWC would overwrite the user's counts entry with a stale RWC value
+            // whenever InGameSens changes before Copy is clicked.
+            double counts = fullTurnCounts;
+            mapper.ActionProfile.CalibRwc = rwc;
+            mapper.ActionProfile.CalibInGameSens = inGameSens;
+            mapper.ActionProfile.CalibCounts = counts;
+            ExecuteInMapperThread(() =>
+            {
+                foreach (var set in mapper.ActionProfile.ActionSets)
+                    foreach (var layer in set.ActionLayers)
+                        foreach (var mapAction in layer.normalActionDict.Values)
+                            if (mapAction is ButtonAction btnAction)
+                                foreach (var func in btnAction.ActionFuncs)
+                                    foreach (var data in func.OutputActions)
+                                        if (data.OutputType == OutputActionData.ActionType.CameraTurn)
+                                            data.cameraTurnCounts360 = counts;
+            });
+        }
+
         private void GyroMouseActionPropViewModel_NaturalVHalfChanged(object sender, EventArgs e)
         {
             if (!this.action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.NATURAL_CURVE_VHALF))
@@ -886,6 +925,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.IN_GAME_SENS);
             HighlightInGameSensChanged?.Invoke(this, EventArgs.Empty);
+            SyncCalibFromGyroMouseToProfile();
         }
 
         private void GyroMouseActionPropViewModel_RealWorldCalibrationChanged(object sender, EventArgs e)
@@ -897,6 +937,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.REAL_WORLD_CALIBRATION);
             HighlightRealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
+            SyncCalibFromGyroMouseToProfile();
         }
 
         private void GyroMouseActionPropViewModel_GyroJitterCompensationChanged(object sender, EventArgs e)
@@ -1064,6 +1105,9 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
         private void PopulateModel()
         {
+            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0 ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
+            CalculateTestRWC();
+
             //triggerButtonItems.AddRange(new GyroTriggerButtonItem[]
             //{
             //    new GyroTriggerButtonItem("Always On", JoypadActionCodes.AlwaysOn),

@@ -87,6 +87,7 @@
                         <hc:NumericUpDown Minimum="0.001" Maximum="10.0" DecimalPlaces="3" Increment="0.1"
                             Value="{Binding CameraTurnInGameSens, FallbackValue='1.0'}" Width="100" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
+                    <TextBlock Text="Synced across profile" FontSize="11" Foreground="Gray" Margin="0,6,0,0" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Height="40" DockPanel.Dock="Top">
                     <Label Content="Gamepad" VerticalAlignment="Top" />

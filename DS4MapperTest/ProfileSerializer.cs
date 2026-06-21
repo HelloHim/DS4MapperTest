@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.GyroActions;
 using DS4MapperTest.MapperUtil;
 
 namespace DS4MapperTest
@@ -150,6 +152,26 @@ namespace DS4MapperTest
             set => tempProfile.OutputGamepadSettings = value;
         }
 
+        private bool calibExplicitlySet = false;
+
+        public double CalibRwc
+        {
+            get => tempProfile.CalibRwc;
+            set { tempProfile.CalibRwc = value; calibExplicitlySet = true; }
+        }
+
+        public double CalibInGameSens
+        {
+            get => tempProfile.CalibInGameSens;
+            set { tempProfile.CalibInGameSens = value; calibExplicitlySet = true; }
+        }
+
+        public double CalibCounts
+        {
+            get => tempProfile.CalibCounts;
+            set { tempProfile.CalibCounts = value; calibExplicitlySet = true; }
+        }
+
         private LightbarSettingsSerializer lightbarSerializer;
         public LightbarSettingsSerializer LightbarSettings
         {
@@ -257,6 +279,98 @@ namespace DS4MapperTest
             {
                 serializer.PopulateProfileSet(tempProfile);
                 tempProfile.ActionSets.Add(serializer.TempActionSet);
+            }
+
+            // If calibration was not in the JSON, seed it from the first GyroMouse or CameraTurn action
+            if (!calibExplicitlySet)
+            {
+                bool found = false;
+                foreach (ActionSet set in tempProfile.ActionSets)
+                {
+                    foreach (ActionLayer layer in set.ActionLayers)
+                    {
+                        foreach (MapAction mapAction in layer.normalActionDict.Values)
+                        {
+                            if (mapAction is GyroMouse gyroMouse)
+                            {
+                                tempProfile.CalibRwc = gyroMouse.mouseParams.realWorldCalibration;
+                                tempProfile.CalibInGameSens = gyroMouse.mouseParams.inGameSens;
+                                if (gyroMouse.mouseParams.inGameSens > 0.0)
+                                    tempProfile.CalibCounts = gyroMouse.mouseParams.realWorldCalibration * 360.0 / gyroMouse.mouseParams.inGameSens;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found) break;
+                    }
+                    if (found) break;
+                }
+
+                if (!found)
+                {
+                    foreach (ActionSet set in tempProfile.ActionSets)
+                    {
+                        foreach (ActionLayer layer in set.ActionLayers)
+                        {
+                            foreach (MapAction mapAction in layer.normalActionDict.Values)
+                            {
+                                if (mapAction is ButtonAction btnAction)
+                                {
+                                    foreach (ActionFunc func in btnAction.ActionFuncs)
+                                    {
+                                        foreach (OutputActionData data in func.OutputActions)
+                                        {
+                                            if (data.OutputType == OutputActionData.ActionType.CameraTurn)
+                                            {
+                                                tempProfile.CalibCounts = data.cameraTurnCounts360;
+                                                tempProfile.CalibInGameSens = 1.0;
+                                                tempProfile.CalibRwc = data.cameraTurnCounts360 / 360.0;
+                                                found = true;
+                                                break;
+                                            }
+                                        }
+                                        if (found) break;
+                                    }
+                                }
+                                if (found) break;
+                            }
+                            if (found) break;
+                        }
+                        if (found) break;
+                    }
+                }
+            }
+
+            // Push profile calibration to all GyroMouse and CameraTurn action instances
+            foreach (ActionSet set in tempProfile.ActionSets)
+            {
+                foreach (ActionLayer layer in set.ActionLayers)
+                {
+                    foreach (MapAction mapAction in layer.normalActionDict.Values)
+                    {
+                        if (mapAction is GyroMouse gyroMouse)
+                        {
+                            gyroMouse.mouseParams.realWorldCalibration = tempProfile.CalibRwc;
+                            gyroMouse.mouseParams.inGameSens = tempProfile.CalibInGameSens;
+                            if (!gyroMouse.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.REAL_WORLD_CALIBRATION))
+                                gyroMouse.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.REAL_WORLD_CALIBRATION);
+                            if (!gyroMouse.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.IN_GAME_SENS))
+                                gyroMouse.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.IN_GAME_SENS);
+                        }
+
+                        if (mapAction is ButtonAction ba)
+                        {
+                            foreach (ActionFunc func in ba.ActionFuncs)
+                            {
+                                foreach (OutputActionData data in func.OutputActions)
+                                {
+                                    if (data.OutputType == OutputActionData.ActionType.CameraTurn)
+                                        data.cameraTurnCounts360 = tempProfile.CalibCounts;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 

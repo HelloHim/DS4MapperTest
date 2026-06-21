@@ -5977,6 +5977,7 @@ namespace DS4MapperTest
                 }
             }
             public event EventHandler RealWorldCalibrationChanged;
+            public bool ShouldSerializeRealWorlCalibration() => false;
 
             public double InGameSens
             {
@@ -5988,6 +5989,7 @@ namespace DS4MapperTest
                 }
             }
             public event EventHandler InGameSensChanged;
+            public bool ShouldSerializeInGameSens() => false;
 
             [JsonConverter(typeof(StringEnumConverter))]
             public GyroMouseAccelCurveChoice AccelCurve
@@ -8613,7 +8615,6 @@ namespace DS4MapperTest
                 case ActionType.CameraTurn:
                     tempJ.Add("Angle", current.OutputData.cameraTurnAngle);
                     tempJ.Add("Duration", current.OutputData.cameraTurnDurationMs);
-                    tempJ.Add("Counts360", current.OutputData.cameraTurnCounts360);
                     break;
                 default:
                     break;
