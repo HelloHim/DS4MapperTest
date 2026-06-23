@@ -184,11 +184,8 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
             lpadYAxis.PostInit();
 
             leftPadDefiniton = new TouchpadDefinition(lpadXAxis, lpadYAxis, TouchpadActionCodes.TouchL,
-                elapsedReference: device.BaseElapsedReference, mouseScale: 0.012 * 1.1, mouseOffset: 0.4,
+                elapsedReference: device.BaseElapsedReference, mouseScale: 1.0, mouseOffset: 0.0,
                 trackballScale: 0.000023);
-            leftPadDefiniton.throttleRelMouse = true;
-            leftPadDefiniton.throttleRelMousePower = TRACKPAD_MOUSE_POWER;
-            leftPadDefiniton.throttleRelMouseZone = TRACKPAD_MOUSE_DISPLACEMENT;
 
             TouchpadDefinition.TouchAxisData rpadXAxis = new TouchpadDefinition.TouchAxisData
             {
@@ -213,11 +210,8 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
             rpadYAxis.PostInit();
 
             rightPadDefinition = new TouchpadDefinition(rpadXAxis, rpadYAxis, TouchpadActionCodes.TouchR,
-                elapsedReference: device.BaseElapsedReference, mouseScale: 0.012 * 1.1, mouseOffset: 0.4,
+                elapsedReference: device.BaseElapsedReference, mouseScale: 1.0, mouseOffset: 0.0,
                 trackballScale: 0.000023);
-            rightPadDefinition.throttleRelMouse = true;
-            rightPadDefinition.throttleRelMousePower = TRACKPAD_MOUSE_POWER;
-            rightPadDefinition.throttleRelMouseZone = TRACKPAD_MOUSE_DISPLACEMENT;
 
             TriggerDefinition.TriggerAxisData ltAxis = new TriggerDefinition.TriggerAxisData
             {
