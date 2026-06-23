@@ -18,7 +18,7 @@ namespace DS4MapperTest.TouchpadActions
             public const string DEAD_ZONE = "DeadZone";
             public const string TRACKBALL_MODE = "Trackball";
             public const string TRACKBALL_FRICTION = "TrackballFriction";
-            public const string SENSITIVITY = "Sensitivity";
+            public const string SWIPES_PER_360 = "SwipesPer360";
             public const string VERTICAL_SCALE = "VerticalScale";
             public const string SMOOTHING_ENABLED = "SmoothingEnabled";
             public const string SMOOTHING_FILTER = "SmoothingFilter";
@@ -30,7 +30,7 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.DEAD_ZONE,
             PropertyKeyStrings.TRACKBALL_MODE,
             PropertyKeyStrings.TRACKBALL_FRICTION,
-            PropertyKeyStrings.SENSITIVITY,
+            PropertyKeyStrings.SWIPES_PER_360,
             PropertyKeyStrings.SMOOTHING_ENABLED,
             PropertyKeyStrings.SMOOTHING_FILTER,
         };
@@ -63,7 +63,6 @@ namespace DS4MapperTest.TouchpadActions
 
         //private const int DEFAULT_DEADZONE = 8;
         private const int DEFAULT_DEADZONE = 0;
-        private const double DEFAULT_SENSITIVITY = 1.0;
         private const double DEFAULT_VERTICAL_SCALE = 1.0;
         private const bool DEFAULT_SMOOTHING_ENABLED = true;
 
@@ -172,11 +171,11 @@ namespace DS4MapperTest.TouchpadActions
             }
         }
 
-        private double sensitivity = DEFAULT_SENSITIVITY;
-        public double Sensitivity
+        private double swipesPer360 = 1.0;
+        public double SwipesPer360
         {
-            get => sensitivity;
-            set => sensitivity = value;
+            get => swipesPer360;
+            set => swipesPer360 = value;
         }
 
         private double verticalScale = DEFAULT_VERTICAL_SCALE;
@@ -467,16 +466,8 @@ namespace DS4MapperTest.TouchpadActions
             double timeElapsed = touchFrame.timeElapsed;
             double oldTimeElapsed = timeElapsed;
             timeElapsed = timeElapsed - (mapper.remainderCutoff(timeElapsed * 10000.0, 1.0) / 10000.0);
-            //double coefficient = TOUCHPAD_COEFFICIENT;
-            double coefficient = touchpadDefinition.mouseScale;
-
-            // Static. 11 RWC / 1.0 In-Game Sens.
-            // Shadow Warrior (2013)
-            //double coefficient = (11.0 / 1.0);
-            if (sensitivity != DEFAULT_SENSITIVITY)
-            {
-                coefficient = coefficient * sensitivity;
-            }
+            double padWidth = touchpadDefinition.xAxis.max - (double)touchpadDefinition.xAxis.min;
+            double coefficient = mapper.ActionProfile.CalibCounts * swipesPer360 / padWidth;
 
             //double offset = TOUCHPAD_MOUSE_OFFSET;
             double offset = touchpadDefinition.mouseOffset;
@@ -663,8 +654,8 @@ namespace DS4MapperTest.TouchpadActions
                             useParentTrackFriction = true;
                             CalcTrackAccel();
                             break;
-                        case PropertyKeyStrings.SENSITIVITY:
-                            sensitivity = tempMouseAction.sensitivity;
+                        case PropertyKeyStrings.SWIPES_PER_360:
+                            swipesPer360 = tempMouseAction.swipesPer360;
                             break;
                         case PropertyKeyStrings.VERTICAL_SCALE:
                             verticalScale = tempMouseAction.verticalScale;
@@ -737,8 +728,8 @@ namespace DS4MapperTest.TouchpadActions
                     useParentTrackFriction = true;
                     CalcTrackAccel();
                     break;
-                case PropertyKeyStrings.SENSITIVITY:
-                    sensitivity = tempMouseAction.sensitivity;
+                case PropertyKeyStrings.SWIPES_PER_360:
+                    swipesPer360 = tempMouseAction.swipesPer360;
                     break;
                 case PropertyKeyStrings.VERTICAL_SCALE:
                     verticalScale = tempMouseAction.verticalScale;

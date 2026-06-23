@@ -1723,19 +1723,19 @@ namespace DS4MapperTest
                 return touchMouseAct.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.TRACKBALL_FRICTION);
             }
 
-            public double Sensitivity
+            public double SwipesPer360
             {
-                get => touchMouseAct.Sensitivity;
+                get => touchMouseAct.SwipesPer360;
                 set
                 {
-                    touchMouseAct.Sensitivity = Math.Clamp(value, 0.0, 1000.0);
-                    SensitivityChanged?.Invoke(this, EventArgs.Empty);
+                    touchMouseAct.SwipesPer360 = Math.Clamp(value, 0.0, 100.0);
+                    SwipesPer360Changed?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler SensitivityChanged;
-            public bool ShouldSerializeSensitivity()
+            public event EventHandler SwipesPer360Changed;
+            public bool ShouldSerializeSwipesPer360()
             {
-                return touchMouseAct.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.SENSITIVITY);
+                return touchMouseAct.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.SWIPES_PER_360);
             }
 
             public double VerticalScale
@@ -1829,7 +1829,7 @@ namespace DS4MapperTest
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
             settings.TrackballEnabledChanged += Settings_TrackballEnabledChanged;
             settings.TrackballFrictionChanged += Settings_TrackballFrictionChanged;
-            settings.SensitivityChanged += Settings_SensitivityChanged;
+            settings.SwipesPer360Changed += Settings_SwipesPer360Changed;
             settings.VerticalScaleChanged += Settings_VerticalScaleChanged;
             settings.SmoothingEnabledChanged += Settings_SmoothingEnabledChanged;
             settings.SmoothingMinCutoffChanged += Settings_SmoothingMinCutoffChanged;
@@ -1856,9 +1856,9 @@ namespace DS4MapperTest
             touchMouseAction.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.VERTICAL_SCALE);
         }
 
-        private void Settings_SensitivityChanged(object sender, EventArgs e)
+        private void Settings_SwipesPer360Changed(object sender, EventArgs e)
         {
-            touchMouseAction.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.SENSITIVITY);
+            touchMouseAction.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.SWIPES_PER_360);
         }
 
         private void Settings_TrackballFrictionChanged(object sender, EventArgs e)

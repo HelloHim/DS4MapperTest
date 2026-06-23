@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -6,8 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using DS4MapperTest.ActionUtil;
+using DS4MapperTest.ButtonActions;
+using DS4MapperTest.Common;
+using DS4MapperTest.GyroActions;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.TouchpadActions;
+using DS4MapperTest.ViewModels.Common;
 
 namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 {
@@ -61,19 +65,142 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler TrackballFrictionChanged;
 
-        public double Sensitivity
+        // --- Calibration fields (profile-level, synced across all actions) ---
+
+        private double fullTurnCounts = 10.0;
+        public double FullTurnCounts
         {
-            get => action.Sensitivity;
+            get => fullTurnCounts;
             set
             {
                 if (!_modelReady) return;
-                if (action.Sensitivity == value) return;
-                action.Sensitivity = Math.Clamp(value, 0.0, 1000.0);
-                SensitivityChanged?.Invoke(this, EventArgs.Empty);
-                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                if (value == 0.0) return;
+                bool countsChanged = fullTurnCounts != value;
+                fullTurnCounts = value;
+                CalculateTestRWC();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRawSensitivity)));
+                if (!countsChanged) return;
+                SyncCalibToProfile();
             }
         }
-        public event EventHandler SensitivityChanged;
+
+        public double RealWorldCalibration
+        {
+            get => mapper.ActionProfile.CalibRwc;
+            set
+            {
+                if (!_modelReady) return;
+                if (mapper.ActionProfile.CalibRwc == value) return;
+                mapper.ActionProfile.CalibRwc = value;
+                if (!_applyingPreset) TryMatchPreset();
+                RealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                SyncCalibToProfile();
+            }
+        }
+        public event EventHandler RealWorldCalibrationChanged;
+
+        public double InGameSens
+        {
+            get => mapper.ActionProfile.CalibInGameSens;
+            set
+            {
+                if (!_modelReady) return;
+                CalculateTestRWC();
+                if (mapper.ActionProfile.CalibInGameSens == value) return;
+                mapper.ActionProfile.CalibInGameSens = value;
+                InGameSensChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                SyncCalibToProfile();
+            }
+        }
+        public event EventHandler InGameSensChanged;
+
+        private double calculatedRWC = 0.0;
+        public double CalculatedRWC
+        {
+            get => calculatedRWC;
+            set
+            {
+                if (calculatedRWC == value) return;
+                calculatedRWC = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRWC)));
+            }
+        }
+
+        private BasicActionCommand copyTestRWCComm;
+        public BasicActionCommand CopyTestRWCComm => copyTestRWCComm;
+
+        private bool _applyingPreset = false;
+        private GameCalibPreset _selectedPreset = GameCalibPreset.Custom;
+
+        public IReadOnlyList<GameCalibPreset> GamePresets => GameCalibPreset.All;
+
+        public GameCalibPreset SelectedPreset
+        {
+            get => _selectedPreset;
+            set
+            {
+                if (_selectedPreset == value) return;
+                _selectedPreset = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+                if (value == null || value.IsCustom) return;
+                _applyingPreset = true;
+                InGameSens = value.InGameSens;
+                RealWorldCalibration = value.RWC;
+                FullTurnCounts = value.Counts;
+                _applyingPreset = false;
+            }
+        }
+
+        private void SetSelectedPresetCustom()
+        {
+            _selectedPreset = GameCalibPreset.Custom;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+        }
+
+        private void TryMatchPreset()
+        {
+            double rwc = mapper.ActionProfile.CalibRwc;
+            double sens = mapper.ActionProfile.CalibInGameSens;
+            GameCalibPreset match = GameCalibPreset.All.FirstOrDefault(
+                p => !p.IsCustom &&
+                     Math.Abs(p.RWC - rwc) < 1e-3 &&
+                     Math.Abs(p.InGameSens - sens) < 1e-3);
+            GameCalibPreset next = match ?? GameCalibPreset.Custom;
+            if (_selectedPreset == next) return;
+            _selectedPreset = next;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+        }
+
+        private void CalculateTestRWC()
+        {
+            CalculatedRWC = InGameSens / (360.0 / fullTurnCounts);
+        }
+
+        public double SwipesPer360
+        {
+            get => action.SwipesPer360;
+            set
+            {
+                if (!_modelReady) return;
+                if (action.SwipesPer360 == value) return;
+                action.SwipesPer360 = Math.Clamp(value, 0.0, 100.0);
+                SwipesPer360Changed?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SwipesPer360)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRawSensitivity)));
+            }
+        }
+        public event EventHandler SwipesPer360Changed;
+
+        public double CalculatedRawSensitivity =>
+            mapper.ActionProfile.CalibCounts * action.SwipesPer360 / 65535.0;
+
+        // --- End calibration fields ---
 
         public double VerticalScale
         {
@@ -182,12 +309,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler HighlightTrackballFrictionChanged;
 
-        public bool HighlightSensitivity
+        public bool HighlightSwipesPer360
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.SENSITIVITY);
+                action.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.SWIPES_PER_360);
         }
-        public event EventHandler HighlightSensitivityChanged;
+        public event EventHandler HighlightSwipesPer360Changed;
 
         public bool HighlightVerticalScale
         {
@@ -228,10 +355,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 TouchpadMouse baseLayerAction = mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as TouchpadMouse;
                 TouchpadMouse tempAction = new TouchpadMouse();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.EditLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
 
                 this.action = tempAction;
                 this.baseAction = this.action;
@@ -240,38 +365,91 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 ActionPropertyChanged += ReplaceExistingLayerAction;
             }
 
+            PopulateModel();
+
+            copyTestRWCComm = new BasicActionCommand((parameter) =>
+            {
+                RealWorldCalibration = CalculatedRWC;
+            });
+
             NameChanged += TouchpadMousePropViewModel_NameChanged;
             DeadZoneChanged += TouchpadMousePropViewModel_DeadZoneChanged;
             TrackballEnabledChanged += TouchpadMousePropViewModel_TrackballEnabledChanged;
             TrackballFrictionChanged += TouchpadMousePropViewModel_TrackballFrictionChanged;
-            SensitivityChanged += TouchpadMousePropViewModel_SensitivityChanged;
+            SwipesPer360Changed += TouchpadMousePropViewModel_SwipesPer360Changed;
             VerticalScaleChanged += TouchpadMousePropViewModel_VerticalScaleChanged;
             SmoothingEnabledChanged += TouchpadMousePropViewModel_SmoothingEnabledChanged;
             SmoothingMinCutoffChanged += TouchpadMousePropViewModel_SmoothingMinCutoffChanged;
             SmoothingBetaChanged += TouchpadMousePropViewModel_SmoothingBetaChanged;
             ActionPropertyChanged += SetProfileDirty;
 
-            double savedSensitivity = this.action.Sensitivity;
+            double savedSwipesPer360 = this.action.SwipesPer360;
             double savedVerticalScale = this.action.VerticalScale;
+            double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
+            double savedRwc = mapper.ActionProfile.CalibRwc;
+            double savedCounts = fullTurnCounts;
             System.Windows.Application.Current.Dispatcher.BeginInvoke(
                 System.Windows.Threading.DispatcherPriority.Background,
                 new Action(() =>
                 {
-                    this.action.Sensitivity = savedSensitivity;
+                    this.action.SwipesPer360 = savedSwipesPer360;
                     this.action.VerticalScale = savedVerticalScale;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
+                    mapper.ActionProfile.CalibInGameSens = savedInGameSens;
+                    mapper.ActionProfile.CalibRwc = savedRwc;
+                    fullTurnCounts = savedCounts;
+                    CalculateTestRWC();
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SwipesPer360)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRawSensitivity)));
                     System.Windows.Application.Current.Dispatcher.BeginInvoke(
                         System.Windows.Threading.DispatcherPriority.ApplicationIdle,
                         new Action(() =>
                         {
-                            this.action.Sensitivity = savedSensitivity;
+                            this.action.SwipesPer360 = savedSwipesPer360;
                             this.action.VerticalScale = savedVerticalScale;
+                            mapper.ActionProfile.CalibInGameSens = savedInGameSens;
+                            mapper.ActionProfile.CalibRwc = savedRwc;
+                            fullTurnCounts = savedCounts;
+                            CalculateTestRWC();
                             _modelReady = true;
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SwipesPer360)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRawSensitivity)));
                         }));
                 }));
+        }
+
+        private void PopulateModel()
+        {
+            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0 ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
+            CalculateTestRWC();
+        }
+
+        private void SyncCalibToProfile()
+        {
+            double rwc = mapper.ActionProfile.CalibRwc;
+            double inGameSens = mapper.ActionProfile.CalibInGameSens;
+            double counts = fullTurnCounts;
+            mapper.ActionProfile.CalibRwc = rwc;
+            mapper.ActionProfile.CalibInGameSens = inGameSens;
+            mapper.ActionProfile.CalibCounts = counts;
+            ExecuteInMapperThread(() =>
+            {
+                foreach (var set in mapper.ActionProfile.ActionSets)
+                    foreach (var layer in set.ActionLayers)
+                        foreach (var mapAction in layer.normalActionDict.Values)
+                            if (mapAction is ButtonAction btnAction)
+                                foreach (var func in btnAction.ActionFuncs)
+                                    foreach (var data in func.OutputActions)
+                                        if (data.OutputType == OutputActionData.ActionType.CameraTurn)
+                                            data.cameraTurnCounts360 = counts;
+            });
         }
 
         private void TouchpadMousePropViewModel_SmoothingMinCutoffChanged(object sender, EventArgs e)
@@ -332,15 +510,15 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadMousePropViewModel_SensitivityChanged(object sender, EventArgs e)
+        private void TouchpadMousePropViewModel_SwipesPer360Changed(object sender, EventArgs e)
         {
-            if (!this.action.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.SENSITIVITY))
+            if (!this.action.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.SWIPES_PER_360))
             {
-                this.action.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.SENSITIVITY);
+                this.action.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.SWIPES_PER_360);
             }
 
-            action.RaiseNotifyPropertyChange(mapper, TouchpadMouse.PropertyKeyStrings.SENSITIVITY);
-            HighlightSensitivityChanged?.Invoke(this, EventArgs.Empty);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadMouse.PropertyKeyStrings.SWIPES_PER_360);
+            HighlightSwipesPer360Changed?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadMousePropViewModel_TrackballFrictionChanged(object sender, EventArgs e)
