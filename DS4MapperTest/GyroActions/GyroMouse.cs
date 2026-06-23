@@ -75,6 +75,7 @@ namespace DS4MapperTest.GyroActions
         public const double IN_GAME_SENS_DEFAULT = 1.0;
 
         public double deadzone;
+        public double verticalDeadZone;
         public JoypadActionCodes[] gyroTriggerButtons;
         public bool andCond;
         public bool triggerActivates;
@@ -110,6 +111,7 @@ namespace DS4MapperTest.GyroActions
         {
             public const string NAME = "Name";
             public const string DEAD_ZONE = "DeadZone";
+            public const string VERTICAL_DEAD_ZONE = "VerticalDeadZone";
             public const string SENSITIVITY = "Sensitivity";
             public const string VERTICAL_SCALE = "VerticalScale";
             public const string INVERT_X = "InvertX";
@@ -144,6 +146,7 @@ namespace DS4MapperTest.GyroActions
         {
             PropertyKeyStrings.NAME,
             PropertyKeyStrings.DEAD_ZONE,
+            PropertyKeyStrings.VERTICAL_DEAD_ZONE,
             PropertyKeyStrings.SENSITIVITY,
             PropertyKeyStrings.VERTICAL_SCALE,
             PropertyKeyStrings.INVERT_X,
@@ -191,6 +194,7 @@ namespace DS4MapperTest.GyroActions
             {
                 sensitivity = 1.0,
                 deadzone = 0.6,
+                verticalDeadZone = 0.0,
                 realWorldCalibration = 5.00,
                 inGameSens = GyroMouseParams.IN_GAME_SENS_DEFAULT,
                 minGyroThreshold = 0.0,
@@ -351,6 +355,8 @@ namespace DS4MapperTest.GyroActions
             {
                 deltaAngVelY = 0;
             }
+
+            if (mouseParams.verticalDeadZone > 0.0 && Math.Abs(deltaAngVelY) < mouseParams.verticalDeadZone) deltaAngVelY = 0;
 
             //double slope = (1.0 - 0.40) / (11.25 - 0.0);
             //double intercept = slope - 0.40;
@@ -689,6 +695,9 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.DEAD_ZONE:
                             mouseParams.deadzone = tempMouseAction.mouseParams.deadzone;
                             break;
+                        case PropertyKeyStrings.VERTICAL_DEAD_ZONE:
+                            mouseParams.verticalDeadZone = tempMouseAction.mouseParams.verticalDeadZone;
+                            break;
                         case PropertyKeyStrings.TRIGGER_BUTTONS:
                             mouseParams.gyroTriggerButtons = tempMouseAction.mouseParams.gyroTriggerButtons;
                             break;
@@ -814,6 +823,9 @@ namespace DS4MapperTest.GyroActions
                     break;
                 case PropertyKeyStrings.DEAD_ZONE:
                     mouseParams.deadzone = tempMouseAction.mouseParams.deadzone;
+                    break;
+                case PropertyKeyStrings.VERTICAL_DEAD_ZONE:
+                    mouseParams.verticalDeadZone = tempMouseAction.mouseParams.verticalDeadZone;
                     break;
                 case PropertyKeyStrings.TRIGGER_BUTTONS:
                     mouseParams.gyroTriggerButtons = tempMouseAction.mouseParams.gyroTriggerButtons;
