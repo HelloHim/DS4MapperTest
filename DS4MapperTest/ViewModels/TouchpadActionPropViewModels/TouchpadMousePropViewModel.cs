@@ -38,6 +38,21 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler DeadZoneChanged;
 
+        public string VerticalDeadZone
+        {
+            get => action.VerticalDeadZone.ToString();
+            set
+            {
+                if (int.TryParse(value, out int temp))
+                {
+                    action.VerticalDeadZone = Math.Clamp(temp, 0, 10000);
+                    VerticalDeadZoneChanged?.Invoke(this, EventArgs.Empty);
+                    ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+        public event EventHandler VerticalDeadZoneChanged;
+
         public bool TrackballEnabled
         {
             get => action.TrackballEnabled;
@@ -331,6 +346,13 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler HighlightDeadZoneChanged;
 
+        public bool HighlightVerticalDeadZone
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
+        }
+        public event EventHandler HighlightVerticalDeadZoneChanged;
+
         public bool HighlightTrackballEnabled
         {
             get => action.ParentAction == null ||
@@ -410,6 +432,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
             NameChanged += TouchpadMousePropViewModel_NameChanged;
             DeadZoneChanged += TouchpadMousePropViewModel_DeadZoneChanged;
+            VerticalDeadZoneChanged += TouchpadMousePropViewModel_VerticalDeadZoneChanged;
             TrackballEnabledChanged += TouchpadMousePropViewModel_TrackballEnabledChanged;
             TrackballFrictionChanged += TouchpadMousePropViewModel_TrackballFrictionChanged;
             SwipesPer360Changed += TouchpadMousePropViewModel_SwipesPer360Changed;
@@ -544,6 +567,21 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             });
 
             HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadMousePropViewModel_VerticalDeadZoneChanged(object sender, EventArgs e)
+        {
+            if (!this.action.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE))
+            {
+                this.action.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
+            }
+
+            ExecuteInMapperThread(() =>
+            {
+                action.RaiseNotifyPropertyChange(mapper, TouchpadMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
+            });
+
+            HighlightVerticalDeadZoneChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadMousePropViewModel_SwipesPer360Changed(object sender, EventArgs e)

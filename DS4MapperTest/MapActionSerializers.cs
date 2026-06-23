@@ -1693,6 +1693,21 @@ namespace DS4MapperTest
                 return touchMouseAct.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.DEAD_ZONE);
             }
 
+            public int VerticalDeadZone
+            {
+                get => touchMouseAct.VerticalDeadZone;
+                set
+                {
+                    touchMouseAct.VerticalDeadZone = Math.Clamp(value, 0, 10000);
+                    VerticalDeadZoneChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalDeadZoneChanged;
+            public bool ShouldSerializeVerticalDeadZone()
+            {
+                return touchMouseAct.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
+            }
+
             public bool TrackballEnabled
             {
                 get => touchMouseAct.TrackballEnabled;
@@ -1827,6 +1842,7 @@ namespace DS4MapperTest
 
             NameChanged += TouchpadMouseSerializer_NameChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
+            settings.VerticalDeadZoneChanged += Settings_VerticalDeadZoneChanged;
             settings.TrackballEnabledChanged += Settings_TrackballEnabledChanged;
             settings.TrackballFrictionChanged += Settings_TrackballFrictionChanged;
             settings.SwipesPer360Changed += Settings_SwipesPer360Changed;
@@ -1874,6 +1890,11 @@ namespace DS4MapperTest
         private void Settings_DeadZoneChanged(object sender, EventArgs e)
         {
             touchMouseAction.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_VerticalDeadZoneChanged(object sender, EventArgs e)
+        {
+            touchMouseAction.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
         }
 
         private void TouchpadMouseSerializer_NameChanged(object sender, EventArgs e)
@@ -5967,6 +5988,21 @@ namespace DS4MapperTest
             }
             public event EventHandler DeadZoneChanged;
 
+            public double VerticalDeadZone
+            {
+                get => gyroMouseAction.mouseParams.verticalDeadZone;
+                set
+                {
+                    gyroMouseAction.mouseParams.verticalDeadZone = Math.Clamp(value, 0.0, 1000.0);
+                    VerticalDeadZoneChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalDeadZoneChanged;
+            public bool ShouldSerializeVerticalDeadZone()
+            {
+                return gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
+            }
+
             public double RealWorlCalibration
             {
                 get => gyroMouseAction.mouseParams.realWorldCalibration;
@@ -6357,6 +6393,7 @@ namespace DS4MapperTest
 
             NameChanged += GyroMouseSerializer_NameChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
+            settings.VerticalDeadZoneChanged += Settings_VerticalDeadZoneChanged;
             settings.RealWorldCalibrationChanged += Settings_RealWorldCalibrationChanged;
             settings.InGameSensChanged += Settings_InGameSensChanged;
             settings.AccelCurveChanged += Settings_AccelCurveChanged;
@@ -6530,6 +6567,11 @@ namespace DS4MapperTest
         private void Settings_DeadZoneChanged(object sender, EventArgs e)
         {
             gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_VerticalDeadZoneChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
         }
 
         private void GyroMouseSerializer_NameChanged(object sender, EventArgs e)

@@ -16,6 +16,7 @@ namespace DS4MapperTest.TouchpadActions
         {
             public const string NAME = "Name";
             public const string DEAD_ZONE = "DeadZone";
+            public const string VERTICAL_DEAD_ZONE = "VerticalDeadZone";
             public const string TRACKBALL_MODE = "Trackball";
             public const string TRACKBALL_FRICTION = "TrackballFriction";
             public const string SWIPES_PER_360 = "SwipesPer360";
@@ -28,9 +29,11 @@ namespace DS4MapperTest.TouchpadActions
         {
             PropertyKeyStrings.NAME,
             PropertyKeyStrings.DEAD_ZONE,
+            PropertyKeyStrings.VERTICAL_DEAD_ZONE,
             PropertyKeyStrings.TRACKBALL_MODE,
             PropertyKeyStrings.TRACKBALL_FRICTION,
             PropertyKeyStrings.SWIPES_PER_360,
+            PropertyKeyStrings.VERTICAL_SCALE,
             PropertyKeyStrings.SMOOTHING_ENABLED,
             PropertyKeyStrings.SMOOTHING_FILTER,
         };
@@ -48,6 +51,13 @@ namespace DS4MapperTest.TouchpadActions
             set => deadZone = value;
         }
 
+        private int verticalDeadZone = DEFAULT_VERTICAL_DEAD_ZONE;
+        public int VerticalDeadZone
+        {
+            get => verticalDeadZone;
+            set => verticalDeadZone = value;
+        }
+
         private const int TRACKBALL_INIT_FRICTION = 10;
         private const int TRACKBALL_JOY_FRICTION = 7;
         private const int TRACKBALL_MASS = 45;
@@ -63,6 +73,7 @@ namespace DS4MapperTest.TouchpadActions
 
         //private const int DEFAULT_DEADZONE = 8;
         private const int DEFAULT_DEADZONE = 0;
+        private const int DEFAULT_VERTICAL_DEAD_ZONE = 0;
         private const double DEFAULT_VERTICAL_SCALE = 1.0;
         private const bool DEFAULT_SMOOTHING_ENABLED = true;
 
@@ -507,6 +518,8 @@ namespace DS4MapperTest.TouchpadActions
                 dy = 0;
             }
 
+            if (verticalDeadZone > 0 && Math.Abs(dy) < verticalDeadZone) dy = 0;
+
             double finalCoefficient = coefficient;
             if (touchpadDefinition.throttleRelMouse)
             {
@@ -655,6 +668,9 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.DEAD_ZONE:
                             deadZone = tempMouseAction.deadZone;
                             break;
+                        case PropertyKeyStrings.VERTICAL_DEAD_ZONE:
+                            verticalDeadZone = tempMouseAction.verticalDeadZone;
+                            break;
                         case PropertyKeyStrings.TRACKBALL_MODE:
                             trackballEnabled = tempMouseAction.trackballEnabled;
                             // Copy parent ref
@@ -725,6 +741,9 @@ namespace DS4MapperTest.TouchpadActions
                     break;
                 case PropertyKeyStrings.DEAD_ZONE:
                     deadZone = tempMouseAction.deadZone;
+                    break;
+                case PropertyKeyStrings.VERTICAL_DEAD_ZONE:
+                    verticalDeadZone = tempMouseAction.verticalDeadZone;
                     break;
                 case PropertyKeyStrings.TRACKBALL_MODE:
                     if (active)

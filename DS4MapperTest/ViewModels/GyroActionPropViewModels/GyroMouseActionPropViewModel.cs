@@ -36,6 +36,18 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler DeadZoneChanged;
 
+        public double VerticalDeadZone
+        {
+            get => action.mouseParams.verticalDeadZone;
+            set
+            {
+                action.mouseParams.verticalDeadZone = value;
+                VerticalDeadZoneChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler VerticalDeadZoneChanged;
+
         private List<GyroTriggerButtonItem> triggerButtonItems;
         public List<GyroTriggerButtonItem> TriggerButtonItems => triggerButtonItems;
 
@@ -622,6 +634,13 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler HighlightDeadZoneChanged;
 
+        public bool HighlightVerticalDeadZone
+        {
+            get => action.ParentAction == null ||
+                baseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
+        }
+        public event EventHandler HighlightVerticalDeadZoneChanged;
+
         public bool HighlightGyroTriggerCond
         {
             get => action.ParentAction == null ||
@@ -812,6 +831,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             NameChanged += GyroMouseActionPropViewModel_NameChanged;
             DeadZoneChanged += GyroMouseActionPropViewModel_DeadZoneChanged;
+            VerticalDeadZoneChanged += GyroMouseActionPropViewModel_VerticalDeadZoneChanged;
             GyroTriggerCondChoiceChanged += GyroMouseActionPropViewModel_GyroTriggerCondChoiceChanged;
             GyroTriggerActivatesChanged += GyroMouseActionPropViewModel_TriggerActivatesChanged;
             RealWorldCalibrationChanged += GyroMouseActionPropViewModel_RealWorldCalibrationChanged;
@@ -1189,6 +1209,21 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             });
 
             HighlightDeadZoneChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void GyroMouseActionPropViewModel_VerticalDeadZoneChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE))
+            {
+                action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
+            }
+
+            ExecuteInMapperThread(() =>
+            {
+                action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
+            });
+
+            HighlightVerticalDeadZoneChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void GyroMouseActionPropViewModel_NameChanged(object sender, EventArgs e)
