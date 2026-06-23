@@ -100,6 +100,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 if (!_modelReady) return;
                 if (action.mouseParams.realWorldCalibration == value) return;
                 action.mouseParams.realWorldCalibration = value;
+                if (!_applyingPreset) TryMatchPreset();
                 RealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
@@ -123,6 +124,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 action.mouseParams.inGameSens = value;
                 InGameSensChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
             }
         }
         public event EventHandler InGameSensChanged;
@@ -513,6 +515,48 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
         private bool _modelReady = false;
 
+        private GameCalibPreset _selectedPreset = GameCalibPreset.Custom;
+        private bool _applyingPreset = false;
+
+        public IReadOnlyList<GameCalibPreset> GamePresets => GameCalibPreset.All;
+
+        public GameCalibPreset SelectedPreset
+        {
+            get => _selectedPreset;
+            set
+            {
+                if (_selectedPreset == value) return;
+                _selectedPreset = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+                if (value == null || value.IsCustom) return;
+                _applyingPreset = true;
+                InGameSens = value.InGameSens;
+                RealWorldCalibration = value.RWC;
+                FullTurnCounts = value.Counts;
+                _applyingPreset = false;
+            }
+        }
+
+        private void SetSelectedPresetCustom()
+        {
+            _selectedPreset = GameCalibPreset.Custom;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+        }
+
+        private void TryMatchPreset()
+        {
+            double rwc = action.mouseParams.realWorldCalibration;
+            double sens = action.mouseParams.inGameSens;
+            GameCalibPreset match = GameCalibPreset.All.FirstOrDefault(
+                p => !p.IsCustom &&
+                     Math.Abs(p.RWC - rwc) < 1e-3 &&
+                     Math.Abs(p.InGameSens - sens) < 1e-3);
+            GameCalibPreset next = match ?? GameCalibPreset.Custom;
+            if (_selectedPreset == next) return;
+            _selectedPreset = next;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+        }
+
         private double fullTurnCounts = 10.0;
         public double FullTurnCounts
         {
@@ -524,6 +568,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 bool countsChanged = fullTurnCounts != value;
                 fullTurnCounts = value;
                 CalculateTestRWC();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
                 if (!countsChanged) return;
                 double counts = value;
                 mapper.ActionProfile.CalibCounts = counts;
