@@ -155,6 +155,11 @@ namespace DS4MapperTest.TouchpadActions
             set
             {
                 trackballEnabled = value;
+                if (!value)
+                {
+                    // Purge any in-flight spin so it cannot resume if trackball is re-enabled
+                    trackData.PurgeData();
+                }
                 CalcTrackAccel();
             }
         }
@@ -227,6 +232,12 @@ namespace DS4MapperTest.TouchpadActions
                     // Process normal mouse
                     ProcessTouchMouse(mapper, ref touchFrame, ref previousTouchFrame);
                 }
+            }
+            else
+            {
+                // Trackball disabled and finger not touching — stop all motion immediately
+                xNorm = yNorm = 0.0;
+                xMotion = yMotion = 0.0;
             }
 
             if (xMotion != 0.0 || yMotion != 0.0)
@@ -681,8 +692,15 @@ namespace DS4MapperTest.TouchpadActions
 
         private void CalcTrackAccel()
         {
-            //trackData.trackballAccel = TRACKBALL_RADIUS * TRACKBALL_JOY_FRICTION / TRACKBALL_INERTIA;
-            trackData.trackballAccel = TRACKBALL_RADIUS * trackballFriction / TRACKBALL_INERTIA;
+            if (trackballFriction >= 100)
+            {
+                // Friction at ceiling — decay exceeds any realistic velocity in one tick
+                trackData.trackballAccel = 1e9;
+            }
+            else
+            {
+                trackData.trackballAccel = TRACKBALL_RADIUS * trackballFriction / TRACKBALL_INERTIA;
+            }
         }
 
         protected override void CascadePropertyChange(Mapper mapper, string propertyName)

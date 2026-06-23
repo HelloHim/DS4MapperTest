@@ -258,6 +258,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             {
                 if (action.SmoothingEnabled == value) return;
                 action.SmoothingEnabled = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SmoothingEnabled)));
                 SmoothingEnabledChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
