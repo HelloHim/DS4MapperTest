@@ -345,7 +345,13 @@ namespace DS4MapperTest.ViewModels
         public double CameraTurnCounts360
         {
             get => cameraTurnCounts360;
-            set { cameraTurnCounts360 = value; CameraTurnCounts360Changed?.Invoke(this, EventArgs.Empty); }
+            set
+            {
+                if (cameraTurnCounts360 == value) return;
+                cameraTurnCounts360 = value;
+                CameraTurnCounts360Changed?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnCounts360)));
+            }
         }
         public event EventHandler CameraTurnCounts360Changed;
 
@@ -357,12 +363,54 @@ namespace DS4MapperTest.ViewModels
             {
                 if (cameraTurnRWC == value) return;
                 cameraTurnRWC = value;
+                if (!_applyingCameraTurnPreset) TryMatchCameraTurnPreset();
                 CameraTurnRWCChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnRWC)));
             }
         }
         public event EventHandler CameraTurnRWCChanged;
 
         private bool _cameraTurnReady = false;
+        private bool _applyingCameraTurnPreset = false;
+        private GameCalibPreset _selectedCameraTurnPreset = GameCalibPreset.Custom;
+
+        public IReadOnlyList<GameCalibPreset> CameraTurnGamePresets => GameCalibPreset.All;
+
+        public GameCalibPreset SelectedCameraTurnPreset
+        {
+            get => _selectedCameraTurnPreset;
+            set
+            {
+                if (_selectedCameraTurnPreset == value) return;
+                _selectedCameraTurnPreset = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCameraTurnPreset)));
+                if (value == null || value.IsCustom || !_cameraTurnReady) return;
+                _applyingCameraTurnPreset = true;
+                CameraTurnInGameSens = value.InGameSens;
+                CameraTurnRWC = value.RWC;
+                _applyingCameraTurnPreset = false;
+            }
+        }
+
+        private void SetSelectedCameraTurnPresetCustom()
+        {
+            _selectedCameraTurnPreset = GameCalibPreset.Custom;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCameraTurnPreset)));
+        }
+
+        private void TryMatchCameraTurnPreset()
+        {
+            double rwc = cameraTurnRWC;
+            double sens = cameraTurnInGameSens;
+            GameCalibPreset match = GameCalibPreset.All.FirstOrDefault(
+                p => !p.IsCustom &&
+                     Math.Abs(p.RWC - rwc) < 1e-3 &&
+                     Math.Abs(p.InGameSens - sens) < 1e-3);
+            GameCalibPreset next = match ?? GameCalibPreset.Custom;
+            if (_selectedCameraTurnPreset == next) return;
+            _selectedCameraTurnPreset = next;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCameraTurnPreset)));
+        }
 
         private double cameraTurnInGameSens = 1.0;
         public double CameraTurnInGameSens
@@ -374,6 +422,7 @@ namespace DS4MapperTest.ViewModels
                 if (cameraTurnInGameSens == value) return;
                 cameraTurnInGameSens = value;
                 CameraTurnInGameSensChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnInGameSens)));
             }
         }
         public event EventHandler CameraTurnInGameSensChanged;
@@ -387,6 +436,7 @@ namespace DS4MapperTest.ViewModels
                 if (cameraTurnCalculatedRWC == value) return;
                 cameraTurnCalculatedRWC = value;
                 CameraTurnCalculatedRWCChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnCalculatedRWC)));
             }
         }
         public event EventHandler CameraTurnCalculatedRWCChanged;
@@ -405,6 +455,7 @@ namespace DS4MapperTest.ViewModels
                 if (value)
                 {
                     _cameraTurnReady = false;
+                    _selectedCameraTurnPreset = GameCalibPreset.Custom;
                     double savedCameraTurnInGameSens = cameraTurnInGameSens;
                     System.Windows.Application.Current.Dispatcher.BeginInvoke(
                         System.Windows.Threading.DispatcherPriority.Background,
