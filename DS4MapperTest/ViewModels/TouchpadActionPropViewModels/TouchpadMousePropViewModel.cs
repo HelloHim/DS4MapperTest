@@ -79,7 +79,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 fullTurnCounts = value;
                 CalculateTestRWC();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRawSensitivity)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivity)));
                 if (!countsChanged) return;
                 SyncCalibToProfile();
             }
@@ -192,13 +192,48 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 SwipesPer360Changed?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SwipesPer360)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRawSensitivity)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivity)));
             }
         }
         public event EventHandler SwipesPer360Changed;
 
-        public double CalculatedRawSensitivity =>
-            mapper.ActionProfile.CalibCounts * action.SwipesPer360 / 65535.0;
+        private const double LEGACY_MOUSE_SCALE = 0.0132;
+
+        private bool _legacySensitivityEditable = false;
+        public bool LegacySensitivityEditable
+        {
+            get => _legacySensitivityEditable;
+            set
+            {
+                if (_legacySensitivityEditable == value) return;
+                _legacySensitivityEditable = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivityEditable)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivityReadOnly)));
+                if (!value)
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivity)));
+            }
+        }
+
+        public bool LegacySensitivityReadOnly => !_legacySensitivityEditable;
+
+        public double LegacySensitivity
+        {
+            get
+            {
+                double counts = mapper.ActionProfile.CalibCounts;
+                if (counts <= 0.0) return 0.0;
+                return (action.SwipesPer360 * counts) / (LEGACY_MOUSE_SCALE * 65535.0);
+            }
+            set
+            {
+                if (!_modelReady) return;
+                double counts = mapper.ActionProfile.CalibCounts;
+                if (counts <= 0.0) return;
+                double swipes = (value * LEGACY_MOUSE_SCALE * 65535.0) / counts;
+                SwipesPer360 = Math.Clamp(swipes, 0.0, 100.0);
+                LegacySensitivityEditable = false;
+            }
+        }
 
         // --- End calibration fields ---
 
@@ -403,7 +438,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRawSensitivity)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivity)));
                     System.Windows.Application.Current.Dispatcher.BeginInvoke(
                         System.Windows.Threading.DispatcherPriority.ApplicationIdle,
                         new Action(() =>
@@ -420,7 +455,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRawSensitivity)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivity)));
                         }));
                 }));
         }
