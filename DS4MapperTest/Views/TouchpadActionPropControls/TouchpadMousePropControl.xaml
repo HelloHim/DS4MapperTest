@@ -133,11 +133,24 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <Label Content="Raw sensitivity" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="1000.0"
-                                      Value="{Binding CalculatedRawSensitivity, Mode=OneWay}" DecimalPlaces="6"
-                                      Width="120" Margin="8,0,0,0" IsReadOnly="True" HorizontalAlignment="Left">
+                    <Label Content="Legacy Sensitivity" ToolTip="Equivalent value in the original arbitrary sensitivity scale" />
+                    <hc:NumericUpDown Minimum="0.0" Maximum="100000.0"
+                                      Value="{Binding LegacySensitivity, UpdateSourceTrigger=LostFocus}"
+                                      DecimalPlaces="4" Width="120" Margin="8,0,0,0"
+                                      IsReadOnly="{Binding LegacySensitivityReadOnly}"
+                                      PreviewKeyDown="LegacySensNUD_PreviewKeyDown">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding LegacySensitivityEditable}" Value="False">
+                                        <Setter Property="Opacity" Value="0.6" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </hc:NumericUpDown.Style>
                     </hc:NumericUpDown>
+                    <CheckBox Content="Edit" IsChecked="{Binding LegacySensitivityEditable}"
+                              VerticalAlignment="Center" Margin="8,0,0,0" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">

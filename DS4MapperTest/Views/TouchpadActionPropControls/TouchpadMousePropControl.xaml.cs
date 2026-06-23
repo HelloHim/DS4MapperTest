@@ -38,5 +38,11 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
 
             DataContext = touchMousePropVM;
         }
+
+        private void LegacySensNUD_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                (sender as UIElement)?.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+        }
     }
 }
