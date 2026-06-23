@@ -1,25 +1,30 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DS4MapperTest.ActionUtil;
+using DS4MapperTest.ButtonActions;
+using DS4MapperTest.Common;
+using DS4MapperTest.GyroActions;
+using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
+using DS4MapperTest.TouchpadActions;
+using DS4MapperTest.ViewModels.Common;
 
 namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 {
-    public class StickFlickStickPropViewModel
+    public class StickFlickStickPropViewModel : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private bool _modelReady = false;
         private Mapper mapper;
-        public Mapper Mapper
-        {
-            get => mapper;
-        }
+        public Mapper Mapper => mapper;
 
         private StickFlickStick action;
-        public StickFlickStick Action
-        {
-            get => action;
-        }
+        public StickFlickStick Action => action;
 
         public string Name
         {
@@ -34,18 +39,97 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler NameChanged;
 
-        public double RealWorldCalibration
+        // --- Calibration fields (profile-level, synced across all actions) ---
+
+        private double fullTurnCounts = 1800.0;
+        public double FullTurnCounts
         {
-            get => action.RealWorldCalibration;
+            get => fullTurnCounts;
             set
             {
-                if (action.RealWorldCalibration == value) return;
-                action.RealWorldCalibration = value;
+                if (!_modelReady) return;
+                if (value == 0.0) return;
+                bool countsChanged = fullTurnCounts != value;
+                fullTurnCounts = value;
+                CalculateTestRWC();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                if (!countsChanged) return;
+                SyncCalibToProfile();
+            }
+        }
+
+        public double RealWorldCalibration
+        {
+            get => mapper.ActionProfile.CalibRwc;
+            set
+            {
+                if (!_modelReady) return;
+                if (mapper.ActionProfile.CalibRwc == value) return;
+                mapper.ActionProfile.CalibRwc = value;
+                if (!_applyingPreset) TryMatchPreset();
                 RealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                SyncCalibToProfile();
             }
         }
         public event EventHandler RealWorldCalibrationChanged;
+
+        public double InGameSens
+        {
+            get => mapper.ActionProfile.CalibInGameSens;
+            set
+            {
+                if (!_modelReady) return;
+                CalculateTestRWC();
+                if (mapper.ActionProfile.CalibInGameSens == value) return;
+                mapper.ActionProfile.CalibInGameSens = value;
+                InGameSensChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                SyncCalibToProfile();
+            }
+        }
+        public event EventHandler InGameSensChanged;
+
+        private double calculatedRWC = 0.0;
+        public double CalculatedRWC
+        {
+            get => calculatedRWC;
+            set
+            {
+                if (calculatedRWC == value) return;
+                calculatedRWC = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRWC)));
+            }
+        }
+
+        private BasicActionCommand copyTestRWCComm;
+        public BasicActionCommand CopyTestRWCComm => copyTestRWCComm;
+
+        private bool _applyingPreset = false;
+        private GameCalibPreset _selectedPreset = GameCalibPreset.Custom;
+
+        public IReadOnlyList<GameCalibPreset> GamePresets => GameCalibPreset.All;
+
+        public GameCalibPreset SelectedPreset
+        {
+            get => _selectedPreset;
+            set
+            {
+                if (_selectedPreset == value) return;
+                _selectedPreset = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+                if (value == null || value.IsCustom) return;
+                _applyingPreset = true;
+                InGameSens = value.InGameSens;
+                RealWorldCalibration = value.RWC;
+                FullTurnCounts = value.Counts;
+                _applyingPreset = false;
+            }
+        }
+
+        // --- End calibration fields ---
 
         public double FlickThreshold
         {
@@ -62,11 +146,12 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
         public double FlickTime
         {
-            get => action.FlickTime;
+            get => action.FlickTime * 1000.0;
             set
             {
-                if (action.FlickTime == value) return;
-                action.FlickTime = value;
+                double seconds = value / 1000.0;
+                if (action.FlickTime == seconds) return;
+                action.FlickTime = seconds;
                 FlickTimeChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -86,32 +171,12 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler MinAngleThresholdChanged;
 
-        public double InGameSens
-        {
-            get => action.InGameSens;
-            set
-            {
-                if (action.InGameSens == value) return;
-                action.InGameSens = value;
-                InGameSensChanged?.Invoke(this, EventArgs.Empty);
-                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-        public event EventHandler InGameSensChanged;
-
         public bool HighlightName
         {
             get => action.ParentAction == null ||
                 action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.NAME);
         }
         public event EventHandler HighlightNameChanged;
-
-        public bool HighlightRealWorldCalibration
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.REAL_WORLD_CALIBRATION);
-        }
-        public event EventHandler HighlightRealWorldCalibrationChanged;
 
         public bool HighlightFlickThreshold
         {
@@ -134,13 +199,6 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler HighlightMinAngleThresholdChanged;
 
-        public bool HighlightInGameSens
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.IN_GAME_SENS);
-        }
-        public event EventHandler HighlightInGameSensChanged;
-
         public event EventHandler ActionPropertyChanged;
         public event EventHandler<StickMapAction> ActionChanged;
 
@@ -162,10 +220,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 StickFlickStick baseLayerAction = mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as StickFlickStick;
                 StickFlickStick tempAction = new StickFlickStick();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.EditLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
 
                 this.action = tempAction;
                 usingRealAction = false;
@@ -175,23 +231,107 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             PrepareModel();
 
+            copyTestRWCComm = new BasicActionCommand((parameter) =>
+            {
+                RealWorldCalibration = CalculatedRWC;
+            });
+
             NameChanged += StickFlickStickPropViewModel_NameChanged;
-            RealWorldCalibrationChanged += StickFlickStickPropViewModel_RealWorldCalibrationChanged;
             FlickThresholdChanged += StickFlickStickPropViewModel_FlickThresholdChanged;
             FlickTimeChanged += StickFlickStickPropViewModel_FlickTimeChanged;
             MinAngleThresholdChanged += StickFlickStickPropViewModel_MinAngleThresholdChanged;
-            InGameSensChanged += StickFlickStickPropViewModel_InGameSensChanged;
+
+            double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
+            double savedRwc = mapper.ActionProfile.CalibRwc;
+            double savedCounts = fullTurnCounts;
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Background,
+                new Action(() =>
+                {
+                    mapper.ActionProfile.CalibInGameSens = savedInGameSens;
+                    mapper.ActionProfile.CalibRwc = savedRwc;
+                    fullTurnCounts = savedCounts;
+                    CalculateTestRWC();
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                        System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                        new Action(() =>
+                        {
+                            mapper.ActionProfile.CalibInGameSens = savedInGameSens;
+                            mapper.ActionProfile.CalibRwc = savedRwc;
+                            fullTurnCounts = savedCounts;
+                            CalculateTestRWC();
+                            _modelReady = true;
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                        }));
+                }));
         }
 
-        private void StickFlickStickPropViewModel_InGameSensChanged(object sender, EventArgs e)
+        private void PrepareModel()
         {
-            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.IN_GAME_SENS))
-            {
-                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.IN_GAME_SENS);
-            }
+            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0 ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
+            CalculateTestRWC();
+        }
 
-            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.IN_GAME_SENS);
-            HighlightInGameSensChanged?.Invoke(this, EventArgs.Empty);
+        private void CalculateTestRWC()
+        {
+            CalculatedRWC = InGameSens / (360.0 / fullTurnCounts);
+        }
+
+        private void TryMatchPreset()
+        {
+            double rwc = mapper.ActionProfile.CalibRwc;
+            double sens = mapper.ActionProfile.CalibInGameSens;
+            GameCalibPreset match = GameCalibPreset.All.FirstOrDefault(
+                p => !p.IsCustom &&
+                     Math.Abs(p.RWC - rwc) < 1e-3 &&
+                     Math.Abs(p.InGameSens - sens) < 1e-3);
+            GameCalibPreset next = match ?? GameCalibPreset.Custom;
+            if (_selectedPreset == next) return;
+            _selectedPreset = next;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+        }
+
+        private void SyncCalibToProfile()
+        {
+            double rwc = mapper.ActionProfile.CalibRwc;
+            double inGameSens = mapper.ActionProfile.CalibInGameSens;
+            double counts = fullTurnCounts;
+            mapper.ActionProfile.CalibRwc = rwc;
+            mapper.ActionProfile.CalibInGameSens = inGameSens;
+            mapper.ActionProfile.CalibCounts = counts;
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                foreach (var set in mapper.ActionProfile.ActionSets)
+                    foreach (var layer in set.ActionLayers)
+                        foreach (var mapAction in layer.normalActionDict.Values)
+                        {
+                            if (mapAction is GyroMouse gyroMouse)
+                            {
+                                gyroMouse.mouseParams.realWorldCalibration = rwc;
+                                gyroMouse.mouseParams.inGameSens = inGameSens;
+                            }
+                            if (mapAction is ButtonAction ba)
+                                foreach (var func in ba.ActionFuncs)
+                                    foreach (var data in func.OutputActions)
+                                        if (data.OutputType == OutputActionData.ActionType.CameraTurn)
+                                            data.cameraTurnCounts360 = counts;
+                            if (mapAction is StickFlickStick sfs)
+                            {
+                                sfs.RealWorldCalibration = rwc;
+                                sfs.InGameSens = inGameSens;
+                            }
+                            if (mapAction is TouchpadFlickStick tfs)
+                            {
+                                tfs.RealWorldCalibration = rwc;
+                                tfs.InGameSens = inGameSens;
+                            }
+                        }
+            });
         }
 
         private void StickFlickStickPropViewModel_MinAngleThresholdChanged(object sender, EventArgs e)
@@ -225,17 +365,6 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.FLICK_THRESHOLD);
             HighlightFlickThresholdChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void StickFlickStickPropViewModel_RealWorldCalibrationChanged(object sender, EventArgs e)
-        {
-            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.REAL_WORLD_CALIBRATION))
-            {
-                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.REAL_WORLD_CALIBRATION);
-            }
-
-            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.REAL_WORLD_CALIBRATION);
-            HighlightRealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickFlickStickPropViewModel_NameChanged(object sender, EventArgs e)
@@ -274,10 +403,6 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
                 ActionChanged?.Invoke(this, action);
             }
-        }
-
-        private void PrepareModel()
-        {
         }
     }
 }

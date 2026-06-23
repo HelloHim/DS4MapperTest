@@ -4,6 +4,7 @@ using DS4MapperTest.Common;
 using DS4MapperTest.GyroActions;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
+using DS4MapperTest.TouchpadActions;
 using DS4MapperTest.ViewModels.Common;
 using System;
 using System.Collections.Generic;
@@ -915,11 +916,23 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 foreach (var set in mapper.ActionProfile.ActionSets)
                     foreach (var layer in set.ActionLayers)
                         foreach (var mapAction in layer.normalActionDict.Values)
+                        {
                             if (mapAction is ButtonAction btnAction)
                                 foreach (var func in btnAction.ActionFuncs)
                                     foreach (var data in func.OutputActions)
                                         if (data.OutputType == OutputActionData.ActionType.CameraTurn)
                                             data.cameraTurnCounts360 = counts;
+                            if (mapAction is StickFlickStick sfs)
+                            {
+                                sfs.RealWorldCalibration = rwc;
+                                sfs.InGameSens = inGameSens;
+                            }
+                            if (mapAction is TouchpadFlickStick tfs)
+                            {
+                                tfs.RealWorldCalibration = rwc;
+                                tfs.InGameSens = inGameSens;
+                            }
+                        }
             });
         }
 

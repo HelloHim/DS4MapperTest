@@ -16,20 +16,37 @@
                     <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="200" Margin="8,0,0,0" />
                 </StackPanel>
 
+                <!-- Calibration block — synced across profile -->
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Real World Calibration" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="500.0" Value="{Binding RealWorldCalibration}" DecimalPlaces="3"
-                  Increment="0.5" Width="100" Margin="8,0,0,0">
+                    <hc:NumericUpDown Minimum="0.0" Maximum="27777.7778" Value="{Binding RealWorldCalibration}" DecimalPlaces="4"
+                                      Increment="0.5" Width="100" Margin="8,0,0,0" VerticalAlignment="Center">
                         <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightRealWorldCalibration}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}" />
                         </hc:NumericUpDown.Style>
                     </hc:NumericUpDown>
+
+                    <ComboBox ItemsSource="{Binding GamePresets}" SelectedItem="{Binding SelectedPreset}"
+                              DisplayMemberPath="Name" Width="180" Margin="8,0,0,0" VerticalAlignment="Center" />
+
+                    <StackPanel Orientation="Vertical" Margin="16,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Counts / 360°" />
+                            <hc:NumericUpDown Minimum="1.0" Maximum="999999.9999" Value="{Binding FullTurnCounts}" DecimalPlaces="4"
+                                              Increment="10.0" Width="100" Margin="8,0,0,0">
+                            </hc:NumericUpDown>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <hc:NumericUpDown Minimum="0.001" Maximum="27777.7778" Value="{Binding CalculatedRWC}" DecimalPlaces="4"
+                                              Increment="10.0" Width="100" IsReadOnly="True" HorizontalAlignment="Left">
+                            </hc:NumericUpDown>
+
+                            <Label Content="RWC" BorderBrush="{x:Null}" Margin="2,0,0,0" />
+
+                            <Button Content="Copy Test Value" Command="{Binding CopyTestRWCComm}" Margin="16,0,0,0" />
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
@@ -50,8 +67,8 @@
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Flick Time" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="60.0" Value="{Binding FlickTime}" DecimalPlaces="2"
-Increment="0.1" Width="100" Margin="8,0,0,0">
+                    <hc:NumericUpDown Minimum="0" Maximum="2000" Value="{Binding FlickTime}" DecimalPlaces="0"
+                                      Increment="50" Width="100" Margin="8,0,0,0">
                         <hc:NumericUpDown.Style>
                             <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                                 <Style.Triggers>
@@ -86,19 +103,15 @@ Increment="1.0" Width="100" Margin="8,0,0,0">
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="In Game Sens" />
-                    <hc:NumericUpDown Minimum="0.01" Maximum="10.0" Value="{Binding InGameSens}" DecimalPlaces="3"
-      Increment="0.1" Width="100" Margin="8,0,0,0">
+                    <hc:NumericUpDown Minimum="0.001" Maximum="1000000.0" Value="{Binding InGameSens}" DecimalPlaces="3"
+                                      Increment="0.01" Width="100" Margin="8,0,0,0">
                         <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightInGameSens}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}" />
                         </hc:NumericUpDown.Style>
                     </hc:NumericUpDown>
                 </StackPanel>
+
+                <TextBlock Text="Synced across profile" FontSize="11" Foreground="Gray" Margin="0,4,0,0" />
 
 
             </StackPanel>

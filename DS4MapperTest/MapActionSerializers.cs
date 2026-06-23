@@ -4063,10 +4063,7 @@ namespace DS4MapperTest
             }
             public event EventHandler RealWorldCalibrationChanged;
 
-            public bool ShouldSerializeRealWorldCalibration()
-            {
-                return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.REAL_WORLD_CALIBRATION);
-            }
+            public bool ShouldSerializeRealWorldCalibration() => false;
 
             public double FlickThreshold
             {
@@ -4121,26 +4118,23 @@ namespace DS4MapperTest
                 get => flickAction.InGameSens;
                 set
                 {
-                    flickAction.MinAngleThreshold = value;
+                    flickAction.InGameSens = value;
                     InGameSensChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
             public event EventHandler InGameSensChanged;
 
-            public bool ShouldSerializeInGameSens()
-            {
-                return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.IN_GAME_SENS);
-            }
+            public bool ShouldSerializeInGameSens() => false;
 
-            public FlickStickSettings(StickFlickStick flickAction)
+            public FlickStickSettings(TouchpadFlickStick flickAction)
             {
                 this.flickAction = flickAction;
             }
 
-            private StickFlickStick flickAction;
+            private TouchpadFlickStick flickAction;
         }
 
-        private StickFlickStick flickAction = new StickFlickStick();
+        private TouchpadFlickStick flickAction = new TouchpadFlickStick();
         private FlickStickSettings settings;
         public FlickStickSettings Settings { get => settings; set => settings = value; }
 
@@ -4148,6 +4142,7 @@ namespace DS4MapperTest
         {
             mapAction = flickAction;
             settings = new FlickStickSettings(flickAction);
+
 
             NameChanged += TouchpadFlickStickActionSerializer_NameChanged;
             settings.RealWorldCalibrationChanged += Settings_RealWorldCalibrationChanged;
@@ -4160,7 +4155,7 @@ namespace DS4MapperTest
         public TouchpadFlickStickActionSerializer(ActionLayer tempLayer, MapAction action) :
             base(tempLayer, action)
         {
-            if (action is StickFlickStick temp)
+            if (action is TouchpadFlickStick temp)
             {
                 flickAction = temp;
                 mapAction = flickAction;
@@ -4269,10 +4264,7 @@ namespace DS4MapperTest
             }
             public event EventHandler RealWorldCalibrationChanged;
 
-            public bool ShouldSerializeRealWorldCalibration()
-            {
-                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.REAL_WORLD_CALIBRATION);
-            }
+            public bool ShouldSerializeRealWorldCalibration() => false;
 
             public double FlickThreshold
             {
@@ -4327,16 +4319,13 @@ namespace DS4MapperTest
                 get => flickAction.InGameSens;
                 set
                 {
-                    flickAction.MinAngleThreshold = value;
+                    flickAction.InGameSens = value;
                     InGameSensChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
             public event EventHandler InGameSensChanged;
 
-            public bool ShouldSerializeInGameSens()
-            {
-                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.IN_GAME_SENS);
-            }
+            public bool ShouldSerializeInGameSens() => false;
 
             public FlickStickSettings(StickFlickStick flickAction)
             {
