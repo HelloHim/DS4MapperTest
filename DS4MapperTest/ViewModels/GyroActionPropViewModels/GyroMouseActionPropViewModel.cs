@@ -102,6 +102,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 action.mouseParams.realWorldCalibration = value;
                 RealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
             }
         }
         public event EventHandler RealWorldCalibrationChanged;
@@ -117,6 +118,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 // corrupt CalibInGameSens. _modelReady is set via a low-priority
                 // dispatcher post that runs after all Loaded-priority control events.
                 if (!_modelReady) return;
+                CalculateTestRWC();
                 if (action.mouseParams.inGameSens == value) return;
                 action.mouseParams.inGameSens = value;
                 InGameSensChanged?.Invoke(this, EventArgs.Empty);
@@ -518,10 +520,11 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             set
             {
                 if (!_modelReady) return;
-                if (fullTurnCounts == value) return;
                 if (value == 0.0) return; // Avoid division by zero
+                bool countsChanged = fullTurnCounts != value;
                 fullTurnCounts = value;
                 CalculateTestRWC();
+                if (!countsChanged) return;
                 double counts = value;
                 mapper.ActionProfile.CalibCounts = counts;
                 ExecuteInMapperThread(() =>
