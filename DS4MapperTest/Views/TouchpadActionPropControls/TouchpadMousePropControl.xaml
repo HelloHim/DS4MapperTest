@@ -107,7 +107,7 @@
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="In Game Sens" />
                     <hc:NumericUpDown Minimum="0.001" Maximum="1000000.0" Value="{Binding InGameSens}" DecimalPlaces="3"
-                                      Increment="0.1" Width="100" Margin="8,0,0,0">
+                                      Increment="0.01" Width="100" Margin="8,0,0,0">
                         <hc:NumericUpDown.Style>
                             <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}" />
                         </hc:NumericUpDown.Style>
@@ -118,7 +118,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Swipes per 360° (SC2)" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.1"
+                    <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.001"
                                       Value="{Binding SwipesPer360, FallbackValue='1.0'}" Margin="8,0,0,0">
                         <hc:NumericUpDown.Style>
                             <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
