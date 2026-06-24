@@ -183,7 +183,7 @@ namespace DS4MapperTest
             public GyroMouseActionValues()
             {
                 deadzone = 0.6; // dps
-                maxGyroThreshold = 11.25; // dps
+                maxGyroThreshold = GyroMouseParams.MAX_GYRO_THRESHOLD_DEFAULT;
             }
 
             public void Process(GyroMouse action)

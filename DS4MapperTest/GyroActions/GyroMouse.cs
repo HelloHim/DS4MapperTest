@@ -74,6 +74,15 @@ namespace DS4MapperTest.GyroActions
     {
         public const bool JITTER_COMPENSATION_DEFAULT = true;
         public const double IN_GAME_SENS_DEFAULT = 1.0;
+        public const GyroMouseAccelCurveChoice ACCEL_CURVE_DEFAULT =
+            GyroMouseAccelCurveChoice.Linear;
+        public const double MIN_ACCEL_SENS_DEFAULT = 0.0;
+        public const double MAX_ACCEL_SENS_DEFAULT = 0.0;
+        public const double MIN_GYRO_THRESHOLD_DEFAULT = 0.0;
+        public const double MAX_GYRO_THRESHOLD_DEFAULT = 0.0;
+        public const double POWER_VREF_DEFAULT = 1.0;
+        public const double POWER_EXPONENT_DEFAULT = 1.0;
+        public const double NATURAL_VHALF_DEFAULT = 20.0;
 
         public double deadzone;
         public double verticalDeadZone;
@@ -206,15 +215,16 @@ namespace DS4MapperTest.GyroActions
                 gyroSmoothAngleSnap = false,
                 realWorldCalibration = 5.00,
                 inGameSens = GyroMouseParams.IN_GAME_SENS_DEFAULT,
-                minGyroThreshold = 0.0,
-                maxGyroThreshold = 11.25,
-                minAccelXSens = 1.2,
-                minAccelYSens = 1.2,
-                maxAccelXSens = 3.0,
-                maxAccelYSens = 3.0,
-                powerExponent = 1.0,
-                powerVRef = 1.0,
-                naturalVHalf = 20.0,
+                accelCurve = GyroMouseParams.ACCEL_CURVE_DEFAULT,
+                minGyroThreshold = GyroMouseParams.MIN_GYRO_THRESHOLD_DEFAULT,
+                maxGyroThreshold = GyroMouseParams.MAX_GYRO_THRESHOLD_DEFAULT,
+                minAccelXSens = GyroMouseParams.MIN_ACCEL_SENS_DEFAULT,
+                minAccelYSens = GyroMouseParams.MIN_ACCEL_SENS_DEFAULT,
+                maxAccelXSens = GyroMouseParams.MAX_ACCEL_SENS_DEFAULT,
+                maxAccelYSens = GyroMouseParams.MAX_ACCEL_SENS_DEFAULT,
+                powerExponent = GyroMouseParams.POWER_EXPONENT_DEFAULT,
+                powerVRef = GyroMouseParams.POWER_VREF_DEFAULT,
+                naturalVHalf = GyroMouseParams.NATURAL_VHALF_DEFAULT,
                 verticalScale = 1.0,
                 triggerActivates = true,
                 andCond = true,

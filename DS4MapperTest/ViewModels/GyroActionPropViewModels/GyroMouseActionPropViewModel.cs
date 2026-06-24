@@ -316,6 +316,11 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler PowerCurveUsedChanged;
 
+        public bool NaturalCurveUsed
+        {
+            get => action.mouseParams.accelCurve == GyroMouseAccelCurveChoice.Natural;
+        }
+
         public double PowerCurveVRef
         {
             get => action.mouseParams.powerVRef;
@@ -665,6 +670,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.ParentAction == null ||
                 baseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
         }
+
+        private BasicActionCommand resetAccelerationDefaultsComm;
+        public BasicActionCommand ResetAccelerationDefaultsComm =>
+            resetAccelerationDefaultsComm;
         public event EventHandler HighlightVerticalDeadZoneChanged;
 
         public bool HighlightGyroAngleSnapDegrees
@@ -868,6 +877,20 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             {
                 RealWorldCalibration = CalculatedRWC;
             });
+            resetAccelerationDefaultsComm = new BasicActionCommand((parameter) =>
+            {
+                AccelCurveChoice = GyroMouseParams.ACCEL_CURVE_DEFAULT;
+                MinAccelXSens = GyroMouseParams.MIN_ACCEL_SENS_DEFAULT;
+                MinAccelYSens = GyroMouseParams.MIN_ACCEL_SENS_DEFAULT;
+                MaxAccelXSens = GyroMouseParams.MAX_ACCEL_SENS_DEFAULT;
+                MaxAccelYSens = GyroMouseParams.MAX_ACCEL_SENS_DEFAULT;
+                MinGyroThreshold = GyroMouseParams.MIN_GYRO_THRESHOLD_DEFAULT;
+                MaxGyroThreshold = GyroMouseParams.MAX_GYRO_THRESHOLD_DEFAULT;
+                NaturalVHalf = GyroMouseParams.NATURAL_VHALF_DEFAULT;
+                PowerCurveVRef = GyroMouseParams.POWER_VREF_DEFAULT;
+                PowerCurveExponent = GyroMouseParams.POWER_EXPONENT_DEFAULT;
+                RaiseAccelerationPropertyChanges();
+            });
 
             NameChanged += GyroMouseActionPropViewModel_NameChanged;
             DeadZoneChanged += GyroMouseActionPropViewModel_DeadZoneChanged;
@@ -1046,6 +1069,35 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             AccelCurveUsedChanged?.Invoke(this, EventArgs.Empty);
             PowerCurveUsedChanged?.Invoke(this, EventArgs.Empty);
             UsesMaxThresholdChanged?.Invoke(this, EventArgs.Empty);
+            RaiseAccelerationPropertyChanges();
+        }
+
+        private void RaiseAccelerationPropertyChanges()
+        {
+            string[] propertyNames =
+            {
+                nameof(AccelCurveChoice),
+                nameof(StaticSensUsed),
+                nameof(AccelCurveUsed),
+                nameof(UsesMaxThreshold),
+                nameof(PowerCurveUsed),
+                nameof(NaturalCurveUsed),
+                nameof(MinAccelXSens),
+                nameof(MinAccelYSens),
+                nameof(MaxAccelXSens),
+                nameof(MaxAccelYSens),
+                nameof(MinGyroThreshold),
+                nameof(MaxGyroThreshold),
+                nameof(NaturalVHalf),
+                nameof(PowerCurveVRef),
+                nameof(PowerCurveExponent),
+            };
+
+            foreach (string propertyName in propertyNames)
+            {
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         private void GyroMouseActionPropViewModel_MaxAccelXSensChanged(object sender, EventArgs e)
