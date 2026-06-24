@@ -222,8 +222,7 @@ Increment="0.01" Width="100" Margin="8,0,0,0">
 
                 <TextBlock Text="Synced across profile" FontSize="11" Foreground="Gray" Margin="0,4,0,0" />
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
-                            Visibility="{Binding StaticSensUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Sensitivity" />
                     <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
                                   Value="{Binding Sensitivity,FallbackValue='1.0'}" Margin="8,0,0,0">

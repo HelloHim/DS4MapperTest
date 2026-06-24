@@ -195,6 +195,8 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.accelCurve;
             set
             {
+                if (action.mouseParams.accelCurve == value) return;
+                _prevAccelCurve = action.mouseParams.accelCurve;
                 action.mouseParams.accelCurve = value;
                 AccelCurveChoiceChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
@@ -558,6 +560,8 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         public event EventHandler SmoothingBetaChanged;
 
         private bool _modelReady = false;
+        private bool _syncingAccelSens = false;
+        private GyroMouseAccelCurveChoice _prevAccelCurve;
 
         private GameCalibPreset _selectedPreset = GameCalibPreset.Custom;
         private bool _applyingPreset = false;
@@ -873,6 +877,22 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             }
 
             PopulateModel();
+            if (this.action.mouseParams.accelCurve ==
+                GyroMouseAccelCurveChoice.None)
+            {
+                this.action.mouseParams.minAccelXSens =
+                    this.action.mouseParams.sensitivity;
+                this.action.mouseParams.minAccelYSens =
+                    this.action.mouseParams.verticalScale;
+            }
+            else
+            {
+                this.action.mouseParams.sensitivity = Math.Clamp(
+                    this.action.mouseParams.minAccelXSens, 0.0, 10.0);
+                this.action.mouseParams.verticalScale = Math.Clamp(
+                    this.action.mouseParams.minAccelYSens, 0.0, 10.0);
+            }
+            _prevAccelCurve = this.action.mouseParams.accelCurve;
 
             copyTestRWCComm = new BasicActionCommand((parameter) =>
             {
@@ -880,17 +900,45 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             });
             resetAccelerationDefaultsComm = new BasicActionCommand((parameter) =>
             {
-                AccelCurveChoice = GyroMouseParams.ACCEL_CURVE_DEFAULT;
-                MinAccelXSens = GyroMouseParams.MIN_ACCEL_SENS_DEFAULT;
-                MinAccelYSens = GyroMouseParams.MIN_ACCEL_SENS_DEFAULT;
-                MaxAccelXSens = GyroMouseParams.MAX_ACCEL_SENS_DEFAULT;
-                MaxAccelYSens = GyroMouseParams.MAX_ACCEL_SENS_DEFAULT;
-                MinGyroThreshold = GyroMouseParams.MIN_GYRO_THRESHOLD_DEFAULT;
-                MaxGyroThreshold = GyroMouseParams.MAX_GYRO_THRESHOLD_DEFAULT;
-                NaturalVHalf = GyroMouseParams.NATURAL_VHALF_DEFAULT;
-                PowerCurveVRef = GyroMouseParams.POWER_VREF_DEFAULT;
-                PowerCurveExponent = GyroMouseParams.POWER_EXPONENT_DEFAULT;
+                _syncingAccelSens = true;
+                try
+                {
+                    this.action.mouseParams.sensitivity = GyroMouseParams.SENSITIVITY_DEFAULT;
+                    this.action.mouseParams.verticalScale = GyroMouseParams.VERTICAL_SCALE_DEFAULT;
+                    this.action.mouseParams.minAccelXSens = this.action.mouseParams.sensitivity;
+                    this.action.mouseParams.minAccelYSens = this.action.mouseParams.verticalScale;
+                    this.action.mouseParams.maxAccelXSens = this.action.mouseParams.minAccelXSens;
+                    this.action.mouseParams.maxAccelYSens = this.action.mouseParams.minAccelYSens;
+                    foreach (string key in new[]
+                    {
+                        GyroMouse.PropertyKeyStrings.SENSITIVITY,
+                        GyroMouse.PropertyKeyStrings.VERTICAL_SCALE,
+                        GyroMouse.PropertyKeyStrings.MIN_ACCEL_X_SENS,
+                        GyroMouse.PropertyKeyStrings.MIN_ACCEL_Y_SENS,
+                        GyroMouse.PropertyKeyStrings.MAX_ACCEL_X_SENS,
+                        GyroMouse.PropertyKeyStrings.MAX_ACCEL_Y_SENS,
+                    })
+                    {
+                        if (!this.action.ChangedProperties.Contains(key))
+                            this.action.ChangedProperties.Add(key);
+                        this.action.RaiseNotifyPropertyChange(mapper, key);
+                    }
+                    AccelCurveChoice = GyroMouseParams.ACCEL_CURVE_DEFAULT;
+                    MinGyroThreshold = GyroMouseParams.MIN_GYRO_THRESHOLD_DEFAULT;
+                    MaxGyroThreshold = GyroMouseParams.MAX_GYRO_THRESHOLD_DEFAULT;
+                    NaturalVHalf = GyroMouseParams.NATURAL_VHALF_DEFAULT;
+                    PowerCurveVRef = GyroMouseParams.POWER_VREF_DEFAULT;
+                    PowerCurveExponent = GyroMouseParams.POWER_EXPONENT_DEFAULT;
+                }
+                finally
+                {
+                    _syncingAccelSens = false;
+                }
                 RaiseAccelerationPropertyChanges();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScaleMultiplier)));
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             });
 
             NameChanged += GyroMouseActionPropViewModel_NameChanged;
@@ -1032,6 +1080,27 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.MIN_ACCEL_Y_SENS);
             HighlightMinAccelYSensChanged?.Invoke(this, EventArgs.Empty);
+
+            if (!_syncingAccelSens)
+            {
+                try
+                {
+                    _syncingAccelSens = true;
+                    double newVScale = Math.Clamp(action.mouseParams.minAccelYSens, 0.0, 10.0);
+                    if (action.mouseParams.verticalScale != newVScale)
+                    {
+                        action.mouseParams.verticalScale = newVScale;
+                        MarkChangedProperty(GyroMouse.PropertyKeyStrings.VERTICAL_SCALE);
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScaleMultiplier)));
+                        HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+                finally
+                {
+                    _syncingAccelSens = false;
+                }
+            }
         }
 
         private void GyroMouseActionPropViewModel_PowerCurveExponentChanged(object sender, EventArgs e)
@@ -1065,6 +1134,47 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.ACCEL_CURVE);
             HighlightAccelCurveChanged?.Invoke(this, EventArgs.Empty);
+
+            if (!_syncingAccelSens &&
+                _prevAccelCurve == GyroMouseAccelCurveChoice.None &&
+                action.mouseParams.accelCurve != GyroMouseAccelCurveChoice.None)
+            {
+                try
+                {
+                    _syncingAccelSens = true;
+                    SyncGyroMinimumsFromBase();
+                    if (!action.ChangedProperties.Contains(
+                            GyroMouse.PropertyKeyStrings.MAX_ACCEL_X_SENS) &&
+                        action.mouseParams.maxAccelXSens ==
+                            GyroMouseParams.MAX_ACCEL_SENS_DEFAULT)
+                    {
+                        action.mouseParams.maxAccelXSens =
+                            action.mouseParams.minAccelXSens;
+                        MarkChangedProperty(
+                            GyroMouse.PropertyKeyStrings.MAX_ACCEL_X_SENS);
+                    }
+                    if (!action.ChangedProperties.Contains(
+                            GyroMouse.PropertyKeyStrings.MAX_ACCEL_Y_SENS) &&
+                        action.mouseParams.maxAccelYSens ==
+                            GyroMouseParams.MAX_ACCEL_SENS_DEFAULT)
+                    {
+                        action.mouseParams.maxAccelYSens =
+                            action.mouseParams.minAccelYSens;
+                        MarkChangedProperty(
+                            GyroMouse.PropertyKeyStrings.MAX_ACCEL_Y_SENS);
+                    }
+                }
+                finally
+                {
+                    _syncingAccelSens = false;
+                }
+            }
+            else if (_prevAccelCurve != GyroMouseAccelCurveChoice.None &&
+                action.mouseParams.accelCurve == GyroMouseAccelCurveChoice.None)
+            {
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.SENSITIVITY);
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.VERTICAL_SCALE);
+            }
 
             StaticSensUsedChanged?.Invoke(this, EventArgs.Empty);
             AccelCurveUsedChanged?.Invoke(this, EventArgs.Empty);
@@ -1121,6 +1231,27 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.MIN_ACCEL_X_SENS);
             HighlightMinAccelXSensChanged?.Invoke(this, EventArgs.Empty);
+
+            if (!_syncingAccelSens)
+            {
+                try
+                {
+                    _syncingAccelSens = true;
+                    double newSens = Math.Clamp(action.mouseParams.minAccelXSens, 0.0, 10.0);
+                    if (action.mouseParams.sensitivity != newSens)
+                    {
+                        action.mouseParams.sensitivity = newSens;
+                        MarkChangedProperty(GyroMouse.PropertyKeyStrings.SENSITIVITY);
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
+                        HighlightSensitivityChanged?.Invoke(this, EventArgs.Empty);
+                        VerticalScaleMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+                finally
+                {
+                    _syncingAccelSens = false;
+                }
+            }
         }
 
         private void GyroMouseActionPropViewModel_MaxGyroThresholdChanged(object sender, EventArgs e)
@@ -1270,6 +1401,19 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
             VerticalScaleMultiplierChanged?.Invoke(this, EventArgs.Empty);
+
+            if (!_syncingAccelSens)
+            {
+                try
+                {
+                    _syncingAccelSens = true;
+                    SyncGyroMinimumYFromBase();
+                }
+                finally
+                {
+                    _syncingAccelSens = false;
+                }
+            }
         }
 
         private void GyroMouseActionPropViewModel_SensitivityChanged(object sender, EventArgs e)
@@ -1286,6 +1430,59 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             HighlightSensitivityChanged?.Invoke(this, EventArgs.Empty);
             VerticalScaleMultiplierChanged?.Invoke(this, EventArgs.Empty);
+
+            if (!_syncingAccelSens)
+            {
+                try
+                {
+                    _syncingAccelSens = true;
+                    SyncGyroMinimumXFromBase();
+                }
+                finally
+                {
+                    _syncingAccelSens = false;
+                }
+            }
+        }
+
+        private void SyncGyroMinimumsFromBase()
+        {
+            SyncGyroMinimumXFromBase();
+            SyncGyroMinimumYFromBase();
+        }
+
+        private void SyncGyroMinimumXFromBase()
+        {
+            double minX = Math.Clamp(action.mouseParams.sensitivity, 0.0, 100.0);
+            if (action.mouseParams.minAccelXSens == minX) return;
+
+            action.mouseParams.minAccelXSens = minX;
+            MarkChangedProperty(GyroMouse.PropertyKeyStrings.MIN_ACCEL_X_SENS);
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nameof(MinAccelXSens)));
+            HighlightMinAccelXSensChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void SyncGyroMinimumYFromBase()
+        {
+            double minY = Math.Clamp(action.mouseParams.verticalScale, 0.0, 100.0);
+            if (action.mouseParams.minAccelYSens == minY) return;
+
+            action.mouseParams.minAccelYSens = minY;
+            MarkChangedProperty(GyroMouse.PropertyKeyStrings.MIN_ACCEL_Y_SENS);
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nameof(MinAccelYSens)));
+            HighlightMinAccelYSensChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void MarkChangedProperty(string propertyKey)
+        {
+            if (!action.ChangedProperties.Contains(propertyKey))
+            {
+                action.ChangedProperties.Add(propertyKey);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, propertyKey);
         }
 
         private void GyroMouseActionPropViewModel_TriggerActivatesChanged(object sender, EventArgs e)
