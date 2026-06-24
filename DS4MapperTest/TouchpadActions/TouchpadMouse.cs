@@ -120,7 +120,7 @@ namespace DS4MapperTest.TouchpadActions
         private const bool DEFAULT_SMOOTHING_ENABLED = true;
         public const GyroMouseAccelCurveChoice DEFAULT_ACCEL_CURVE =
             GyroMouseAccelCurveChoice.None;
-        public const double DEFAULT_MIN_ACCEL_SENS = 1.2;
+        public const double DEFAULT_MIN_ACCEL_SENS = DEFAULT_SWIPES_PER_360;
         public const double DEFAULT_MAX_ACCEL_SENS = 3.0;
         public const double DEFAULT_MIN_ACCEL_THRESHOLD = 0.0;
         public const double DEFAULT_MAX_ACCEL_THRESHOLD = 40.0;
