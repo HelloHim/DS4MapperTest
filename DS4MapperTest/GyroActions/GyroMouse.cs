@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Sensorit.Base;
 using DS4MapperTest.ActionUtil;
+using DS4MapperTest.Common;
 using DS4MapperTest.MapperUtil;
 
 namespace DS4MapperTest.GyroActions
@@ -76,6 +77,8 @@ namespace DS4MapperTest.GyroActions
 
         public double deadzone;
         public double verticalDeadZone;
+        public double gyroAngleSnapDegrees;
+        public bool gyroSmoothAngleSnap;
         public JoypadActionCodes[] gyroTriggerButtons;
         public bool andCond;
         public bool triggerActivates;
@@ -112,6 +115,8 @@ namespace DS4MapperTest.GyroActions
             public const string NAME = "Name";
             public const string DEAD_ZONE = "DeadZone";
             public const string VERTICAL_DEAD_ZONE = "VerticalDeadZone";
+            public const string ANGLE_SNAP_DEGREES = "AngleSnapDegrees";
+            public const string SMOOTH_ANGLE_SNAP = "SmoothAngleSnap";
             public const string SENSITIVITY = "Sensitivity";
             public const string VERTICAL_SCALE = "VerticalScale";
             public const string INVERT_X = "InvertX";
@@ -147,6 +152,8 @@ namespace DS4MapperTest.GyroActions
             PropertyKeyStrings.NAME,
             PropertyKeyStrings.DEAD_ZONE,
             PropertyKeyStrings.VERTICAL_DEAD_ZONE,
+            PropertyKeyStrings.ANGLE_SNAP_DEGREES,
+            PropertyKeyStrings.SMOOTH_ANGLE_SNAP,
             PropertyKeyStrings.SENSITIVITY,
             PropertyKeyStrings.VERTICAL_SCALE,
             PropertyKeyStrings.INVERT_X,
@@ -195,6 +202,8 @@ namespace DS4MapperTest.GyroActions
                 sensitivity = 1.0,
                 deadzone = 0.6,
                 verticalDeadZone = 0.0,
+                gyroAngleSnapDegrees = 0.0,
+                gyroSmoothAngleSnap = false,
                 realWorldCalibration = 5.00,
                 inGameSens = GyroMouseParams.IN_GAME_SENS_DEFAULT,
                 minGyroThreshold = 0.0,
@@ -357,6 +366,22 @@ namespace DS4MapperTest.GyroActions
             }
 
             if (mouseParams.verticalDeadZone > 0.0 && Math.Abs(deltaAngVelY) < mouseParams.verticalDeadZone) deltaAngVelY = 0;
+
+            AngleSnapping.Apply(ref deltaAngVelX, ref deltaAngVelY,
+                mouseParams.gyroAngleSnapDegrees, mouseParams.gyroSmoothAngleSnap);
+
+            if (mouseParams.gyroAngleSnapDegrees > 0.0)
+            {
+                double snappedMagnitude = Math.Sqrt((deltaAngVelX * deltaAngVelX) +
+                    (deltaAngVelY * deltaAngVelY));
+                if (snappedMagnitude > 0.0)
+                {
+                    normX = Math.Abs(deltaAngVelX) / snappedMagnitude;
+                    normY = Math.Abs(deltaAngVelY) / snappedMagnitude;
+                    signX = Math.Sign(deltaAngVelX);
+                    signY = Math.Sign(deltaAngVelY);
+                }
+            }
 
             //double slope = (1.0 - 0.40) / (11.25 - 0.0);
             //double intercept = slope - 0.40;
@@ -698,6 +723,12 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.VERTICAL_DEAD_ZONE:
                             mouseParams.verticalDeadZone = tempMouseAction.mouseParams.verticalDeadZone;
                             break;
+                        case PropertyKeyStrings.ANGLE_SNAP_DEGREES:
+                            mouseParams.gyroAngleSnapDegrees = tempMouseAction.mouseParams.gyroAngleSnapDegrees;
+                            break;
+                        case PropertyKeyStrings.SMOOTH_ANGLE_SNAP:
+                            mouseParams.gyroSmoothAngleSnap = tempMouseAction.mouseParams.gyroSmoothAngleSnap;
+                            break;
                         case PropertyKeyStrings.TRIGGER_BUTTONS:
                             mouseParams.gyroTriggerButtons = tempMouseAction.mouseParams.gyroTriggerButtons;
                             break;
@@ -826,6 +857,12 @@ namespace DS4MapperTest.GyroActions
                     break;
                 case PropertyKeyStrings.VERTICAL_DEAD_ZONE:
                     mouseParams.verticalDeadZone = tempMouseAction.mouseParams.verticalDeadZone;
+                    break;
+                case PropertyKeyStrings.ANGLE_SNAP_DEGREES:
+                    mouseParams.gyroAngleSnapDegrees = tempMouseAction.mouseParams.gyroAngleSnapDegrees;
+                    break;
+                case PropertyKeyStrings.SMOOTH_ANGLE_SNAP:
+                    mouseParams.gyroSmoothAngleSnap = tempMouseAction.mouseParams.gyroSmoothAngleSnap;
                     break;
                 case PropertyKeyStrings.TRIGGER_BUTTONS:
                     mouseParams.gyroTriggerButtons = tempMouseAction.mouseParams.gyroTriggerButtons;

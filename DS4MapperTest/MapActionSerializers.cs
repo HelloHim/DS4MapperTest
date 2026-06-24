@@ -1708,6 +1708,36 @@ namespace DS4MapperTest
                 return touchMouseAct.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
             }
 
+            public double TrackpadAngleSnapDegrees
+            {
+                get => touchMouseAct.TrackpadAngleSnapDegrees;
+                set
+                {
+                    touchMouseAct.TrackpadAngleSnapDegrees = Math.Clamp(value, 0.0, 45.0);
+                    TrackpadAngleSnapDegreesChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler TrackpadAngleSnapDegreesChanged;
+            public bool ShouldSerializeTrackpadAngleSnapDegrees()
+            {
+                return touchMouseAct.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES);
+            }
+
+            public bool TrackpadSmoothAngleSnap
+            {
+                get => touchMouseAct.TrackpadSmoothAngleSnap;
+                set
+                {
+                    touchMouseAct.TrackpadSmoothAngleSnap = value;
+                    TrackpadSmoothAngleSnapChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler TrackpadSmoothAngleSnapChanged;
+            public bool ShouldSerializeTrackpadSmoothAngleSnap()
+            {
+                return touchMouseAct.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP);
+            }
+
             public bool TrackballEnabled
             {
                 get => touchMouseAct.TrackballEnabled;
@@ -1843,6 +1873,8 @@ namespace DS4MapperTest
             NameChanged += TouchpadMouseSerializer_NameChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
             settings.VerticalDeadZoneChanged += Settings_VerticalDeadZoneChanged;
+            settings.TrackpadAngleSnapDegreesChanged += Settings_TrackpadAngleSnapDegreesChanged;
+            settings.TrackpadSmoothAngleSnapChanged += Settings_TrackpadSmoothAngleSnapChanged;
             settings.TrackballEnabledChanged += Settings_TrackballEnabledChanged;
             settings.TrackballFrictionChanged += Settings_TrackballFrictionChanged;
             settings.SwipesPer360Changed += Settings_SwipesPer360Changed;
@@ -1855,6 +1887,16 @@ namespace DS4MapperTest
         private void Settings_SmoothingBetaChanged(object sender, EventArgs e)
         {
             touchMouseAction.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.SMOOTHING_FILTER);
+        }
+
+        private void Settings_TrackpadAngleSnapDegreesChanged(object sender, EventArgs e)
+        {
+            touchMouseAction.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES);
+        }
+
+        private void Settings_TrackpadSmoothAngleSnapChanged(object sender, EventArgs e)
+        {
+            touchMouseAction.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP);
         }
 
         private void Settings_SmoothingMinCutoffChanged(object sender, EventArgs e)
@@ -6080,6 +6122,36 @@ namespace DS4MapperTest
                 return gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_DEAD_ZONE);
             }
 
+            public double GyroAngleSnapDegrees
+            {
+                get => gyroMouseAction.mouseParams.gyroAngleSnapDegrees;
+                set
+                {
+                    gyroMouseAction.mouseParams.gyroAngleSnapDegrees = Math.Clamp(value, 0.0, 45.0);
+                    GyroAngleSnapDegreesChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler GyroAngleSnapDegreesChanged;
+            public bool ShouldSerializeGyroAngleSnapDegrees()
+            {
+                return gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES);
+            }
+
+            public bool GyroSmoothAngleSnap
+            {
+                get => gyroMouseAction.mouseParams.gyroSmoothAngleSnap;
+                set
+                {
+                    gyroMouseAction.mouseParams.gyroSmoothAngleSnap = value;
+                    GyroSmoothAngleSnapChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler GyroSmoothAngleSnapChanged;
+            public bool ShouldSerializeGyroSmoothAngleSnap()
+            {
+                return gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP);
+            }
+
             public double RealWorlCalibration
             {
                 get => gyroMouseAction.mouseParams.realWorldCalibration;
@@ -6471,6 +6543,8 @@ namespace DS4MapperTest
             NameChanged += GyroMouseSerializer_NameChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
             settings.VerticalDeadZoneChanged += Settings_VerticalDeadZoneChanged;
+            settings.GyroAngleSnapDegreesChanged += Settings_GyroAngleSnapDegreesChanged;
+            settings.GyroSmoothAngleSnapChanged += Settings_GyroSmoothAngleSnapChanged;
             settings.RealWorldCalibrationChanged += Settings_RealWorldCalibrationChanged;
             settings.InGameSensChanged += Settings_InGameSensChanged;
             settings.AccelCurveChanged += Settings_AccelCurveChanged;
@@ -6502,6 +6576,16 @@ namespace DS4MapperTest
         private void Settings_NaturalVHalfChanged(object sender, EventArgs e)
         {
             gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.NATURAL_CURVE_VHALF);
+        }
+
+        private void Settings_GyroAngleSnapDegreesChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES);
+        }
+
+        private void Settings_GyroSmoothAngleSnapChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP);
         }
 
         private void Settings_MaxAccelYSensChanged(object sender, EventArgs e)

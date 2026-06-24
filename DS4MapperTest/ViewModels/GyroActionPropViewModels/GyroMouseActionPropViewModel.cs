@@ -49,6 +49,31 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler VerticalDeadZoneChanged;
 
+        public double GyroAngleSnapDegrees
+        {
+            get => action.mouseParams.gyroAngleSnapDegrees;
+            set
+            {
+                action.mouseParams.gyroAngleSnapDegrees = Math.Clamp(value, 0.0, 45.0);
+                GyroAngleSnapDegreesChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler GyroAngleSnapDegreesChanged;
+
+        public bool GyroSmoothAngleSnap
+        {
+            get => action.mouseParams.gyroSmoothAngleSnap;
+            set
+            {
+                if (action.mouseParams.gyroSmoothAngleSnap == value) return;
+                action.mouseParams.gyroSmoothAngleSnap = value;
+                GyroSmoothAngleSnapChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler GyroSmoothAngleSnapChanged;
+
         private List<GyroTriggerButtonItem> triggerButtonItems;
         public List<GyroTriggerButtonItem> TriggerButtonItems => triggerButtonItems;
 
@@ -642,6 +667,20 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler HighlightVerticalDeadZoneChanged;
 
+        public bool HighlightGyroAngleSnapDegrees
+        {
+            get => action.ParentAction == null ||
+                baseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES);
+        }
+        public event EventHandler HighlightGyroAngleSnapDegreesChanged;
+
+        public bool HighlightGyroSmoothAngleSnap
+        {
+            get => action.ParentAction == null ||
+                baseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP);
+        }
+        public event EventHandler HighlightGyroSmoothAngleSnapChanged;
+
         public bool HighlightGyroTriggerCond
         {
             get => action.ParentAction == null ||
@@ -833,6 +872,8 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             NameChanged += GyroMouseActionPropViewModel_NameChanged;
             DeadZoneChanged += GyroMouseActionPropViewModel_DeadZoneChanged;
             VerticalDeadZoneChanged += GyroMouseActionPropViewModel_VerticalDeadZoneChanged;
+            GyroAngleSnapDegreesChanged += GyroMouseActionPropViewModel_GyroAngleSnapDegreesChanged;
+            GyroSmoothAngleSnapChanged += GyroMouseActionPropViewModel_GyroSmoothAngleSnapChanged;
             GyroTriggerCondChoiceChanged += GyroMouseActionPropViewModel_GyroTriggerCondChoiceChanged;
             GyroTriggerActivatesChanged += GyroMouseActionPropViewModel_TriggerActivatesChanged;
             RealWorldCalibrationChanged += GyroMouseActionPropViewModel_RealWorldCalibrationChanged;
@@ -1237,6 +1278,36 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             });
 
             HighlightVerticalDeadZoneChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void GyroMouseActionPropViewModel_GyroAngleSnapDegreesChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES))
+            {
+                action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES);
+            }
+
+            ExecuteInMapperThread(() =>
+            {
+                action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES);
+            });
+
+            HighlightGyroAngleSnapDegreesChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void GyroMouseActionPropViewModel_GyroSmoothAngleSnapChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP))
+            {
+                action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP);
+            }
+
+            ExecuteInMapperThread(() =>
+            {
+                action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP);
+            });
+
+            HighlightGyroSmoothAngleSnapChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void GyroMouseActionPropViewModel_NameChanged(object sender, EventArgs e)
