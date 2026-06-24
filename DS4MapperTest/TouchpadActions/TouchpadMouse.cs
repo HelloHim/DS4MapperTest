@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Sensorit.Base;
 //using System.Diagnostics;
+using DS4MapperTest.Common;
 using DS4MapperTest.StickModifiers;
 
 namespace DS4MapperTest.TouchpadActions
@@ -17,6 +18,8 @@ namespace DS4MapperTest.TouchpadActions
             public const string NAME = "Name";
             public const string DEAD_ZONE = "DeadZone";
             public const string VERTICAL_DEAD_ZONE = "VerticalDeadZone";
+            public const string ANGLE_SNAP_DEGREES = "AngleSnapDegrees";
+            public const string SMOOTH_ANGLE_SNAP = "SmoothAngleSnap";
             public const string TRACKBALL_MODE = "Trackball";
             public const string TRACKBALL_FRICTION = "TrackballFriction";
             public const string SWIPES_PER_360 = "SwipesPer360";
@@ -30,6 +33,8 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.NAME,
             PropertyKeyStrings.DEAD_ZONE,
             PropertyKeyStrings.VERTICAL_DEAD_ZONE,
+            PropertyKeyStrings.ANGLE_SNAP_DEGREES,
+            PropertyKeyStrings.SMOOTH_ANGLE_SNAP,
             PropertyKeyStrings.TRACKBALL_MODE,
             PropertyKeyStrings.TRACKBALL_FRICTION,
             PropertyKeyStrings.SWIPES_PER_360,
@@ -56,6 +61,21 @@ namespace DS4MapperTest.TouchpadActions
         {
             get => verticalDeadZone;
             set => verticalDeadZone = value;
+        }
+
+        private double trackpadAngleSnapDegrees;
+        public double TrackpadAngleSnapDegrees
+        {
+            get => trackpadAngleSnapDegrees;
+            set => trackpadAngleSnapDegrees = Math.Clamp(value,
+                AngleSnapping.MinDegrees, AngleSnapping.MaxDegrees);
+        }
+
+        private bool trackpadSmoothAngleSnap;
+        public bool TrackpadSmoothAngleSnap
+        {
+            get => trackpadSmoothAngleSnap;
+            set => trackpadSmoothAngleSnap = value;
         }
 
         private const int TRACKBALL_INIT_FRICTION = 10;
@@ -520,11 +540,26 @@ namespace DS4MapperTest.TouchpadActions
 
             if (verticalDeadZone > 0 && Math.Abs(dy) < verticalDeadZone) dy = 0;
 
+            double movementX = dx;
+            double movementY = dy;
+            AngleSnapping.Apply(ref movementX, ref movementY,
+                trackpadAngleSnapDegrees, trackpadSmoothAngleSnap);
+
+            double snappedMagnitude = Math.Sqrt((movementX * movementX) +
+                (movementY * movementY));
+            if (snappedMagnitude > 0.0)
+            {
+                normX = Math.Abs(movementX) / snappedMagnitude;
+                normY = Math.Abs(movementY) / snappedMagnitude;
+                signX = Math.Sign(movementX);
+                signY = Math.Sign(movementY);
+            }
+
             double finalCoefficient = coefficient;
             if (touchpadDefinition.throttleRelMouse)
             {
                 double sensMulti = 1.0;
-                double distSquared = (dx * dx) + (dy * dy);
+                double distSquared = (movementX * movementX) + (movementY * movementY);
                 //Trace.WriteLine($"{Math.Sqrt(distSquared)}");
                 double testThreshold = touchpadDefinition.throttleRelMouseZone;
                 double testSquared = testThreshold * testThreshold;
@@ -566,15 +601,15 @@ namespace DS4MapperTest.TouchpadActions
                 }
             }
 
-            double fakeXAng = (double)dx / (65535.0 / 360.0);
-            double fakeYAng = (double)dy / (65535.0 / 360.0);
+            double fakeXAng = movementX / (65535.0 / 360.0);
+            double fakeYAng = movementY / (65535.0 / 360.0);
 
             //Trace.WriteLine($"DX {dx} {fakeXAng}");
 
-            double xMotion = dx != 0 ? finalCoefficient * (dx * tempDouble)
+            double xMotion = movementX != 0 ? finalCoefficient * (movementX * tempDouble)
                 + (normX * (offset * signX)) : 0;
 
-            double yMotion = dy != 0 ? finalCoefficient * (dy * tempDouble)
+            double yMotion = movementY != 0 ? finalCoefficient * (movementY * tempDouble)
                 + (normY * (offset * signY)) : 0;
             if (verticalScale != DEFAULT_VERTICAL_SCALE)
             {
@@ -671,6 +706,12 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.VERTICAL_DEAD_ZONE:
                             verticalDeadZone = tempMouseAction.verticalDeadZone;
                             break;
+                        case PropertyKeyStrings.ANGLE_SNAP_DEGREES:
+                            trackpadAngleSnapDegrees = tempMouseAction.trackpadAngleSnapDegrees;
+                            break;
+                        case PropertyKeyStrings.SMOOTH_ANGLE_SNAP:
+                            trackpadSmoothAngleSnap = tempMouseAction.trackpadSmoothAngleSnap;
+                            break;
                         case PropertyKeyStrings.TRACKBALL_MODE:
                             trackballEnabled = tempMouseAction.trackballEnabled;
                             // Copy parent ref
@@ -744,6 +785,12 @@ namespace DS4MapperTest.TouchpadActions
                     break;
                 case PropertyKeyStrings.VERTICAL_DEAD_ZONE:
                     verticalDeadZone = tempMouseAction.verticalDeadZone;
+                    break;
+                case PropertyKeyStrings.ANGLE_SNAP_DEGREES:
+                    trackpadAngleSnapDegrees = tempMouseAction.trackpadAngleSnapDegrees;
+                    break;
+                case PropertyKeyStrings.SMOOTH_ANGLE_SNAP:
+                    trackpadSmoothAngleSnap = tempMouseAction.trackpadSmoothAngleSnap;
                     break;
                 case PropertyKeyStrings.TRACKBALL_MODE:
                     if (active)

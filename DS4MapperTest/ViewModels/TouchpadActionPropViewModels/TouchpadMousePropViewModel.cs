@@ -54,6 +54,31 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler VerticalDeadZoneChanged;
 
+        public double TrackpadAngleSnapDegrees
+        {
+            get => action.TrackpadAngleSnapDegrees;
+            set
+            {
+                action.TrackpadAngleSnapDegrees = Math.Clamp(value, 0.0, 45.0);
+                TrackpadAngleSnapDegreesChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler TrackpadAngleSnapDegreesChanged;
+
+        public bool TrackpadSmoothAngleSnap
+        {
+            get => action.TrackpadSmoothAngleSnap;
+            set
+            {
+                if (action.TrackpadSmoothAngleSnap == value) return;
+                action.TrackpadSmoothAngleSnap = value;
+                TrackpadSmoothAngleSnapChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler TrackpadSmoothAngleSnapChanged;
+
         public bool TrackballEnabled
         {
             get => action.TrackballEnabled;
@@ -354,6 +379,20 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler HighlightVerticalDeadZoneChanged;
 
+        public bool HighlightTrackpadAngleSnapDegrees
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES);
+        }
+        public event EventHandler HighlightTrackpadAngleSnapDegreesChanged;
+
+        public bool HighlightTrackpadSmoothAngleSnap
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP);
+        }
+        public event EventHandler HighlightTrackpadSmoothAngleSnapChanged;
+
         public bool HighlightTrackballEnabled
         {
             get => action.ParentAction == null ||
@@ -434,6 +473,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             NameChanged += TouchpadMousePropViewModel_NameChanged;
             DeadZoneChanged += TouchpadMousePropViewModel_DeadZoneChanged;
             VerticalDeadZoneChanged += TouchpadMousePropViewModel_VerticalDeadZoneChanged;
+            TrackpadAngleSnapDegreesChanged += TouchpadMousePropViewModel_TrackpadAngleSnapDegreesChanged;
+            TrackpadSmoothAngleSnapChanged += TouchpadMousePropViewModel_TrackpadSmoothAngleSnapChanged;
             TrackballEnabledChanged += TouchpadMousePropViewModel_TrackballEnabledChanged;
             TrackballFrictionChanged += TouchpadMousePropViewModel_TrackballFrictionChanged;
             SwipesPer360Changed += TouchpadMousePropViewModel_SwipesPer360Changed;
@@ -595,6 +636,36 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             });
 
             HighlightVerticalDeadZoneChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadMousePropViewModel_TrackpadAngleSnapDegreesChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES))
+            {
+                action.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES);
+            }
+
+            ExecuteInMapperThread(() =>
+            {
+                action.RaiseNotifyPropertyChange(mapper, TouchpadMouse.PropertyKeyStrings.ANGLE_SNAP_DEGREES);
+            });
+
+            HighlightTrackpadAngleSnapDegreesChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadMousePropViewModel_TrackpadSmoothAngleSnapChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP))
+            {
+                action.ChangedProperties.Add(TouchpadMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP);
+            }
+
+            ExecuteInMapperThread(() =>
+            {
+                action.RaiseNotifyPropertyChange(mapper, TouchpadMouse.PropertyKeyStrings.SMOOTH_ANGLE_SNAP);
+            });
+
+            HighlightTrackpadSmoothAngleSnapChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadMousePropViewModel_SwipesPer360Changed(object sender, EventArgs e)
