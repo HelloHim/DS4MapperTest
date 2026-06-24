@@ -460,11 +460,24 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             set
             {
                 if (!_modelReady) return;
-                if (action.SwipesPer360 == value) return;
-                action.SwipesPer360 = Math.Clamp(value, 0.0, 100.0);
+                double swipesPer360 = Math.Clamp(value, 0.0, 100.0);
+                if (action.SwipesPer360 == swipesPer360) return;
+
+                double verticalRws = VerticalRws;
+                action.SwipesPer360 = swipesPer360;
+                if (VerticalScaleIsAbsoluteMode)
+                {
+                    action.VerticalScale = Math.Abs(swipesPer360) < 1e-10
+                        ? verticalRws
+                        : Math.Clamp(verticalRws / swipesPer360, 0.0, 10.0);
+                    VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                    PropertyChanged?.Invoke(this,
+                        new PropertyChangedEventArgs(nameof(VerticalScale)));
+                }
                 SwipesPer360Changed?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SwipesPer360)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalRws)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivity)));
             }
         }
@@ -516,13 +529,63 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             set
             {
                 if (!_modelReady) return;
-                if (action.VerticalScale == value) return;
-                action.VerticalScale = Math.Clamp(value, 0.0, 10.0);
+                double verticalScale = Math.Clamp(value, 0.0, 10.0);
+                if (action.VerticalScale == verticalScale) return;
+                action.VerticalScale = verticalScale;
                 VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
         public event EventHandler VerticalScaleChanged;
+
+        public double VerticalRws
+        {
+            get => Math.Round(action.SwipesPer360 * action.VerticalScale, 4);
+            set
+            {
+                if (!_modelReady) return;
+                double swipesPer360 = action.SwipesPer360;
+                double verticalScale = Math.Abs(swipesPer360) < 1e-10
+                    ? value
+                    : value / swipesPer360;
+                verticalScale = Math.Clamp(verticalScale, 0.0, 10.0);
+                if (action.VerticalScale == verticalScale) return;
+                action.VerticalScale = verticalScale;
+                VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private bool verticalScaleIsAbsoluteMode = true;
+        public bool VerticalScaleIsAbsoluteMode
+        {
+            get => verticalScaleIsAbsoluteMode;
+            set
+            {
+                if (!value || verticalScaleIsAbsoluteMode) return;
+                verticalScaleIsAbsoluteMode = true;
+                NotifyVerticalScaleModeChanged();
+            }
+        }
+
+        public bool VerticalScaleIsMultiplierMode
+        {
+            get => !verticalScaleIsAbsoluteMode;
+            set
+            {
+                if (!value || !verticalScaleIsAbsoluteMode) return;
+                verticalScaleIsAbsoluteMode = false;
+                NotifyVerticalScaleModeChanged();
+            }
+        }
+
+        private void NotifyVerticalScaleModeChanged()
+        {
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nameof(VerticalScaleIsAbsoluteMode)));
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nameof(VerticalScaleIsMultiplierMode)));
+        }
 
         public bool SmoothingEnabled
         {
@@ -910,6 +973,10 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             });
 
             HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nameof(VerticalScale)));
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nameof(VerticalRws)));
 
             if (!_syncingAccelSens)
             {
