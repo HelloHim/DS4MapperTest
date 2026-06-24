@@ -166,6 +166,100 @@
 
                 <TextBlock Text="Synced across profile" FontSize="11" Foreground="Gray" Margin="0,4,0,0" />
 
+                <Border Background="#187F7F7F" BorderBrush="#667F7F7F"
+                        BorderThickness="1" CornerRadius="4" Padding="12"
+                        Margin="0,8,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Acceleration" FontWeight="SemiBold"
+                                   Foreground="White"
+                                   Margin="4,0,0,4" />
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Acceleration Curve" />
+                            <ComboBox ItemsSource="{Binding AccelCurveChoiceItems}"
+                                      DisplayMemberPath="DisplayName"
+                                      SelectedValuePath="Choice"
+                                      SelectedValue="{Binding AccelCurveChoice}"
+                                      MinWidth="200" Margin="8,0,0,0" />
+                        </StackPanel>
+
+                        <Expander Header="Advanced Settings" IsExpanded="False"
+                                  Margin="4,8,0,0"
+                                  Visibility="{Binding AccelCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <StackPanel Margin="12,8,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Min Sens X" />
+                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0"
+                                              DecimalPlaces="3" Increment="0.1"
+                                              Value="{Binding MinAccelXSens}"
+                                              Width="100" Margin="8,0,0,0" />
+                            <Label Content="Min Sens Y" Margin="16,0,0,0" />
+                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0"
+                                              DecimalPlaces="3" Increment="0.1"
+                                              Value="{Binding MinAccelYSens}"
+                                              Width="100" Margin="8,0,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Label Content="Max Sens X" />
+                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0"
+                                              DecimalPlaces="3" Increment="0.1"
+                                              Value="{Binding MaxAccelXSens}"
+                                              Width="100" Margin="8,0,0,0" />
+                            <Label Content="Max Sens Y" Margin="16,0,0,0" />
+                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0"
+                                              DecimalPlaces="3" Increment="0.1"
+                                              Value="{Binding MaxAccelYSens}"
+                                              Width="100" Margin="8,0,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Label Content="Min Movement Threshold" />
+                            <hc:NumericUpDown Minimum="0.0" Maximum="10000.0"
+                                              DecimalPlaces="2" Increment="0.5"
+                                              Value="{Binding MinAccelThreshold}"
+                                              Width="100" Margin="8,0,0,0" />
+                            <StackPanel Orientation="Horizontal" Margin="16,0,0,0"
+                                        Visibility="{Binding UsesMaxThreshold, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <Label Content="Max Movement Threshold" />
+                                <hc:NumericUpDown Minimum="0.0" Maximum="10000.0"
+                                                  DecimalPlaces="2" Increment="0.5"
+                                                  Value="{Binding MaxAccelThreshold}"
+                                                  Width="100" Margin="8,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
+                                    Visibility="{Binding NaturalCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <Label Content="Natural vHalf" />
+                            <hc:NumericUpDown Minimum="0.01" Maximum="10000.0"
+                                              DecimalPlaces="2" Increment="0.5"
+                                              Value="{Binding NaturalVHalf}"
+                                              Width="100" Margin="8,0,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
+                                    Visibility="{Binding PowerCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <Label Content="Power vRef" />
+                            <hc:NumericUpDown Minimum="0.01" Maximum="10000.0"
+                                              DecimalPlaces="2" Increment="0.5"
+                                              Value="{Binding PowerVRef}"
+                                              Width="100" Margin="8,0,0,0" />
+                            <Label Content="Power Exponent" Margin="16,0,0,0" />
+                            <hc:NumericUpDown Minimum="0.01" Maximum="100.0"
+                                              DecimalPlaces="2" Increment="0.1"
+                                              Value="{Binding PowerExponent}"
+                                              Width="100" Margin="8,0,0,0" />
+                        </StackPanel>
+
+                        <Button Content="Reset to Defaults"
+                                Command="{Binding ResetAccelerationDefaultsComm}"
+                                HorizontalAlignment="Left" Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </Border>
+
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Swipes per 360° (SC2)" />
                     <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.001"

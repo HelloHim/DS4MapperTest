@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Sensorit.Base;
 //using System.Diagnostics;
 using DS4MapperTest.Common;
+using DS4MapperTest.GyroActions;
 using DS4MapperTest.StickModifiers;
 
 namespace DS4MapperTest.TouchpadActions
@@ -26,6 +27,16 @@ namespace DS4MapperTest.TouchpadActions
             public const string VERTICAL_SCALE = "VerticalScale";
             public const string SMOOTHING_ENABLED = "SmoothingEnabled";
             public const string SMOOTHING_FILTER = "SmoothingFilter";
+            public const string ACCEL_CURVE = "AccelCurve";
+            public const string MIN_ACCEL_X_SENS = "MinAccelXSens";
+            public const string MAX_ACCEL_X_SENS = "MaxAccelXSens";
+            public const string MIN_ACCEL_Y_SENS = "MinAccelYSens";
+            public const string MAX_ACCEL_Y_SENS = "MaxAccelYSens";
+            public const string MIN_ACCEL_THRESHOLD = "MinAccelThreshold";
+            public const string MAX_ACCEL_THRESHOLD = "MaxAccelThreshold";
+            public const string POWER_CURVE_VREF = "PowerCurveVRef";
+            public const string POWER_CURVE_EXPONENT = "PowerCurveExponent";
+            public const string NATURAL_CURVE_VHALF = "NaturalCurveVHalf";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -41,6 +52,16 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.VERTICAL_SCALE,
             PropertyKeyStrings.SMOOTHING_ENABLED,
             PropertyKeyStrings.SMOOTHING_FILTER,
+            PropertyKeyStrings.ACCEL_CURVE,
+            PropertyKeyStrings.MIN_ACCEL_X_SENS,
+            PropertyKeyStrings.MAX_ACCEL_X_SENS,
+            PropertyKeyStrings.MIN_ACCEL_Y_SENS,
+            PropertyKeyStrings.MAX_ACCEL_Y_SENS,
+            PropertyKeyStrings.MIN_ACCEL_THRESHOLD,
+            PropertyKeyStrings.MAX_ACCEL_THRESHOLD,
+            PropertyKeyStrings.POWER_CURVE_VREF,
+            PropertyKeyStrings.POWER_CURVE_EXPONENT,
+            PropertyKeyStrings.NATURAL_CURVE_VHALF,
         };
 
         public const string ACTION_TYPE_NAME = "TouchMouseAction";
@@ -96,6 +117,29 @@ namespace DS4MapperTest.TouchpadActions
         private const int DEFAULT_VERTICAL_DEAD_ZONE = 0;
         private const double DEFAULT_VERTICAL_SCALE = 1.0;
         private const bool DEFAULT_SMOOTHING_ENABLED = true;
+        public const GyroMouseAccelCurveChoice DEFAULT_ACCEL_CURVE =
+            GyroMouseAccelCurveChoice.None;
+        public const double DEFAULT_MIN_ACCEL_SENS = 1.2;
+        public const double DEFAULT_MAX_ACCEL_SENS = 3.0;
+        public const double DEFAULT_MIN_ACCEL_THRESHOLD = 0.0;
+        public const double DEFAULT_MAX_ACCEL_THRESHOLD = 40.0;
+        public const double DEFAULT_NATURAL_VHALF = 20.0;
+        public const double DEFAULT_POWER_VREF = 10.0;
+        public const double DEFAULT_POWER_EXPONENT = 1.0;
+
+        public GyroMouseAccelCurveChoice AccelCurve { get; set; } =
+            DEFAULT_ACCEL_CURVE;
+        public double MinAccelXSens { get; set; } = DEFAULT_MIN_ACCEL_SENS;
+        public double MaxAccelXSens { get; set; } = DEFAULT_MAX_ACCEL_SENS;
+        public double MinAccelYSens { get; set; } = DEFAULT_MIN_ACCEL_SENS;
+        public double MaxAccelYSens { get; set; } = DEFAULT_MAX_ACCEL_SENS;
+        public double MinAccelThreshold { get; set; } =
+            DEFAULT_MIN_ACCEL_THRESHOLD;
+        public double MaxAccelThreshold { get; set; } =
+            DEFAULT_MAX_ACCEL_THRESHOLD;
+        public double NaturalVHalf { get; set; } = DEFAULT_NATURAL_VHALF;
+        public double PowerVRef { get; set; } = DEFAULT_POWER_VREF;
+        public double PowerExponent { get; set; } = DEFAULT_POWER_EXPONENT;
 
         private class TrackballVelData
         {
@@ -555,7 +599,8 @@ namespace DS4MapperTest.TouchpadActions
                 signY = Math.Sign(movementY);
             }
 
-            double finalCoefficient = coefficient;
+            double finalCoefficientX = coefficient;
+            double finalCoefficientY = coefficient;
             if (touchpadDefinition.throttleRelMouse)
             {
                 double sensMulti = 1.0;
@@ -597,8 +642,29 @@ namespace DS4MapperTest.TouchpadActions
                     sensMulti = Math.Clamp(sensMulti, 0.0, 1.0);
                     //Trace.WriteLine($"{baconator} {ratio} {alpha} {-x} {Math.Exp(-x)}");
 
-                    finalCoefficient = coefficient * sensMulti;
+                    finalCoefficientX = finalCoefficientY =
+                        coefficient * sensMulti;
                 }
+            }
+
+            if (AccelCurve != GyroMouseAccelCurveChoice.None)
+            {
+                MouseAcceleration.CalculateMultipliers(
+                    AccelCurve,
+                    snappedMagnitude,
+                    MinAccelThreshold,
+                    MaxAccelThreshold,
+                    MinAccelXSens,
+                    MaxAccelXSens,
+                    MinAccelYSens,
+                    MaxAccelYSens,
+                    PowerVRef,
+                    PowerExponent,
+                    NaturalVHalf,
+                    out double accelMultiplierX,
+                    out double accelMultiplierY);
+                finalCoefficientX *= accelMultiplierX;
+                finalCoefficientY *= accelMultiplierY;
             }
 
             double fakeXAng = movementX / (65535.0 / 360.0);
@@ -606,10 +672,10 @@ namespace DS4MapperTest.TouchpadActions
 
             //Trace.WriteLine($"DX {dx} {fakeXAng}");
 
-            double xMotion = movementX != 0 ? finalCoefficient * (movementX * tempDouble)
+            double xMotion = movementX != 0 ? finalCoefficientX * (movementX * tempDouble)
                 + (normX * (offset * signX)) : 0;
 
-            double yMotion = movementY != 0 ? finalCoefficient * (movementY * tempDouble)
+            double yMotion = movementY != 0 ? finalCoefficientY * (movementY * tempDouble)
                 + (normY * (offset * signY)) : 0;
             if (verticalScale != DEFAULT_VERTICAL_SCALE)
             {
@@ -735,6 +801,36 @@ namespace DS4MapperTest.TouchpadActions
                             smoothingFilterSettings = tempMouseAction.smoothingFilterSettings;
                             useParentSmoothingFilter = true;
                             break;
+                        case PropertyKeyStrings.ACCEL_CURVE:
+                            AccelCurve = tempMouseAction.AccelCurve;
+                            break;
+                        case PropertyKeyStrings.MIN_ACCEL_X_SENS:
+                            MinAccelXSens = tempMouseAction.MinAccelXSens;
+                            break;
+                        case PropertyKeyStrings.MAX_ACCEL_X_SENS:
+                            MaxAccelXSens = tempMouseAction.MaxAccelXSens;
+                            break;
+                        case PropertyKeyStrings.MIN_ACCEL_Y_SENS:
+                            MinAccelYSens = tempMouseAction.MinAccelYSens;
+                            break;
+                        case PropertyKeyStrings.MAX_ACCEL_Y_SENS:
+                            MaxAccelYSens = tempMouseAction.MaxAccelYSens;
+                            break;
+                        case PropertyKeyStrings.MIN_ACCEL_THRESHOLD:
+                            MinAccelThreshold = tempMouseAction.MinAccelThreshold;
+                            break;
+                        case PropertyKeyStrings.MAX_ACCEL_THRESHOLD:
+                            MaxAccelThreshold = tempMouseAction.MaxAccelThreshold;
+                            break;
+                        case PropertyKeyStrings.POWER_CURVE_VREF:
+                            PowerVRef = tempMouseAction.PowerVRef;
+                            break;
+                        case PropertyKeyStrings.POWER_CURVE_EXPONENT:
+                            PowerExponent = tempMouseAction.PowerExponent;
+                            break;
+                        case PropertyKeyStrings.NATURAL_CURVE_VHALF:
+                            NaturalVHalf = tempMouseAction.NaturalVHalf;
+                            break;
                         default:
                             break;
                     }
@@ -824,6 +920,36 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.SMOOTHING_FILTER:
                     smoothingFilterSettings = tempMouseAction.smoothingFilterSettings;
                     useParentSmoothingFilter = true;
+                    break;
+                case PropertyKeyStrings.ACCEL_CURVE:
+                    AccelCurve = tempMouseAction.AccelCurve;
+                    break;
+                case PropertyKeyStrings.MIN_ACCEL_X_SENS:
+                    MinAccelXSens = tempMouseAction.MinAccelXSens;
+                    break;
+                case PropertyKeyStrings.MAX_ACCEL_X_SENS:
+                    MaxAccelXSens = tempMouseAction.MaxAccelXSens;
+                    break;
+                case PropertyKeyStrings.MIN_ACCEL_Y_SENS:
+                    MinAccelYSens = tempMouseAction.MinAccelYSens;
+                    break;
+                case PropertyKeyStrings.MAX_ACCEL_Y_SENS:
+                    MaxAccelYSens = tempMouseAction.MaxAccelYSens;
+                    break;
+                case PropertyKeyStrings.MIN_ACCEL_THRESHOLD:
+                    MinAccelThreshold = tempMouseAction.MinAccelThreshold;
+                    break;
+                case PropertyKeyStrings.MAX_ACCEL_THRESHOLD:
+                    MaxAccelThreshold = tempMouseAction.MaxAccelThreshold;
+                    break;
+                case PropertyKeyStrings.POWER_CURVE_VREF:
+                    PowerVRef = tempMouseAction.PowerVRef;
+                    break;
+                case PropertyKeyStrings.POWER_CURVE_EXPONENT:
+                    PowerExponent = tempMouseAction.PowerExponent;
+                    break;
+                case PropertyKeyStrings.NATURAL_CURVE_VHALF:
+                    NaturalVHalf = tempMouseAction.NaturalVHalf;
                     break;
                 default:
                     break;

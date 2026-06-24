@@ -1845,6 +1845,146 @@ namespace DS4MapperTest
                 return touchMouseAct.ChangedProperties.Contains(TouchpadMouse.PropertyKeyStrings.SMOOTHING_FILTER);
             }
 
+            public GyroMouseAccelCurveChoice AccelCurve
+            {
+                get => touchMouseAct.AccelCurve;
+                set
+                {
+                    touchMouseAct.AccelCurve = value;
+                    AccelCurveChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler AccelCurveChanged;
+            public bool ShouldSerializeAccelCurve() =>
+                touchMouseAct.ChangedProperties.Contains(
+                    TouchpadMouse.PropertyKeyStrings.ACCEL_CURVE);
+
+            public double MinAccelXSens
+            {
+                get => touchMouseAct.MinAccelXSens;
+                set
+                {
+                    touchMouseAct.MinAccelXSens = value;
+                    MinAccelXSensChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MinAccelXSensChanged;
+            public bool ShouldSerializeMinAccelXSens() =>
+                touchMouseAct.ChangedProperties.Contains(
+                    TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_X_SENS);
+
+            public double MaxAccelXSens
+            {
+                get => touchMouseAct.MaxAccelXSens;
+                set
+                {
+                    touchMouseAct.MaxAccelXSens = value;
+                    MaxAccelXSensChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MaxAccelXSensChanged;
+            public bool ShouldSerializeMaxAccelXSens() =>
+                touchMouseAct.ChangedProperties.Contains(
+                    TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_X_SENS);
+
+            public double MinAccelYSens
+            {
+                get => touchMouseAct.MinAccelYSens;
+                set
+                {
+                    touchMouseAct.MinAccelYSens = value;
+                    MinAccelYSensChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MinAccelYSensChanged;
+            public bool ShouldSerializeMinAccelYSens() =>
+                touchMouseAct.ChangedProperties.Contains(
+                    TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_Y_SENS);
+
+            public double MaxAccelYSens
+            {
+                get => touchMouseAct.MaxAccelYSens;
+                set
+                {
+                    touchMouseAct.MaxAccelYSens = value;
+                    MaxAccelYSensChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MaxAccelYSensChanged;
+            public bool ShouldSerializeMaxAccelYSens() =>
+                touchMouseAct.ChangedProperties.Contains(
+                    TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_Y_SENS);
+
+            public double MinAccelThreshold
+            {
+                get => touchMouseAct.MinAccelThreshold;
+                set
+                {
+                    touchMouseAct.MinAccelThreshold = value;
+                    MinAccelThresholdChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MinAccelThresholdChanged;
+            public bool ShouldSerializeMinAccelThreshold() =>
+                touchMouseAct.ChangedProperties.Contains(
+                    TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_THRESHOLD);
+
+            public double MaxAccelThreshold
+            {
+                get => touchMouseAct.MaxAccelThreshold;
+                set
+                {
+                    touchMouseAct.MaxAccelThreshold = value;
+                    MaxAccelThresholdChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MaxAccelThresholdChanged;
+            public bool ShouldSerializeMaxAccelThreshold() =>
+                touchMouseAct.ChangedProperties.Contains(
+                    TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_THRESHOLD);
+
+            public double NaturalVHalf
+            {
+                get => touchMouseAct.NaturalVHalf;
+                set
+                {
+                    touchMouseAct.NaturalVHalf = value;
+                    NaturalVHalfChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler NaturalVHalfChanged;
+            public bool ShouldSerializeNaturalVHalf() =>
+                touchMouseAct.ChangedProperties.Contains(
+                    TouchpadMouse.PropertyKeyStrings.NATURAL_CURVE_VHALF);
+
+            public double PowerVRef
+            {
+                get => touchMouseAct.PowerVRef;
+                set
+                {
+                    touchMouseAct.PowerVRef = value;
+                    PowerVRefChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler PowerVRefChanged;
+            public bool ShouldSerializePowerVRef() =>
+                touchMouseAct.ChangedProperties.Contains(
+                    TouchpadMouse.PropertyKeyStrings.POWER_CURVE_VREF);
+
+            public double PowerExponent
+            {
+                get => touchMouseAct.PowerExponent;
+                set
+                {
+                    touchMouseAct.PowerExponent = value;
+                    PowerExponentChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler PowerExponentChanged;
+            public bool ShouldSerializePowerExponent() =>
+                touchMouseAct.ChangedProperties.Contains(
+                    TouchpadMouse.PropertyKeyStrings.POWER_CURVE_EXPONENT);
+
             public TouchpadMouseSettings(TouchpadMouse action)
             {
                 touchMouseAct = action;
@@ -1882,7 +2022,48 @@ namespace DS4MapperTest
             settings.SmoothingEnabledChanged += Settings_SmoothingEnabledChanged;
             settings.SmoothingMinCutoffChanged += Settings_SmoothingMinCutoffChanged;
             settings.SmoothingBetaChanged += Settings_SmoothingBetaChanged;
+            settings.AccelCurveChanged += Settings_AccelCurveChanged;
+            settings.MinAccelXSensChanged += Settings_MinAccelXSensChanged;
+            settings.MaxAccelXSensChanged += Settings_MaxAccelXSensChanged;
+            settings.MinAccelYSensChanged += Settings_MinAccelYSensChanged;
+            settings.MaxAccelYSensChanged += Settings_MaxAccelYSensChanged;
+            settings.MinAccelThresholdChanged += Settings_MinAccelThresholdChanged;
+            settings.MaxAccelThresholdChanged += Settings_MaxAccelThresholdChanged;
+            settings.NaturalVHalfChanged += Settings_NaturalVHalfChanged;
+            settings.PowerVRefChanged += Settings_PowerVRefChanged;
+            settings.PowerExponentChanged += Settings_PowerExponentChanged;
         }
+
+        private void Settings_AccelCurveChanged(object sender, EventArgs e) =>
+            touchMouseAction.ChangedProperties.Add(
+                TouchpadMouse.PropertyKeyStrings.ACCEL_CURVE);
+        private void Settings_MinAccelXSensChanged(object sender, EventArgs e) =>
+            touchMouseAction.ChangedProperties.Add(
+                TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_X_SENS);
+        private void Settings_MaxAccelXSensChanged(object sender, EventArgs e) =>
+            touchMouseAction.ChangedProperties.Add(
+                TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_X_SENS);
+        private void Settings_MinAccelYSensChanged(object sender, EventArgs e) =>
+            touchMouseAction.ChangedProperties.Add(
+                TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_Y_SENS);
+        private void Settings_MaxAccelYSensChanged(object sender, EventArgs e) =>
+            touchMouseAction.ChangedProperties.Add(
+                TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_Y_SENS);
+        private void Settings_MinAccelThresholdChanged(object sender, EventArgs e) =>
+            touchMouseAction.ChangedProperties.Add(
+                TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_THRESHOLD);
+        private void Settings_MaxAccelThresholdChanged(object sender, EventArgs e) =>
+            touchMouseAction.ChangedProperties.Add(
+                TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_THRESHOLD);
+        private void Settings_NaturalVHalfChanged(object sender, EventArgs e) =>
+            touchMouseAction.ChangedProperties.Add(
+                TouchpadMouse.PropertyKeyStrings.NATURAL_CURVE_VHALF);
+        private void Settings_PowerVRefChanged(object sender, EventArgs e) =>
+            touchMouseAction.ChangedProperties.Add(
+                TouchpadMouse.PropertyKeyStrings.POWER_CURVE_VREF);
+        private void Settings_PowerExponentChanged(object sender, EventArgs e) =>
+            touchMouseAction.ChangedProperties.Add(
+                TouchpadMouse.PropertyKeyStrings.POWER_CURVE_EXPONENT);
 
         private void Settings_SmoothingBetaChanged(object sender, EventArgs e)
         {

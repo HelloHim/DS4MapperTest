@@ -13,6 +13,7 @@ using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
 using DS4MapperTest.TouchpadActions;
 using DS4MapperTest.ViewModels.Common;
+using DS4MapperTest.ViewModels.GyroActionPropViewModels;
 
 namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 {
@@ -78,6 +79,141 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             }
         }
         public event EventHandler TrackpadSmoothAngleSnapChanged;
+
+        private readonly List<AccelCurveChoiceItem> accelCurveChoiceItems =
+            new List<AccelCurveChoiceItem>()
+            {
+                new AccelCurveChoiceItem("None", GyroMouseAccelCurveChoice.None),
+                new AccelCurveChoiceItem("Linear", GyroMouseAccelCurveChoice.Linear),
+                new AccelCurveChoiceItem("Quadratic", GyroMouseAccelCurveChoice.Quadratic),
+                new AccelCurveChoiceItem("Cubic", GyroMouseAccelCurveChoice.Cubic),
+                new AccelCurveChoiceItem("Power", GyroMouseAccelCurveChoice.Power),
+                new AccelCurveChoiceItem("Natural", GyroMouseAccelCurveChoice.Natural),
+            };
+        public List<AccelCurveChoiceItem> AccelCurveChoiceItems =>
+            accelCurveChoiceItems;
+
+        public GyroMouseAccelCurveChoice AccelCurveChoice
+        {
+            get => action.AccelCurve;
+            set
+            {
+                if (action.AccelCurve == value) return;
+                action.AccelCurve = value;
+                MarkAccelerationProperty(TouchpadMouse.PropertyKeyStrings.ACCEL_CURVE);
+                RaiseAccelerationPropertyChanges();
+            }
+        }
+
+        public bool AccelCurveUsed =>
+            action.AccelCurve != GyroMouseAccelCurveChoice.None;
+        public bool UsesMaxThreshold =>
+            action.AccelCurve == GyroMouseAccelCurveChoice.Linear ||
+            action.AccelCurve == GyroMouseAccelCurveChoice.Quadratic ||
+            action.AccelCurve == GyroMouseAccelCurveChoice.Cubic;
+        public bool NaturalCurveUsed =>
+            action.AccelCurve == GyroMouseAccelCurveChoice.Natural;
+        public bool PowerCurveUsed =>
+            action.AccelCurve == GyroMouseAccelCurveChoice.Power;
+
+        public double MinAccelXSens
+        {
+            get => action.MinAccelXSens;
+            set => SetAccelerationValue(
+                Math.Clamp(value, 0.0, 100.0),
+                () => action.MinAccelXSens,
+                v => action.MinAccelXSens = v,
+                TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_X_SENS,
+                nameof(MinAccelXSens));
+        }
+
+        public double MaxAccelXSens
+        {
+            get => action.MaxAccelXSens;
+            set => SetAccelerationValue(
+                Math.Clamp(value, 0.0, 100.0),
+                () => action.MaxAccelXSens,
+                v => action.MaxAccelXSens = v,
+                TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_X_SENS,
+                nameof(MaxAccelXSens));
+        }
+
+        public double MinAccelYSens
+        {
+            get => action.MinAccelYSens;
+            set => SetAccelerationValue(
+                Math.Clamp(value, 0.0, 100.0),
+                () => action.MinAccelYSens,
+                v => action.MinAccelYSens = v,
+                TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_Y_SENS,
+                nameof(MinAccelYSens));
+        }
+
+        public double MaxAccelYSens
+        {
+            get => action.MaxAccelYSens;
+            set => SetAccelerationValue(
+                Math.Clamp(value, 0.0, 100.0),
+                () => action.MaxAccelYSens,
+                v => action.MaxAccelYSens = v,
+                TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_Y_SENS,
+                nameof(MaxAccelYSens));
+        }
+
+        public double MinAccelThreshold
+        {
+            get => action.MinAccelThreshold;
+            set => SetAccelerationValue(
+                Math.Clamp(value, 0.0, 10000.0),
+                () => action.MinAccelThreshold,
+                v => action.MinAccelThreshold = v,
+                TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_THRESHOLD,
+                nameof(MinAccelThreshold));
+        }
+
+        public double MaxAccelThreshold
+        {
+            get => action.MaxAccelThreshold;
+            set => SetAccelerationValue(
+                Math.Clamp(value, 0.0, 10000.0),
+                () => action.MaxAccelThreshold,
+                v => action.MaxAccelThreshold = v,
+                TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_THRESHOLD,
+                nameof(MaxAccelThreshold));
+        }
+
+        public double NaturalVHalf
+        {
+            get => action.NaturalVHalf;
+            set => SetAccelerationValue(
+                Math.Clamp(value, 0.01, 10000.0),
+                () => action.NaturalVHalf,
+                v => action.NaturalVHalf = v,
+                TouchpadMouse.PropertyKeyStrings.NATURAL_CURVE_VHALF,
+                nameof(NaturalVHalf));
+        }
+
+        public double PowerVRef
+        {
+            get => action.PowerVRef;
+            set => SetAccelerationValue(
+                Math.Clamp(value, 0.01, 10000.0),
+                () => action.PowerVRef,
+                v => action.PowerVRef = v,
+                TouchpadMouse.PropertyKeyStrings.POWER_CURVE_VREF,
+                nameof(PowerVRef));
+        }
+
+        public double PowerExponent
+        {
+            get => action.PowerExponent;
+            set => SetAccelerationValue(
+                Math.Clamp(value, 0.01, 100.0),
+                () => action.PowerExponent,
+                v => action.PowerExponent = v,
+                TouchpadMouse.PropertyKeyStrings.POWER_CURVE_EXPONENT,
+                nameof(PowerExponent));
+        }
 
         public bool TrackballEnabled
         {
@@ -174,6 +310,9 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         private BasicActionCommand copyTestRWCComm;
         public BasicActionCommand CopyTestRWCComm => copyTestRWCComm;
+        private BasicActionCommand resetAccelerationDefaultsComm;
+        public BasicActionCommand ResetAccelerationDefaultsComm =>
+            resetAccelerationDefaultsComm;
 
         private bool _applyingPreset = false;
         private GameCalibPreset _selectedPreset = GameCalibPreset.Custom;
@@ -469,6 +608,22 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             {
                 RealWorldCalibration = CalculatedRWC;
             });
+            resetAccelerationDefaultsComm = new BasicActionCommand((parameter) =>
+            {
+                AccelCurveChoice = TouchpadMouse.DEFAULT_ACCEL_CURVE;
+                MinAccelXSens = TouchpadMouse.DEFAULT_MIN_ACCEL_SENS;
+                MinAccelYSens = TouchpadMouse.DEFAULT_MIN_ACCEL_SENS;
+                MaxAccelXSens = TouchpadMouse.DEFAULT_MAX_ACCEL_SENS;
+                MaxAccelYSens = TouchpadMouse.DEFAULT_MAX_ACCEL_SENS;
+                MinAccelThreshold =
+                    TouchpadMouse.DEFAULT_MIN_ACCEL_THRESHOLD;
+                MaxAccelThreshold =
+                    TouchpadMouse.DEFAULT_MAX_ACCEL_THRESHOLD;
+                NaturalVHalf = TouchpadMouse.DEFAULT_NATURAL_VHALF;
+                PowerVRef = TouchpadMouse.DEFAULT_POWER_VREF;
+                PowerExponent = TouchpadMouse.DEFAULT_POWER_EXPONENT;
+                RaiseAccelerationPropertyChanges();
+            });
 
             NameChanged += TouchpadMousePropViewModel_NameChanged;
             DeadZoneChanged += TouchpadMousePropViewModel_DeadZoneChanged;
@@ -636,6 +791,54 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             });
 
             HighlightVerticalDeadZoneChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void SetAccelerationValue(
+            double value,
+            Func<double> getter,
+            Action<double> setter,
+            string propertyKey,
+            string propertyName)
+        {
+            if (getter() == value) return;
+            setter(value);
+            MarkAccelerationProperty(propertyKey);
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void MarkAccelerationProperty(string propertyKey)
+        {
+            action.ChangedProperties.Add(propertyKey);
+            action.RaiseNotifyPropertyChange(mapper, propertyKey);
+            ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void RaiseAccelerationPropertyChanges()
+        {
+            string[] propertyNames =
+            {
+                nameof(AccelCurveChoice),
+                nameof(AccelCurveUsed),
+                nameof(UsesMaxThreshold),
+                nameof(NaturalCurveUsed),
+                nameof(PowerCurveUsed),
+                nameof(MinAccelXSens),
+                nameof(MaxAccelXSens),
+                nameof(MinAccelYSens),
+                nameof(MaxAccelYSens),
+                nameof(MinAccelThreshold),
+                nameof(MaxAccelThreshold),
+                nameof(NaturalVHalf),
+                nameof(PowerVRef),
+                nameof(PowerExponent),
+            };
+
+            foreach (string propertyName in propertyNames)
+            {
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         private void TouchpadMousePropViewModel_TrackpadAngleSnapDegreesChanged(object sender, EventArgs e)
