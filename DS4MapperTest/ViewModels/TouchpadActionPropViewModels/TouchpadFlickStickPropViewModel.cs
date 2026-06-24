@@ -142,6 +142,19 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler FlickTimeChanged;
 
+        public double FlickTimeExponent
+        {
+            get => action.FlickTimeExponent;
+            set
+            {
+                if (action.FlickTimeExponent == value) return;
+                action.FlickTimeExponent = value;
+                FlickTimeExponentChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler FlickTimeExponentChanged;
+
         public double MinAngleThreshold
         {
             get => action.MinAngleThreshold;
@@ -196,6 +209,13 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler HighlightFlickTimeChanged;
 
+        public bool HighlightFlickTimeExponent
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT);
+        }
+        public event EventHandler HighlightFlickTimeExponentChanged;
+
         public bool HighlightMinAngleThreshold
         {
             get => action.ParentAction == null ||
@@ -242,6 +262,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             NameChanged += TouchpadFlickStickPropViewModel_NameChanged;
             FlickThresholdChanged += TouchpadFlickStickPropViewModel_FlickThresholdChanged;
             FlickTimeChanged += TouchpadFlickStickPropViewModel_FlickTimeChanged;
+            FlickTimeExponentChanged += TouchpadFlickStickPropViewModel_FlickTimeExponentChanged;
             MinAngleThresholdChanged += TouchpadFlickStickPropViewModel_MinAngleThresholdChanged;
             ReleaseDampeningSpeedChanged += TouchpadFlickStickPropViewModel_ReleaseDampeningSpeedChanged;
 
@@ -358,6 +379,17 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.FLICK_TIME);
             HighlightFlickTimeChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadFlickStickPropViewModel_FlickTimeExponentChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT))
+            {
+                action.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT);
+            HighlightFlickTimeExponentChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadFlickStickPropViewModel_FlickThresholdChanged(object sender, EventArgs e)

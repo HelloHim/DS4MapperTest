@@ -158,6 +158,19 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler FlickTimeChanged;
 
+        public double FlickTimeExponent
+        {
+            get => action.FlickTimeExponent;
+            set
+            {
+                if (action.FlickTimeExponent == value) return;
+                action.FlickTimeExponent = value;
+                FlickTimeExponentChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler FlickTimeExponentChanged;
+
         public double MinAngleThreshold
         {
             get => action.MinAngleThreshold;
@@ -212,6 +225,13 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler HighlightFlickTimeChanged;
 
+        public bool HighlightFlickTimeExponent
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT);
+        }
+        public event EventHandler HighlightFlickTimeExponentChanged;
+
         public bool HighlightMinAngleThreshold
         {
             get => action.ParentAction == null ||
@@ -259,6 +279,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             NameChanged += StickFlickStickPropViewModel_NameChanged;
             FlickThresholdChanged += StickFlickStickPropViewModel_FlickThresholdChanged;
             FlickTimeChanged += StickFlickStickPropViewModel_FlickTimeChanged;
+            FlickTimeExponentChanged += StickFlickStickPropViewModel_FlickTimeExponentChanged;
             MinAngleThresholdChanged += StickFlickStickPropViewModel_MinAngleThresholdChanged;
             ReleaseDampeningSpeedChanged += StickFlickStickPropViewModel_ReleaseDampeningSpeedChanged;
 
@@ -386,6 +407,17 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.FLICK_TIME);
             HighlightFlickTimeChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickFlickStickPropViewModel_FlickTimeExponentChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT))
+            {
+                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT);
+            HighlightFlickTimeExponentChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickFlickStickPropViewModel_FlickThresholdChanged(object sender, EventArgs e)

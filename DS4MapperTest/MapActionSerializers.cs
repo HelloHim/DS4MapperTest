@@ -4097,6 +4097,22 @@ namespace DS4MapperTest
                 return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.FLICK_TIME);
             }
 
+            public double FlickTimeExponent
+            {
+                get => flickAction.FlickTimeExponent;
+                set
+                {
+                    flickAction.FlickTimeExponent = value;
+                    FlickTimeExponentChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler FlickTimeExponentChanged;
+
+            public bool ShouldSerializeFlickTimeExponent()
+            {
+                return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT);
+            }
+
             public double MinAngleThreshold
             {
                 get => flickAction.MinAngleThreshold;
@@ -4164,6 +4180,7 @@ namespace DS4MapperTest
             settings.RealWorldCalibrationChanged += Settings_RealWorldCalibrationChanged;
             settings.FlickThresholdChanged += Settings_FlickThresholdChanged;
             settings.FlickTimeChanged += Settings_FlickTimeChanged;
+            settings.FlickTimeExponentChanged += Settings_FlickTimeExponentChanged;
             settings.MinAngleThresholdChanged += Settings_MinAngleThresholdChanged;
             settings.InGameSensChanged += Settings_InGameSensChanged;
             settings.ReleaseDampeningSpeedChanged += Settings_ReleaseDampeningSpeedChanged;
@@ -4203,6 +4220,11 @@ namespace DS4MapperTest
         private void Settings_FlickTimeChanged(object sender, EventArgs e)
         {
             flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.FLICK_TIME);
+        }
+
+        private void Settings_FlickTimeExponentChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT);
         }
 
         private void Settings_FlickThresholdChanged(object sender, EventArgs e)
@@ -4320,6 +4342,22 @@ namespace DS4MapperTest
                 return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.FLICK_TIME);
             }
 
+            public double FlickTimeExponent
+            {
+                get => flickAction.FlickTimeExponent;
+                set
+                {
+                    flickAction.FlickTimeExponent = value;
+                    FlickTimeExponentChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler FlickTimeExponentChanged;
+
+            public bool ShouldSerializeFlickTimeExponent()
+            {
+                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT);
+            }
+
             public double MinAngleThreshold
             {
                 get => flickAction.MinAngleThreshold;
@@ -4386,6 +4424,7 @@ namespace DS4MapperTest
             settings.RealWorldCalibrationChanged += Settings_RealWorldCalibrationChanged;
             settings.FlickThresholdChanged += Settings_FlickThresholdChanged;
             settings.FlickTimeChanged += Settings_FlickTimeChanged;
+            settings.FlickTimeExponentChanged += Settings_FlickTimeExponentChanged;
             settings.MinAngleThresholdChanged += Settings_MinAngleThresholdChanged;
             settings.InGameSensChanged += Settings_InGameSensChanged;
             settings.ReleaseDampeningSpeedChanged += Settings_ReleaseDampeningSpeedChanged;
@@ -4425,6 +4464,11 @@ namespace DS4MapperTest
         private void Settings_FlickTimeChanged(object sender, EventArgs e)
         {
             flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.FLICK_TIME);
+        }
+
+        private void Settings_FlickTimeExponentChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.FLICK_TIME_EXPONENT);
         }
 
         private void Settings_FlickThresholdChanged(object sender, EventArgs e)
