@@ -252,11 +252,13 @@ Increment="0.01" Width="100" Margin="8,0,0,0">
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <RadioButton IsChecked="{Binding VerticalScaleIsAbsoluteMode}" VerticalAlignment="Center" />
+                        <RadioButton GroupName="VerticalSensitivityMode"
+                                     IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
+                                     VerticalAlignment="Center" />
                         <Label Content="Vertical RWS" Margin="4,0,0,0" />
                         <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
                                           Value="{Binding VerticalScale, FallbackValue='1.0'}"
-                                          IsReadOnly="{Binding VerticalScaleIsMultiplierMode}"
+                                          IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
                                           Width="100" Margin="8,0,0,0" VerticalAlignment="Center">
                             <hc:NumericUpDown.Style>
                                 <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
@@ -281,11 +283,13 @@ Increment="0.01" Width="100" Margin="8,0,0,0">
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <RadioButton IsChecked="{Binding VerticalScaleIsMultiplierMode}" VerticalAlignment="Center" />
+                        <RadioButton GroupName="VerticalSensitivityMode"
+                                     IsChecked="{Binding VerticalScaleIsMultiplierMode, Mode=TwoWay}"
+                                     VerticalAlignment="Center" />
                         <Label Content="Vertical Scale" Margin="4,0,0,0" />
                         <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
                                           Value="{Binding VerticalScaleMultiplier, FallbackValue='1.0'}"
-                                          IsReadOnly="{Binding VerticalScaleIsAbsoluteMode}"
+                                          IsEnabled="{Binding VerticalScaleIsMultiplierMode}"
                                           Width="100" Margin="8,0,0,0" VerticalAlignment="Center">
                             <hc:NumericUpDown.Style>
                                 <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
