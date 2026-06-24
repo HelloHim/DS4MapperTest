@@ -654,14 +654,18 @@ namespace DS4MapperTest.TouchpadActions
 
             if (AccelCurve != GyroMouseAccelCurveChoice.None)
             {
+                double baseXSensitivity = Math.Clamp(
+                    swipesPer360, 0.0, 100.0);
+                double baseYSensitivity = Math.Clamp(
+                    swipesPer360 * verticalScale, 0.0, 100.0);
                 MouseAcceleration.CalculateMultipliers(
                     AccelCurve,
                     snappedMagnitude,
                     MinAccelThreshold,
                     MaxAccelThreshold,
-                    MinAccelXSens,
+                    baseXSensitivity,
                     MaxAccelXSens,
-                    MinAccelYSens,
+                    baseYSensitivity,
                     MaxAccelYSens,
                     PowerVRef,
                     PowerExponent,
