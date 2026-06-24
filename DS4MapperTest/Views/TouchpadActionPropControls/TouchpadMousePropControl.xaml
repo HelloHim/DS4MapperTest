@@ -166,9 +166,62 @@
 
                 <TextBlock Text="Synced across profile" FontSize="11" Foreground="Gray" Margin="0,4,0,0" />
 
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Swipes per 360° (SC2)" />
+                    <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.001"
+                                      Value="{Binding SwipesPer360, FallbackValue='1.0'}" Margin="8,0,0,0">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightSwipesPer360}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <Label Content="Legacy Sensitivity" ToolTip="Equivalent value in the original arbitrary sensitivity scale" />
+                    <hc:NumericUpDown Minimum="0.0" Maximum="100000.0"
+                                      Value="{Binding LegacySensitivity, UpdateSourceTrigger=LostFocus}"
+                                      DecimalPlaces="4" Width="120" Margin="8,0,0,0"
+                                      IsReadOnly="{Binding LegacySensitivityReadOnly}"
+                                      PreviewKeyDown="LegacySensNUD_PreviewKeyDown">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding LegacySensitivityEditable}" Value="False">
+                                        <Setter Property="Opacity" Value="0.6" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+                    <CheckBox Content="Edit" IsChecked="{Binding LegacySensitivityEditable}"
+                              VerticalAlignment="Center" Margin="8,0,0,0" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Vertical Scale" />
+                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="3" Increment="0.1"
+                                  Value="{Binding VerticalScale,FallbackValue='1.0'}" Margin="8,0,0,0">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+                </StackPanel>
+
                 <Border Background="#187F7F7F" BorderBrush="#667F7F7F"
                         BorderThickness="1" CornerRadius="4" Padding="12"
-                        Margin="0,8,0,0">
+                        Margin="0,8,16,0">
                     <StackPanel>
                         <TextBlock Text="Acceleration" FontWeight="SemiBold"
                                    Foreground="White"
@@ -259,59 +312,6 @@
                         </Expander>
                     </StackPanel>
                 </Border>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Swipes per 360° (SC2)" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.001"
-                                      Value="{Binding SwipesPer360, FallbackValue='1.0'}" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightSwipesPer360}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <Label Content="Legacy Sensitivity" ToolTip="Equivalent value in the original arbitrary sensitivity scale" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="100000.0"
-                                      Value="{Binding LegacySensitivity, UpdateSourceTrigger=LostFocus}"
-                                      DecimalPlaces="4" Width="120" Margin="8,0,0,0"
-                                      IsReadOnly="{Binding LegacySensitivityReadOnly}"
-                                      PreviewKeyDown="LegacySensNUD_PreviewKeyDown">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding LegacySensitivityEditable}" Value="False">
-                                        <Setter Property="Opacity" Value="0.6" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                    <CheckBox Content="Edit" IsChecked="{Binding LegacySensitivityEditable}"
-                              VerticalAlignment="Center" Margin="8,0,0,0" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Vertical Scale" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="3" Increment="0.1"
-                                  Value="{Binding VerticalScale,FallbackValue='1.0'}" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <GroupBox MinWidth="200">
