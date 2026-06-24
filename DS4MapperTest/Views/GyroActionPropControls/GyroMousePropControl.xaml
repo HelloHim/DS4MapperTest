@@ -222,24 +222,34 @@ Increment="0.01" Width="100" Margin="8,0,0,0">
 
                 <TextBlock Text="Synced across profile" FontSize="11" Foreground="Gray" Margin="0,4,0,0" />
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Acceleration Curve" />
-                    <ComboBox ItemsSource="{Binding AccelCurveChoiceItems}" DisplayMemberPath="DisplayName"
-      SelectedValuePath="Choice" SelectedValue="{Binding AccelCurveChoice}" MinWidth="200" Margin="8,0,0,0">
-                        <ComboBox.Style>
-                            <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightAccelCurve}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ComboBox.Style>
-                    </ComboBox>
-                </StackPanel>
+                <Border Background="#187F7F7F" BorderBrush="#667F7F7F"
+                        BorderThickness="1" CornerRadius="4" Padding="12"
+                        Margin="0,8,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Acceleration" FontWeight="SemiBold"
+                                   Foreground="White"
+                                   Margin="4,0,0,4" />
 
-                <StackPanel Orientation="Vertical" Margin="0,8,0,0"
-                            Visibility="{Binding AccelCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Acceleration Curve" />
+                            <ComboBox ItemsSource="{Binding AccelCurveChoiceItems}" DisplayMemberPath="DisplayName"
+          SelectedValuePath="Choice" SelectedValue="{Binding AccelCurveChoice}" MinWidth="200" Margin="8,0,0,0">
+                                <ComboBox.Style>
+                                    <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HighlightAccelCurve}" Value="False">
+                                                <Setter Property="Opacity" Value="0.7" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ComboBox.Style>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <Expander Header="Advanced Settings" IsExpanded="False"
+                                  Margin="4,8,0,0"
+                                  Visibility="{Binding AccelCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <StackPanel Orientation="Vertical" Margin="12,8,0,0">
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
                         <StackPanel Orientation="Horizontal">
@@ -340,7 +350,8 @@ Value="{Binding MinGyroThreshold,FallbackValue='0.0'}" Margin="8,0,0,0">
                             <Label Content="dps" Margin="2,0,0,0" BorderBrush="{x:Null}" />
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="16,0,0,0" Visibility="{Binding UsesMaxThreshold, Converter={StaticResource InvertBoolToVisibilityConverter}, FallbackValue=Visible}">
+                        <StackPanel Orientation="Horizontal" Margin="16,0,0,0"
+                                    Visibility="{Binding NaturalCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}, FallbackValue=Collapsed}">
                             <Label Content="Natural Midpoint (vHalf)" />
                             <hc:NumericUpDown Minimum="1.0" Maximum="500.0" DecimalPlaces="2" Increment="0.5"
 Value="{Binding NaturalVHalf,FallbackValue='1.0'}" Margin="8,0,0,0">
@@ -416,7 +427,14 @@ Value="{Binding PowerCurveExponent,FallbackValue='1.0'}" Margin="8,0,0,0">
                         </StackPanel>
 
                     </StackPanel>
-                </StackPanel>
+
+                    <Button Content="Reset to Defaults"
+                            Command="{Binding ResetAccelerationDefaultsComm}"
+                            HorizontalAlignment="Left" Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </Border>
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
                             Visibility="{Binding StaticSensUsed, Converter={StaticResource Boolean2VisibilityConverter}}">

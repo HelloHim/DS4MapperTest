@@ -6190,7 +6190,8 @@ namespace DS4MapperTest
             public bool ShouldSerializeAccelCurve()
             {
                 //return gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.ACCEL_CURVE);
-                return gyroMouseAction.mouseParams.accelCurve != GyroMouseAccelCurveChoice.None;
+                return gyroMouseAction.mouseParams.accelCurve !=
+                    GyroMouseParams.ACCEL_CURVE_DEFAULT;
             }
 
             public double MinAccelXSens
