@@ -113,6 +113,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                     {
                         _syncingAccelSens = true;
                         SyncTrackpadMinimumsFromBase();
+                        RepairZeroAccelerationMaximums();
                     }
                     finally
                     {
@@ -617,7 +618,11 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             get => smoothPresetChoice;
             set
             {
+                if (!_modelReady) return;
+                if (smoothPresetChoice == value) return;
                 smoothPresetChoice = value;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(SmoothPresetChoice)));
                 SmoothPresetChoiceItem currentItem =
                     smoothPresetChoiceItems.FirstOrDefault(t => t.Choice == value);
                 if (currentItem != null)
@@ -633,8 +638,13 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             get => action.ActionSmoothingSettings.minCutOff;
             set
             {
-                if (action.ActionSmoothingSettings.minCutOff == value) return;
-                action.ActionSmoothingSettings.minCutOff = Math.Clamp(value, 0.0, 10.0);
+                if (!_modelReady) return;
+                double minCutoff = Math.Clamp(value, 0.0, 10.0);
+                if (action.ActionSmoothingSettings.minCutOff == minCutoff)
+                    return;
+                action.ActionSmoothingSettings.minCutOff = minCutoff;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(SmoothingMinCutoff)));
                 SmoothingMinCutoffChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -646,8 +656,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             get => action.ActionSmoothingSettings.beta;
             set
             {
-                if (action.ActionSmoothingSettings.beta == value) return;
-                action.ActionSmoothingSettings.beta = Math.Clamp(value, 0.0, 1.0);
+                if (!_modelReady) return;
+                double beta = Math.Clamp(value, 0.0, 1.0);
+                if (action.ActionSmoothingSettings.beta == beta) return;
+                action.ActionSmoothingSettings.beta = beta;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(SmoothingBeta)));
                 SmoothingBetaChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -760,20 +774,11 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             }
 
             PopulateModel();
-            if (this.action.AccelCurve == GyroMouseAccelCurveChoice.None)
+            this.action.MinAccelXSens = this.action.SwipesPer360;
+            this.action.MinAccelYSens = VerticalRws;
+            if (this.action.AccelCurve != GyroMouseAccelCurveChoice.None)
             {
-                this.action.MinAccelXSens = this.action.SwipesPer360;
-                this.action.MinAccelYSens = VerticalRws;
-            }
-            else
-            {
-                this.action.SwipesPer360 = Math.Clamp(
-                    this.action.MinAccelXSens, 0.0, 100.0);
-                this.action.VerticalScale =
-                    Math.Abs(this.action.SwipesPer360) < 1e-10
-                        ? Math.Clamp(this.action.MinAccelYSens, 0.0, 10.0)
-                        : Math.Clamp(this.action.MinAccelYSens /
-                            this.action.SwipesPer360, 0.0, 10.0);
+                RepairZeroAccelerationMaximums();
             }
             _prevAccelCurve = this.action.AccelCurve;
 
@@ -1146,6 +1151,31 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_Y_SENS);
             PropertyChanged?.Invoke(this,
                 new PropertyChangedEventArgs(nameof(MinAccelYSens)));
+        }
+
+        private void RepairZeroAccelerationMaximums()
+        {
+            if (action.MaxAccelXSens <= 0.0)
+            {
+                action.MaxAccelXSens = Math.Max(
+                    TouchpadMouse.DEFAULT_MAX_ACCEL_SENS,
+                    action.MinAccelXSens);
+                MarkAccelerationProperty(
+                    TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_X_SENS);
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(MaxAccelXSens)));
+            }
+
+            if (action.MaxAccelYSens <= 0.0)
+            {
+                action.MaxAccelYSens = Math.Max(
+                    TouchpadMouse.DEFAULT_MAX_ACCEL_SENS,
+                    action.MinAccelYSens);
+                MarkAccelerationProperty(
+                    TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_Y_SENS);
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(MaxAccelYSens)));
+            }
         }
 
         private void TouchpadMousePropViewModel_TrackballFrictionChanged(object sender, EventArgs e)

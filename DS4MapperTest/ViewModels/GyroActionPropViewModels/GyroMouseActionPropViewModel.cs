@@ -547,7 +547,11 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => smoothPresetChoice;
             set
             {
+                if (!_modelReady) return;
+                if (smoothPresetChoice == value) return;
                 smoothPresetChoice = value;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(SmoothPresetChoice)));
                 SmoothPresetChoiceItem currentItem = 
                     smoothPresetChoiceItems.FirstOrDefault(t => t.Choice == value);
                 if (currentItem != null)
@@ -563,8 +567,14 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.smoothingFilterSettings.minCutOff;
             set
             {
-                if (action.mouseParams.smoothingFilterSettings.minCutOff == value) return;
-                action.mouseParams.smoothingFilterSettings.minCutOff = Math.Clamp(value, 0.0, 10.0);
+                if (!_modelReady) return;
+                double minCutoff = Math.Clamp(value, 0.0, 10.0);
+                if (action.mouseParams.smoothingFilterSettings.minCutOff ==
+                    minCutoff) return;
+                action.mouseParams.smoothingFilterSettings.minCutOff =
+                    minCutoff;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(SmoothingMinCutoff)));
                 SmoothingMinCutoffChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -576,8 +586,13 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.smoothingFilterSettings.beta;
             set
             {
-                if (action.mouseParams.smoothingFilterSettings.beta == value) return;
-                action.mouseParams.smoothingFilterSettings.beta = Math.Clamp(value, 0.0, 1.0);
+                if (!_modelReady) return;
+                double beta = Math.Clamp(value, 0.0, 1.0);
+                if (action.mouseParams.smoothingFilterSettings.beta ==
+                    beta) return;
+                action.mouseParams.smoothingFilterSettings.beta = beta;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(SmoothingBeta)));
                 SmoothingBetaChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
