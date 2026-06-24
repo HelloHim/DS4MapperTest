@@ -171,6 +171,26 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler MinAngleThresholdChanged;
 
+        public double ReleaseDampeningSpeed
+        {
+            get => action.ReleaseDampeningSpeed;
+            set
+            {
+                if (action.ReleaseDampeningSpeed == value) return;
+                action.ReleaseDampeningSpeed = value;
+                ReleaseDampeningSpeedChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler ReleaseDampeningSpeedChanged;
+
+        public bool HighlightReleaseDampeningSpeed
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
+        }
+        public event EventHandler HighlightReleaseDampeningSpeedChanged;
+
         public bool HighlightName
         {
             get => action.ParentAction == null ||
@@ -240,6 +260,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             FlickThresholdChanged += StickFlickStickPropViewModel_FlickThresholdChanged;
             FlickTimeChanged += StickFlickStickPropViewModel_FlickTimeChanged;
             MinAngleThresholdChanged += StickFlickStickPropViewModel_MinAngleThresholdChanged;
+            ReleaseDampeningSpeedChanged += StickFlickStickPropViewModel_ReleaseDampeningSpeedChanged;
 
             double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
             double savedRwc = mapper.ActionProfile.CalibRwc;
@@ -343,6 +364,17 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.MIN_ANGLE_THRESHOLD);
             HighlightMinAngleThresholdChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickFlickStickPropViewModel_ReleaseDampeningSpeedChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED))
+            {
+                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
+            HighlightReleaseDampeningSpeedChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickFlickStickPropViewModel_FlickTimeChanged(object sender, EventArgs e)

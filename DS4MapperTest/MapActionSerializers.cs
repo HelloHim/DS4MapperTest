@@ -4126,6 +4126,22 @@ namespace DS4MapperTest
 
             public bool ShouldSerializeInGameSens() => false;
 
+            public double ReleaseDampeningSpeed
+            {
+                get => flickAction.ReleaseDampeningSpeed;
+                set
+                {
+                    flickAction.ReleaseDampeningSpeed = value;
+                    ReleaseDampeningSpeedChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler ReleaseDampeningSpeedChanged;
+
+            public bool ShouldSerializeReleaseDampeningSpeed()
+            {
+                return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
+            }
+
             public FlickStickSettings(TouchpadFlickStick flickAction)
             {
                 this.flickAction = flickAction;
@@ -4150,6 +4166,7 @@ namespace DS4MapperTest
             settings.FlickTimeChanged += Settings_FlickTimeChanged;
             settings.MinAngleThresholdChanged += Settings_MinAngleThresholdChanged;
             settings.InGameSensChanged += Settings_InGameSensChanged;
+            settings.ReleaseDampeningSpeedChanged += Settings_ReleaseDampeningSpeedChanged;
         }
 
         public TouchpadFlickStickActionSerializer(ActionLayer tempLayer, MapAction action) :
@@ -4191,6 +4208,11 @@ namespace DS4MapperTest
         private void Settings_FlickThresholdChanged(object sender, EventArgs e)
         {
             flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.FLICK_THRESHOLD);
+        }
+
+        private void Settings_ReleaseDampeningSpeedChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
         }
     }
 
@@ -4327,6 +4349,22 @@ namespace DS4MapperTest
 
             public bool ShouldSerializeInGameSens() => false;
 
+            public double ReleaseDampeningSpeed
+            {
+                get => flickAction.ReleaseDampeningSpeed;
+                set
+                {
+                    flickAction.ReleaseDampeningSpeed = value;
+                    ReleaseDampeningSpeedChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler ReleaseDampeningSpeedChanged;
+
+            public bool ShouldSerializeReleaseDampeningSpeed()
+            {
+                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
+            }
+
             public FlickStickSettings(StickFlickStick flickAction)
             {
                 this.flickAction = flickAction;
@@ -4350,6 +4388,7 @@ namespace DS4MapperTest
             settings.FlickTimeChanged += Settings_FlickTimeChanged;
             settings.MinAngleThresholdChanged += Settings_MinAngleThresholdChanged;
             settings.InGameSensChanged += Settings_InGameSensChanged;
+            settings.ReleaseDampeningSpeedChanged += Settings_ReleaseDampeningSpeedChanged;
         }
 
         public StickFlickStickActionSerializer(ActionLayer tempLayer, MapAction action) :
@@ -4391,6 +4430,11 @@ namespace DS4MapperTest
         private void Settings_FlickThresholdChanged(object sender, EventArgs e)
         {
             flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.FLICK_THRESHOLD);
+        }
+
+        private void Settings_ReleaseDampeningSpeedChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
         }
     }
 
