@@ -18,6 +18,7 @@ namespace DS4MapperTest.TouchpadActions
             public const string FLICK_TIME = "FlickTime";
             public const string MIN_ANGLE_THRESHOLD = "MinAngleThreshold";
             public const string IN_GAME_SENS = "InGameSens";
+            public const string RELEASE_DAMPENING_SPEED = "ReleaseDampeningSpeed";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -28,6 +29,7 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.FLICK_TIME,
             PropertyKeyStrings.MIN_ANGLE_THRESHOLD,
             PropertyKeyStrings.IN_GAME_SENS,
+            PropertyKeyStrings.RELEASE_DAMPENING_SPEED,
         };
 
         public class FlickStickMappingData
@@ -84,6 +86,13 @@ namespace DS4MapperTest.TouchpadActions
         {
             get => inGameSens;
             set => inGameSens = Math.Clamp(value, 0.1, 10.0);
+        }
+
+        private double releaseDampeningSpeed = 2.5;
+        public double ReleaseDampeningSpeed
+        {
+            get => releaseDampeningSpeed;
+            set => releaseDampeningSpeed = Math.Clamp(value, 0.0, 10.0);
         }
 
         private FlickStickMappingData tempFlickData;
@@ -222,6 +231,9 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.IN_GAME_SENS:
                             inGameSens = tempFlickAction.inGameSens;
                             break;
+                        case PropertyKeyStrings.RELEASE_DAMPENING_SPEED:
+                            releaseDampeningSpeed = tempFlickAction.releaseDampeningSpeed;
+                            break;
                         default:
                             break;
                     }
@@ -269,6 +281,9 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.IN_GAME_SENS:
                     inGameSens = tempFlickAction.inGameSens;
                     break;
+                case PropertyKeyStrings.RELEASE_DAMPENING_SPEED:
+                    releaseDampeningSpeed = tempFlickAction.releaseDampeningSpeed;
+                    break;
                 default:
                     break;
             }
@@ -300,6 +315,19 @@ namespace DS4MapperTest.TouchpadActions
             double length = (currentTestX * currentTestX) + (currentTestY * currentTestY);
             double testLength = flickThreshold * flickThreshold;
 
+            double sweepDampen = 1.0;
+            if (releaseDampeningSpeed > 0.0 && mapper.CurrentLatency > 0.0)
+            {
+                double prevMag = Math.Sqrt(lastLength);
+                double currMag = Math.Sqrt(length);
+                double returnVelocity = (prevMag - currMag) / mapper.CurrentLatency;
+                if (returnVelocity > 0.0)
+                {
+                    double dampenFactor = Math.Clamp(returnVelocity / releaseDampeningSpeed, 0.0, 1.0);
+                    sweepDampen = 1.0 - dampenFactor;
+                }
+            }
+
             if (length >= testLength)
             {
                 if (lastLength < testLength)
@@ -325,7 +353,7 @@ namespace DS4MapperTest.TouchpadActions
                     //Trace.WriteLine(string.Format("ANGLE CHANGE: {0} {1} {2}", stickAngle, lastStickAngle, rawAngleChange));
                     //Trace.WriteLine(string.Format("{0} {1} | {2} {3}", axisXVal, prevXVal, axisYVal, prevYVal));
                     //angleChange = flickData.flickFilter.Filter(angleChange, mapper.CurrentLatency);
-                    result += angleChange;
+                    result += angleChange * sweepDampen;
                 }
             }
             else

@@ -155,6 +155,26 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler MinAngleThresholdChanged;
 
+        public double ReleaseDampeningSpeed
+        {
+            get => action.ReleaseDampeningSpeed;
+            set
+            {
+                if (action.ReleaseDampeningSpeed == value) return;
+                action.ReleaseDampeningSpeed = value;
+                ReleaseDampeningSpeedChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler ReleaseDampeningSpeedChanged;
+
+        public bool HighlightReleaseDampeningSpeed
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
+        }
+        public event EventHandler HighlightReleaseDampeningSpeedChanged;
+
         public bool HighlightName
         {
             get => action.ParentAction == null ||
@@ -223,6 +243,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             FlickThresholdChanged += TouchpadFlickStickPropViewModel_FlickThresholdChanged;
             FlickTimeChanged += TouchpadFlickStickPropViewModel_FlickTimeChanged;
             MinAngleThresholdChanged += TouchpadFlickStickPropViewModel_MinAngleThresholdChanged;
+            ReleaseDampeningSpeedChanged += TouchpadFlickStickPropViewModel_ReleaseDampeningSpeedChanged;
 
             double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
             double savedRwc = mapper.ActionProfile.CalibRwc;
@@ -359,6 +380,17 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.NAME);
             HighlightNameChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadFlickStickPropViewModel_ReleaseDampeningSpeedChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED))
+            {
+                action.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
+            HighlightReleaseDampeningSpeedChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }
