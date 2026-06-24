@@ -411,10 +411,10 @@ namespace DS4MapperTest.GyroActions
             }
             else
             {
-                double activeMinThreshold = mouseParams.minThreshold < mouseParams.maxGyroThreshold ?
-                mouseParams.minThreshold : mouseParams.maxGyroThreshold;
-                double activeMaxThreshold = mouseParams.maxGyroThreshold > mouseParams.minThreshold ?
-                    mouseParams.maxGyroThreshold : mouseParams.minGyroThreshold;
+                double activeMinThreshold = Math.Min(mouseParams.minGyroThreshold,
+                    mouseParams.maxGyroThreshold);
+                double activeMaxThreshold = Math.Max(mouseParams.minGyroThreshold,
+                    mouseParams.maxGyroThreshold);
                 double minXSens = mouseParams.minAccelXSens;
                 double maxXSens = mouseParams.maxAccelXSens;
                 double minYSens = mouseParams.minAccelYSens;
@@ -427,7 +427,7 @@ namespace DS4MapperTest.GyroActions
 
                 double minThresSquared = activeMinThreshold * activeMinThreshold;
                 double distSquared = (deltaAngVelX * deltaAngVelX) + (deltaAngVelY * deltaAngVelY);
-                bool isPastMinThreshold = distSquared >= activeMinThreshold;
+                bool isPastMinThreshold = distSquared >= minThresSquared;
                 if (isPastMinThreshold)
                 {
                     //double alphaX = deltaAngVelX / dps_test;
