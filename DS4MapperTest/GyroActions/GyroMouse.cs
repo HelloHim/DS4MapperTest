@@ -76,8 +76,10 @@ namespace DS4MapperTest.GyroActions
         public const double IN_GAME_SENS_DEFAULT = 1.0;
         public const GyroMouseAccelCurveChoice ACCEL_CURVE_DEFAULT =
             GyroMouseAccelCurveChoice.Linear;
-        public const double MIN_ACCEL_SENS_DEFAULT = 0.0;
-        public const double MAX_ACCEL_SENS_DEFAULT = 0.0;
+        public const double SENSITIVITY_DEFAULT = 1.0;
+        public const double VERTICAL_SCALE_DEFAULT = 1.0;
+        public const double MIN_ACCEL_SENS_DEFAULT = SENSITIVITY_DEFAULT;
+        public const double MAX_ACCEL_SENS_DEFAULT = SENSITIVITY_DEFAULT;
         public const double MIN_GYRO_THRESHOLD_DEFAULT = 0.0;
         public const double MAX_GYRO_THRESHOLD_DEFAULT = 0.0;
         public const double POWER_VREF_DEFAULT = 1.0;
@@ -208,7 +210,7 @@ namespace DS4MapperTest.GyroActions
             actionTypeName = ACTION_TYPE_NAME;
             mouseParams = new GyroMouseParams()
             {
-                sensitivity = 1.0,
+                sensitivity = GyroMouseParams.SENSITIVITY_DEFAULT,
                 deadzone = 0.6,
                 verticalDeadZone = 0.0,
                 gyroAngleSnapDegrees = 0.0,
@@ -225,7 +227,7 @@ namespace DS4MapperTest.GyroActions
                 powerExponent = GyroMouseParams.POWER_EXPONENT_DEFAULT,
                 powerVRef = GyroMouseParams.POWER_VREF_DEFAULT,
                 naturalVHalf = GyroMouseParams.NATURAL_VHALF_DEFAULT,
-                verticalScale = 1.0,
+                verticalScale = GyroMouseParams.VERTICAL_SCALE_DEFAULT,
                 triggerActivates = true,
                 andCond = true,
                 gyroTriggerButtons = new JoypadActionCodes[1]
@@ -544,12 +546,15 @@ namespace DS4MapperTest.GyroActions
             yMotion = deltaAngVelY != 0 ? finalCoefficientY * (yAng * tempDouble)
                 + (normY * (offset * signY)) : 0;
 
-            double vertMultiplier = mouseParams.sensitivity > 0.0
-                ? mouseParams.verticalScale / mouseParams.sensitivity
-                : mouseParams.verticalScale;
-            if (vertMultiplier != 1.0)
+            if (mouseParams.accelCurve == GyroMouseAccelCurveChoice.None)
             {
-                yMotion = vertMultiplier * yMotion;
+                double vertMultiplier = mouseParams.sensitivity > 0.0
+                    ? mouseParams.verticalScale / mouseParams.sensitivity
+                    : mouseParams.verticalScale;
+                if (vertMultiplier != 1.0)
+                {
+                    yMotion = vertMultiplier * yMotion;
+                }
             }
 
             if (mouseParams.jitterCompensation)

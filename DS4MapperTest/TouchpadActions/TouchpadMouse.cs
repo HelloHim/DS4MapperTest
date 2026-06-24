@@ -115,7 +115,8 @@ namespace DS4MapperTest.TouchpadActions
         //private const int DEFAULT_DEADZONE = 8;
         private const int DEFAULT_DEADZONE = 0;
         private const int DEFAULT_VERTICAL_DEAD_ZONE = 0;
-        private const double DEFAULT_VERTICAL_SCALE = 1.0;
+        public const double DEFAULT_SWIPES_PER_360 = 1.0;
+        public const double DEFAULT_VERTICAL_SCALE = 1.0;
         private const bool DEFAULT_SMOOTHING_ENABLED = true;
         public const GyroMouseAccelCurveChoice DEFAULT_ACCEL_CURVE =
             GyroMouseAccelCurveChoice.None;
@@ -251,7 +252,7 @@ namespace DS4MapperTest.TouchpadActions
             }
         }
 
-        private double swipesPer360 = 1.0;
+        private double swipesPer360 = DEFAULT_SWIPES_PER_360;
         public double SwipesPer360
         {
             get => swipesPer360;
@@ -553,7 +554,11 @@ namespace DS4MapperTest.TouchpadActions
             double oldTimeElapsed = timeElapsed;
             timeElapsed = timeElapsed - (mapper.remainderCutoff(timeElapsed * 10000.0, 1.0) / 10000.0);
             double padWidth = touchpadDefinition.xAxis.max - (double)touchpadDefinition.xAxis.min;
-            double coefficient = mapper.ActionProfile.CalibCounts * swipesPer360 / padWidth;
+            double coefficient = mapper.ActionProfile.CalibCounts / padWidth;
+            if (AccelCurve == GyroMouseAccelCurveChoice.None)
+            {
+                coefficient *= swipesPer360;
+            }
 
             //double offset = TOUCHPAD_MOUSE_OFFSET;
             double offset = touchpadDefinition.mouseOffset;
@@ -677,7 +682,8 @@ namespace DS4MapperTest.TouchpadActions
 
             double yMotion = movementY != 0 ? finalCoefficientY * (movementY * tempDouble)
                 + (normY * (offset * signY)) : 0;
-            if (verticalScale != DEFAULT_VERTICAL_SCALE)
+            if (AccelCurve == GyroMouseAccelCurveChoice.None &&
+                verticalScale != DEFAULT_VERTICAL_SCALE)
             {
                 yMotion *= verticalScale;
             }
