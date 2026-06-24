@@ -498,6 +498,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             {
                 if (action.mouseParams.smoothing == value) return;
                 action.mouseParams.smoothing = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SmoothingEnabled)));
                 SmoothingEnabledChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
