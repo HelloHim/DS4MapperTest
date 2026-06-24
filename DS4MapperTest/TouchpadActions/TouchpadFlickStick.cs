@@ -16,6 +16,7 @@ namespace DS4MapperTest.TouchpadActions
             public const string REAL_WORLD_CALIBRATION = "RealWorldCalibration";
             public const string FLICK_THRESHOLD = "FlickThreshold";
             public const string FLICK_TIME = "FlickTime";
+            public const string FLICK_TIME_EXPONENT = "FlickTimeExponent";
             public const string MIN_ANGLE_THRESHOLD = "MinAngleThreshold";
             public const string IN_GAME_SENS = "InGameSens";
             public const string RELEASE_DAMPENING_SPEED = "ReleaseDampeningSpeed";
@@ -27,6 +28,7 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.REAL_WORLD_CALIBRATION,
             PropertyKeyStrings.FLICK_THRESHOLD,
             PropertyKeyStrings.FLICK_TIME,
+            PropertyKeyStrings.FLICK_TIME_EXPONENT,
             PropertyKeyStrings.MIN_ANGLE_THRESHOLD,
             PropertyKeyStrings.IN_GAME_SENS,
             PropertyKeyStrings.RELEASE_DAMPENING_SPEED,
@@ -40,11 +42,13 @@ namespace DS4MapperTest.TouchpadActions
             public const double DEFAULT_FLICK_PROGRESS = 0.0;
             public const double DEFAULT_FLICK_SIZE = 0.0;
             public const double DEFAULT_FLICK_ANGLE_REMAINDER = 0.0;
+            public const double DEFAULT_FLICK_TIME_ACTUAL = 0.0;
 
             //public OneEuroFilter flickFilter = new OneEuroFilter(DEFAULT_MINCUTOFF, DEFAULT_BETA);
             public double flickProgress = DEFAULT_FLICK_PROGRESS;
             public double flickSize = DEFAULT_FLICK_SIZE;
             public double flickAngleRemainder = DEFAULT_FLICK_ANGLE_REMAINDER;
+            public double flickTimeActual = DEFAULT_FLICK_TIME_ACTUAL;
 
             public void Reset()
             {
@@ -52,6 +56,7 @@ namespace DS4MapperTest.TouchpadActions
                 flickProgress = DEFAULT_FLICK_PROGRESS;
                 flickSize = DEFAULT_FLICK_SIZE;
                 flickAngleRemainder = DEFAULT_FLICK_ANGLE_REMAINDER;
+                flickTimeActual = DEFAULT_FLICK_TIME_ACTUAL;
             }
         }
 
@@ -73,6 +78,13 @@ namespace DS4MapperTest.TouchpadActions
         public double FlickTime
         {
             get => flickTime; set => flickTime = value;
+        }
+
+        private double flickTimeExponent = 0.0;
+        public double FlickTimeExponent
+        {
+            get => flickTimeExponent;
+            set => flickTimeExponent = Math.Clamp(value, 0.0, 1.0);
         }
 
         private double minAngleThreshold;
@@ -225,6 +237,9 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.FLICK_TIME:
                             flickTime = tempFlickAction.flickTime;
                             break;
+                        case PropertyKeyStrings.FLICK_TIME_EXPONENT:
+                            flickTimeExponent = tempFlickAction.flickTimeExponent;
+                            break;
                         case PropertyKeyStrings.MIN_ANGLE_THRESHOLD:
                             minAngleThreshold = tempFlickAction.minAngleThreshold;
                             break;
@@ -274,6 +289,9 @@ namespace DS4MapperTest.TouchpadActions
                     break;
                 case PropertyKeyStrings.FLICK_TIME:
                     flickTime = tempFlickAction.flickTime;
+                    break;
+                case PropertyKeyStrings.FLICK_TIME_EXPONENT:
+                    flickTimeExponent = tempFlickAction.flickTimeExponent;
                     break;
                 case PropertyKeyStrings.MIN_ANGLE_THRESHOLD:
                     minAngleThreshold = tempFlickAction.minAngleThreshold;
@@ -335,6 +353,7 @@ namespace DS4MapperTest.TouchpadActions
                     // Start new Flick
                     flickData.flickProgress = 0.0; // Reset Flick progress
                     flickData.flickSize = Math.Atan2((axisXVal - axisXMid), (axisYVal - axisYMid));
+                    flickData.flickTimeActual = flickTime * Math.Pow(Math.Abs(flickData.flickSize) / Math.PI, flickTimeExponent);
                     //flickData.flickFilter.Filter(0.0, mapper.CurrentLatency);
                 }
                 else
@@ -365,7 +384,7 @@ namespace DS4MapperTest.TouchpadActions
 
             // Continue Flick motion
             double lastFlickProgress = flickData.flickProgress;
-            double testFlickTime = flickTime;
+            double testFlickTime = flickData.flickTimeActual;
             if (lastFlickProgress < testFlickTime)
             {
                 flickData.flickProgress = Math.Min(flickData.flickProgress + mapper.CurrentLatency,
