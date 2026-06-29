@@ -1,4 +1,4 @@
-﻿<Window x:Class="DS4MapperTest.ProfileEditorTest"
+<Window x:Class="DS4MapperTest.ProfileEditorTest"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,373 +6,215 @@
         xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:local="clr-namespace:DS4MapperTest"
         mc:Ignorable="d"
-        Title="ProfileEditorTest" Height="450" Width="800" Closed="Window_Closed">
+        Title="DS4Mapper — Profile Editor"
+        Height="720" Width="1100"
+        MinHeight="600" MinWidth="900"
+        Closed="Window_Closed">
+
     <Window.Background>
         <SolidColorBrush Color="{DynamicResource RegionColor}"/>
     </Window.Background>
-    <DockPanel Margin="8">
-        <StackPanel DockPanel.Dock="Top">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- Sidebar navigation tab style -->
+        <Style x:Key="NavTabStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="20,13,16,13"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="3,0,0,0"
+                                BorderBrush="Transparent">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ItemSelectBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                    <Condition Property="IsChecked" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ItemHoverBrush}"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Placeholder card style -->
+        <Style x:Key="PlaceholderHeading" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        <Style x:Key="PlaceholderSub" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        </Style>
+        <Style x:Key="PlaceholderNote" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontStyle" Value="Italic"/>
+            <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}"/>
+        </Style>
+    </Window.Resources>
+
+    <DockPanel>
+        <!-- Top bar: profile name + save controls -->
+        <Border DockPanel.Dock="Top"
+                BorderThickness="0,0,0,1"
+                BorderBrush="{DynamicResource BorderBrush}"
+                Padding="16,10">
             <DockPanel LastChildFill="False">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="Profile Name" />
-                    <TextBox Text="{Binding ProfileName, UpdateSourceTrigger=LostFocus}" Width="200" DockPanel.Dock="Left" Margin="8,0,0,0" />
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <TextBlock Text="Profile:"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
+                               FontSize="12"
+                               Margin="0,0,8,0"/>
+                    <TextBox Text="{Binding ProfileName, UpdateSourceTrigger=LostFocus}"
+                             Width="220"/>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Visibility="Collapsed">
-                    <CheckBox IsChecked="{Binding OverwriteFile}" Content="Overwrite" DockPanel.Dock="Right" VerticalAlignment="Center" />
-                    <Button Content="Test Out JSON" Click="Button_Click_4" Margin="8,0,0,0" />
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                    <Button Content="Save"
+                            Click="SaveProfileButton_Click"
+                            Style="{StaticResource ButtonPrimary}"
+                            Padding="16,6"
+                            Margin="0,0,8,0"/>
+                    <Button Content="Save &amp; Close"
+                            Click="SaveProfileAndCloseButton_Click"
+                            Padding="16,6"/>
                 </StackPanel>
-
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                    <Button Content="Save" Click="SaveProfileButton_Click" Margin="8,0,0,0" />
-                    <Button Content="Save &amp; Close" Click="SaveProfileAndCloseButton_Click" Margin="8,0,0,0" />
-                </StackPanel>
-
             </DockPanel>
+        </Border>
 
-        </StackPanel>
+        <!-- Hidden legacy color-picker controls (named references kept for code-behind) -->
+        <Grid DockPanel.Dock="Top" Visibility="Collapsed">
+            <hc:ColorPicker x:Name="ColorPicker"
+                            SelectedColorChanged="ColorPicker_SelectedColorChanged"/>
+            <hc:ColorPicker x:Name="ColorPickerBattery"
+                            SelectedColorChanged="ColorPickerBattery_SelectedColorChanged"/>
+            <hc:ColorPicker x:Name="ColorPickerPulse"
+                            SelectedColorChanged="ColorPickerPulse_SelectedColorChanged"/>
+        </Grid>
 
-        <StackPanel DockPanel.Dock="Top">
-            <WrapPanel>
-                <ItemsControl x:Name="actionSetItemsControl" ItemsSource="{Binding ActionSetItems}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Content="{Binding DisplayName}" Click="Button_Click_2" Tag="{Binding SetIndex}">
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource ButtonDefault}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding ItemActive}" Value="True">
-                                                <DataTrigger.Setters>
-                                                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                                                </DataTrigger.Setters>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <Button x:Name="addSetBtn" Content="Add Set +" Click="AddSetBtn_Click" Margin="20,0,0,0" />
-                <Button x:Name="removeSetBtn" Content="Remove Set -" Click="RemoveSetBtn_Click" />
-            </WrapPanel>
+        <!-- Main layout: left sidebar + content area -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="190"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-            <WrapPanel>
-                <ItemsControl ItemsSource="{Binding LayerItems}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Content="{Binding DisplayName}" Tag="{Binding LayerIndex}"  Click="Button_Click_3">
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource ButtonDefault}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding ItemActive}" Value="True">
-                                                <DataTrigger.Setters>
-                                                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                                                </DataTrigger.Setters>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <Button x:Name="addLayerBtn" Content="Add Layer +" Click="AddLayerBtn_Click" Margin="20,0,0,0" />
-                <Button x:Name="removeLayerBtn" Content="Remove Layer -" Click="RemoveLayerBtn_Click" />
-            </WrapPanel>
+            <!-- Left sidebar navigation -->
+            <Border Grid.Column="0"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="{DynamicResource BorderBrush}">
+                <StackPanel Margin="0,8,0,0">
+                    <RadioButton x:Name="navGyroBehavior"
+                                 GroupName="MainNav"
+                                 Content="Gyro Behavior"
+                                 Style="{StaticResource NavTabStyle}"
+                                 IsChecked="True"/>
+                    <RadioButton x:Name="navKeybinds"
+                                 GroupName="MainNav"
+                                 Content="Keybinds"
+                                 Style="{StaticResource NavTabStyle}"/>
+                    <RadioButton x:Name="navSensitivity"
+                                 GroupName="MainNav"
+                                 Content="Sensitivity"
+                                 Style="{StaticResource NavTabStyle}"/>
+                    <RadioButton x:Name="navProfiles"
+                                 GroupName="MainNav"
+                                 Content="Profiles"
+                                 Style="{StaticResource NavTabStyle}"/>
+                    <RadioButton x:Name="navDocumentation"
+                                 GroupName="MainNav"
+                                 Content="Documentation"
+                                 Style="{StaticResource NavTabStyle}"/>
+                </StackPanel>
+            </Border>
 
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Set Name" />
-                <TextBox Text="{Binding CurrentSetName, UpdateSourceTrigger=LostFocus}" Width="100" HorizontalAlignment="Left" Margin="8,0,0,0" />
+            <!-- Content panels (one per nav tab, switched by RadioButton IsChecked) -->
+            <Grid Grid.Column="1">
 
-                <Label Content="Layer Name" Margin="8,0,0,0" />
-                <TextBox Text="{Binding CurrentLayerName, UpdateSourceTrigger=LostFocus}" Width="100" HorizontalAlignment="Left" Margin="8,0,0,0" />
-            </StackPanel>
-        </StackPanel>
-
-        <TabControl>
-            <TabItem Header="Buttons">
-                <ScrollViewer>
-                    <ItemsControl x:Name="bindingsItemsControl" ItemsSource="{Binding ButtonBindings}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <!--<TextBlock Text="JOE BIDEN. WAKE UP" />-->
-                                    <TextBlock Text="{Binding DisplayInputMapString}" Margin="10,0,0,0" />
-                                    <TextBlock Text="{Binding MappedActionType}" Margin="10,0,0,0" />
-                                    <Button Content="{Binding DisplayBind,Mode=OneWay,FallbackValue='Test'}" Click="ButtonActionEditButton_Click" Tag="{Binding BindingName}" MinWidth="60" Margin="10,0,0,0" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-
-            </TabItem>
-            <TabItem Header="Touchpads" Visibility="{Binding HasTouchpadBindings, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <ListView ItemsSource="{Binding TouchpadBindings}" SelectedIndex="{Binding SelectTouchBindIndex}">
-                    <ListView.View>
-                        <GridView>
-                            <GridView.Columns>
-                                <GridViewColumn Header="Name" Width="100">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayInputMapString}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="160">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding MappedActionType}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="300">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="Edit" Click="Button_Click_1" Tag="{Binding}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView.Columns>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </TabItem>
-            <TabItem Header="Triggers" Visibility="{Binding HasTriggerBindings, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <ListView ItemsSource="{Binding TriggerBindings}" SelectedIndex="{Binding SelectTriggerBindIndex}">
-                    <ListView.View>
-                        <GridView>
-                            <GridView.Columns>
-                                <GridViewColumn Header="Name" Width="100">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayInputMapString}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="160">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding MappedActionType}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="300">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="Edit" Click="TiggerActionEdit_Button_Click" Tag="{Binding}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView.Columns>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </TabItem>
-            <TabItem Header="Sticks">
-                <ListView ItemsSource="{Binding StickBindings}" SelectedIndex="{Binding SelectStickBindIndex}">
-                    <ListView.View>
-                        <GridView>
-                            <GridView.Columns>
-                                <GridViewColumn Header="Name" Width="100">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayInputMapString}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="160">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding MappedActionType}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="300">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="Edit" Click="StickActionEdit_Button_Click" Tag="{Binding}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView.Columns>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </TabItem>
-            <TabItem Header="DPads" Visibility="{Binding HasDPadBindings, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <ListView ItemsSource="{Binding DPadBindings}" SelectedIndex="{Binding SelectDPadBindIndex}">
-                    <ListView.View>
-                        <GridView>
-                            <GridView.Columns>
-                                <GridViewColumn Header="Name" Width="100">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayInputMapString}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="160">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding MappedActionType}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="300">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="Edit" Click="DPadActionEdit_Button_Click" Tag="{Binding}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView.Columns>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </TabItem>
-            <TabItem Header="Gyros" Visibility="{Binding HasGyroBindings, Converter={StaticResource Boolean2VisibilityConverter}}">
-                <ListView ItemsSource="{Binding GyroBindings}" SelectedIndex="{Binding SelectGyroBindIndex}">
-                    <ListView.View>
-                        <GridView>
-                            <GridView.Columns>
-                                <GridViewColumn Header="Name" Width="100">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayInputMapString}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="160">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding MappedActionType}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="300">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="Edit" Click="GyroActionEdit_Button_Click" Tag="{Binding}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView.Columns>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </TabItem>
-            <TabItem Header="Meta">
-                <ListView ItemsSource="{Binding AlwaysOnBindings}" SelectedIndex="{Binding SelectAlwaysOnBindIndex}">
-                    <ListView.View>
-                        <GridView>
-                            <GridView.Columns>
-                                <GridViewColumn Header="Name" Width="100">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayInputMapString}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Width="300">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="{Binding DisplayBind,Mode=OneWay,FallbackValue='Test'}" Click="AlwaysOn_Button_Click" Tag="{Binding}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView.Columns>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </TabItem>
-            <TabItem Header="Other">
-                <ScrollViewer VerticalAlignment="Top">
+                <!-- Gyro Behavior -->
+                <Border Padding="28,24"
+                        Visibility="{Binding IsChecked, ElementName=navGyroBehavior, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Output Controller" />
-                            <CheckBox IsChecked="{Binding OutControllerEnabled,FallbackValue=False}" VerticalAlignment="Stretch" Margin="8,0,0,0" VerticalContentAlignment="Center" ToolTip="Expose a virtual X360 when loading this profile" />
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" IsEnabled="{Binding OutControllerEnabled}" Margin="0,8,0,0">
-                            <Label Content="Controller Type" />
-                            <ComboBox SelectedIndex="{Binding OutputControllerTypeIdx,FallbackValue='-1'}" Margin="8,0,0,0">
-                                <ComboBoxItem>Xbox 360</ComboBoxItem>
-                                <ComboBoxItem>DualShock 4</ComboBoxItem>
-                            </ComboBox>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <Label Content="Force Feedback" />
-                            <CheckBox IsChecked="{Binding ForceFeedbackEnabled,FallbackValue=False}" VerticalAlignment="Stretch" Margin="8,0,0,0" VerticalContentAlignment="Center"
-                                      ToolTip="Enable vibration from output controller" />
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <Label Content="Lightbar" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                            <StackPanel Orientation="Vertical">
-                                <StackPanel Orientation="Horizontal">
-                                    <Label Content="Mode:" />
-                                    <ComboBox ItemsSource="{Binding LightbarModeOptions}" DisplayMemberPath="DisplayName"
-                                              SelectedValuePath="ChoiceValue" SelectedValue="{Binding CurrentLightbarMode}" MinWidth="200" Margin="8,0,0,0" />
-                                </StackPanel>
-
-                                <TabControl SelectedIndex="{Binding LightbarOptionsTabIndex,Mode=OneWay}" BorderThickness="0,0,0,0">
-                                    <TabItem Header="Solid Color" Visibility="Collapsed">
-                                        <hc:ColorPicker Name="ColorPicker" Margin="8,8,0,0" HorizontalAlignment="Left" SelectedColorChanged="ColorPicker_SelectedColorChanged">
-                                            <hc:ColorPicker.SelectedBrush>
-                                                <SolidColorBrush Color="{Binding LightbarColor, Mode=OneWay}">
-                                                </SolidColorBrush>
-                                            </hc:ColorPicker.SelectedBrush>
-                                        </hc:ColorPicker>
-                                    </TabItem>
-
-                                    <TabItem Header="Rainbow" Visibility="Collapsed">
-                                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                            <Label Content="Seconds/Cycle:" />
-                                            <hc:NumericUpDown Value="{Binding RainbowSecondsCycle}" Minimum="0" Maximum="10"
-                                                          DecimalPlaces="0" Increment="1" Margin="8,0,0,0" />
-                                        </StackPanel>
-                                    </TabItem>
-
-                                    <TabItem Header="Pulse" Visibility="Collapsed">
-                                        <hc:ColorPicker Name="ColorPickerPulse" Margin="8,8,0,0" HorizontalAlignment="Left" SelectedColorChanged="ColorPickerPulse_SelectedColorChanged">
-                                            <hc:ColorPicker.SelectedBrush>
-                                                <SolidColorBrush Color="{Binding LightbarPulseColor, Mode=OneWay}">
-                                                </SolidColorBrush>
-                                            </hc:ColorPicker.SelectedBrush>
-                                        </hc:ColorPicker>
-                                    </TabItem>
-
-                                    <TabItem Header="Battery" Visibility="Collapsed">
-                                        <hc:ColorPicker Name="ColorPickerBattery" Margin="8,8,0,0" HorizontalAlignment="Left" SelectedColorChanged="ColorPickerBattery_SelectedColorChanged">
-                                            <hc:ColorPicker.SelectedBrush>
-                                                <SolidColorBrush Color="{Binding LightbarBatteryColor, Mode=OneWay}">
-                                                </SolidColorBrush>
-                                            </hc:ColorPicker.SelectedBrush>
-                                        </hc:ColorPicker>
-                                    </TabItem>
-                                </TabControl>
-
-                            </StackPanel>
-
-                        </StackPanel>
-
+                        <TextBlock Text="Gyro Behavior" Style="{StaticResource PlaceholderHeading}"/>
+                        <TextBlock Text="Configure gyro output mode, axis mapping, and activation trigger."
+                                   Style="{StaticResource PlaceholderSub}"/>
+                        <Separator Margin="0,16,0,16"/>
+                        <TextBlock Text="Settings panel — Step 2" Style="{StaticResource PlaceholderNote}"/>
                     </StackPanel>
+                </Border>
 
-                </ScrollViewer>
-            </TabItem>
-        </TabControl>
+                <!-- Keybinds -->
+                <Border Padding="28,24"
+                        Visibility="{Binding IsChecked, ElementName=navKeybinds, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Keybinds" Style="{StaticResource PlaceholderHeading}"/>
+                        <TextBlock Text="Map controller buttons to keyboard, mouse, and gamepad outputs."
+                                   Style="{StaticResource PlaceholderSub}"/>
+                        <Separator Margin="0,16,0,16"/>
+                        <TextBlock Text="Binding UI — Step 4" Style="{StaticResource PlaceholderNote}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Sensitivity -->
+                <Border Padding="28,24"
+                        Visibility="{Binding IsChecked, ElementName=navSensitivity, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Sensitivity" Style="{StaticResource PlaceholderHeading}"/>
+                        <TextBlock Text="Set base and modeshift sensitivity, and choose an acceleration curve."
+                                   Style="{StaticResource PlaceholderSub}"/>
+                        <Separator Margin="0,16,0,16"/>
+                        <TextBlock Text="Sensitivity controls — Step 3" Style="{StaticResource PlaceholderNote}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Profiles -->
+                <Border Padding="28,24"
+                        Visibility="{Binding IsChecked, ElementName=navProfiles, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Profiles" Style="{StaticResource PlaceholderHeading}"/>
+                        <TextBlock Text="Load, save, copy, and delete configuration profiles."
+                                   Style="{StaticResource PlaceholderSub}"/>
+                        <Separator Margin="0,16,0,16"/>
+                        <TextBlock Text="Profile manager — Step 5" Style="{StaticResource PlaceholderNote}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Documentation -->
+                <Border Padding="28,24"
+                        Visibility="{Binding IsChecked, ElementName=navDocumentation, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Documentation" Style="{StaticResource PlaceholderHeading}"/>
+                        <TextBlock Text="JoyShockMapper reference documentation with search."
+                                   Style="{StaticResource PlaceholderSub}"/>
+                        <Separator Margin="0,16,0,16"/>
+                        <TextBlock Text="Embedded docs — Step 6" Style="{StaticResource PlaceholderNote}"/>
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </Grid>
     </DockPanel>
 </Window>
