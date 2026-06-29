@@ -52,13 +52,13 @@
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Angle" VerticalAlignment="Center" ToolTip="Signed degrees: positive = right, negative = left. Range: -180 to +180." />
                         <hc:NumericUpDown Minimum="-180.0" Maximum="180.0" DecimalPlaces="1" Increment="1.0"
-                            Value="{Binding CameraTurnAngle, FallbackValue='90.0'}" Width="100" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            Value="{Binding CameraTurnAngle, FallbackValue='180.0'}" Width="100" Margin="8,0,0,0" VerticalAlignment="Center" />
                         <Label Content="°" Margin="2,0,0,0" BorderBrush="{x:Null}" VerticalAlignment="Center" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                         <Label Content="Duration" VerticalAlignment="Center" />
                         <hc:NumericUpDown Minimum="1.0" Maximum="10000.0" DecimalPlaces="0" Increment="10.0"
-                            Value="{Binding CameraTurnDurationMs, FallbackValue='150.0'}" Width="100" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            Value="{Binding CameraTurnDurationMs, FallbackValue='100.0'}" Width="100" Margin="8,0,0,0" VerticalAlignment="Center" />
                         <Label Content="ms" Margin="2,0,0,0" BorderBrush="{x:Null}" VerticalAlignment="Center" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">

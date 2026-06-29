@@ -106,8 +106,8 @@ namespace DS4MapperTest.MapperUtil
         public bool processOutput;
 
         // Camera Turn parameters — positive angle = right, negative = left
-        public double cameraTurnAngle = 90.0;
-        public double cameraTurnDurationMs = 150.0;
+        public double cameraTurnAngle = 180.0;
+        public double cameraTurnDurationMs = 100.0;
         public double cameraTurnCounts360 = 1800.0; // mouse counts for one full 360° at your actual in-game sensitivity
         // Camera Turn runtime state
         public double cameraTurnElapsed = 0.0;
