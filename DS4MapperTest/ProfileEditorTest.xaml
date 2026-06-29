@@ -4,9 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:hc="https://handyorg.github.io/handycontrol"
-        xmlns:local="clr-namespace:DS4MapperTest"
+        xmlns:views="clr-namespace:DS4MapperTest.Views"
         mc:Ignorable="d"
-        Title="DS4Mapper — Profile Editor"
+        Title="DS4Mapper - Profile Editor"
         Height="720" Width="1100"
         MinHeight="600" MinWidth="900"
         Closed="Window_Closed">
@@ -18,7 +18,6 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-        <!-- Sidebar navigation tab style -->
         <Style x:Key="NavTabStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
@@ -57,7 +56,6 @@
             </Setter>
         </Style>
 
-        <!-- Placeholder card style -->
         <Style x:Key="PlaceholderHeading" TargetType="TextBlock">
             <Setter Property="FontSize" Value="20"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -76,7 +74,6 @@
     </Window.Resources>
 
     <DockPanel>
-        <!-- Top bar: profile name + save controls -->
         <Border DockPanel.Dock="Top"
                 BorderThickness="0,0,0,1"
                 BorderBrush="{DynamicResource BorderBrush}"
@@ -105,7 +102,6 @@
             </DockPanel>
         </Border>
 
-        <!-- Hidden legacy color-picker controls (named references kept for code-behind) -->
         <Grid DockPanel.Dock="Top" Visibility="Collapsed">
             <hc:ColorPicker x:Name="ColorPicker"
                             SelectedColorChanged="ColorPicker_SelectedColorChanged"/>
@@ -115,105 +111,143 @@
                             SelectedColorChanged="ColorPickerPulse_SelectedColorChanged"/>
         </Grid>
 
-        <!-- Main layout: left sidebar + content area -->
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="190"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left sidebar navigation -->
             <Border Grid.Column="0"
                     BorderThickness="0,0,1,0"
                     BorderBrush="{DynamicResource BorderBrush}">
                 <StackPanel Margin="0,8,0,0">
-                    <RadioButton x:Name="navGyroBehavior"
+                    <RadioButton x:Name="navGyroSensitivity"
                                  GroupName="MainNav"
-                                 Content="Gyro Behavior"
+                                 Content="Gyro &amp; Sensitivity"
                                  Style="{StaticResource NavTabStyle}"
                                  IsChecked="True"/>
                     <RadioButton x:Name="navKeybinds"
                                  GroupName="MainNav"
                                  Content="Keybinds"
                                  Style="{StaticResource NavTabStyle}"/>
-                    <RadioButton x:Name="navSensitivity"
+                    <RadioButton x:Name="navTrackpad"
                                  GroupName="MainNav"
-                                 Content="Sensitivity"
+                                 Content="Trackpad"
                                  Style="{StaticResource NavTabStyle}"/>
-                    <RadioButton x:Name="navProfiles"
+                    <RadioButton x:Name="navSticks"
                                  GroupName="MainNav"
-                                 Content="Profiles"
+                                 Content="Sticks"
                                  Style="{StaticResource NavTabStyle}"/>
-                    <RadioButton x:Name="navDocumentation"
+                    <RadioButton x:Name="navOther"
                                  GroupName="MainNav"
-                                 Content="Documentation"
+                                 Content="Other"
                                  Style="{StaticResource NavTabStyle}"/>
                 </StackPanel>
             </Border>
 
-            <!-- Content panels (one per nav tab, switched by RadioButton IsChecked) -->
             <Grid Grid.Column="1">
-
-                <!-- Gyro Behavior -->
                 <Border Padding="28,24"
-                        Visibility="{Binding IsChecked, ElementName=navGyroBehavior, Converter={StaticResource BoolToVis}}">
+                        Visibility="{Binding IsChecked, ElementName=navGyroSensitivity, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
-                        <TextBlock Text="Gyro Behavior" Style="{StaticResource PlaceholderHeading}"/>
-                        <TextBlock Text="Configure gyro output mode, axis mapping, and activation trigger."
+                        <TextBlock Text="Gyro &amp; Sensitivity" Style="{StaticResource PlaceholderHeading}"/>
+                        <TextBlock Text="Configure gyro behaviour, sensitivity, and curve settings."
                                    Style="{StaticResource PlaceholderSub}"/>
                         <Separator Margin="0,16,0,16"/>
-                        <TextBlock Text="Settings panel — Step 2" Style="{StaticResource PlaceholderNote}"/>
+                        <TextBlock Text="Settings are not wired in this phase." Style="{StaticResource PlaceholderNote}"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Keybinds -->
                 <Border Padding="28,24"
                         Visibility="{Binding IsChecked, ElementName=navKeybinds, Converter={StaticResource BoolToVis}}">
-                    <StackPanel>
-                        <TextBlock Text="Keybinds" Style="{StaticResource PlaceholderHeading}"/>
-                        <TextBlock Text="Map controller buttons to keyboard, mouse, and gamepad outputs."
-                                   Style="{StaticResource PlaceholderSub}"/>
-                        <Separator Margin="0,16,0,16"/>
-                        <TextBlock Text="Binding UI — Step 4" Style="{StaticResource PlaceholderNote}"/>
-                    </StackPanel>
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top">
+                            <TextBlock Text="Keybinds" Style="{StaticResource PlaceholderHeading}"/>
+                            <TextBlock Text="Map controller buttons to keyboard, mouse, and gamepad outputs."
+                                       Style="{StaticResource PlaceholderSub}"/>
+                        </StackPanel>
+
+                        <TabControl Margin="0,16,0,0">
+                            <TabItem Header="Face">
+                                <views:FaceKeybindsControl Margin="0,16,0,0"/>
+                            </TabItem>
+                            <TabItem Header="D-Pad">
+                                <StackPanel Margin="0,16,0,0">
+                                    <TextBlock Text="D-Pad" Style="{StaticResource PlaceholderHeading}"/>
+                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
+                                               Style="{StaticResource PlaceholderNote}"/>
+                                </StackPanel>
+                            </TabItem>
+                            <TabItem Header="Bumpers">
+                                <StackPanel Margin="0,16,0,0">
+                                    <TextBlock Text="Bumpers" Style="{StaticResource PlaceholderHeading}"/>
+                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
+                                               Style="{StaticResource PlaceholderNote}"/>
+                                </StackPanel>
+                            </TabItem>
+                            <TabItem Header="Triggers">
+                                <StackPanel Margin="0,16,0,0">
+                                    <TextBlock Text="Triggers" Style="{StaticResource PlaceholderHeading}"/>
+                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
+                                               Style="{StaticResource PlaceholderNote}"/>
+                                </StackPanel>
+                            </TabItem>
+                            <TabItem Header="Center">
+                                <StackPanel Margin="0,16,0,0">
+                                    <TextBlock Text="Center" Style="{StaticResource PlaceholderHeading}"/>
+                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
+                                               Style="{StaticResource PlaceholderNote}"/>
+                                </StackPanel>
+                            </TabItem>
+                            <TabItem Header="Paddles">
+                                <StackPanel Margin="0,16,0,0">
+                                    <TextBlock Text="Paddles" Style="{StaticResource PlaceholderHeading}"/>
+                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
+                                               Style="{StaticResource PlaceholderNote}"/>
+                                </StackPanel>
+                            </TabItem>
+                            <TabItem Header="Extra">
+                                <StackPanel Margin="0,16,0,0">
+                                    <TextBlock Text="Extra" Style="{StaticResource PlaceholderHeading}"/>
+                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
+                                               Style="{StaticResource PlaceholderNote}"/>
+                                </StackPanel>
+                            </TabItem>
+                        </TabControl>
+                    </DockPanel>
                 </Border>
 
-                <!-- Sensitivity -->
                 <Border Padding="28,24"
-                        Visibility="{Binding IsChecked, ElementName=navSensitivity, Converter={StaticResource BoolToVis}}">
+                        Visibility="{Binding IsChecked, ElementName=navTrackpad, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
-                        <TextBlock Text="Sensitivity" Style="{StaticResource PlaceholderHeading}"/>
-                        <TextBlock Text="Set base and modeshift sensitivity, and choose an acceleration curve."
+                        <TextBlock Text="Trackpad" Style="{StaticResource PlaceholderHeading}"/>
+                        <TextBlock Text="Trackpad bindings and options will live here."
                                    Style="{StaticResource PlaceholderSub}"/>
                         <Separator Margin="0,16,0,16"/>
-                        <TextBlock Text="Sensitivity controls — Step 3" Style="{StaticResource PlaceholderNote}"/>
+                        <TextBlock Text="Placeholder only. Controls are not wired in this phase." Style="{StaticResource PlaceholderNote}"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Profiles -->
                 <Border Padding="28,24"
-                        Visibility="{Binding IsChecked, ElementName=navProfiles, Converter={StaticResource BoolToVis}}">
+                        Visibility="{Binding IsChecked, ElementName=navSticks, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
-                        <TextBlock Text="Profiles" Style="{StaticResource PlaceholderHeading}"/>
-                        <TextBlock Text="Load, save, copy, and delete configuration profiles."
+                        <TextBlock Text="Sticks" Style="{StaticResource PlaceholderHeading}"/>
+                        <TextBlock Text="Stick binding and stick behaviour settings will live here."
                                    Style="{StaticResource PlaceholderSub}"/>
                         <Separator Margin="0,16,0,16"/>
-                        <TextBlock Text="Profile manager — Step 5" Style="{StaticResource PlaceholderNote}"/>
+                        <TextBlock Text="Placeholder only. Controls are not wired in this phase." Style="{StaticResource PlaceholderNote}"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Documentation -->
                 <Border Padding="28,24"
-                        Visibility="{Binding IsChecked, ElementName=navDocumentation, Converter={StaticResource BoolToVis}}">
+                        Visibility="{Binding IsChecked, ElementName=navOther, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
-                        <TextBlock Text="Documentation" Style="{StaticResource PlaceholderHeading}"/>
-                        <TextBlock Text="JoyShockMapper reference documentation with search."
+                        <TextBlock Text="Other" Style="{StaticResource PlaceholderHeading}"/>
+                        <TextBlock Text="Profile, documentation, and miscellaneous settings can move here later."
                                    Style="{StaticResource PlaceholderSub}"/>
                         <Separator Margin="0,16,0,16"/>
-                        <TextBlock Text="Embedded docs — Step 6" Style="{StaticResource PlaceholderNote}"/>
+                        <TextBlock Text="Placeholder only. Controls are not wired in this phase." Style="{StaticResource PlaceholderNote}"/>
                     </StackPanel>
                 </Border>
-
             </Grid>
         </Grid>
     </DockPanel>
