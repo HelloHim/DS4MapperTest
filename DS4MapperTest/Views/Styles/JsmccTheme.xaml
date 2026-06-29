@@ -40,13 +40,14 @@
     <Thickness x:Key="JsmccCardPadding">20</Thickness>
     <CornerRadius x:Key="JsmccCardRadius">6</CornerRadius>
     <CornerRadius x:Key="JsmccControlRadius">6</CornerRadius>
+    <CornerRadius x:Key="JsmccButtonRadius">8</CornerRadius>
+    <CornerRadius x:Key="JsmccTabRadius">6</CornerRadius>
     <CornerRadius x:Key="JsmccPillRadius">999</CornerRadius>
 
     <Style x:Key="JsmccPageTitle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
         <Setter Property="FontSize" Value="22"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="LineHeight" Value="28"/>
         <Setter Property="Margin" Value="0,0,0,4"/>
     </Style>
 
@@ -54,26 +55,22 @@
         <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
         <Setter Property="FontSize" Value="17"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="LineHeight" Value="23"/>
     </Style>
 
     <Style x:Key="JsmccCardTitle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
         <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="LineHeight" Value="21"/>
     </Style>
 
     <Style x:Key="JsmccBodyText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource JsmccTextMidBrush}"/>
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="LineHeight" Value="19"/>
     </Style>
 
     <Style x:Key="JsmccMutedText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource JsmccTextMutedBrush}"/>
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="LineHeight" Value="18"/>
     </Style>
 
     <Style x:Key="JsmccLabelText" TargetType="TextBlock">
@@ -131,7 +128,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{StaticResource JsmccPillRadius}">
+                            CornerRadius="{StaticResource JsmccButtonRadius}">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           Margin="{TemplateBinding Padding}"/>
@@ -230,7 +227,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="10">
+                            CornerRadius="{StaticResource JsmccButtonRadius}">
                         <ContentPresenter Margin="{TemplateBinding Padding}"
                                           HorizontalAlignment="Left"
                                           VerticalAlignment="Center"/>
@@ -255,9 +252,10 @@
         <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Padding" Value="12,6"/>
-        <Setter Property="Margin" Value="0,0,6,0"/>
+        <Setter Property="Padding" Value="14,7"/>
+        <Setter Property="Margin" Value="0,0,8,8"/>
         <Setter Property="MinWidth" Value="68"/>
+        <Setter Property="MinHeight" Value="34"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -266,7 +264,7 @@
                             Background="{StaticResource JsmccBgInputBrush}"
                             BorderBrush="{StaticResource JsmccBorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="8">
+                            CornerRadius="{StaticResource JsmccTabRadius}">
                         <ContentPresenter ContentSource="Header"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
@@ -297,10 +295,11 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TabControl">
                     <DockPanel>
-                        <TabPanel DockPanel.Dock="Top"
-                                  IsItemsHost="True"
-                                  Margin="0,0,0,12"
-                                  KeyboardNavigation.TabIndex="1"/>
+                        <WrapPanel DockPanel.Dock="Top"
+                                   Orientation="Horizontal"
+                                   IsItemsHost="True"
+                                   Margin="0,0,0,4"
+                                   KeyboardNavigation.TabIndex="1"/>
                         <ContentPresenter ContentSource="SelectedContent"
                                           KeyboardNavigation.TabIndex="2"/>
                     </DockPanel>
@@ -334,7 +333,7 @@
         <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Height" Value="30"/>
+        <Setter Property="MinHeight" Value="30"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
 
@@ -362,7 +361,7 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Track" Property="Background" Value="{StaticResource JsmccBgPrimaryBrush}"/>
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource JsmccAccentBrush}"/>
                             <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource JsmccAccentBrush}"/>
                             <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
                             <Setter TargetName="Thumb" Property="Margin" Value="0,0,3,0"/>

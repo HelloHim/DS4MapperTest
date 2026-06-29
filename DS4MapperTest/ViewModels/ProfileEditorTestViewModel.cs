@@ -58,6 +58,10 @@ namespace DS4MapperTest.ViewModels
             get => buttonBindings;
         }
 
+        private ObservableCollection<FaceButtonBindingItem> faceButtonBindings =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> FaceButtonBindings => faceButtonBindings;
+
         private Dictionary<string, int> buttonBindingsIndexDict =
             new Dictionary<string, int>();
         public Dictionary<string, int> ButtonBindingsIndexDict
@@ -426,6 +430,7 @@ namespace DS4MapperTest.ViewModels
         {
             buttonBindings.Clear();
             buttonBindingsIndexDict.Clear();
+            faceButtonBindings.Clear();
             touchpadBindings.Clear();
             triggerBindings.Clear();
             stickBindings.Clear();
@@ -443,6 +448,7 @@ namespace DS4MapperTest.ViewModels
         {
             buttonBindings.Clear();
             buttonBindingsIndexDict.Clear();
+            faceButtonBindings.Clear();
             touchpadBindings.Clear();
             triggerBindings.Clear();
             stickBindings.Clear();
@@ -561,6 +567,134 @@ namespace DS4MapperTest.ViewModels
                     alwaysOnBindings.Add(tempItem);
                 }
             }
+
+            PopulateFaceButtonBindings();
+        }
+
+        private void PopulateFaceButtonBindings()
+        {
+            faceButtonBindings.Clear();
+
+            string[][] faceAliases = new string[][]
+            {
+                new string[] { "A", "Cross" },
+                new string[] { "B", "Circle" },
+                new string[] { "X", "Square" },
+                new string[] { "Y", "Triangle" },
+            };
+
+            string[] displayNames = new string[]
+            {
+                "A / Cross",
+                "B / Circle",
+                "X / Square",
+                "Y / Triangle",
+            };
+
+            for (int i = 0; i < faceAliases.Length; i++)
+            {
+                BindingItemsTest item = null;
+                foreach (string alias in faceAliases[i])
+                {
+                    if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
+                    {
+                        item = buttonBindings[index];
+                        break;
+                    }
+                }
+
+                if (item != null)
+                {
+                    faceButtonBindings.Add(new FaceButtonBindingItem(this, item, displayNames[i]));
+                }
+            }
+        }
+
+        internal ButtonAction EnsureEditableFaceButtonAction(FaceButtonBindingItem faceItem)
+        {
+            ActionSet editSet = actionSetItems[selectedActionSetIndex].Set;
+            ActionLayer editLayer = layerItems[selectedActionLayerIndex].Layer;
+            ButtonMapAction oldAction = faceItem.MappedAction;
+
+            if (oldAction is ButtonAction existingAction &&
+                editLayer.LayerActions.Contains(existingAction))
+            {
+                EnsureRegularPressFunc(existingAction);
+                return existingAction;
+            }
+
+            ButtonAction newAction = new ButtonAction();
+            if (oldAction is ButtonAction oldButtonAction)
+            {
+                newAction.CopyBaseProps(oldButtonAction);
+                newAction.CopyAction(oldButtonAction);
+            }
+            else
+            {
+                newAction.CopyBaseProps(oldAction);
+                newAction.ActionFuncs.Add(new ActionUtil.NormalPressFunc(
+                    new MapperUtil.OutputActionData(
+                        MapperUtil.OutputActionData.ActionType.Empty, 0)));
+                FaceButtonBindingItem.MarkFunctionsChanged(newAction);
+            }
+
+            newAction.MappingId = oldAction.MappingId;
+            newAction.Id = editLayer.LayerActions.Contains(oldAction) &&
+                oldAction.Id != MapAction.DEFAULT_UNBOUND_ID
+                    ? oldAction.Id
+                    : editLayer.FindNextAvailableId();
+
+            EnsureRegularPressFunc(newAction);
+
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                oldAction.Release(mapper, ignoreReleaseActions: true);
+                if (editLayer.LayerActions.Contains(oldAction))
+                {
+                    editLayer.ReplaceButtonAction(oldAction, newAction);
+                }
+                else
+                {
+                    editLayer.AddButtonMapAction(newAction);
+                }
+
+                if (editSet.UsingCompositeLayer)
+                {
+                    editSet.RecompileCompositeLayer(mapper);
+                }
+                else
+                {
+                    editLayer.SyncActions();
+                    editSet.ClearCompositeLayerActions();
+                    editSet.PrepareCompositeLayer();
+                }
+            });
+
+            if (buttonBindingsIndexDict.TryGetValue(newAction.MappingId, out int buttonIndex))
+            {
+                buttonBindings[buttonIndex].UpdateAction(newAction);
+            }
+
+            faceItem.UpdateAction(newAction);
+            return newAction;
+        }
+
+        internal void ReleaseFaceAction(FaceButtonBindingItem faceItem)
+        {
+            if (faceItem?.MappedAction is ButtonAction action)
+            {
+                action.Release(mapper, ignoreReleaseActions: true);
+            }
+        }
+
+        private static void EnsureRegularPressFunc(ButtonAction action)
+        {
+            if (action.ActionFuncs.OfType<ActionUtil.NormalPressFunc>().Any()) return;
+
+            action.ActionFuncs.Insert(0, new ActionUtil.NormalPressFunc(
+                new MapperUtil.OutputActionData(
+                    MapperUtil.OutputActionData.ActionType.Empty, 0)));
+            FaceButtonBindingItem.MarkFunctionsChanged(action);
         }
 
         public void SwitchActionSets(int ind)
