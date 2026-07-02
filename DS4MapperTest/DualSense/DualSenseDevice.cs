@@ -160,7 +160,7 @@ namespace DS4MapperTest.DualSense
             // Check if using a normal DualSense or a DualSense Edge
             DetermineSubType(hidDevice);
 
-            baseElapsedReference = 250.0;
+            baseElapsedReference = 1000.0;
             deviceOptions = new DualSenseControllerOptions(deviceType);
             synced = true;
         }

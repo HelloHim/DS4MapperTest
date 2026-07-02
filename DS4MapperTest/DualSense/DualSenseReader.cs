@@ -128,6 +128,7 @@ namespace DS4MapperTest.DualSense
                     deltaElapsed = currentTime - previousTime;
                     lastElapsed = deltaElapsed * (1.0 / Stopwatch.Frequency) * 1000.0;
                     tempTimeElapsed = lastElapsed * .001;
+                    previousTime = currentTime;
 
                     utcNow = DateTime.UtcNow; // timestamp with UTC in case system time zone changes
                     current.PacketCounter = previous.PacketCounter + 1;
@@ -221,7 +222,7 @@ namespace DS4MapperTest.DualSense
                         current.TotalMicroSec = previous.TotalMicroSec + (uint)(elapsedDeltaTime * 1000000);
                     }
 
-                    current.timeElapsed = elapsedDeltaTime;
+                    current.timeElapsed = tempTimeElapsed;
                     current.DS4Timestamp = (ushort)((tempStamp / 16) % ushort.MaxValue);
                     timeStampPrevious = tempStamp;
 
