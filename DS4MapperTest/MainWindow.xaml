@@ -152,14 +152,7 @@
                                         <views:DPadKeybindsControl/>
                                     </TabItem>
                                     <TabItem Header="Bumpers">
-                                        <Border Style="{StaticResource JsmccCardBorder}" Margin="0">
-                                            <StackPanel>
-                                                <TextBlock Text="Bumpers" Style="{StaticResource JsmccSectionTitle}"/>
-                                                <TextBlock Text="Placeholder only. Controls are not wired in this phase."
-                                                           Style="{StaticResource PlaceholderCardText}"
-                                                           Margin="0,6,0,0"/>
-                                            </StackPanel>
-                                        </Border>
+                                        <views:BumpersKeybindsControl/>
                                     </TabItem>
                                     <TabItem Header="Triggers">
                                         <Border Style="{StaticResource JsmccCardBorder}" Margin="0">
