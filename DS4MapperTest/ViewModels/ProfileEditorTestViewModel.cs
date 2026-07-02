@@ -63,6 +63,10 @@ namespace DS4MapperTest.ViewModels
             new ObservableCollection<FaceButtonBindingItem>();
         public ObservableCollection<FaceButtonBindingItem> FaceButtonBindings => faceButtonBindings;
 
+        private ObservableCollection<FaceButtonBindingItem> bumperButtonBindings =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> BumperButtonBindings => bumperButtonBindings;
+
         private DPadKeybindsViewModel dpadKeybinds;
         public DPadKeybindsViewModel DPadKeybinds => dpadKeybinds ??= new DPadKeybindsViewModel(this);
 
@@ -435,6 +439,7 @@ namespace DS4MapperTest.ViewModels
             buttonBindings.Clear();
             buttonBindingsIndexDict.Clear();
             faceButtonBindings.Clear();
+            bumperButtonBindings.Clear();
             touchpadBindings.Clear();
             triggerBindings.Clear();
             stickBindings.Clear();
@@ -453,6 +458,7 @@ namespace DS4MapperTest.ViewModels
             buttonBindings.Clear();
             buttonBindingsIndexDict.Clear();
             faceButtonBindings.Clear();
+            bumperButtonBindings.Clear();
             touchpadBindings.Clear();
             triggerBindings.Clear();
             stickBindings.Clear();
@@ -573,6 +579,7 @@ namespace DS4MapperTest.ViewModels
             }
 
             PopulateFaceButtonBindings();
+            PopulateBumperButtonBindings();
             PopulateDPadKeybinds();
         }
 
@@ -616,6 +623,41 @@ namespace DS4MapperTest.ViewModels
                 if (item != null)
                 {
                     faceButtonBindings.Add(new FaceButtonBindingItem(this, item, displayNames[i]));
+                }
+            }
+        }
+
+        private void PopulateBumperButtonBindings()
+        {
+            bumperButtonBindings.Clear();
+
+            string[][] bumperAliases = new string[][]
+            {
+                new string[] { "L1", "LB", "LShoulder" },
+                new string[] { "R1", "RB", "RShoulder" },
+            };
+
+            string[] displayNames = new string[]
+            {
+                "L1 / Left Bumper",
+                "R1 / Right Bumper",
+            };
+
+            for (int i = 0; i < bumperAliases.Length; i++)
+            {
+                BindingItemsTest item = null;
+                foreach (string alias in bumperAliases[i])
+                {
+                    if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
+                    {
+                        item = buttonBindings[index];
+                        break;
+                    }
+                }
+
+                if (item != null)
+                {
+                    bumperButtonBindings.Add(new FaceButtonBindingItem(this, item, displayNames[i]));
                 }
             }
         }
