@@ -75,6 +75,20 @@ namespace DS4MapperTest.ViewModels
             new ObservableCollection<FaceButtonBindingItem>();
         public ObservableCollection<FaceButtonBindingItem> PaddleButtonBindings => paddleButtonBindings;
 
+        private ObservableCollection<FaceButtonBindingItem> leftStickClickBinding =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> LeftStickClickBinding => leftStickClickBinding;
+
+        private ObservableCollection<FaceButtonBindingItem> rightStickClickBinding =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> RightStickClickBinding => rightStickClickBinding;
+
+        private StickSideViewModel leftStickKeybinds;
+        public StickSideViewModel LeftStickKeybinds => leftStickKeybinds ??= new StickSideViewModel(this, "LS");
+
+        private StickSideViewModel rightStickKeybinds;
+        public StickSideViewModel RightStickKeybinds => rightStickKeybinds ??= new StickSideViewModel(this, "RS");
+
         private ObservableCollection<TriggerKeybindItem> triggerKeybinds =
             new ObservableCollection<TriggerKeybindItem>();
         public ObservableCollection<TriggerKeybindItem> TriggerKeybinds => triggerKeybinds;
@@ -602,6 +616,27 @@ namespace DS4MapperTest.ViewModels
             PopulatePaddleButtonBindings();
             PopulateTriggerKeybinds();
             PopulateDPadKeybinds();
+            PopulateStickClickBindings();
+            PopulateStickKeybinds();
+        }
+
+        private void PopulateStickClickBindings()
+        {
+            leftStickClickBinding.Clear();
+            AddFirstMatchingButtonBinding(leftStickClickBinding,
+                new string[] { "L3" },
+                "LS / Left Stick Click");
+
+            rightStickClickBinding.Clear();
+            AddFirstMatchingButtonBinding(rightStickClickBinding,
+                new string[] { "R3" },
+                "RS / Right Stick Click");
+        }
+
+        private void PopulateStickKeybinds()
+        {
+            (leftStickKeybinds ??= new StickSideViewModel(this, "LS")).Refresh();
+            (rightStickKeybinds ??= new StickSideViewModel(this, "RS")).Refresh();
         }
 
         private void PopulateDPadKeybinds()
