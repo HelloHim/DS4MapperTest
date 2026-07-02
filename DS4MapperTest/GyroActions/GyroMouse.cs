@@ -360,7 +360,8 @@ namespace DS4MapperTest.GyroActions
             // Base speed 5 ms
             //double tempDouble = timeElapsed * 3 * 66.67;
             //double tempDouble = timeElapsed * 3 * gyroFrame.elapsedReference;
-            double tempDouble = timeElapsed * gyroFrame.elapsedReference;
+            //double tempDouble = timeElapsed * gyroFrame.elapsedReference;
+            double tempDouble = 1.0;
             int deltaX = mouseParams.useForXAxis == GyroMouseXAxisChoice.Yaw ?
                 gyroFrame.GyroYaw : gyroFrame.GyroRoll;
 
