@@ -11,6 +11,12 @@ using DS4MapperTest.DS4Library;
 
 namespace DS4MapperTest
 {
+    public enum CalibMode
+    {
+        RwcMode,
+        CountsMode,
+    }
+
     public class Profile
     {
         protected List<ActionSet> actionSets = new List<ActionSet>(8);
@@ -84,6 +90,19 @@ namespace DS4MapperTest
 
         private double calibCounts = 1800.0;
         public double CalibCounts { get => calibCounts; set => calibCounts = value; }
+
+        private CalibMode calibMode = CalibMode.RwcMode;
+        public CalibMode CalibMode
+        {
+            get => calibMode;
+            set
+            {
+                if (calibMode == value) return;
+                calibMode = value;
+                CalibModeChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler CalibModeChanged;
 
         public bool dirty;
         public bool Dirty

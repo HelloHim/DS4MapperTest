@@ -174,6 +174,17 @@ namespace DS4MapperTest
             set { tempProfile.CalibCounts = value; calibExplicitlySet = true; }
         }
 
+        [JsonConverter(typeof(StringEnumConverter))]
+        public CalibMode CalibMode
+        {
+            get => tempProfile.CalibMode;
+            set => tempProfile.CalibMode = value;
+        }
+        public bool ShouldSerializeCalibMode()
+        {
+            return tempProfile.CalibMode == DS4MapperTest.CalibMode.CountsMode;
+        }
+
         private LightbarSettingsSerializer lightbarSerializer;
         public LightbarSettingsSerializer LightbarSettings
         {
