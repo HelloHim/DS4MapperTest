@@ -178,17 +178,39 @@ namespace DS4MapperTest
         public struct GyroMouseActionValues
         {
             public double deadzone;
+            public double realWorldCalibration;
+            public double inGameSens;
+            public GyroMouseAccelCurveChoice accelCurve;
+            public double sensitivity;
+            public double verticalScale;
+            public bool smoothing;
             public double maxGyroThreshold;
 
             public GyroMouseActionValues()
             {
-                deadzone = 0.6; // dps
+                deadzone = GyroMouseParams.DEAD_ZONE_DEFAULT; // dps
+                realWorldCalibration = GyroMouseParams.REAL_WORLD_CALIBRATION_DEFAULT;
+                inGameSens = GyroMouseParams.IN_GAME_SENS_DEFAULT;
+                accelCurve = GyroMouseParams.ACCEL_CURVE_DEFAULT;
+                sensitivity = GyroMouseParams.SENSITIVITY_DEFAULT;
+                verticalScale = GyroMouseParams.VERTICAL_SCALE_DEFAULT;
+                smoothing = false;
                 maxGyroThreshold = GyroMouseParams.MAX_GYRO_THRESHOLD_DEFAULT;
             }
 
             public void Process(GyroMouse action)
             {
                 action.mouseParams.deadzone = deadzone;
+                action.mouseParams.realWorldCalibration = realWorldCalibration;
+                action.mouseParams.inGameSens = inGameSens;
+                action.mouseParams.accelCurve = accelCurve;
+                action.mouseParams.sensitivity = sensitivity;
+                action.mouseParams.verticalScale = verticalScale;
+                action.mouseParams.minAccelXSens = sensitivity;
+                action.mouseParams.minAccelYSens = verticalScale;
+                action.mouseParams.maxAccelXSens = sensitivity;
+                action.mouseParams.maxAccelYSens = verticalScale;
+                action.mouseParams.smoothing = smoothing;
                 action.mouseParams.maxGyroThreshold = maxGyroThreshold;
             }
         }
@@ -287,7 +309,7 @@ namespace DS4MapperTest
         {
             GyroMouseActionValues result = new GyroMouseActionValues()
             {
-                deadzone = 0.6,
+                deadzone = GyroMouseParams.DEAD_ZONE_DEFAULT,
             };
 
             return result;
@@ -406,7 +428,7 @@ namespace DS4MapperTest
         {
             GyroMouseActionValues result = new GyroMouseActionValues()
             {
-                deadzone = 0.6,
+                deadzone = GyroMouseParams.DEAD_ZONE_DEFAULT,
             };
 
             return result;
@@ -418,7 +440,7 @@ namespace DS4MapperTest
         public override GyroMouseActionValues GrabGyroMouseActionDefaults()
         {
             GyroMouseActionValues result = base.GrabGyroMouseActionDefaults();
-            result.deadzone = 0.6;
+            result.deadzone = GyroMouseParams.DEAD_ZONE_DEFAULT;
 
             return result;
         }
