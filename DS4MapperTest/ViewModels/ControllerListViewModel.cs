@@ -283,15 +283,7 @@ namespace DS4MapperTest.ViewModels
             // Write update JSON string back to output file
             if (!string.IsNullOrEmpty(tempOutJson))
             {
-                using (StreamWriter writer = new StreamWriter(outputFile))
-                using (JsonTextWriter jwriter = new JsonTextWriter(writer))
-                {
-                    jwriter.Formatting = Formatting.Indented;
-                    jwriter.Indentation = 2;
-                    JObject tempJObj = JObject.Parse(tempOutJson);
-                    tempJObj.WriteTo(jwriter);
-                    //writer.Write(tempOutJson);
-                }
+                AtomicFileWriter.WriteJson(outputFile, JObject.Parse(tempOutJson));
 
                 // Update profile list
                 Mapper mapper = backendManager.MapperDict[item.Device.Index];
