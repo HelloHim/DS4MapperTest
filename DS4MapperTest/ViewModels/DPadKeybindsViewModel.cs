@@ -153,6 +153,11 @@ namespace DS4MapperTest.ViewModels
             return ProfileVm.PeekDPadDirectionAction(Kind);
         }
 
+        public string TranslatedOutputDisplay()
+        {
+            return ProfileVm.GetDPadTranslatedDirectionDisplay(Kind);
+        }
+
         public void RefreshFunctions()
         {
             functionItems.Clear();
@@ -344,6 +349,15 @@ namespace DS4MapperTest.ViewModels
         {
             get
             {
+                if (Func == null && Kind == FaceBindingFuncKind.Regular)
+                {
+                    string translatedResult = owner.TranslatedOutputDisplay();
+                    if (!string.IsNullOrWhiteSpace(translatedResult))
+                    {
+                        return translatedResult;
+                    }
+                }
+
                 string result = Func?.DescribeOutputActions(owner.ProfileVm.DeviceMapper);
                 return string.IsNullOrWhiteSpace(result) ? "Unbound" : result;
             }

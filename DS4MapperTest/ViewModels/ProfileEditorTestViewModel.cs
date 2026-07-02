@@ -15,6 +15,7 @@ using DS4MapperTest.TouchpadActions;
 using DS4MapperTest.StickActions;
 using DS4MapperTest.GyroActions;
 using DS4MapperTest.DPadActions;
+using DS4MapperTest.MapperUtil;
 using System.Windows.Media;
 using DS4MapperTest.ViewModels.Common;
 
@@ -715,6 +716,29 @@ namespace DS4MapperTest.ViewModels
         {
             if (GetCurrentDPadMapAction() is not DPadAction dpadAction) return null;
             return dpadAction.EventCodes4[(int)ToDpadDirections(kind)];
+        }
+
+        internal string GetDPadTranslatedDirectionDisplay(DPadDirectionKind kind)
+        {
+            if (GetCurrentDPadMapAction() is not DPadTranslate dpadTranslate ||
+                dpadTranslate.OutputAction.DpadCode == DPadActionCodes.Empty)
+            {
+                return "";
+            }
+
+            string outputDpad = DPadCodeHelper.Convert(dpadTranslate.OutputAction.DpadCode);
+            string direction = kind switch
+            {
+                DPadDirectionKind.Up => "UP",
+                DPadDirectionKind.Down => "DOWN",
+                DPadDirectionKind.Left => "LEFT",
+                DPadDirectionKind.Right => "RIGHT",
+                _ => "",
+            };
+
+            return string.IsNullOrWhiteSpace(direction)
+                ? outputDpad
+                : $"{outputDpad}_{direction}";
         }
 
         internal DPadAction EnsureActionPadAction()
