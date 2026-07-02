@@ -1,0 +1,475 @@
+<UserControl x:Class="DS4MapperTest.Views.TriggersKeybindsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             mc:Ignorable="d"
+             d:DesignHeight="620"
+             d:DesignWidth="860">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style x:Key="TriggerControlLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
+
+        <Style x:Key="TriggerChipBorder" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource JsmccBgInputBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="0,0,8,4"/>
+        </Style>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <StackPanel Margin="0,0,0,6">
+            <TextBlock Text="Triggers" Style="{StaticResource JsmccSectionTitle}"/>
+            <TextBlock Text="Button mode maps trigger pulls as button actions. Advanced modes expose DS4Mapper trigger settings."
+                       Style="{StaticResource JsmccBodyText}"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <Border>
+            <Border.Style>
+                <Style TargetType="Border" BasedOn="{StaticResource JsmccCardBorder}">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding TriggerKeybinds.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="No trigger bindings were found for the current controller."
+                       Style="{StaticResource JsmccBodyText}"
+                       TextWrapping="Wrap"/>
+        </Border>
+
+        <ItemsControl ItemsSource="{Binding TriggerKeybinds}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource JsmccCardBorder}">
+                        <StackPanel>
+                            <DockPanel LastChildFill="False" Margin="0,0,0,6">
+                                <StackPanel DockPanel.Dock="Left">
+                                    <TextBlock Text="{Binding DisplayName}"
+                                               Style="{StaticResource JsmccCardTitle}"/>
+                                    <TextBlock Text="Analogue trigger"
+                                               Style="{StaticResource JsmccMutedText}"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel DockPanel.Dock="Right"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Top">
+                                    <TextBlock Text="Mode"
+                                               Style="{StaticResource TriggerControlLabel}"
+                                               VerticalAlignment="Center"/>
+                                    <ComboBox ItemsSource="{Binding ModeItems}"
+                                              DisplayMemberPath="DisplayName"
+                                              SelectedValuePath="ChoiceValue"
+                                              SelectedValue="{Binding CurrentMode}"
+                                              Width="168"
+                                              Style="{StaticResource JsmccComboBoxStyle}"/>
+                                </StackPanel>
+                            </DockPanel>
+
+                            <StackPanel Visibility="{Binding IsButtonMode, Converter={StaticResource BoolToVis}}">
+                                <DockPanel LastChildFill="False" Margin="0,0,0,4">
+                                    <Button DockPanel.Dock="Right"
+                                            Content="Add Extra Binding"
+                                            Click="AddExtraBindingButton_Click"
+                                            Style="{StaticResource JsmccButtonStyle}">
+                                        <Button.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Hold Press"
+                                                          Tag="Hold"
+                                                          IsEnabled="{Binding PlacementTarget.DataContext.CanAddHoldPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          Click="AddExtraBindingMenuItem_Click"/>
+                                                <MenuItem Header="Double Press - Not currently supported"
+                                                          IsEnabled="False"
+                                                          ToolTip="Not currently supported"/>
+                                                <MenuItem Header="Start Press"
+                                                          Tag="Start"
+                                                          IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          Click="AddExtraBindingMenuItem_Click"/>
+                                                <MenuItem Header="Release Press"
+                                                          Tag="Release"
+                                                          IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          Click="AddExtraBindingMenuItem_Click"/>
+                                            </ContextMenu>
+                                        </Button.ContextMenu>
+                                    </Button>
+                                </DockPanel>
+
+                                <ItemsControl ItemsSource="{Binding FunctionItems}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="160"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,12,0">
+                                                        <TextBlock Text="{Binding DisplayName}"
+                                                                   Style="{StaticResource JsmccLabelText}"/>
+                                                        <TextBlock Text="Press behaviour"
+                                                                   Style="{StaticResource JsmccMutedText}"
+                                                                   Margin="0,3,0,0"/>
+                                                    </StackPanel>
+
+                                                    <Button Grid.Row="0"
+                                                            Grid.Column="1"
+                                                            Content="{Binding DisplayBind}"
+                                                            Tag="{Binding}"
+                                                            Click="EditBinding_Click"
+                                                            Style="{StaticResource JsmccOutputButtonStyle}"
+                                                            ToolTip="Edit binding output"/>
+
+                                                    <StackPanel Grid.Row="0"
+                                                                Grid.Column="2"
+                                                                Orientation="Horizontal"
+                                                                HorizontalAlignment="Right"
+                                                                Margin="10,0,0,0">
+                                                        <Button Content="Edit"
+                                                                Tag="{Binding}"
+                                                                Click="EditBinding_Click"
+                                                                Style="{StaticResource JsmccButtonStyle}"
+                                                                MinWidth="58"/>
+                                                        <Button Content="Remove"
+                                                                Tag="{Binding}"
+                                                                Click="RemoveBinding_Click"
+                                                                Style="{StaticResource JsmccDangerButtonStyle}"
+                                                                MinWidth="76"
+                                                                Margin="8,0,0,0"
+                                                                Visibility="{Binding CanRemove, Converter={StaticResource BoolToVis}}"/>
+                                                    </StackPanel>
+
+                                                    <WrapPanel Grid.Row="1"
+                                                               Grid.Column="0"
+                                                               Grid.ColumnSpan="3"
+                                                               Margin="0,6,0,0">
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding SupportsToggle, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Toggle" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <CheckBox IsChecked="{Binding ToggleEnabled}"
+                                                                          Style="{StaticResource JsmccToggleStyle}"
+                                                                          VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding SupportsTurbo, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Turbo" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <CheckBox IsChecked="{Binding TurboEnabled}"
+                                                                          Style="{StaticResource JsmccToggleStyle}"
+                                                                          VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding IsTurboEnabled, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Repeat Time" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <hc:NumericUpDown Minimum="0"
+                                                                                  Maximum="60000"
+                                                                                  DecimalPlaces="0"
+                                                                                  Increment="10"
+                                                                                  Width="108"
+                                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                                  Value="{Binding TurboDurationMs, UpdateSourceTrigger=LostFocus}"
+                                                                                  ValueFormat="0 ms"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding SupportsFireDelay, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Fire Delay" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <hc:NumericUpDown Minimum="0"
+                                                                                  Maximum="60000"
+                                                                                  DecimalPlaces="0"
+                                                                                  Increment="10"
+                                                                                  Width="108"
+                                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                                  Value="{Binding FireDelayMs, UpdateSourceTrigger=LostFocus}"
+                                                                                  ValueFormat="0 ms"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding SupportsHoldTime, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Hold Time" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <hc:NumericUpDown Minimum="0"
+                                                                                  Maximum="60000"
+                                                                                  DecimalPlaces="0"
+                                                                                  Increment="10"
+                                                                                  Width="108"
+                                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                                  Value="{Binding HoldMs, UpdateSourceTrigger=LostFocus}"
+                                                                                  ValueFormat="0 ms"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Min Duration" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <TextBox Text="{Binding ReleaseDurationMs, UpdateSourceTrigger=LostFocus}"
+                                                                         Width="72"
+                                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                                                <TextBlock Text="ms"
+                                                                           Style="{StaticResource JsmccMutedText}"
+                                                                           Margin="6,0,0,0"
+                                                                           VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="End Delay" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <TextBox Text="{Binding ReleaseDelayMs, UpdateSourceTrigger=LostFocus}"
+                                                                         Width="72"
+                                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                                                <TextBlock Text="ms"
+                                                                           Style="{StaticResource JsmccMutedText}"
+                                                                           Margin="6,0,0,0"
+                                                                           VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Interruptible" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <CheckBox IsChecked="{Binding ReleaseInterruptable}"
+                                                                          Style="{StaticResource JsmccToggleStyle}"
+                                                                          VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </WrapPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                    <WrapPanel>
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Trigger Deadzone" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0"
+                                                                  Maximum="1"
+                                                                  DecimalPlaces="2"
+                                                                  Increment="0.01"
+                                                                  Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding ButtonDeadZone, UpdateSourceTrigger=LostFocus}"
+                                                                  ValueFormat="0.00"/>
+                                                <TextBlock Text="0-1"
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="6,0,0,0"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Visibility="{Binding IsDualStageMode, Converter={StaticResource BoolToVis}}">
+                                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                    <WrapPanel>
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
+                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
+                                                         Width="160"
+                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Dual Stage Mode" Style="{StaticResource TriggerControlLabel}"/>
+                                                <ComboBox SelectedIndex="{Binding SelectedDualStageModeIndex}"
+                                                          Width="190"
+                                                          Style="{StaticResource JsmccComboBoxStyle}">
+                                                    <ComboBoxItem>Threshold</ComboBoxItem>
+                                                    <ComboBoxItem>Exclusive Buttons</ComboBoxItem>
+                                                    <ComboBoxItem>Hair Trigger</ComboBoxItem>
+                                                    <ComboBoxItem>Hip Fire</ComboBoxItem>
+                                                    <ComboBoxItem>Hip Fire Exclusive Buttons</ComboBoxItem>
+                                                </ComboBox>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Full Pull" Style="{StaticResource TriggerControlLabel}"/>
+                                                <Button Content="{Binding FullPullDisplayBind}"
+                                                        Tag="{Binding}"
+                                                        Click="EditFullPull_Click"
+                                                        Style="{StaticResource JsmccOutputButtonStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Soft Pull" Style="{StaticResource TriggerControlLabel}"/>
+                                                <Button Content="{Binding SoftPullDisplayBind}"
+                                                        Tag="{Binding}"
+                                                        Click="EditSoftPull_Click"
+                                                        Style="{StaticResource JsmccOutputButtonStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Dead Zone" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                  Increment="0.01" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding DualDeadZone, UpdateSourceTrigger=LostFocus}"
+                                                                  ValueFormat="0.00"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="AntiDead Zone" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                  Increment="0.01" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding DualAntiDeadZone, UpdateSourceTrigger=LostFocus}"
+                                                                  ValueFormat="0.00"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Soft Max Zone" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                  Increment="0.01" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding DualMaxZone, UpdateSourceTrigger=LostFocus}"
+                                                                  ValueFormat="0.00"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Hip Fire Delay" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="10000" DecimalPlaces="0"
+                                                                  Increment="10" Width="108"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding HipFireDelay, UpdateSourceTrigger=LostFocus}"
+                                                                  ValueFormat="0 ms"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Force Hip Fire Delay" Style="{StaticResource TriggerControlLabel}"/>
+                                                <CheckBox IsChecked="{Binding ForceHipFireDelay}"
+                                                          Style="{StaticResource JsmccToggleStyle}"
+                                                          VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Full Pull Haptics" Style="{StaticResource TriggerControlLabel}"/>
+                                                <ComboBox ItemsSource="{Binding HapticsIntensityItems}"
+                                                          DisplayMemberPath="DisplayName"
+                                                          SelectedValuePath="ChoiceValue"
+                                                          SelectedValue="{Binding HapticsChoice}"
+                                                          Width="116"
+                                                          Style="{StaticResource JsmccComboBoxStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Visibility="{Binding IsTriggerTranslateMode, Converter={StaticResource BoolToVis}}">
+                                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                    <WrapPanel>
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
+                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
+                                                         Width="160"
+                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Output Trigger" Style="{StaticResource TriggerControlLabel}"/>
+                                                <ComboBox ItemsSource="{Binding OutputTriggerItems}"
+                                                          DisplayMemberPath="DisplayName"
+                                                          SelectedValuePath="Code"
+                                                          SelectedValue="{Binding OutputTrigger}"
+                                                          Width="160"
+                                                          Style="{StaticResource JsmccComboBoxStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Dead Zone" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                  Increment="0.01" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding TranslateDeadZone, UpdateSourceTrigger=LostFocus}"
+                                                                  ValueFormat="0.00"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="AntiDead Zone" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                  Increment="0.01" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding TranslateAntiDeadZone, UpdateSourceTrigger=LostFocus}"
+                                                                  ValueFormat="0.00"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Max Zone" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                  Increment="0.01" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding TranslateMaxZone, UpdateSourceTrigger=LostFocus}"
+                                                                  ValueFormat="0.00"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

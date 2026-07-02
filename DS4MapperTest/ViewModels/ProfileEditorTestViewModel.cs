@@ -67,6 +67,10 @@ namespace DS4MapperTest.ViewModels
             new ObservableCollection<FaceButtonBindingItem>();
         public ObservableCollection<FaceButtonBindingItem> BumperButtonBindings => bumperButtonBindings;
 
+        private ObservableCollection<TriggerKeybindItem> triggerKeybinds =
+            new ObservableCollection<TriggerKeybindItem>();
+        public ObservableCollection<TriggerKeybindItem> TriggerKeybinds => triggerKeybinds;
+
         private DPadKeybindsViewModel dpadKeybinds;
         public DPadKeybindsViewModel DPadKeybinds => dpadKeybinds ??= new DPadKeybindsViewModel(this);
 
@@ -440,6 +444,7 @@ namespace DS4MapperTest.ViewModels
             buttonBindingsIndexDict.Clear();
             faceButtonBindings.Clear();
             bumperButtonBindings.Clear();
+            triggerKeybinds.Clear();
             touchpadBindings.Clear();
             triggerBindings.Clear();
             stickBindings.Clear();
@@ -459,6 +464,7 @@ namespace DS4MapperTest.ViewModels
             buttonBindingsIndexDict.Clear();
             faceButtonBindings.Clear();
             bumperButtonBindings.Clear();
+            triggerKeybinds.Clear();
             touchpadBindings.Clear();
             triggerBindings.Clear();
             stickBindings.Clear();
@@ -580,6 +586,7 @@ namespace DS4MapperTest.ViewModels
 
             PopulateFaceButtonBindings();
             PopulateBumperButtonBindings();
+            PopulateTriggerKeybinds();
             PopulateDPadKeybinds();
         }
 
@@ -660,6 +667,124 @@ namespace DS4MapperTest.ViewModels
                     bumperButtonBindings.Add(new FaceButtonBindingItem(this, item, displayNames[i]));
                 }
             }
+        }
+
+        private void PopulateTriggerKeybinds()
+        {
+            triggerKeybinds.Clear();
+
+            string[][] triggerAliases = new string[][]
+            {
+                new string[] { "L2", "LT" },
+                new string[] { "R2", "RT" },
+            };
+
+            string[] displayNames = new string[]
+            {
+                "L2 / Left Trigger",
+                "R2 / Right Trigger",
+            };
+
+            for (int i = 0; i < triggerAliases.Length; i++)
+            {
+                TriggerBindingItemsTest item = null;
+                foreach (string alias in triggerAliases[i])
+                {
+                    item = triggerBindings.FirstOrDefault(binding =>
+                        string.Equals(binding.BindingName, alias, StringComparison.OrdinalIgnoreCase));
+                    if (item != null) break;
+                }
+
+                if (item != null)
+                {
+                    triggerKeybinds.Add(new TriggerKeybindItem(this, item, displayNames[i]));
+                }
+            }
+        }
+
+        internal void UpdateTriggerKeybindAction(TriggerKeybindItem triggerItem, TriggerMapAction newAction)
+        {
+            if (triggerItem == null || newAction == null) return;
+
+            ActionSet editSet = actionSetItems[selectedActionSetIndex].Set;
+            ActionLayer editLayer = layerItems[selectedActionLayerIndex].Layer;
+            TriggerMapAction oldAction = triggerItem.MappedAction;
+
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                oldAction.Release(mapper, ignoreReleaseActions: true);
+
+                if (oldAction.Id != MapAction.DEFAULT_UNBOUND_ID)
+                {
+                    editLayer.ReplaceTriggerAction(oldAction, newAction);
+                }
+                else
+                {
+                    editLayer.AddTriggerAction(newAction);
+                }
+
+                if (editSet.UsingCompositeLayer)
+                {
+                    MapAction baseLayerAction = editSet.DefaultActionLayer.normalActionDict[oldAction.MappingId];
+                    if (MapAction.IsSameType(baseLayerAction, newAction))
+                    {
+                        newAction.SoftCopyFromParent(baseLayerAction as TriggerMapAction);
+                    }
+
+                    editSet.RecompileCompositeLayer(mapper);
+                }
+                else
+                {
+                    editLayer.SyncActions();
+                    editSet.ClearCompositeLayerActions();
+                    editSet.PrepareCompositeLayer();
+                }
+            });
+
+            TriggerBindingItemsTest bindingItem = triggerBindings.FirstOrDefault(binding =>
+                binding.BindingName == newAction.MappingId);
+            bindingItem?.UpdateAction(newAction);
+            triggerItem.UpdateAction(newAction);
+        }
+
+        internal int GetNextTriggerActionId(TriggerMapAction oldAction)
+        {
+            ActionLayer editLayer = layerItems[selectedActionLayerIndex].Layer;
+            return oldAction.Id == MapAction.DEFAULT_UNBOUND_ID
+                ? editLayer.FindNextAvailableId()
+                : oldAction.Id;
+        }
+
+        internal TriggerMapAction EnsureEditableTriggerAction(TriggerKeybindItem triggerItem)
+        {
+            ActionLayer editLayer = layerItems[selectedActionLayerIndex].Layer;
+            TriggerMapAction oldAction = triggerItem.MappedAction;
+
+            if (editLayer.LayerActions.Contains(oldAction))
+            {
+                return oldAction;
+            }
+
+            TriggerMapAction newAction = oldAction switch
+            {
+                TriggerButtonAction => new TriggerButtonAction(),
+                TriggerDualStageAction => new TriggerDualStageAction(),
+                TriggerTranslate => new TriggerTranslate(),
+                TriggerNoAction => new TriggerNoAction(),
+                _ => null,
+            };
+
+            if (newAction == null) return oldAction;
+
+            newAction.CopyBaseMapProps(oldAction);
+            newAction.Id = GetNextTriggerActionId(oldAction);
+            if (MapAction.IsSameType(oldAction, newAction))
+            {
+                newAction.SoftCopyFromParent(oldAction);
+            }
+
+            UpdateTriggerKeybindAction(triggerItem, newAction);
+            return newAction;
         }
 
         internal ButtonAction EnsureEditableFaceButtonAction(FaceButtonBindingItem faceItem)
