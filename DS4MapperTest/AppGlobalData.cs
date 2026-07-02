@@ -451,14 +451,7 @@ namespace DS4MapperTest
                 ]
             }";
 
-            using (StreamWriter swriter = new StreamWriter(controllerConfigsPath))
-            using (JsonTextWriter jwriter = new JsonTextWriter(swriter))
-            {
-                jwriter.Formatting = Formatting.Indented;
-                jwriter.Indentation = 2;
-
-                JObject.Parse(newJson).WriteTo(jwriter);
-            }
+            AtomicFileWriter.WriteJson(controllerConfigsPath, JObject.Parse(newJson));
         }
 
         public void LoadControllerDeviceSettings(InputDeviceBase testDev,
@@ -615,21 +608,9 @@ namespace DS4MapperTest
                 }
             }
 
-            using (FileStream fs = new FileStream(controllerConfigsPath,
-               FileMode.Truncate, FileAccess.Write))
+            if (tempRootJObj != null)
             {
-                if (tempRootJObj != null)
-                {
-                    using (StreamWriter swriter = new StreamWriter(fs))
-                    using (JsonTextWriter jwriter = new JsonTextWriter(swriter))
-                    {
-                        jwriter.Formatting = Formatting.Indented;
-                        jwriter.Indentation = 2;
-                        string temp = tempRootJObj.ToString();
-                        //Trace.WriteLine(temp);
-                        tempRootJObj.WriteTo(jwriter);
-                    }
-                }
+                AtomicFileWriter.WriteJson(controllerConfigsPath, tempRootJObj);
             }
         }
 
@@ -652,15 +633,7 @@ namespace DS4MapperTest
 
             if (!string.IsNullOrEmpty(tempOutJson))
             {
-                using (StreamWriter writer = new StreamWriter(blankProfilePath))
-                using (JsonTextWriter jwriter = new JsonTextWriter(writer))
-                {
-                    jwriter.Formatting = Formatting.Indented;
-                    jwriter.Indentation = 2;
-                    JObject tempJObj = JObject.Parse(tempOutJson);
-                    tempJObj.WriteTo(jwriter);
-                    //writer.Write(tempOutJson);
-                }
+                AtomicFileWriter.WriteJson(blankProfilePath, JObject.Parse(tempOutJson));
             }
 
             //using (FileStream fs = new FileStream(blankProfilePath,

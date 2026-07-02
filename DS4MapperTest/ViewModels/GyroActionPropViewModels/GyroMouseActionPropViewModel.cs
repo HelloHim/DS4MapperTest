@@ -1276,6 +1276,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                             this.action.mouseParams.verticalAccelerationMultiplier = savedVerticalAccelerationMultiplier;
                             fullTurnCounts = savedCounts;
                             CalculateTestRWC();
+                            TryMatchPreset();
                             _modelReady = true;
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
@@ -1323,6 +1324,11 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                     foreach (var layer in set.ActionLayers)
                         foreach (var mapAction in layer.normalActionDict.Values)
                         {
+                            if (mapAction is GyroMouse gyroMouse)
+                            {
+                                gyroMouse.mouseParams.realWorldCalibration = rwc;
+                                gyroMouse.mouseParams.inGameSens = inGameSens;
+                            }
                             if (mapAction is ButtonAction btnAction)
                                 foreach (var func in btnAction.ActionFuncs)
                                     foreach (var data in func.OutputActions)

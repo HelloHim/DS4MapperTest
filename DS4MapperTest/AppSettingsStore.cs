@@ -69,10 +69,7 @@ namespace DS4MapperTest
             AppSettingsSerializer settingsSerializer =
                     new AppSettingsSerializer(this);
             string json = JsonConvert.SerializeObject(settingsSerializer);
-            using (StreamWriter writer = new StreamWriter(configPath))
-            {
-                writer.Write(json);
-            }
+            AtomicFileWriter.WriteText(configPath, json);
 
             result = true;
             return result;

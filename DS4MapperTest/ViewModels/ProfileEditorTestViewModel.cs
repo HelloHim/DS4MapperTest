@@ -626,15 +626,7 @@ namespace DS4MapperTest.ViewModels
 
             if (!string.IsNullOrEmpty(tempOutJson) && overwriteFile)
             {
-                using (StreamWriter writer = new StreamWriter(tempEntity.ProfilePath))
-                using (JsonTextWriter jwriter = new JsonTextWriter(writer))
-                {
-                    jwriter.Formatting = Formatting.Indented;
-                    jwriter.Indentation = 2;
-                    JObject tempJObj = JObject.Parse(tempOutJson);
-                    tempJObj.WriteTo(jwriter);
-                    //writer.Write(tempOutJson);
-                }
+                AtomicFileWriter.WriteJson(tempEntity.ProfilePath, JObject.Parse(tempOutJson));
             }
         }
 
@@ -667,15 +659,7 @@ namespace DS4MapperTest.ViewModels
 
             if (!string.IsNullOrEmpty(tempOutJson))
             {
-                using (StreamWriter writer = new StreamWriter(tempEntity.ProfilePath))
-                using (JsonTextWriter jwriter = new JsonTextWriter(writer))
-                {
-                    jwriter.Formatting = Formatting.Indented;
-                    jwriter.Indentation = 2;
-                    JObject tempJObj = JObject.Parse(tempOutJson);
-                    tempJObj.WriteTo(jwriter);
-                    //writer.Write(tempOutJson);
-                }
+                AtomicFileWriter.WriteJson(tempEntity.ProfilePath, JObject.Parse(tempOutJson));
             }
         }
 

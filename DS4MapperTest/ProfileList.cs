@@ -46,10 +46,18 @@ namespace DS4MapperTest
                             ProfilePreview tempPreview =
                                 JsonConvert.DeserializeObject<ProfilePreview>(json);
 
+                            if (tempPreview == null)
+                            {
+                                continue;
+                            }
+
                             ProfileEntity item = new ProfileEntity(path: s, name: tempPreview.Name, inputDeviceType);
                             profileListCol.Add(item);
                         }
                         catch (JsonReaderException)
+                        {
+                        }
+                        catch (JsonSerializationException)
                         {
                         }
                     }
