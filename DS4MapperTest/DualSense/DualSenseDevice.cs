@@ -50,6 +50,10 @@ namespace DS4MapperTest.DualSense
         public const float F_ACC_RES_PER_G = ACC_RES_PER_G;
         public const int GYRO_RES_IN_DEG_SEC = 16;
         public const float F_GYRO_RES_IN_DEG_SEC = GYRO_RES_IN_DEG_SEC;
+        private const float EXPECTED_GYRO_CALIBRATION_SENSITIVITY = 1.0f;
+        private const float EXPECTED_ACCEL_CALIBRATION_SENSITIVITY = 1.0f;
+        private const float MAX_CALIBRATION_SENSITIVITY_ERROR = 0.5f;
+        private const int MAX_CALIBRATION_BIAS = 1024;
 
         private byte[] outputBTCrc32Head = new byte[] { 0xA2 };
         private CalibData[] calibrationData = new CalibData[6]
@@ -303,11 +307,7 @@ namespace DS4MapperTest.DualSense
             calibrationData[5].sensNumer = 2 * ACC_RES_PER_G;
             calibrationData[5].sensDenom = accelRange;
 
-            // Check that denom will not be zero.
-            calibrationDone = calibrationData[0].sensDenom != 0 &&
-                calibrationData[1].sensDenom != 0 &&
-                calibrationData[2].sensDenom != 0 &&
-                accelRange != 0;
+            calibrationDone = IsCalibrationDataValid();
         }
 
         public void ApplyCalibs(ref int yaw, ref int pitch, ref int roll,
@@ -336,6 +336,31 @@ namespace DS4MapperTest.DualSense
             current = calibrationData[5];
             tempInt = accelZ - current.bias;
             accelZ = (int)(tempInt * (current.sensNumer / (float)current.sensDenom));
+        }
+
+        private bool IsCalibrationDataValid()
+        {
+            for (int i = 0; i < calibrationData.Length; i++)
+            {
+                CalibData current = calibrationData[i];
+                if (current.sensDenom == 0 ||
+                    Math.Abs(current.bias) > MAX_CALIBRATION_BIAS)
+                {
+                    return false;
+                }
+
+                float sensitivity = current.sensNumer / (float)current.sensDenom;
+                float expectedSensitivity = i < 3 ?
+                    EXPECTED_GYRO_CALIBRATION_SENSITIVITY :
+                    EXPECTED_ACCEL_CALIBRATION_SENSITIVITY;
+                if (Math.Abs(1.0f - sensitivity / expectedSensitivity) >
+                    MAX_CALIBRATION_SENSITIVITY_ERROR)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
 
