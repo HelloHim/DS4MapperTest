@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.GyroActions;
 using static DS4MapperTest.Mapper;
 using DS4MapperTest.DS4Library;
 
@@ -82,13 +83,13 @@ namespace DS4MapperTest
             set => lightbarSettings = value;
         }
 
-        private double calibRwc = 5.0;
+        private double calibRwc = GyroMouseParams.REAL_WORLD_CALIBRATION_DEFAULT;
         public double CalibRwc { get => calibRwc; set => calibRwc = value; }
 
-        private double calibInGameSens = 1.0;
+        private double calibInGameSens = GyroMouseParams.IN_GAME_SENS_DEFAULT;
         public double CalibInGameSens { get => calibInGameSens; set => calibInGameSens = value; }
 
-        private double calibCounts = 1800.0;
+        private double calibCounts = GyroMouseParams.COUNTS_CALIBRATION_DEFAULT;
         public double CalibCounts { get => calibCounts; set => calibCounts = value; }
 
         private CalibMode calibMode = CalibMode.RwcMode;
