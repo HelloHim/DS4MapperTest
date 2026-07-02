@@ -24,6 +24,22 @@
                        Margin="0,4,0,0"/>
         </StackPanel>
 
+        <Border>
+            <Border.Style>
+                <Style TargetType="Border" BasedOn="{StaticResource JsmccCardBorder}">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding BumperButtonBindings.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="No bumper button bindings were found for the current controller."
+                       Style="{StaticResource JsmccBodyText}"
+                       TextWrapping="Wrap"/>
+        </Border>
+
         <ItemsControl ItemsSource="{Binding BumperButtonBindings}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
