@@ -178,11 +178,7 @@
                                 </StackPanel>
                             </TabItem>
                             <TabItem Header="Bumpers">
-                                <StackPanel Margin="0,16,0,0">
-                                    <TextBlock Text="Bumpers" Style="{StaticResource PlaceholderHeading}"/>
-                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
-                                               Style="{StaticResource PlaceholderNote}"/>
-                                </StackPanel>
+                                <views:BumpersKeybindsControl Margin="0,16,0,0"/>
                             </TabItem>
                             <TabItem Header="Triggers">
                                 <StackPanel Margin="0,16,0,0">
