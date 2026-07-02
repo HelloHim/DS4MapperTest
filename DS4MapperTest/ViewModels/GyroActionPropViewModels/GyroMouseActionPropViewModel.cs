@@ -142,6 +142,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 RealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
             }
         }
         public event EventHandler RealWorldCalibrationChanged;
@@ -157,9 +158,9 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 // corrupt CalibInGameSens. _modelReady is set via a low-priority
                 // dispatcher post that runs after all Loaded-priority control events.
                 if (!_modelReady) return;
-                CalculateTestRWC();
                 if (action.mouseParams.inGameSens == value) return;
                 action.mouseParams.inGameSens = value;
+                if (IsCountsMode) CalculateRwcFromCounts();
                 InGameSensChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
@@ -765,10 +766,66 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
                 if (value == null || value.IsCustom) return;
                 _applyingPreset = true;
-                InGameSens = value.InGameSens;
-                RealWorldCalibration = value.RWC;
-                FullTurnCounts = value.Counts;
+                if (IsCountsMode)
+                {
+                    FullTurnCounts = value.RWC * 360.0 / InGameSens;
+                }
+                else
+                {
+                    InGameSens = value.InGameSens;
+                    RealWorldCalibration = value.RWC;
+                }
                 _applyingPreset = false;
+            }
+        }
+
+        public CalibMode CalibMode
+        {
+            get => mapper.ActionProfile.CalibMode;
+            set
+            {
+                if (!_modelReady) return;
+                if (mapper.ActionProfile.CalibMode == value) return;
+                mapper.ActionProfile.CalibMode = value;
+                RaiseCalibModePropertyChanges();
+                SyncCalibFromGyroMouseToProfile();
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public bool IsRwcMode
+        {
+            get => CalibMode == DS4MapperTest.CalibMode.RwcMode;
+            set
+            {
+                if (value) CalibMode = DS4MapperTest.CalibMode.RwcMode;
+            }
+        }
+
+        public bool IsCountsMode
+        {
+            get => CalibMode == DS4MapperTest.CalibMode.CountsMode;
+            set
+            {
+                if (value) CalibMode = DS4MapperTest.CalibMode.CountsMode;
+            }
+        }
+
+        public string MasterCalibrationLabel => IsCountsMode ? "Counts" : "RWC";
+
+        public double MasterCalibrationValue
+        {
+            get => IsCountsMode ? FullTurnCounts : RealWorldCalibration;
+            set
+            {
+                if (IsCountsMode)
+                {
+                    FullTurnCounts = value;
+                }
+                else
+                {
+                    RealWorldCalibration = value;
+                }
             }
         }
 
@@ -804,21 +861,11 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 fullTurnCounts = value;
                 CalculateTestRWC();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
                 if (!countsChanged) return;
-                double counts = value;
-                mapper.ActionProfile.CalibCounts = counts;
-                ExecuteInMapperThread(() =>
-                {
-                    foreach (var set in mapper.ActionProfile.ActionSets)
-                        foreach (var layer in set.ActionLayers)
-                            foreach (var mapAction in layer.normalActionDict.Values)
-                                if (mapAction is ButtonAction btnAction)
-                                    foreach (var func in btnAction.ActionFuncs)
-                                        foreach (var data in func.OutputActions)
-                                            if (data.OutputType == OutputActionData.ActionType.CameraTurn)
-                                                data.cameraTurnCounts360 = counts;
-                });
-                //FullTurnCountsChanged?.Invoke(this, EventArgs.Empty);
+                if (!IsCountsMode) return;
+                CalculateRwcFromCounts();
+                SyncCalibFromGyroMouseToProfile();
             }
         }
         //public event EventHandler FullTurnCountsChanged;
@@ -1186,6 +1233,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             SmoothingEnabledChanged += GyroMouseActionPropViewModel_SmoothingEnabledChanged;
             SmoothingMinCutoffChanged += GyroMouseActionPropViewModel_SmoothingMinCutoffChanged;
             SmoothingBetaChanged += GyroMouseActionPropViewModel_SmoothingBetaChanged;
+            mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
 
             double savedInGameSens = this.action.mouseParams.inGameSens;
             double savedRwc = this.action.mouseParams.realWorldCalibration;
@@ -1215,6 +1263,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                    RaiseCalibModePropertyChanges();
                     System.Windows.Application.Current.Dispatcher.BeginInvoke(
                         System.Windows.Threading.DispatcherPriority.ApplicationIdle,
                         new Action(() =>
@@ -1237,6 +1286,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                            RaiseCalibModePropertyChanges();
                         }));
                 }));
         }
@@ -1246,14 +1296,24 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             CalculatedRWC = InGameSens / (360.0 / fullTurnCounts);
         }
 
+        private void CalculateRwcFromCounts()
+        {
+            double rwc = fullTurnCounts * InGameSens / 360.0;
+            if (action.mouseParams.realWorldCalibration == rwc) return;
+            action.mouseParams.realWorldCalibration = rwc;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+        }
+
         private void SyncCalibFromGyroMouseToProfile()
         {
-            double rwc = action.mouseParams.realWorldCalibration;
             double inGameSens = action.mouseParams.inGameSens;
-            // Use fullTurnCounts (what the user typed) rather than deriving counts from RWC.
-            // Deriving from RWC would overwrite the user's counts entry with a stale RWC value
-            // whenever InGameSens changes before Copy is clicked.
-            double counts = fullTurnCounts;
+            double rwc = IsCountsMode
+                ? fullTurnCounts * inGameSens / 360.0
+                : action.mouseParams.realWorldCalibration;
+            action.mouseParams.realWorldCalibration = rwc;
+            double counts = IsCountsMode || inGameSens <= 0.0
+                ? fullTurnCounts
+                : rwc * 360.0 / inGameSens;
             mapper.ActionProfile.CalibRwc = rwc;
             mapper.ActionProfile.CalibInGameSens = inGameSens;
             mapper.ActionProfile.CalibCounts = counts;
@@ -1280,6 +1340,24 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                             }
                         }
             });
+        }
+
+        private void RaiseCalibModePropertyChanges()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalibMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsRwcMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCountsMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationLabel)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+        }
+
+        private void ActionProfile_CalibModeChanged(object sender, EventArgs e)
+        {
+            RaiseCalibModePropertyChanges();
+            if (IsCountsMode)
+            {
+                CalculateTestRWC();
+            }
         }
 
         private void GyroMouseActionPropViewModel_NaturalVHalfChanged(object sender, EventArgs e)

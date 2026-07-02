@@ -25,6 +25,56 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         // --- Calibration fields (profile-level, synced across all actions) ---
 
+        public CalibMode CalibMode
+        {
+            get => mapper.ActionProfile.CalibMode;
+            set
+            {
+                if (!_modelReady) return;
+                if (mapper.ActionProfile.CalibMode == value) return;
+                mapper.ActionProfile.CalibMode = value;
+                RaiseCalibModePropertyChanges();
+                SyncCalibToProfile();
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public bool IsRwcMode
+        {
+            get => CalibMode == DS4MapperTest.CalibMode.RwcMode;
+            set
+            {
+                if (value) CalibMode = DS4MapperTest.CalibMode.RwcMode;
+            }
+        }
+
+        public bool IsCountsMode
+        {
+            get => CalibMode == DS4MapperTest.CalibMode.CountsMode;
+            set
+            {
+                if (value) CalibMode = DS4MapperTest.CalibMode.CountsMode;
+            }
+        }
+
+        public string MasterCalibrationLabel => IsCountsMode ? "Counts" : "RWC";
+
+        public double MasterCalibrationValue
+        {
+            get => IsCountsMode ? FullTurnCounts : RealWorldCalibration;
+            set
+            {
+                if (IsCountsMode)
+                {
+                    FullTurnCounts = value;
+                }
+                else
+                {
+                    RealWorldCalibration = value;
+                }
+            }
+        }
+
         private double fullTurnCounts = 1800.0;
         public double FullTurnCounts
         {
@@ -37,8 +87,13 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 fullTurnCounts = value;
                 CalculateTestRWC();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
                 if (!countsChanged) return;
-                SyncCalibToProfile();
+                if (IsCountsMode)
+                {
+                    CalculateRwcFromCounts();
+                    SyncCalibToProfile();
+                }
             }
         }
 
@@ -54,6 +109,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 RealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
                 SyncCalibToProfile();
             }
         }
@@ -65,9 +121,9 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             set
             {
                 if (!_modelReady) return;
-                CalculateTestRWC();
                 if (mapper.ActionProfile.CalibInGameSens == value) return;
                 mapper.ActionProfile.CalibInGameSens = value;
+                if (IsCountsMode) CalculateRwcFromCounts();
                 InGameSensChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
@@ -106,9 +162,15 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
                 if (value == null || value.IsCustom) return;
                 _applyingPreset = true;
-                InGameSens = value.InGameSens;
-                RealWorldCalibration = value.RWC;
-                FullTurnCounts = value.Counts;
+                if (IsCountsMode)
+                {
+                    FullTurnCounts = value.RWC * 360.0 / InGameSens;
+                }
+                else
+                {
+                    InGameSens = value.InGameSens;
+                    RealWorldCalibration = value.RWC;
+                }
                 _applyingPreset = false;
             }
         }
@@ -265,6 +327,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             FlickTimeExponentChanged += TouchpadFlickStickPropViewModel_FlickTimeExponentChanged;
             MinAngleThresholdChanged += TouchpadFlickStickPropViewModel_MinAngleThresholdChanged;
             ReleaseDampeningSpeedChanged += TouchpadFlickStickPropViewModel_ReleaseDampeningSpeedChanged;
+            mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
 
             double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
             double savedRwc = mapper.ActionProfile.CalibRwc;
@@ -280,6 +343,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                    RaiseCalibModePropertyChanges();
                     System.Windows.Application.Current.Dispatcher.BeginInvoke(
                         System.Windows.Threading.DispatcherPriority.ApplicationIdle,
                         new Action(() =>
@@ -292,6 +356,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                            RaiseCalibModePropertyChanges();
                         }));
                 }));
         }
@@ -305,6 +370,14 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         private void CalculateTestRWC()
         {
             CalculatedRWC = InGameSens / (360.0 / fullTurnCounts);
+        }
+
+        private void CalculateRwcFromCounts()
+        {
+            double rwc = fullTurnCounts * InGameSens / 360.0;
+            if (mapper.ActionProfile.CalibRwc == rwc) return;
+            mapper.ActionProfile.CalibRwc = rwc;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
         }
 
         private void TryMatchPreset()
@@ -323,9 +396,13 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         private void SyncCalibToProfile()
         {
-            double rwc = mapper.ActionProfile.CalibRwc;
             double inGameSens = mapper.ActionProfile.CalibInGameSens;
-            double counts = fullTurnCounts;
+            double rwc = IsCountsMode
+                ? fullTurnCounts * inGameSens / 360.0
+                : mapper.ActionProfile.CalibRwc;
+            double counts = IsCountsMode || inGameSens <= 0.0
+                ? fullTurnCounts
+                : rwc * 360.0 / inGameSens;
             mapper.ActionProfile.CalibRwc = rwc;
             mapper.ActionProfile.CalibInGameSens = inGameSens;
             mapper.ActionProfile.CalibCounts = counts;
@@ -357,6 +434,24 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                             }
                         }
             });
+        }
+
+        private void RaiseCalibModePropertyChanges()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalibMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsRwcMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCountsMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationLabel)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+        }
+
+        private void ActionProfile_CalibModeChanged(object sender, EventArgs e)
+        {
+            RaiseCalibModePropertyChanges();
+            if (IsCountsMode)
+            {
+                CalculateTestRWC();
+            }
         }
 
         private void TouchpadFlickStickPropViewModel_MinAngleThresholdChanged(object sender, EventArgs e)
