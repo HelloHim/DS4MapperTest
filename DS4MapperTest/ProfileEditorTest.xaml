@@ -225,13 +225,22 @@
 
                 <Border Padding="28,24"
                         Visibility="{Binding IsChecked, ElementName=navSticks, Converter={StaticResource BoolToVis}}">
-                    <StackPanel>
-                        <TextBlock Text="Sticks" Style="{StaticResource PlaceholderHeading}"/>
-                        <TextBlock Text="Stick binding and stick behaviour settings will live here."
-                                   Style="{StaticResource PlaceholderSub}"/>
-                        <Separator Margin="0,16,0,16"/>
-                        <TextBlock Text="Placeholder only. Controls are not wired in this phase." Style="{StaticResource PlaceholderNote}"/>
-                    </StackPanel>
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top">
+                            <TextBlock Text="Sticks" Style="{StaticResource PlaceholderHeading}"/>
+                            <TextBlock Text="Configure stick bindings, modes, and analog behaviour."
+                                       Style="{StaticResource PlaceholderSub}"/>
+                        </StackPanel>
+
+                        <TabControl Margin="0,16,0,0" Style="{StaticResource JsmccPillTabControlStyle}">
+                            <TabItem Header="Bindings" Style="{StaticResource JsmccPillTabItemStyle}">
+                                <views:SticksBindingsControl Margin="0,16,0,0"/>
+                            </TabItem>
+                            <TabItem Header="Modes &amp; Settings" Style="{StaticResource JsmccPillTabItemStyle}">
+                                <views:SticksModeSettingsControl Margin="0,16,0,0"/>
+                            </TabItem>
+                        </TabControl>
+                    </DockPanel>
                 </Border>
 
                 <Border Padding="28,24"
