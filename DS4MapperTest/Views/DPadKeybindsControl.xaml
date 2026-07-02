@@ -1,0 +1,304 @@
+<UserControl x:Class="DS4MapperTest.Views.DPadKeybindsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             mc:Ignorable="d"
+             d:DesignHeight="760"
+             d:DesignWidth="860">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style x:Key="DPadControlLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <StackPanel DataContext="{Binding DPadKeybinds}">
+        <StackPanel Margin="0,0,0,6">
+            <TextBlock Text="D-Pad" Style="{StaticResource JsmccSectionTitle}"/>
+            <TextBlock Text="Action Pad binds each direction individually, using the same binding system as Face buttons."
+                       Style="{StaticResource JsmccBodyText}"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <Border Style="{StaticResource JsmccCardBorder}">
+            <TextBlock Text="{Binding BehaviourStatusText}"
+                       Style="{StaticResource JsmccBodyText}"
+                       TextWrapping="Wrap"/>
+        </Border>
+
+        <ItemsControl ItemsSource="{Binding Directions}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource JsmccCardBorder}">
+                        <DockPanel LastChildFill="True">
+                            <DockPanel DockPanel.Dock="Top" LastChildFill="False" Margin="0,0,0,2">
+                                <StackPanel DockPanel.Dock="Left">
+                                    <TextBlock Text="{Binding DisplayName}"
+                                               Style="{StaticResource JsmccCardTitle}"/>
+                                    <TextBlock Text="Action Pad direction"
+                                               Style="{StaticResource JsmccMutedText}"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+
+                                <Button DockPanel.Dock="Right"
+                                        Content="Add Extra Binding"
+                                        Click="AddExtraBindingButton_Click"
+                                        Style="{StaticResource JsmccButtonStyle}">
+                                    <Button.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Hold Press"
+                                                      Tag="Hold"
+                                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddHoldPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Click="AddExtraBindingMenuItem_Click"/>
+                                            <MenuItem Header="Double Press - Not currently supported"
+                                                      IsEnabled="False"
+                                                      ToolTip="Not currently supported"/>
+                                            <MenuItem Header="Start Press"
+                                                      Tag="Start"
+                                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Click="AddExtraBindingMenuItem_Click"/>
+                                            <MenuItem Header="Release Press"
+                                                      Tag="Release"
+                                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Click="AddExtraBindingMenuItem_Click"/>
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                </Button>
+                            </DockPanel>
+
+                            <ItemsControl ItemsSource="{Binding FunctionItems}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="160"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,12,0">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               Style="{StaticResource JsmccLabelText}"/>
+                                                    <TextBlock Text="Press behaviour"
+                                                               Style="{StaticResource JsmccMutedText}"
+                                                               Margin="0,3,0,0"/>
+                                                </StackPanel>
+
+                                                <Button Grid.Row="0"
+                                                        Grid.Column="1"
+                                                        Content="{Binding DisplayBind}"
+                                                        Tag="{Binding}"
+                                                        Click="EditBinding_Click"
+                                                        Style="{StaticResource JsmccOutputButtonStyle}"
+                                                        ToolTip="Edit binding output"/>
+
+                                                <StackPanel Grid.Row="0"
+                                                            Grid.Column="2"
+                                                            Orientation="Horizontal"
+                                                            HorizontalAlignment="Right"
+                                                            Margin="10,0,0,0">
+                                                    <Button Content="Edit"
+                                                            Tag="{Binding}"
+                                                            Click="EditBinding_Click"
+                                                            Style="{StaticResource JsmccButtonStyle}"
+                                                            MinWidth="58"/>
+                                                    <Button Content="Remove"
+                                                            Tag="{Binding}"
+                                                            Click="RemoveBinding_Click"
+                                                            Style="{StaticResource JsmccDangerButtonStyle}"
+                                                            MinWidth="76"
+                                                            Margin="8,0,0,0"
+                                                            Visibility="{Binding CanRemove, Converter={StaticResource BoolToVis}}"/>
+                                                </StackPanel>
+
+                                                <WrapPanel Grid.Row="1"
+                                                           Grid.Column="0"
+                                                           Grid.ColumnSpan="3"
+                                                           Margin="0,6,0,0">
+                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
+                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsToggle, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Toggle" Style="{StaticResource DPadControlLabel}"/>
+                                                            <CheckBox IsChecked="{Binding ToggleEnabled}"
+                                                                      Style="{StaticResource JsmccToggleStyle}"
+                                                                      VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
+                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsTurbo, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Turbo" Style="{StaticResource DPadControlLabel}"/>
+                                                            <CheckBox IsChecked="{Binding TurboEnabled}"
+                                                                      Style="{StaticResource JsmccToggleStyle}"
+                                                                      VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
+                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding IsTurboEnabled, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Repeat Time" Style="{StaticResource DPadControlLabel}"/>
+                                                            <hc:NumericUpDown Minimum="0"
+                                                                              Maximum="60000"
+                                                                              DecimalPlaces="0"
+                                                                              Increment="10"
+                                                                              Width="108"
+                                                                              Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                              Value="{Binding TurboDurationMs, UpdateSourceTrigger=LostFocus}"
+                                                                              ValueFormat="0 ms"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
+                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsFireDelay, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Fire Delay" Style="{StaticResource DPadControlLabel}"/>
+                                                            <hc:NumericUpDown Minimum="0"
+                                                                              Maximum="60000"
+                                                                              DecimalPlaces="0"
+                                                                              Increment="10"
+                                                                              Width="108"
+                                                                              Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                              Value="{Binding FireDelayMs, UpdateSourceTrigger=LostFocus}"
+                                                                              ValueFormat="0 ms"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
+                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsHoldTime, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Hold Time" Style="{StaticResource DPadControlLabel}"/>
+                                                            <hc:NumericUpDown Minimum="0"
+                                                                              Maximum="60000"
+                                                                              DecimalPlaces="0"
+                                                                              Increment="10"
+                                                                              Width="108"
+                                                                              Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                              Value="{Binding HoldMs, UpdateSourceTrigger=LostFocus}"
+                                                                              ValueFormat="0 ms"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
+                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Min Duration" Style="{StaticResource DPadControlLabel}"/>
+                                                            <TextBox Text="{Binding ReleaseDurationMs, UpdateSourceTrigger=LostFocus}"
+                                                                     Width="72"
+                                                                     Style="{StaticResource JsmccTextBoxStyle}"/>
+                                                            <TextBlock Text="ms"
+                                                                       Style="{StaticResource JsmccMutedText}"
+                                                                       Margin="6,0,0,0"
+                                                                       VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
+                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="End Delay" Style="{StaticResource DPadControlLabel}"/>
+                                                            <TextBox Text="{Binding ReleaseDelayMs, UpdateSourceTrigger=LostFocus}"
+                                                                     Width="72"
+                                                                     Style="{StaticResource JsmccTextBoxStyle}"/>
+                                                            <TextBlock Text="ms"
+                                                                       Style="{StaticResource JsmccMutedText}"
+                                                                       Margin="6,0,0,0"
+                                                                       VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
+                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Interruptible" Style="{StaticResource DPadControlLabel}"/>
+                                                            <CheckBox IsChecked="{Binding ReleaseInterruptable}"
+                                                                      Style="{StaticResource JsmccToggleStyle}"
+                                                                      VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </WrapPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DockPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Button Content="Advanced (DS4MapperTest-specific)"
+                Click="ToggleAdvancedButton_Click"
+                Style="{StaticResource JsmccButtonStyle}"
+                HorizontalAlignment="Left"
+                Margin="0,4,0,0"/>
+
+        <Border Style="{StaticResource JsmccCardBorder}"
+                Visibility="{Binding IsAdvancedExpanded, Converter={StaticResource BoolToVis}}">
+            <StackPanel>
+                <TextBlock Text="DPad Mode" Style="{StaticResource JsmccLabelText}"/>
+                <TextBlock Text="DS4MapperTest-specific option. Controls how diagonal D-Pad presses are resolved into the four directions above."
+                           Style="{StaticResource JsmccMutedText}"
+                           TextWrapping="Wrap"
+                           Margin="0,3,0,8"/>
+                <ComboBox ItemsSource="{Binding PadModeItems}"
+                          DisplayMemberPath="DisplayName"
+                          SelectedIndex="{Binding SelectedPadModeIndex}"
+                          Style="{StaticResource JsmccComboBoxStyle}"
+                          Width="220"
+                          HorizontalAlignment="Left"/>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

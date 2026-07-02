@@ -62,6 +62,9 @@ namespace DS4MapperTest.ViewModels
             new ObservableCollection<FaceButtonBindingItem>();
         public ObservableCollection<FaceButtonBindingItem> FaceButtonBindings => faceButtonBindings;
 
+        private DPadKeybindsViewModel dpadKeybinds;
+        public DPadKeybindsViewModel DPadKeybinds => dpadKeybinds ??= new DPadKeybindsViewModel(this);
+
         private Dictionary<string, int> buttonBindingsIndexDict =
             new Dictionary<string, int>();
         public Dictionary<string, int> ButtonBindingsIndexDict
@@ -569,6 +572,12 @@ namespace DS4MapperTest.ViewModels
             }
 
             PopulateFaceButtonBindings();
+            PopulateDPadKeybinds();
+        }
+
+        private void PopulateDPadKeybinds()
+        {
+            (dpadKeybinds ??= new DPadKeybindsViewModel(this)).Refresh();
         }
 
         private void PopulateFaceButtonBindings()
@@ -695,6 +704,146 @@ namespace DS4MapperTest.ViewModels
                 new MapperUtil.OutputActionData(
                     MapperUtil.OutputActionData.ActionType.Empty, 0)));
             FaceButtonBindingItem.MarkFunctionsChanged(action);
+        }
+
+        internal DPadMapAction GetCurrentDPadMapAction()
+        {
+            return dpadBindings.Count > 0 ? dpadBindings[0].MappedAction : null;
+        }
+
+        internal ButtonAction PeekDPadDirectionAction(DPadDirectionKind kind)
+        {
+            if (GetCurrentDPadMapAction() is not DPadAction dpadAction) return null;
+            return dpadAction.EventCodes4[(int)ToDpadDirections(kind)];
+        }
+
+        internal DPadAction EnsureActionPadAction()
+        {
+            DPadBindingItemsTest bindingItem = dpadBindings.Count > 0 ? dpadBindings[0] : null;
+            if (bindingItem == null) return null;
+
+            ActionSet editSet = actionSetItems[selectedActionSetIndex].Set;
+            ActionLayer editLayer = layerItems[selectedActionLayerIndex].Layer;
+            DPadMapAction oldAction = bindingItem.MappedAction;
+
+            if (oldAction is DPadAction existingAction && editLayer.LayerActions.Contains(existingAction))
+            {
+                return existingAction;
+            }
+
+            DPadAction newAction = new DPadAction();
+            newAction.CopyBaseMapProps(oldAction);
+            newAction.MappingId = oldAction.MappingId;
+            newAction.Id = editLayer.LayerActions.Contains(oldAction) &&
+                oldAction.Id != MapAction.DEFAULT_UNBOUND_ID
+                    ? oldAction.Id
+                    : editLayer.FindNextAvailableId();
+
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                oldAction.Release(mapper, ignoreReleaseActions: true);
+                if (editLayer.LayerActions.Contains(oldAction))
+                {
+                    editLayer.ReplaceDPadAction(oldAction, newAction);
+                }
+                else
+                {
+                    editLayer.AddDPadAction(newAction);
+                }
+
+                if (editSet.UsingCompositeLayer)
+                {
+                    editSet.RecompileCompositeLayer(mapper);
+                }
+                else
+                {
+                    editLayer.SyncActions();
+                    editSet.ClearCompositeLayerActions();
+                    editSet.PrepareCompositeLayer();
+                }
+            });
+
+            bindingItem.UpdateAction(newAction);
+            return newAction;
+        }
+
+        internal ButtonAction EnsureEditableDPadDirectionAction(DPadDirectionKind kind)
+        {
+            DPadAction action = EnsureActionPadAction();
+            if (action == null) return null;
+
+            int dirIndex = (int)ToDpadDirections(kind);
+            ButtonAction existing = action.EventCodes4[dirIndex];
+
+            if (existing != null && !action.UsingParentActionButton[dirIndex])
+            {
+                mapper.ProcessMappingChangeAction(() => EnsureRegularPressFunc(existing));
+                return existing;
+            }
+
+            ButtonAction newButtonAction = new ButtonAction();
+            if (existing != null)
+            {
+                newButtonAction.CopyBaseProps(existing);
+                newButtonAction.CopyAction(existing);
+            }
+
+            EnsureRegularPressFunc(newButtonAction);
+
+            string propertyKey = ToPadDirPropertyKey(kind);
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                existing?.Release(mapper, ignoreReleaseActions: true);
+                action.EventCodes4[dirIndex] = newButtonAction;
+                action.UsingParentActionButton[dirIndex] = false;
+                if (!action.ChangedProperties.Contains(propertyKey))
+                {
+                    action.ChangedProperties.Add(propertyKey);
+                }
+                action.RaiseNotifyPropertyChange(mapper, propertyKey);
+            });
+
+            return newButtonAction;
+        }
+
+        internal void SetDPadMode(DPadAction.DPadMode mode)
+        {
+            DPadAction action = EnsureActionPadAction();
+            if (action == null || action.CurrentMode == mode) return;
+
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                action.CurrentMode = mode;
+                if (!action.ChangedProperties.Contains(DPadAction.PropertyKeyStrings.PAD_MODE))
+                {
+                    action.ChangedProperties.Add(DPadAction.PropertyKeyStrings.PAD_MODE);
+                }
+                action.RaiseNotifyPropertyChange(mapper, DPadAction.PropertyKeyStrings.PAD_MODE);
+            });
+        }
+
+        private static DpadDirections ToDpadDirections(DPadDirectionKind kind)
+        {
+            return kind switch
+            {
+                DPadDirectionKind.Up => DpadDirections.Up,
+                DPadDirectionKind.Down => DpadDirections.Down,
+                DPadDirectionKind.Left => DpadDirections.Left,
+                DPadDirectionKind.Right => DpadDirections.Right,
+                _ => DpadDirections.Centered,
+            };
+        }
+
+        private static string ToPadDirPropertyKey(DPadDirectionKind kind)
+        {
+            return kind switch
+            {
+                DPadDirectionKind.Up => DPadAction.PropertyKeyStrings.PAD_DIR_UP,
+                DPadDirectionKind.Down => DPadAction.PropertyKeyStrings.PAD_DIR_DOWN,
+                DPadDirectionKind.Left => DPadAction.PropertyKeyStrings.PAD_DIR_LEFT,
+                DPadDirectionKind.Right => DPadAction.PropertyKeyStrings.PAD_DIR_RIGHT,
+                _ => DPadAction.PropertyKeyStrings.NAME,
+            };
         }
 
         public void SwitchActionSets(int ind)
