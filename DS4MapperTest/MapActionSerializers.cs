@@ -6655,6 +6655,73 @@ namespace DS4MapperTest
                 return gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.JITTER_COMPENSATION);
             }
 
+            public bool MultiplierCompensation
+            {
+                get => gyroMouseAction.mouseParams.multiplierCompensation;
+                set
+                {
+                    gyroMouseAction.mouseParams.multiplierCompensation = value;
+                    MultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MultiplierCompensationChanged;
+
+            public bool ShouldSerializeMultiplierCompensation()
+            {
+                return gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            }
+
+            public double AccelerationMultiplier
+            {
+                get => gyroMouseAction.mouseParams.accelerationMultiplier;
+                set
+                {
+                    gyroMouseAction.mouseParams.accelerationMultiplier = Math.Clamp(value, 0.01, 100.0);
+                    AccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler AccelerationMultiplierChanged;
+
+            public bool ShouldSerializeAccelerationMultiplier()
+            {
+                return gyroMouseAction.mouseParams.multiplierCompensation ||
+                    gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            }
+
+            public double VerticalAccelerationMultiplier
+            {
+                get => gyroMouseAction.mouseParams.verticalAccelerationMultiplier;
+                set
+                {
+                    gyroMouseAction.mouseParams.verticalAccelerationMultiplier = Math.Clamp(value, 0.01, 100.0);
+                    VerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalAccelerationMultiplierChanged;
+
+            public bool ShouldSerializeVerticalAccelerationMultiplier()
+            {
+                return gyroMouseAction.mouseParams.multiplierCompensation ||
+                    gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER);
+            }
+
+            public bool VerticalAccelerationScaleMode
+            {
+                get => gyroMouseAction.mouseParams.verticalAccelerationScaleMode;
+                set
+                {
+                    gyroMouseAction.mouseParams.verticalAccelerationScaleMode = value;
+                    VerticalAccelerationScaleModeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalAccelerationScaleModeChanged;
+
+            public bool ShouldSerializeVerticalAccelerationScaleMode()
+            {
+                return gyroMouseAction.mouseParams.multiplierCompensation ||
+                    gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE);
+            }
+
             public bool SmoothingEnabled
             {
                 get => gyroMouseAction.mouseParams.smoothing;
@@ -6750,6 +6817,10 @@ namespace DS4MapperTest
             settings.MinThresholdChanged += Settings_MinThresholdChanged;
             settings.ToggleChanged += Settings_ToggleChanged;
             settings.JitterCompensationChanged += Settings_JitterCompensationChanged;
+            settings.MultiplierCompensationChanged += Settings_MultiplierCompensationChanged;
+            settings.AccelerationMultiplierChanged += Settings_AccelerationMultiplierChanged;
+            settings.VerticalAccelerationMultiplierChanged += Settings_VerticalAccelerationMultiplierChanged;
+            settings.VerticalAccelerationScaleModeChanged += Settings_VerticalAccelerationScaleModeChanged;
             settings.SmoothingEnabledChanged += Settings_SmoothingEnabledChanged;
             settings.SmoothingMinCutoffChanged += Settings_SmoothingMinCutoffChanged;
             settings.SmoothingBetaChanged += Settings_SmoothingMinBetaChanged;
@@ -6828,6 +6899,26 @@ namespace DS4MapperTest
         private void Settings_JitterCompensationChanged(object sender, EventArgs e)
         {
             gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.JITTER_COMPENSATION);
+        }
+
+        private void Settings_MultiplierCompensationChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+        }
+
+        private void Settings_AccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+        }
+
+        private void Settings_VerticalAccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER);
+        }
+
+        private void Settings_VerticalAccelerationScaleModeChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE);
         }
 
         private void Settings_EvalCondChanged(object sender, EventArgs e)

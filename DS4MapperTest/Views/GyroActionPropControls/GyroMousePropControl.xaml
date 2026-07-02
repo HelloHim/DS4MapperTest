@@ -519,6 +519,104 @@ Value="{Binding PowerCurveExponent,FallbackValue='1.0'}" Margin="8,0,0,0">
                 </Border>
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Multiplier Compensation" />
+                    <CheckBox IsChecked="{Binding MultiplierCompensation}"
+                              VerticalAlignment="Center" Margin="8,0,0,0">
+                        <CheckBox.Style>
+                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightMultiplierCompensation}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </CheckBox.Style>
+                    </CheckBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Vertical" Margin="0,8,0,0"
+                            Visibility="{Binding MultiplierCompensation, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Horizontal Multiplier" />
+                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                          Value="{Binding AccelerationMultiplier,FallbackValue='1.0'}"
+                                          Width="100" Margin="8,0,0,0">
+                            <hc:NumericUpDown.Style>
+                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HighlightAccelerationMultiplier}" Value="False">
+                                            <Setter Property="Opacity" Value="0.7" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </hc:NumericUpDown.Style>
+                        </hc:NumericUpDown>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Opacity" Value="1.0" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VerticalAccelerationIsAbsoluteMode}" Value="False">
+                                        <Setter Property="Opacity" Value="0.4" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <RadioButton GroupName="VerticalAccelerationMode"
+                                     IsChecked="{Binding VerticalAccelerationIsAbsoluteMode, Mode=TwoWay}"
+                                     VerticalAlignment="Center" />
+                        <Label Content="Vertical Multiplier" Margin="4,0,0,0" />
+                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                          Value="{Binding VerticalAccelerationMultiplier,FallbackValue='1.0'}"
+                                          IsEnabled="{Binding VerticalAccelerationIsAbsoluteMode}"
+                                          Width="100" Margin="8,0,0,0">
+                            <hc:NumericUpDown.Style>
+                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HighlightVerticalAccelerationMultiplier}" Value="False">
+                                            <Setter Property="Opacity" Value="0.7" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </hc:NumericUpDown.Style>
+                        </hc:NumericUpDown>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Opacity" Value="1.0" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VerticalAccelerationIsScaleMode}" Value="False">
+                                        <Setter Property="Opacity" Value="0.4" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <RadioButton GroupName="VerticalAccelerationMode"
+                                     IsChecked="{Binding VerticalAccelerationIsScaleMode, Mode=TwoWay}"
+                                     VerticalAlignment="Center" />
+                        <Label Content="Vertical Scale" Margin="4,0,0,0" />
+                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                          Value="{Binding VerticalAccelerationScale,FallbackValue='1.0'}"
+                                          IsEnabled="{Binding VerticalAccelerationIsScaleMode}"
+                                          Width="100" Margin="8,0,0,0">
+                            <hc:NumericUpDown.Style>
+                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HighlightVerticalAccelerationMultiplier}" Value="False">
+                                            <Setter Property="Opacity" Value="0.7" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </hc:NumericUpDown.Style>
+                        </hc:NumericUpDown>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Invert" />
                     <ComboBox ItemsSource="{Binding InvertChoiceItems}" DisplayMemberPath="DisplayName"
                           SelectedValuePath="Choice" SelectedValue="{Binding InvertChoice}" MinWidth="100" Margin="8,0,0,0">
