@@ -67,6 +67,14 @@ namespace DS4MapperTest.ViewModels
             new ObservableCollection<FaceButtonBindingItem>();
         public ObservableCollection<FaceButtonBindingItem> BumperButtonBindings => bumperButtonBindings;
 
+        private ObservableCollection<FaceButtonBindingItem> centerButtonBindings =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> CenterButtonBindings => centerButtonBindings;
+
+        private ObservableCollection<FaceButtonBindingItem> paddleButtonBindings =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> PaddleButtonBindings => paddleButtonBindings;
+
         private ObservableCollection<TriggerKeybindItem> triggerKeybinds =
             new ObservableCollection<TriggerKeybindItem>();
         public ObservableCollection<TriggerKeybindItem> TriggerKeybinds => triggerKeybinds;
@@ -444,6 +452,8 @@ namespace DS4MapperTest.ViewModels
             buttonBindingsIndexDict.Clear();
             faceButtonBindings.Clear();
             bumperButtonBindings.Clear();
+            centerButtonBindings.Clear();
+            paddleButtonBindings.Clear();
             triggerKeybinds.Clear();
             touchpadBindings.Clear();
             triggerBindings.Clear();
@@ -464,6 +474,8 @@ namespace DS4MapperTest.ViewModels
             buttonBindingsIndexDict.Clear();
             faceButtonBindings.Clear();
             bumperButtonBindings.Clear();
+            centerButtonBindings.Clear();
+            paddleButtonBindings.Clear();
             triggerKeybinds.Clear();
             touchpadBindings.Clear();
             triggerBindings.Clear();
@@ -586,6 +598,8 @@ namespace DS4MapperTest.ViewModels
 
             PopulateFaceButtonBindings();
             PopulateBumperButtonBindings();
+            PopulateCenterButtonBindings();
+            PopulatePaddleButtonBindings();
             PopulateTriggerKeybinds();
             PopulateDPadKeybinds();
         }
@@ -666,6 +680,69 @@ namespace DS4MapperTest.ViewModels
                 {
                     bumperButtonBindings.Add(new FaceButtonBindingItem(this, item, displayNames[i]));
                 }
+            }
+        }
+
+        private void PopulateCenterButtonBindings()
+        {
+            centerButtonBindings.Clear();
+
+            AddFirstMatchingButtonBinding(centerButtonBindings,
+                new string[] { "Options", "Start", "Plus" },
+                "Options / Menu");
+            AddFirstMatchingButtonBinding(centerButtonBindings,
+                new string[] { "Share", "Create", "Capture", "Back", "Minus" },
+                "Share / View");
+            AddFirstMatchingButtonBinding(centerButtonBindings,
+                new string[] { "PS", "Home", "Guide", "Steam" },
+                "PS / Home");
+            AddFirstMatchingButtonBinding(centerButtonBindings,
+                new string[] { "Mute" },
+                "Mic");
+        }
+
+        private void PopulatePaddleButtonBindings()
+        {
+            paddleButtonBindings.Clear();
+
+            AddFirstMatchingButtonBinding(paddleButtonBindings,
+                new string[] { "BLP", "L4", "LSideL" },
+                "Paddle 1");
+            AddFirstMatchingButtonBinding(paddleButtonBindings,
+                new string[] { "BRP", "R4", "LSideR" },
+                "Paddle 2");
+            AddFirstMatchingButtonBinding(paddleButtonBindings,
+                new string[] { "PL", "RSideL" },
+                "Paddle 3");
+            AddFirstMatchingButtonBinding(paddleButtonBindings,
+                new string[] { "PR", "RSideR" },
+                "Paddle 4");
+            AddFirstMatchingButtonBinding(paddleButtonBindings,
+                new string[] { "LeftGrip" },
+                "Left Grip Sense");
+            AddFirstMatchingButtonBinding(paddleButtonBindings,
+                new string[] { "RightGrip" },
+                "Right Grip Sense");
+        }
+
+        private void AddFirstMatchingButtonBinding(
+            ObservableCollection<FaceButtonBindingItem> target,
+            string[] aliases,
+            string displayName)
+        {
+            BindingItemsTest item = null;
+            foreach (string alias in aliases)
+            {
+                if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
+                {
+                    item = buttonBindings[index];
+                    break;
+                }
+            }
+
+            if (item != null)
+            {
+                target.Add(new FaceButtonBindingItem(this, item, displayName));
             }
         }
 
