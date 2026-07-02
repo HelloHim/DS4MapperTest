@@ -158,24 +158,10 @@
                                         <views:TriggersKeybindsControl/>
                                     </TabItem>
                                     <TabItem Header="Center">
-                                        <Border Style="{StaticResource JsmccCardBorder}" Margin="0">
-                                            <StackPanel>
-                                                <TextBlock Text="Center" Style="{StaticResource JsmccSectionTitle}"/>
-                                                <TextBlock Text="Placeholder only. Controls are not wired in this phase."
-                                                           Style="{StaticResource PlaceholderCardText}"
-                                                           Margin="0,6,0,0"/>
-                                            </StackPanel>
-                                        </Border>
+                                        <views:CenterKeybindsControl/>
                                     </TabItem>
                                     <TabItem Header="Paddles">
-                                        <Border Style="{StaticResource JsmccCardBorder}" Margin="0">
-                                            <StackPanel>
-                                                <TextBlock Text="Paddles" Style="{StaticResource JsmccSectionTitle}"/>
-                                                <TextBlock Text="Placeholder only. Controls are not wired in this phase."
-                                                           Style="{StaticResource PlaceholderCardText}"
-                                                           Margin="0,6,0,0"/>
-                                            </StackPanel>
-                                        </Border>
+                                        <views:PaddlesKeybindsControl/>
                                     </TabItem>
                                     <TabItem Header="Extra">
                                         <Border Style="{StaticResource JsmccCardBorder}" Margin="0">
