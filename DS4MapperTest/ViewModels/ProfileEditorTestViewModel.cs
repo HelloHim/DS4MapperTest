@@ -741,6 +741,7 @@ namespace DS4MapperTest.ViewModels
                 : $"{outputDpad}_{direction}";
         }
 
+
         internal DPadAction EnsureActionPadAction()
         {
             DPadBindingItemsTest bindingItem = dpadBindings.Count > 0 ? dpadBindings[0] : null;
