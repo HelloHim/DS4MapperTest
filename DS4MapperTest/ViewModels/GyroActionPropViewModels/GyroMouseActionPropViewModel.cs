@@ -518,6 +518,153 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler GyroJitterCompensationChanged;
 
+        public bool MultiplierCompensation
+        {
+            get => action.mouseParams.multiplierCompensation;
+            set
+            {
+                if (action.mouseParams.multiplierCompensation == value) return;
+                action.mouseParams.multiplierCompensation = value;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(MultiplierCompensation)));
+                MultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler MultiplierCompensationChanged;
+
+        public double AccelerationMultiplier
+        {
+            get => action.mouseParams.accelerationMultiplier;
+            set
+            {
+                if (!_modelReady) return;
+                double accelerationMultiplier = Math.Clamp(value, 0.01, 100.0);
+                if (action.mouseParams.accelerationMultiplier == accelerationMultiplier) return;
+                double verticalAccelerationScale = VerticalAccelerationScale;
+                action.mouseParams.accelerationMultiplier = accelerationMultiplier;
+                if (VerticalAccelerationIsScaleMode)
+                {
+                    action.mouseParams.verticalAccelerationMultiplier = Math.Clamp(
+                        accelerationMultiplier * verticalAccelerationScale, 0.01, 100.0);
+                    VerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                    PropertyChanged?.Invoke(this,
+                        new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
+                    PropertyChanged?.Invoke(this,
+                        new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                }
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(AccelerationMultiplier)));
+                AccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
+            }
+        }
+        public event EventHandler AccelerationMultiplierChanged;
+
+        public bool VerticalAccelerationIsScaleMode
+        {
+            get => action.mouseParams.verticalAccelerationScaleMode;
+            set
+            {
+                if (!value || action.mouseParams.verticalAccelerationScaleMode) return;
+                action.mouseParams.verticalAccelerationScaleMode = value;
+                VerticalAccelerationScaleModeChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationIsScaleMode)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationIsAbsoluteMode)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
+            }
+        }
+
+        public bool VerticalAccelerationIsAbsoluteMode
+        {
+            get => !action.mouseParams.verticalAccelerationScaleMode;
+            set
+            {
+                if (!value || !action.mouseParams.verticalAccelerationScaleMode) return;
+                action.mouseParams.verticalAccelerationScaleMode = !value;
+                VerticalAccelerationScaleModeChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationIsScaleMode)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationIsAbsoluteMode)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
+            }
+        }
+        public event EventHandler VerticalAccelerationScaleModeChanged;
+
+        public double VerticalAccelerationMultiplier
+        {
+            get => action.mouseParams.verticalAccelerationMultiplier;
+            set
+            {
+                if (!_modelReady) return;
+                double verticalAccelerationMultiplier = Math.Clamp(value, 0.01, 100.0);
+                if (action.mouseParams.verticalAccelerationMultiplier == verticalAccelerationMultiplier) return;
+                action.mouseParams.verticalAccelerationMultiplier = verticalAccelerationMultiplier;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
+                VerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler VerticalAccelerationMultiplierChanged;
+
+        public double VerticalAccelerationScale
+        {
+            get
+            {
+                double horizontalMultiplier = action.mouseParams.accelerationMultiplier;
+                if (Math.Abs(horizontalMultiplier) < 1e-10)
+                {
+                    return action.mouseParams.verticalAccelerationMultiplier;
+                }
+
+                return Math.Round(action.mouseParams.verticalAccelerationMultiplier /
+                    horizontalMultiplier, 4);
+            }
+            set
+            {
+                if (!_modelReady) return;
+                double horizontalMultiplier = action.mouseParams.accelerationMultiplier;
+                double verticalMultiplier = Math.Abs(horizontalMultiplier) < 1e-10 ?
+                    value : horizontalMultiplier * value;
+                verticalMultiplier = Math.Clamp(verticalMultiplier, 0.01, 100.0);
+                if (action.mouseParams.verticalAccelerationMultiplier == verticalMultiplier) return;
+                action.mouseParams.verticalAccelerationMultiplier = verticalMultiplier;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
+                VerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public double VerticalAccelerationEffectiveMultiplier
+        {
+            get
+            {
+                return Math.Round(Math.Clamp(
+                    action.mouseParams.verticalAccelerationMultiplier, 0.01, 100.0), 4);
+            }
+        }
+
         public bool SmoothingEnabled
         {
             get => action.mouseParams.smoothing;
@@ -863,6 +1010,34 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler HighlightGyroJitterCompensationChanged;
 
+        public bool HighlightMultiplierCompensation
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+        }
+        public event EventHandler HighlightMultiplierCompensationChanged;
+
+        public bool HighlightAccelerationMultiplier
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+        }
+        public event EventHandler HighlightAccelerationMultiplierChanged;
+
+        public bool HighlightVerticalAccelerationMultiplier
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER);
+        }
+        public event EventHandler HighlightVerticalAccelerationMultiplierChanged;
+
+        public bool HighlightVerticalAccelerationScaleMode
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE);
+        }
+        public event EventHandler HighlightVerticalAccelerationScaleModeChanged;
+
         public bool HighlightSmoothingEnabled
         {
             get => action.ParentAction == null ||
@@ -1004,6 +1179,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             VerticalScaleChanged += GyroMouseActionPropViewModel_VerticalScaleChanged;
             InvertChoicesChanged += GyroMouseActionPropViewModel_InvertChoicesChanged;
             GyroJitterCompensationChanged += GyroMouseActionPropViewModel_GyroJitterCompensationChanged;
+            MultiplierCompensationChanged += GyroMouseActionPropViewModel_MultiplierCompensationChanged;
+            AccelerationMultiplierChanged += GyroMouseActionPropViewModel_AccelerationMultiplierChanged;
+            VerticalAccelerationMultiplierChanged += GyroMouseActionPropViewModel_VerticalAccelerationMultiplierChanged;
+            VerticalAccelerationScaleModeChanged += GyroMouseActionPropViewModel_VerticalAccelerationScaleModeChanged;
             SmoothingEnabledChanged += GyroMouseActionPropViewModel_SmoothingEnabledChanged;
             SmoothingMinCutoffChanged += GyroMouseActionPropViewModel_SmoothingMinCutoffChanged;
             SmoothingBetaChanged += GyroMouseActionPropViewModel_SmoothingBetaChanged;
@@ -1012,6 +1191,8 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             double savedRwc = this.action.mouseParams.realWorldCalibration;
             double savedSensitivity = this.action.mouseParams.sensitivity;
             double savedVerticalScale = this.action.mouseParams.verticalScale;
+            double savedAccelerationMultiplier = this.action.mouseParams.accelerationMultiplier;
+            double savedVerticalAccelerationMultiplier = this.action.mouseParams.verticalAccelerationMultiplier;
             double savedCounts = fullTurnCounts;
             System.Windows.Application.Current.Dispatcher.BeginInvoke(
                 System.Windows.Threading.DispatcherPriority.Background,
@@ -1021,12 +1202,18 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                     this.action.mouseParams.realWorldCalibration = savedRwc;
                     this.action.mouseParams.sensitivity = savedSensitivity;
                     this.action.mouseParams.verticalScale = savedVerticalScale;
+                    this.action.mouseParams.accelerationMultiplier = savedAccelerationMultiplier;
+                    this.action.mouseParams.verticalAccelerationMultiplier = savedVerticalAccelerationMultiplier;
                     fullTurnCounts = savedCounts;
                     CalculateTestRWC();
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AccelerationMultiplier)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
                     System.Windows.Application.Current.Dispatcher.BeginInvoke(
                         System.Windows.Threading.DispatcherPriority.ApplicationIdle,
@@ -1036,6 +1223,8 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                             this.action.mouseParams.realWorldCalibration = savedRwc;
                             this.action.mouseParams.sensitivity = savedSensitivity;
                             this.action.mouseParams.verticalScale = savedVerticalScale;
+                            this.action.mouseParams.accelerationMultiplier = savedAccelerationMultiplier;
+                            this.action.mouseParams.verticalAccelerationMultiplier = savedVerticalAccelerationMultiplier;
                             fullTurnCounts = savedCounts;
                             CalculateTestRWC();
                             _modelReady = true;
@@ -1043,6 +1232,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AccelerationMultiplier)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
                         }));
                 }));
@@ -1350,6 +1543,52 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.JITTER_COMPENSATION);
             HighlightGyroJitterCompensationChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void GyroMouseActionPropViewModel_MultiplierCompensationChanged(object sender, EventArgs e)
+        {
+            if (!this.action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION))
+            {
+                this.action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            HighlightMultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nameof(MultiplierCompensation)));
+        }
+
+        private void GyroMouseActionPropViewModel_AccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            if (!this.action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER))
+            {
+                this.action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            HighlightAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void GyroMouseActionPropViewModel_VerticalAccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            if (!this.action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER))
+            {
+                this.action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER);
+            HighlightVerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void GyroMouseActionPropViewModel_VerticalAccelerationScaleModeChanged(object sender, EventArgs e)
+        {
+            if (!this.action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE))
+            {
+                this.action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE);
+            HighlightVerticalAccelerationScaleModeChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void GyroMouseActionPropViewModel_GyroTriggerCondChoiceChanged(object sender, EventArgs e)
