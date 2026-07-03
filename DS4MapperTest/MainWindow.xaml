@@ -39,6 +39,36 @@
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Margin" Value="0,0,8,3"/>
         </Style>
+
+        <Style x:Key="SaveStatusPillBaseStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="{StaticResource JsmccPillRadius}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="12,0,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="SaveStatusPillSuccessStyle" TargetType="Border" BasedOn="{StaticResource SaveStatusPillBaseStyle}">
+            <Setter Property="Background" Value="{DynamicResource JsmccSuccessBgBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource JsmccSuccessBorderBrush}"/>
+        </Style>
+
+        <Style x:Key="SaveStatusPillErrorStyle" TargetType="Border" BasedOn="{StaticResource SaveStatusPillBaseStyle}">
+            <Setter Property="Background" Value="{DynamicResource JsmccDangerBgBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource JsmccDangerBorderBrush}"/>
+        </Style>
+
+        <Style x:Key="SaveStatusPillTextSuccessStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource JsmccSuccessTextBrush}"/>
+        </Style>
+
+        <Style x:Key="SaveStatusPillTextErrorStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource JsmccDangerTextBrush}"/>
+        </Style>
     </Window.Resources>
 
     <Grid Background="{DynamicResource JsmccBg0Brush}">
@@ -117,7 +147,17 @@
                                        Visibility="Collapsed"/>
                         </StackPanel>
 
-                        <Button DockPanel.Dock="Right"
+                        <Border x:Name="saveStatusPill"
+                                DockPanel.Dock="Right"
+                                Visibility="Collapsed"
+                                Style="{StaticResource SaveStatusPillSuccessStyle}">
+                            <TextBlock x:Name="saveStatusPillText"
+                                       Text="Saved &#x2713;"
+                                       Style="{StaticResource SaveStatusPillTextSuccessStyle}"/>
+                        </Border>
+
+                        <Button x:Name="saveProfileButton"
+                                DockPanel.Dock="Right"
                                 Content="Save Profile"
                                 Click="SaveProfileButton_Click"
                                 Style="{StaticResource JsmccPrimaryButtonStyle}"/>
