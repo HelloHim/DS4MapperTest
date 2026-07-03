@@ -1,0 +1,203 @@
+<UserControl x:Class="DS4MapperTest.Views.GyroNoiseSteadyingControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:localConverters="clr-namespace:DS4MapperTest.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700"
+             d:DesignWidth="860">
+    <UserControl.Resources>
+        <localConverters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVisibilityConverter"/>
+
+        <Style x:Key="NoiseRowBorder" TargetType="Border" BasedOn="{StaticResource JsmccSettingRowBorder}">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="NoiseRowLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
+            <Setter Property="Width" Value="190"/>
+        </Style>
+
+        <Style x:Key="NoiseUnitLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccMutedText}">
+            <Setter Property="Margin" Value="6,0,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  CanContentScroll="False">
+        <StackPanel Margin="0,0,10,12">
+            <TextBlock Text="Noise &amp; Steadying" Style="{StaticResource JsmccSectionTitle}"/>
+            <TextBlock Text="Controls smoothing, deadzones, jitter compensation, and aim steadying for the gyro."
+                       Style="{StaticResource JsmccBodyText}"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0"/>
+
+            <StackPanel Visibility="{Binding HasGyroMouseAction, Converter={StaticResource Boolean2VisibilityConverter}}">
+                <Border Style="{StaticResource JsmccCardBorder}" Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Deadzones" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+
+                        <Border Style="{StaticResource NoiseRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Deadzone" Style="{StaticResource NoiseRowLabel}"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <hc:NumericUpDown Minimum="0.0" Maximum="50.0" DecimalPlaces="2" Increment="0.1"
+                                                      Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding DeadZone, FallbackValue='0.2'}"/>
+                                    <TextBlock Text="dps" Style="{StaticResource NoiseUnitLabel}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource NoiseRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Vertical Deadzone" Style="{StaticResource NoiseRowLabel}"
+                                           ToolTip="Suppresses vertical (pitch) input below this threshold, independently of the regular deadzone."/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <hc:NumericUpDown Minimum="0.0" Maximum="50.0" DecimalPlaces="2" Increment="0.1"
+                                                      Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding VerticalDeadZone, FallbackValue='0.0'}"/>
+                                    <TextBlock Text="dps" Style="{StaticResource NoiseUnitLabel}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock Text="Smoothing" Style="{StaticResource JsmccCardTitle}" VerticalAlignment="Center"/>
+                            <CheckBox Style="{StaticResource JsmccToggleStyle}"
+                                      IsChecked="{Binding SmoothingEnabled}"
+                                      VerticalAlignment="Center"
+                                      Margin="12,0,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel IsEnabled="{Binding SmoothingEnabled}">
+                            <Border Style="{StaticResource NoiseRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Preset" Style="{StaticResource NoiseRowLabel}"/>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding SmoothPresetChoiceItems}"
+                                              DisplayMemberPath="DisplayName"
+                                              SelectedValuePath="Choice"
+                                              SelectedValue="{Binding SmoothPresetChoice}"
+                                              Style="{StaticResource JsmccComboBoxStyle}"
+                                              MinWidth="140"/>
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource NoiseRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Min Cutoff" Style="{StaticResource NoiseRowLabel}"
+                                               ToolTip="One Euro Filter minCutoff: lower values smooth more but add lag."/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.0" Maximum="10.0" DecimalPlaces="2" Increment="0.1"
+                                                      Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding SmoothingMinCutoff, FallbackValue='1.5'}"/>
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource NoiseRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Speed Coefficient" Style="{StaticResource NoiseRowLabel}"
+                                               ToolTip="One Euro Filter beta: higher values reduce lag on fast movements at the cost of some smoothing."/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.0" Maximum="1.0" DecimalPlaces="2" Increment="0.1"
+                                                      Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding SmoothingBeta, FallbackValue='0.8'}"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Jitter Compensation" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                        <Border Style="{StaticResource NoiseRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Jitter Compensation" Style="{StaticResource NoiseRowLabel}"
+                                           ToolTip="Reduces small unintentional gyro movement from hand shake."/>
+                                <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}"
+                                          IsChecked="{Binding GyroJitterCompensation}"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Angle Snap" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+
+                        <Border Style="{StaticResource NoiseRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Angle Snap" Style="{StaticResource NoiseRowLabel}"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <hc:NumericUpDown Minimum="0.0" Maximum="45.0" DecimalPlaces="1" Increment="0.5"
+                                                      Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding GyroAngleSnapDegrees, FallbackValue='0.0'}"/>
+                                    <TextBlock Text="degrees" Style="{StaticResource NoiseUnitLabel}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource NoiseRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Smooth Angle Snap" Style="{StaticResource NoiseRowLabel}"/>
+                                <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}"
+                                          IsChecked="{Binding GyroSmoothAngleSnap}"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <Border Style="{StaticResource JsmccCardBorder}" Margin="0,12,0,0"
+                    Visibility="{Binding HasGyroMouseAction, Converter={StaticResource InvertBoolToVisibilityConverter}}">
+                <TextBlock Text="Bind a Gyro Mouse action to a button in Keybinds to enable noise and steadying tuning."
+                           Style="{StaticResource JsmccBodyText}"
+                           TextWrapping="Wrap"/>
+            </Border>
+
+            <TextBlock Text="Noise and steadying settings are shared across all gyro mouse bindings in this profile."
+                       Style="{StaticResource JsmccMutedText}"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

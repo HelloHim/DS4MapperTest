@@ -136,24 +136,10 @@
                                         <views:GyroCalibrationControl DataContext="{Binding GyroCalibVM}"/>
                                     </TabItem>
                                     <TabItem Header="Sensitivity">
-                                        <Border Style="{StaticResource JsmccCardBorder}" Margin="0">
-                                            <StackPanel>
-                                                <TextBlock Text="Sensitivity" Style="{StaticResource JsmccSectionTitle}"/>
-                                                <TextBlock Text="Sensitivity settings will be added in a later step."
-                                                           Style="{StaticResource PlaceholderCardText}"
-                                                           Margin="0,6,0,0"/>
-                                            </StackPanel>
-                                        </Border>
+                                        <views:GyroSensitivityControl DataContext="{Binding GyroSensitivityVM}"/>
                                     </TabItem>
                                     <TabItem Header="Noise &amp; Steadying">
-                                        <Border Style="{StaticResource JsmccCardBorder}" Margin="0">
-                                            <StackPanel>
-                                                <TextBlock Text="Noise &amp; Steadying" Style="{StaticResource JsmccSectionTitle}"/>
-                                                <TextBlock Text="Noise and steadying settings will be added in a later step."
-                                                           Style="{StaticResource PlaceholderCardText}"
-                                                           Margin="0,6,0,0"/>
-                                            </StackPanel>
-                                        </Border>
+                                        <views:GyroNoiseSteadyingControl DataContext="{Binding GyroNoiseSteadyingVM}"/>
                                     </TabItem>
                                 </TabControl>
                             </StackPanel>
