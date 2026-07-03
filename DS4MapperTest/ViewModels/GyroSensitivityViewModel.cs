@@ -70,6 +70,35 @@ namespace DS4MapperTest.ViewModels
         public bool StaticSensUsed => AccelCurveChoice == GyroMouseAccelCurveChoice.None;
         public bool AccelCurveUsed => AccelCurveChoice != GyroMouseAccelCurveChoice.None;
 
+        private int? selectedSensitivityModeIndex;
+        public int SelectedSensitivityModeIndex
+        {
+            get => selectedSensitivityModeIndex ?? (AccelCurveUsed ? 1 : 0);
+            set
+            {
+                if (!_modelReady || value < 0 || value > 1) return;
+                if (selectedSensitivityModeIndex == value) return;
+
+                selectedSensitivityModeIndex = value;
+                if (value == 0)
+                {
+                    SyncStaticSensitivityFromAccelerationMinimum();
+                    if (AccelCurveChoice != GyroMouseAccelCurveChoice.None)
+                        BroadcastToAllGyroMouseActions(g => g.mouseParams.accelCurve = GyroMouseAccelCurveChoice.None);
+                }
+                else
+                {
+                    SyncAccelerationMinimumFromStaticSensitivity();
+                }
+
+                RaisePropertyChanged(nameof(SelectedSensitivityModeIndex), nameof(AccelCurveChoice),
+                    nameof(StaticSensUsed), nameof(AccelCurveUsed), nameof(UsesMaxThreshold),
+                    nameof(PowerCurveUsed), nameof(NaturalCurveUsed), nameof(Sensitivity),
+                    nameof(VerticalScale), nameof(VerticalScaleMultiplier), nameof(MinAccelXSens),
+                    nameof(MinAccelYSens));
+            }
+        }
+
         public bool UsesMaxThreshold
         {
             get
@@ -98,9 +127,14 @@ namespace DS4MapperTest.ViewModels
                 var action = RepresentativeAction();
                 if (action == null) return;
                 double sensitivity = Math.Clamp(value, 0.0, 10.0);
-                if (action.mouseParams.sensitivity == sensitivity) return;
-                BroadcastToAllGyroMouseActions(g => g.mouseParams.sensitivity = sensitivity);
-                RaisePropertyChanged(nameof(Sensitivity), nameof(VerticalScaleMultiplier));
+                if (action.mouseParams.sensitivity == sensitivity &&
+                    action.mouseParams.minAccelXSens == sensitivity) return;
+                BroadcastToAllGyroMouseActions(g =>
+                {
+                    g.mouseParams.sensitivity = sensitivity;
+                    g.mouseParams.minAccelXSens = sensitivity;
+                });
+                RaisePropertyChanged(nameof(Sensitivity), nameof(VerticalScaleMultiplier), nameof(MinAccelXSens));
             }
         }
 
@@ -113,9 +147,14 @@ namespace DS4MapperTest.ViewModels
                 var action = RepresentativeAction();
                 if (action == null) return;
                 double verticalScale = Math.Clamp(value, 0.0, 10.0);
-                if (action.mouseParams.verticalScale == verticalScale) return;
-                BroadcastToAllGyroMouseActions(g => g.mouseParams.verticalScale = verticalScale);
-                RaisePropertyChanged(nameof(VerticalScale), nameof(VerticalScaleMultiplier));
+                if (action.mouseParams.verticalScale == verticalScale &&
+                    action.mouseParams.minAccelYSens == verticalScale) return;
+                BroadcastToAllGyroMouseActions(g =>
+                {
+                    g.mouseParams.verticalScale = verticalScale;
+                    g.mouseParams.minAccelYSens = verticalScale;
+                });
+                RaisePropertyChanged(nameof(VerticalScale), nameof(VerticalScaleMultiplier), nameof(MinAccelYSens));
             }
         }
 
@@ -160,9 +199,14 @@ namespace DS4MapperTest.ViewModels
                 double sens = action.mouseParams.sensitivity;
                 double abs = Math.Abs(sens) < 1e-10 ? value : value * sens;
                 double verticalScale = Math.Clamp(abs, 0.0, 10.0);
-                if (action.mouseParams.verticalScale == verticalScale) return;
-                BroadcastToAllGyroMouseActions(g => g.mouseParams.verticalScale = verticalScale);
-                RaisePropertyChanged(nameof(VerticalScale), nameof(VerticalScaleMultiplier));
+                if (action.mouseParams.verticalScale == verticalScale &&
+                    action.mouseParams.minAccelYSens == verticalScale) return;
+                BroadcastToAllGyroMouseActions(g =>
+                {
+                    g.mouseParams.verticalScale = verticalScale;
+                    g.mouseParams.minAccelYSens = verticalScale;
+                });
+                RaisePropertyChanged(nameof(VerticalScale), nameof(VerticalScaleMultiplier), nameof(MinAccelYSens));
             }
         }
 
@@ -174,10 +218,15 @@ namespace DS4MapperTest.ViewModels
                 if (!_modelReady) return;
                 var action = RepresentativeAction();
                 if (action == null) return;
-                double clamped = Math.Clamp(value, 0.0, 100.0);
-                if (action.mouseParams.minAccelXSens == clamped) return;
-                BroadcastToAllGyroMouseActions(g => g.mouseParams.minAccelXSens = clamped);
-                RaisePropertyChanged(nameof(MinAccelXSens));
+                double clamped = Math.Clamp(value, 0.0, 10.0);
+                if (action.mouseParams.minAccelXSens == clamped &&
+                    action.mouseParams.sensitivity == clamped) return;
+                BroadcastToAllGyroMouseActions(g =>
+                {
+                    g.mouseParams.minAccelXSens = clamped;
+                    g.mouseParams.sensitivity = clamped;
+                });
+                RaisePropertyChanged(nameof(MinAccelXSens), nameof(Sensitivity), nameof(VerticalScaleMultiplier));
             }
         }
 
@@ -204,10 +253,15 @@ namespace DS4MapperTest.ViewModels
                 if (!_modelReady) return;
                 var action = RepresentativeAction();
                 if (action == null) return;
-                double clamped = Math.Clamp(value, 0.0, 100.0);
-                if (action.mouseParams.minAccelYSens == clamped) return;
-                BroadcastToAllGyroMouseActions(g => g.mouseParams.minAccelYSens = clamped);
-                RaisePropertyChanged(nameof(MinAccelYSens));
+                double clamped = Math.Clamp(value, 0.0, 10.0);
+                if (action.mouseParams.minAccelYSens == clamped &&
+                    action.mouseParams.verticalScale == clamped) return;
+                BroadcastToAllGyroMouseActions(g =>
+                {
+                    g.mouseParams.minAccelYSens = clamped;
+                    g.mouseParams.verticalScale = clamped;
+                });
+                RaisePropertyChanged(nameof(MinAccelYSens), nameof(VerticalScale), nameof(VerticalScaleMultiplier));
             }
         }
 
@@ -329,8 +383,9 @@ namespace DS4MapperTest.ViewModels
                 RaisePropertyChanged(nameof(Sensitivity), nameof(VerticalScale), nameof(VerticalScaleMultiplier),
                     nameof(MinAccelXSens), nameof(MaxAccelXSens), nameof(MinAccelYSens), nameof(MaxAccelYSens),
                     nameof(AccelCurveChoice), nameof(StaticSensUsed), nameof(AccelCurveUsed), nameof(UsesMaxThreshold),
-                    nameof(PowerCurveUsed), nameof(NaturalCurveUsed), nameof(MinGyroThreshold), nameof(MaxGyroThreshold),
-                    nameof(NaturalVHalf), nameof(PowerCurveVRef), nameof(PowerCurveExponent));
+                    nameof(PowerCurveUsed), nameof(NaturalCurveUsed), nameof(SelectedSensitivityModeIndex),
+                    nameof(MinGyroThreshold), nameof(MaxGyroThreshold), nameof(NaturalVHalf),
+                    nameof(PowerCurveVRef), nameof(PowerCurveExponent));
             });
 
             // HandyControl's NumericUpDown fires ValueChanged(Minimum) during control
@@ -354,6 +409,44 @@ namespace DS4MapperTest.ViewModels
         {
             foreach (string name in names)
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        private void SyncAccelerationMinimumFromStaticSensitivity()
+        {
+            var action = RepresentativeAction();
+            if (action == null) return;
+
+            double minX = Math.Clamp(action.mouseParams.sensitivity, 0.0, 10.0);
+            double minY = Math.Clamp(action.mouseParams.verticalScale, 0.0, 10.0);
+            if (action.mouseParams.minAccelXSens == minX &&
+                action.mouseParams.minAccelYSens == minY) return;
+
+            BroadcastToAllGyroMouseActions(g =>
+            {
+                g.mouseParams.minAccelXSens = minX;
+                g.mouseParams.minAccelYSens = minY;
+            });
+        }
+
+        private void SyncStaticSensitivityFromAccelerationMinimum()
+        {
+            var action = RepresentativeAction();
+            if (action == null) return;
+
+            double sensitivity = Math.Clamp(action.mouseParams.minAccelXSens, 0.0, 10.0);
+            double verticalScale = Math.Clamp(action.mouseParams.minAccelYSens, 0.0, 10.0);
+            if (action.mouseParams.sensitivity == sensitivity &&
+                action.mouseParams.verticalScale == verticalScale &&
+                action.mouseParams.minAccelXSens == sensitivity &&
+                action.mouseParams.minAccelYSens == verticalScale) return;
+
+            BroadcastToAllGyroMouseActions(g =>
+            {
+                g.mouseParams.sensitivity = sensitivity;
+                g.mouseParams.verticalScale = verticalScale;
+                g.mouseParams.minAccelXSens = sensitivity;
+                g.mouseParams.minAccelYSens = verticalScale;
+            });
         }
     }
 }

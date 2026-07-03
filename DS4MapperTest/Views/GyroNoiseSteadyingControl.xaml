@@ -136,24 +136,6 @@
 
                 <Border Style="{StaticResource JsmccCardBorder}">
                     <StackPanel>
-                        <TextBlock Text="Jitter Compensation" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
-                        <Border Style="{StaticResource NoiseRowBorder}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="190"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Jitter Compensation" Style="{StaticResource NoiseRowLabel}"
-                                           ToolTip="Reduces small unintentional gyro movement from hand shake."/>
-                                <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}"
-                                          IsChecked="{Binding GyroJitterCompensation}"/>
-                            </Grid>
-                        </Border>
-                    </StackPanel>
-                </Border>
-
-                <Border Style="{StaticResource JsmccCardBorder}">
-                    <StackPanel>
                         <TextBlock Text="Angle Snap" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
 
                         <Border Style="{StaticResource NoiseRowBorder}">
@@ -181,6 +163,24 @@
                                 <TextBlock Grid.Column="0" Text="Smooth Angle Snap" Style="{StaticResource NoiseRowLabel}"/>
                                 <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}"
                                           IsChecked="{Binding GyroSmoothAngleSnap}"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Jitter Compensation" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                        <Border Style="{StaticResource NoiseRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Jitter Compensation" Style="{StaticResource NoiseRowLabel}"
+                                           ToolTip="Reduces small unintentional gyro movement from hand shake."/>
+                                <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}"
+                                          IsChecked="{Binding GyroJitterCompensation}"/>
                             </Grid>
                         </Border>
                     </StackPanel>
