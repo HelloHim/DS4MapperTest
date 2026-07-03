@@ -379,6 +379,41 @@
         </Setter>
     </Style>
 
+    <Style x:Key="CalibModeToggleStyle" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="14,7"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Chrome"
+                            Background="{StaticResource JsmccBgInputBrush}"
+                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource JsmccControlRadius}">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgButtonHoverBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccBorderStrongBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgButtonHoverBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccAccentBrush}"/>
+                            <Setter Property="BorderThickness" Value="2"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="ContextMenu">
         <Setter Property="Background" Value="{StaticResource JsmccBg2Brush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
