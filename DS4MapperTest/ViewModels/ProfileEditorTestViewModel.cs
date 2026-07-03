@@ -92,6 +92,12 @@ namespace DS4MapperTest.ViewModels
         private GyroCalibrationViewModel gyroCalibVM;
         public GyroCalibrationViewModel GyroCalibVM => gyroCalibVM ??= new GyroCalibrationViewModel(mapper);
 
+        private GyroSensitivityViewModel gyroSensitivityVM;
+        public GyroSensitivityViewModel GyroSensitivityVM => gyroSensitivityVM ??= new GyroSensitivityViewModel(mapper);
+
+        private GyroNoiseSteadyingViewModel gyroNoiseSteadyingVM;
+        public GyroNoiseSteadyingViewModel GyroNoiseSteadyingVM => gyroNoiseSteadyingVM ??= new GyroNoiseSteadyingViewModel(mapper);
+
         private ObservableCollection<TriggerKeybindItem> triggerKeybinds =
             new ObservableCollection<TriggerKeybindItem>();
         public ObservableCollection<TriggerKeybindItem> TriggerKeybinds => triggerKeybinds;
