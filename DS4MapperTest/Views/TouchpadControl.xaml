@@ -1,0 +1,182 @@
+<UserControl x:Class="DS4MapperTest.Views.TouchpadControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="560"
+             d:DesignWidth="860">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style x:Key="TouchpadInlineCard" TargetType="Border" BasedOn="{StaticResource JsmccCardBorder}">
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <DataTemplate x:Key="TouchpadBindingTemplate">
+            <Border Style="{StaticResource TouchpadInlineCard}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding DisplayName}"
+                                   Style="{StaticResource JsmccCardTitle}"/>
+                        <TextBlock Text="{Binding BindingName}"
+                                   Style="{StaticResource JsmccMutedText}"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,14,0">
+                        <TextBlock Text="Mode"
+                                   Style="{StaticResource JsmccMutedText}"
+                                   Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding AvailableActionOptions}"
+                                  SelectedValuePath="Index"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedValue="{Binding SelectedActionIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Style="{StaticResource ComboBoxBaseStyle}"
+                                  MinWidth="180"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="{Binding BindingStatus}"
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"/>
+                        <ContentControl Tag="Bindings"
+                                        DataContext="{Binding}"
+                                        Loaded="InlineSettingsHost_Loaded"
+                                        Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="TouchpadSectionTemplate">
+            <Border Style="{StaticResource TouchpadInlineCard}">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding DisplayName}"
+                                       Style="{StaticResource JsmccCardTitle}"/>
+                            <TextBlock Text="{Binding ActionDisplayName}"
+                                       Style="{StaticResource JsmccMutedText}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+
+                        <ContentControl Grid.Column="1"
+                                        Tag="{Binding RelativeSource={RelativeSource AncestorType=ItemsControl}, Path=Tag}"
+                                        DataContext="{Binding}"
+                                        Loaded="InlineSettingsHost_Loaded"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  CanContentScroll="False">
+        <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
+            <TabItem Header="Bindings">
+                <StackPanel>
+                    <StackPanel Margin="0,0,0,6">
+                        <TextBlock Text="Bindings" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Choose the touchpad mode for each input exposed by the current controller."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <Border>
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource TouchpadInlineCard}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TouchpadBindings.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="No supported touchpad binding inputs are available for this controller."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"/>
+                    </Border>
+
+                    <ItemsControl ItemsSource="{Binding TouchpadBindings}"
+                                  ItemTemplate="{StaticResource TouchpadBindingTemplate}"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Mouse &amp; Movement">
+                <StackPanel>
+                    <StackPanel Margin="0,0,0,6">
+                        <TextBlock Text="Mouse &amp; Movement" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Movement settings are shown per touchpad input when that input uses a movement mode."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding TouchpadBindings}"
+                                  ItemTemplate="{StaticResource TouchpadSectionTemplate}"
+                                  Tag="MouseMovement"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Zones &amp; Gestures">
+                <StackPanel>
+                    <StackPanel Margin="0,0,0,6">
+                        <TextBlock Text="Zones &amp; Gestures" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Zone and gesture settings are shown per touchpad input when the selected mode supports them."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding TouchpadBindings}"
+                                  ItemTemplate="{StaticResource TouchpadSectionTemplate}"
+                                  Tag="ZonesGestures"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Trackball &amp; Scroll">
+                <StackPanel>
+                    <StackPanel Margin="0,0,0,6">
+                        <TextBlock Text="Trackball &amp; Scroll" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Touchpad trackball and scroll settings are shown per touchpad input when available."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding TouchpadBindings}"
+                                  ItemTemplate="{StaticResource TouchpadSectionTemplate}"
+                                  Tag="TrackballScroll"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Advanced">
+                <StackPanel>
+                    <StackPanel Margin="0,0,0,6">
+                        <TextBlock Text="Advanced" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Mode-specific DS4MapperTest options appear here when the selected touchpad mode has advanced settings."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding TouchpadBindings}"
+                                  ItemTemplate="{StaticResource TouchpadSectionTemplate}"
+                                  Tag="Advanced"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </ScrollViewer>
+</UserControl>

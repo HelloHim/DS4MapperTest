@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -112,11 +113,28 @@ namespace DS4MapperTest.ViewModels
             get => buttonBindingsIndexDict;
         }
 
-        private List<TouchBindingItemsTest> touchpadBindings = new List<TouchBindingItemsTest>();
-        public List<TouchBindingItemsTest> TouchpadBindings
+        private ObservableCollection<TouchBindingItemsTest> touchpadBindings =
+            new ObservableCollection<TouchBindingItemsTest>();
+        public ObservableCollection<TouchBindingItemsTest> TouchpadBindings
         {
             get => touchpadBindings;
         }
+
+        private ObservableCollection<TouchBindingItemsTest> touchpadMouseMovementBindings =
+            new ObservableCollection<TouchBindingItemsTest>();
+        public ObservableCollection<TouchBindingItemsTest> TouchpadMouseMovementBindings => touchpadMouseMovementBindings;
+
+        private ObservableCollection<TouchBindingItemsTest> touchpadZoneGestureBindings =
+            new ObservableCollection<TouchBindingItemsTest>();
+        public ObservableCollection<TouchBindingItemsTest> TouchpadZoneGestureBindings => touchpadZoneGestureBindings;
+
+        private ObservableCollection<TouchBindingItemsTest> touchpadTrackballScrollBindings =
+            new ObservableCollection<TouchBindingItemsTest>();
+        public ObservableCollection<TouchBindingItemsTest> TouchpadTrackballScrollBindings => touchpadTrackballScrollBindings;
+
+        private ObservableCollection<TouchBindingItemsTest> touchpadAdvancedBindings =
+            new ObservableCollection<TouchBindingItemsTest>();
+        public ObservableCollection<TouchBindingItemsTest> TouchpadAdvancedBindings => touchpadAdvancedBindings;
 
         public bool HasTouchpadBindings
         {
@@ -479,6 +497,10 @@ namespace DS4MapperTest.ViewModels
             paddleButtonBindings.Clear();
             triggerKeybinds.Clear();
             touchpadBindings.Clear();
+            touchpadMouseMovementBindings.Clear();
+            touchpadZoneGestureBindings.Clear();
+            touchpadTrackballScrollBindings.Clear();
+            touchpadAdvancedBindings.Clear();
             triggerBindings.Clear();
             stickBindings.Clear();
             gyroBindings.Clear();
@@ -501,6 +523,10 @@ namespace DS4MapperTest.ViewModels
             paddleButtonBindings.Clear();
             triggerKeybinds.Clear();
             touchpadBindings.Clear();
+            touchpadMouseMovementBindings.Clear();
+            touchpadZoneGestureBindings.Clear();
+            touchpadTrackballScrollBindings.Clear();
+            touchpadAdvancedBindings.Clear();
             triggerBindings.Clear();
             stickBindings.Clear();
             gyroBindings.Clear();
@@ -627,6 +653,38 @@ namespace DS4MapperTest.ViewModels
             PopulateDPadKeybinds();
             PopulateStickClickBindings();
             PopulateStickKeybinds();
+            PopulateTouchpadGroups();
+        }
+
+        private void PopulateTouchpadGroups()
+        {
+            touchpadMouseMovementBindings.Clear();
+            touchpadZoneGestureBindings.Clear();
+            touchpadTrackballScrollBindings.Clear();
+            touchpadAdvancedBindings.Clear();
+
+            foreach (TouchBindingItemsTest item in touchpadBindings)
+            {
+                if (item.IsMouseMovementAction)
+                {
+                    touchpadMouseMovementBindings.Add(item);
+                }
+
+                if (item.IsZoneGestureAction)
+                {
+                    touchpadZoneGestureBindings.Add(item);
+                }
+
+                if (item.IsTrackballScrollAction)
+                {
+                    touchpadTrackballScrollBindings.Add(item);
+                }
+
+                if (item.IsAdvancedAction)
+                {
+                    touchpadAdvancedBindings.Add(item);
+                }
+            }
         }
 
         private void PopulateStickClickBindings()
@@ -1458,8 +1516,37 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
-    public class TouchBindingItemsTest
+    public class TouchpadActionOption
     {
+        public int Index { get; }
+        public string DisplayName { get; }
+
+        public TouchpadActionOption(int index, string displayName)
+        {
+            Index = index;
+            DisplayName = displayName;
+        }
+    }
+
+    public class TouchBindingItemsTest : INotifyPropertyChanged
+    {
+        public static readonly IReadOnlyList<TouchpadActionOption> ActionOptions =
+            new List<TouchpadActionOption>
+            {
+                new TouchpadActionOption(0, "Unbound"),
+                new TouchpadActionOption(1, "Joystick"),
+                new TouchpadActionOption(2, "D-Pad Zones"),
+                new TouchpadActionOption(3, "Mouse-like Joystick"),
+                new TouchpadActionOption(4, "Relative Mouse"),
+                new TouchpadActionOption(5, "Circular Scroll"),
+                new TouchpadActionOption(6, "Absolute Mouse"),
+                new TouchpadActionOption(7, "Directional Swipes"),
+                new TouchpadActionOption(8, "Single Button"),
+                new TouchpadActionOption(9, "Flick Stick"),
+            };
+
+        public IReadOnlyList<TouchpadActionOption> AvailableActionOptions => ActionOptions;
+
         private string displayInputMapString;
         public string DisplayInputMapString
         {
@@ -1485,6 +1572,124 @@ namespace DS4MapperTest.ViewModels
             get => mappedAction.ActionTypeName;
         }
         public event EventHandler MappedActionTypeChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string DisplayName
+        {
+            get
+            {
+                return bindingName switch
+                {
+                    "Touchpad" => "Main Touchpad",
+                    "TouchpadLeft" => "Left Touchpad",
+                    "LeftTouchpad" => "Left Touchpad",
+                    "TouchpadRight" => "Right Touchpad",
+                    "RightTouchpad" => "Right Touchpad",
+                    _ => displayInputMapString,
+                };
+            }
+        }
+
+        public string ActionDisplayName
+        {
+            get
+            {
+                return mappedAction switch
+                {
+                    TouchpadNoAction => "Unbound",
+                    TouchpadSingleButton => "Single Button",
+                    TouchpadMouse => "Relative Mouse",
+                    TouchpadAbsAction => "Absolute Mouse",
+                    TouchpadMouseJoystick => "Mouse-like Joystick",
+                    TouchpadStickAction => "Joystick",
+                    TouchpadActionPad => "D-Pad Zones",
+                    TouchpadDirectionalSwipe => "Directional Swipes",
+                    TouchpadCircular => "Circular Scroll",
+                    TouchpadFlickStick => "Flick Stick",
+                    _ => mappedAction.ActionTypeName,
+                };
+            }
+        }
+
+        public int SelectedActionIndex
+        {
+            get => GetActionIndex(mappedAction);
+            set
+            {
+                if (value == SelectedActionIndex) return;
+
+                TouchpadBindEditViewModel editVM = new TouchpadBindEditViewModel(mapper, mappedAction);
+                TouchpadMapAction newAction = editVM.PrepareNewAction(value);
+                if (newAction == null) return;
+
+                newAction.CopyBaseMapProps(mappedAction);
+                editVM.MigrateActionId(newAction);
+                editVM.SwitchAction(newAction);
+                mappedAction = newAction;
+                RaiseUIUpdate();
+            }
+        }
+
+        public string ActionSummary
+        {
+            get
+            {
+                return mappedAction switch
+                {
+                    TouchpadNoAction => "No touchpad output is assigned.",
+                    TouchpadSingleButton => "Maps touchpad activation to a button-style output.",
+                    TouchpadMouse => "Uses touch movement for relative mouse output, including supported trackball settings.",
+                    TouchpadAbsAction => "Uses touch position for absolute mouse output.",
+                    TouchpadMouseJoystick => "Converts touch movement to mouse-like joystick output.",
+                    TouchpadStickAction => "Converts touch movement to joystick output.",
+                    TouchpadActionPad => "Maps touchpad regions to directional button outputs.",
+                    TouchpadDirectionalSwipe => "Maps supported swipe directions to button outputs.",
+                    TouchpadCircular => "Uses circular touch movement for scroll-style output.",
+                    TouchpadFlickStick => "Uses touch movement for flick-stick style output.",
+                    _ => "Uses an existing DS4MapperTest touchpad action.",
+                };
+            }
+        }
+
+        public string BindingStatus
+        {
+            get
+            {
+                return mappedAction switch
+                {
+                    TouchpadNoAction => "No touchpad output is assigned.",
+                    TouchpadSingleButton => "Button binding settings are available below.",
+                    TouchpadMouse => "Movement settings are available in Mouse & Movement. Trackball settings are available in Trackball & Scroll.",
+                    TouchpadAbsAction => "Absolute movement settings are available in Mouse & Movement.",
+                    TouchpadMouseJoystick => "Mouse-like joystick settings are available in Mouse & Movement.",
+                    TouchpadStickAction => "Joystick movement settings are available in Mouse & Movement.",
+                    TouchpadActionPad => "Zone settings are available in Zones & Gestures.",
+                    TouchpadDirectionalSwipe => "Gesture settings are available in Zones & Gestures.",
+                    TouchpadCircular => "Scroll settings are available in Trackball & Scroll.",
+                    TouchpadFlickStick => "Flick stick settings are available in Mouse & Movement.",
+                    _ => "This touchpad mode uses DS4MapperTest's existing settings.",
+                };
+            }
+        }
+
+        public bool IsMouseMovementAction =>
+            mappedAction is TouchpadMouse ||
+            mappedAction is TouchpadAbsAction ||
+            mappedAction is TouchpadMouseJoystick ||
+            mappedAction is TouchpadStickAction ||
+            mappedAction is TouchpadFlickStick;
+
+        public bool IsZoneGestureAction =>
+            mappedAction is TouchpadActionPad ||
+            mappedAction is TouchpadDirectionalSwipe;
+
+        public bool IsTrackballScrollAction =>
+            mappedAction is TouchpadMouse ||
+            mappedAction is TouchpadCircular;
+
+        public bool IsAdvancedAction => false;
+
+        public bool IsUnbound => mappedAction is TouchpadNoAction;
 
         private Mapper mapper;
         public Mapper Mapper
@@ -1510,6 +1715,40 @@ namespace DS4MapperTest.ViewModels
         private void RaiseUIUpdate()
         {
             MappedActionTypeChanged?.Invoke(this, EventArgs.Empty);
+            OnPropertyChanged(nameof(MappedAction));
+            OnPropertyChanged(nameof(MappedActionType));
+            OnPropertyChanged(nameof(ActionDisplayName));
+            OnPropertyChanged(nameof(SelectedActionIndex));
+            OnPropertyChanged(nameof(ActionSummary));
+            OnPropertyChanged(nameof(BindingStatus));
+            OnPropertyChanged(nameof(IsMouseMovementAction));
+            OnPropertyChanged(nameof(IsZoneGestureAction));
+            OnPropertyChanged(nameof(IsTrackballScrollAction));
+            OnPropertyChanged(nameof(IsAdvancedAction));
+            OnPropertyChanged(nameof(IsUnbound));
+        }
+
+        private static int GetActionIndex(TouchpadMapAction action)
+        {
+            return action switch
+            {
+                TouchpadNoAction => 0,
+                TouchpadStickAction => 1,
+                TouchpadActionPad => 2,
+                TouchpadMouseJoystick => 3,
+                TouchpadMouse => 4,
+                TouchpadCircular => 5,
+                TouchpadAbsAction => 6,
+                TouchpadDirectionalSwipe => 7,
+                TouchpadSingleButton => 8,
+                TouchpadFlickStick => 9,
+                _ => -1,
+            };
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 

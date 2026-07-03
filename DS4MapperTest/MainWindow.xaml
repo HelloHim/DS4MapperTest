@@ -53,7 +53,7 @@
                                      Style="{StaticResource JsmccNavButtonStyle}"/>
                         <RadioButton x:Name="navTrackpad"
                                      GroupName="MainNav"
-                                     Content="Trackpad"
+                                     Content="Touchpad"
                                      Style="{StaticResource JsmccNavButtonStyle}"/>
                         <RadioButton x:Name="navSticks"
                                      GroupName="MainNav"
@@ -189,13 +189,12 @@
                         <Border Visibility="{Binding IsChecked, ElementName=navTrackpad, Converter={StaticResource BoolToVis}}"
                                 Style="{StaticResource JsmccPanelBorder}">
                             <StackPanel>
-                                <TextBlock Text="Trackpad" Style="{StaticResource JsmccPageTitle}"/>
-                                <TextBlock Text="Trackpad bindings and options will live here."
-                                           Style="{StaticResource JsmccBodyText}"/>
-                                <Border Style="{StaticResource JsmccCardBorder}" Margin="0,18,0,0">
-                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
-                                               Style="{StaticResource PlaceholderCardText}"/>
-                                </Border>
+                                <TextBlock Text="Touchpad" Style="{StaticResource JsmccPageTitle}"/>
+                                <TextBlock Text="Configure touchpad bindings, movement, zones, gestures, trackball, and scroll options."
+                                           Style="{StaticResource JsmccBodyText}"
+                                           Margin="0,0,0,12"/>
+
+                                <views:TouchpadControl/>
                             </StackPanel>
                         </Border>
 
