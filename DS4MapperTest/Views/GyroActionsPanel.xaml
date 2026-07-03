@@ -1,0 +1,60 @@
+<UserControl x:Class="DS4MapperTest.Views.GyroActionsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="600"
+             d:DesignWidth="860">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style x:Key="GyroActionCard" TargetType="Border" BasedOn="{StaticResource JsmccCardBorder}">
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <DataTemplate x:Key="GyroBindingTemplate">
+            <Border Style="{StaticResource GyroActionCard}">
+                <StackPanel>
+                    <TextBlock Text="{Binding DisplayInputMapString}" Style="{StaticResource JsmccCardTitle}"/>
+                    <TextBlock Text="{Binding ActionDisplayName}" Style="{StaticResource JsmccMutedText}" Margin="0,3,0,6"/>
+                    <TextBlock Text="{Binding BindingStatus}" Style="{StaticResource JsmccBodyText}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <ContentControl DataContext="{Binding}" Loaded="GyroBindingHost_Loaded"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  CanContentScroll="False">
+        <StackPanel>
+            <StackPanel Margin="0,0,0,6">
+                <TextBlock Text="Gyro Action" Style="{StaticResource JsmccSectionTitle}"/>
+                <TextBlock Text="Choose what the controller's gyro (motion) sensor does. Gyro Mouse sensitivity, acceleration, and noise steadying are tuned in the Sensitivity and Noise &amp; Steadying tabs."
+                           Style="{StaticResource JsmccBodyText}"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <Border>
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource GyroActionCard}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding GyroBindings.Count}" Value="0">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="This controller does not expose a gyro (motion) sensor."
+                           Style="{StaticResource JsmccBodyText}"
+                           TextWrapping="Wrap"/>
+            </Border>
+
+            <ItemsControl ItemsSource="{Binding GyroBindings}" ItemTemplate="{StaticResource GyroBindingTemplate}"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

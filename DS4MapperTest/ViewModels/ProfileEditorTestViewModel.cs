@@ -2106,7 +2106,7 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
-    public class GyroBindingItemsTest
+    public class GyroBindingItemsTest : INotifyPropertyChanged
     {
         private string displayInputMapString;
         public string DisplayInputMapString
@@ -2133,6 +2133,33 @@ namespace DS4MapperTest.ViewModels
             get => mappedAction.ActionTypeName;
         }
         public event EventHandler MappedActionTypeChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string ActionDisplayName
+        {
+            get => mappedAction switch
+            {
+                GyroNoMapAction => "Unbound",
+                GyroMouse => "Gyro Mouse",
+                GyroMouseJoystick => "Gyro Mouse-like Joystick",
+                GyroDirectionalSwipe => "Gyro Directional Swipe",
+                _ => mappedAction.ActionTypeName,
+            };
+        }
+
+        public string BindingStatus
+        {
+            get => mappedAction switch
+            {
+                GyroNoMapAction => "No gyro action is assigned.",
+                GyroMouse => "Sensitivity, acceleration, and noise steadying settings are available in the Sensitivity and Noise & Steadying tabs.",
+                GyroMouseJoystick => "Joystick output settings are available below.",
+                GyroDirectionalSwipe => "Swipe deadzone, trigger, and directional binding settings are available below.",
+                _ => "Uses an existing DS4MapperTest gyro action.",
+            };
+        }
+
+        public bool IsUnbound => mappedAction is GyroNoMapAction;
 
         private Mapper mapper;
         public Mapper Mapper
@@ -2158,6 +2185,16 @@ namespace DS4MapperTest.ViewModels
         private void RaiseUIUpdate()
         {
             MappedActionTypeChanged?.Invoke(this, EventArgs.Empty);
+            OnPropertyChanged(nameof(MappedAction));
+            OnPropertyChanged(nameof(MappedActionType));
+            OnPropertyChanged(nameof(ActionDisplayName));
+            OnPropertyChanged(nameof(BindingStatus));
+            OnPropertyChanged(nameof(IsUnbound));
+        }
+
+        private void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }

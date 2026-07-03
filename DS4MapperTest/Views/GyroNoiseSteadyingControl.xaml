@@ -189,7 +189,7 @@
 
             <Border Style="{StaticResource JsmccCardBorder}" Margin="0,12,0,0"
                     Visibility="{Binding HasGyroMouseAction, Converter={StaticResource InvertBoolToVisibilityConverter}}">
-                <TextBlock Text="Bind a Gyro Mouse action to a button in Keybinds to enable noise and steadying tuning."
+                <TextBlock Text="Create a Gyro Mouse action in the Action tab above to enable noise and steadying tuning."
                            Style="{StaticResource JsmccBodyText}"
                            TextWrapping="Wrap"/>
             </Border>
