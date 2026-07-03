@@ -88,6 +88,7 @@
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto"/>
                                                     <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="160"/>
@@ -277,6 +278,12 @@
                                                         </StackPanel>
                                                     </Border>
                                                 </WrapPanel>
+
+                                                <ContentControl x:Name="InlineEditorHost"
+                                                                Grid.Row="2"
+                                                                Grid.Column="0"
+                                                                Grid.ColumnSpan="3"
+                                                                Visibility="Collapsed"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>

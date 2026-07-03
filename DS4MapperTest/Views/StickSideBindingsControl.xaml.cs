@@ -41,18 +41,14 @@ namespace DS4MapperTest.Views
 
             if (kind == null) return;
 
-            FaceButtonFuncItem newItem = buttonItem.AddExtraBinding(kind.Value);
-            if (newItem != null)
-            {
-                OpenOutputEditor(newItem);
-            }
+            buttonItem.AddExtraBinding(kind.Value);
         }
 
         private void ClickEditBinding_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button { Tag: FaceButtonFuncItem item })
+            if (sender is Button { Tag: FaceButtonFuncItem item } button)
             {
-                OpenOutputEditor(item);
+                OpenOutputEditor(item, button);
             }
         }
 
@@ -64,33 +60,15 @@ namespace DS4MapperTest.Views
             }
         }
 
-        private void OpenOutputEditor(FaceButtonFuncItem item)
+        private void OpenOutputEditor(FaceButtonFuncItem item, DependencyObject source)
         {
             EditFaceBindingContext editContext = item.Owner.PrepareEdit(item);
             if (editContext == null) return;
 
-            OutputBindingEditorControl editor = new OutputBindingEditorControl();
-            Window host = new Window
-            {
-                Title = $"{item.Owner.DisplayName} - {item.DisplayName}",
-                Owner = Window.GetWindow(this),
-                Content = editor,
-                Width = 820,
-                Height = 540,
-                MinWidth = 760,
-                MinHeight = 480,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Background = TryFindResource("JsmccBg0Brush") as System.Windows.Media.Brush,
-            };
-
-            editor.PostInit(editContext.Mapper, editContext.Action, editContext.Func);
-            editor.Finished += (_, _) => host.Close();
-            host.Closed += (_, _) =>
-            {
-                item.Owner.RefreshAfterEdit();
-            };
-
-            host.ShowDialog();
+            ContentControl host = InlineBindingEditorService.FindInlineHost(source);
+            InlineBindingEditorService.Open(host, editContext,
+                $"{item.Owner.DisplayName} - {item.DisplayName}",
+                item.Owner.RefreshAfterEdit);
         }
 
         private void ExtraAddExtraBindingButton_Click(object sender, RoutedEventArgs e)
@@ -123,18 +101,14 @@ namespace DS4MapperTest.Views
 
             if (kind == null) return;
 
-            StickExtraFuncItem newItem = bindingItem.AddExtraBinding(kind.Value);
-            if (newItem != null)
-            {
-                OpenOutputEditor(newItem);
-            }
+            bindingItem.AddExtraBinding(kind.Value);
         }
 
         private void ExtraEditBinding_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button { Tag: StickExtraFuncItem item })
+            if (sender is Button { Tag: StickExtraFuncItem item } button)
             {
-                OpenOutputEditor(item);
+                OpenOutputEditor(item, button);
             }
         }
 
@@ -146,33 +120,15 @@ namespace DS4MapperTest.Views
             }
         }
 
-        private void OpenOutputEditor(StickExtraFuncItem item)
+        private void OpenOutputEditor(StickExtraFuncItem item, DependencyObject source)
         {
             EditFaceBindingContext editContext = item.Owner.PrepareEdit(item);
             if (editContext == null) return;
 
-            OutputBindingEditorControl editor = new OutputBindingEditorControl();
-            Window host = new Window
-            {
-                Title = $"{item.Owner.DisplayName} - {item.DisplayName}",
-                Owner = Window.GetWindow(this),
-                Content = editor,
-                Width = 820,
-                Height = 540,
-                MinWidth = 760,
-                MinHeight = 480,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Background = TryFindResource("JsmccBg0Brush") as System.Windows.Media.Brush,
-            };
-
-            editor.PostInit(editContext.Mapper, editContext.Action, editContext.Func);
-            editor.Finished += (_, _) => host.Close();
-            host.Closed += (_, _) =>
-            {
-                item.Owner.RefreshAfterEdit();
-            };
-
-            host.ShowDialog();
+            ContentControl host = InlineBindingEditorService.FindInlineHost(source);
+            InlineBindingEditorService.Open(host, editContext,
+                $"{item.Owner.DisplayName} - {item.DisplayName}",
+                item.Owner.RefreshAfterEdit);
         }
     }
 }

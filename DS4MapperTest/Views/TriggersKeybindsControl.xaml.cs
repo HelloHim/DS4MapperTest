@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.MapperUtil;
 using DS4MapperTest.ViewModels;
 
 namespace DS4MapperTest.Views
@@ -43,18 +44,14 @@ namespace DS4MapperTest.Views
 
             if (kind == null) return;
 
-            TriggerButtonFuncItem newItem = triggerItem.AddExtraBinding(kind.Value);
-            if (newItem != null)
-            {
-                OpenOutputEditor(newItem);
-            }
+            triggerItem.AddExtraBinding(kind.Value);
         }
 
         private void EditBinding_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button { Tag: TriggerButtonFuncItem item })
+            if (sender is Button { Tag: TriggerButtonFuncItem item } button)
             {
-                OpenOutputEditor(item);
+                OpenOutputEditor(item, button);
             }
         }
 
@@ -68,97 +65,61 @@ namespace DS4MapperTest.Views
 
         private void EditFullPull_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button { Tag: TriggerKeybindItem item })
+            if (sender is Button { Tag: TriggerKeybindItem item } button)
             {
-                OpenButtonActionEditor(item, item.PrepareFullPullEdit(), $"{item.DisplayName} - Full Pull");
+                OpenTriggerPullOutputEditor(item, item.PrepareFullPullEdit(),
+                    $"{item.DisplayName} - Full Pull", button);
             }
         }
 
         private void EditSoftPull_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button { Tag: TriggerKeybindItem item })
+            if (sender is Button { Tag: TriggerKeybindItem item } button)
             {
-                OpenButtonActionEditor(item, item.PrepareSoftPullEdit(), $"{item.DisplayName} - Soft Pull");
+                OpenTriggerPullOutputEditor(item, item.PrepareSoftPullEdit(),
+                    $"{item.DisplayName} - Soft Pull", button);
             }
         }
 
-        private void OpenOutputEditor(TriggerButtonFuncItem item)
+        private void OpenOutputEditor(TriggerButtonFuncItem item, DependencyObject source)
         {
             EditTriggerButtonBindingContext editContext = item.Owner.PrepareEdit(item);
             if (editContext == null) return;
 
-            OutputBindingEditorControl editor = new OutputBindingEditorControl();
-            Window host = new Window
-            {
-                Title = $"{item.Owner.DisplayName} - {item.DisplayName}",
-                Owner = Window.GetWindow(this),
-                Content = editor,
-                Width = 820,
-                Height = 540,
-                MinWidth = 760,
-                MinHeight = 480,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Background = TryFindResource("JsmccBg0Brush") as System.Windows.Media.Brush,
-            };
-
-            editor.PostInit(editContext.Mapper, editContext.Action, editContext.Func);
-            editor.Finished += (_, _) => host.Close();
-            host.Closed += (_, _) => item.Owner.RefreshAfterEdit();
-
-            host.ShowDialog();
+            ContentControl host = InlineBindingEditorService.FindInlineHost(source);
+            InlineBindingEditorService.Open(host,
+                new EditFaceBindingContext(editContext.Mapper, editContext.Action, editContext.Func),
+                $"{item.Owner.DisplayName} - {item.DisplayName}",
+                item.Owner.RefreshAfterEdit);
         }
 
-        private void OpenButtonActionEditor(TriggerKeybindItem ownerItem,
-            TriggerButtonEditContext editContext, string title)
+        private void OpenTriggerPullOutputEditor(TriggerKeybindItem ownerItem,
+            TriggerButtonEditContext editContext, string title, DependencyObject source)
         {
-            if (editContext == null) return;
+            if (editContext?.Action == null) return;
 
-            FuncBindingControl funcControl = new FuncBindingControl();
-            Window host = new Window
-            {
-                Title = title,
-                Owner = Window.GetWindow(this),
-                Content = funcControl,
-                Width = 820,
-                Height = 540,
-                MinWidth = 760,
-                MinHeight = 480,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Background = TryFindResource("JsmccBg0Brush") as System.Windows.Media.Brush,
-            };
-
-            funcControl.PostInit(ownerItem.Owner.DeviceMapper, editContext.Action);
-            funcControl.FuncBindVM.IsRealAction = editContext.IsRealAction;
-            funcControl.PreActionSwitch += (oldAction, newAction) =>
-            {
-                editContext.UpdateAction?.Invoke(oldAction, newAction);
-            };
-            funcControl.ActionChanged += (_, action) =>
-            {
-                editContext.UpdateAction?.Invoke(null, action);
-            };
-            funcControl.RequestBindingEditor += (_, func) =>
-            {
-                OpenNestedOutputEditor(host, funcControl, ownerItem, editContext.Action, func);
-            };
-            funcControl.RequestClose += (_, _) => host.Close();
-            host.Closed += (_, _) => ownerItem.RefreshAfterEdit();
-
-            host.ShowDialog();
+            ActionFunc func = EnsureNormalPressFunc(ownerItem, editContext.Action);
+            ContentControl host = InlineBindingEditorService.FindInlineHost(source);
+            InlineBindingEditorService.Open(host,
+                new EditFaceBindingContext(ownerItem.Owner.DeviceMapper, editContext.Action, func),
+                title,
+                ownerItem.RefreshAfterEdit);
         }
 
-        private void OpenNestedOutputEditor(Window host, FuncBindingControl funcControl,
-            TriggerKeybindItem ownerItem, ButtonAction action, ActionFunc func)
+        private static ActionFunc EnsureNormalPressFunc(TriggerKeybindItem ownerItem, ButtonAction action)
         {
-            OutputBindingEditorControl editor = new OutputBindingEditorControl();
-            editor.PostInit(ownerItem.Owner.DeviceMapper, action, func);
-            editor.Finished += (_, _) =>
-            {
-                funcControl.RefreshView();
-                host.Content = funcControl;
-            };
+            ActionFunc func = action.ActionFuncs.Find(temp => temp is NormalPressFunc);
+            if (func != null) return func;
 
-            host.Content = editor;
+            func = new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            ownerItem.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                action.Release(ownerItem.Owner.DeviceMapper, ignoreReleaseActions: true);
+                action.ActionFuncs.Insert(0, func);
+                FaceButtonBindingItem.MarkFunctionsChanged(action);
+            });
+
+            return func;
         }
     }
 }
