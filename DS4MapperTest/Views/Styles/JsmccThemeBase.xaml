@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:hc="https://handyorg.github.io/handycontrol">
+                    xmlns:hc="https://handyorg.github.io/handycontrol"
+                    xmlns:behaviors="clr-namespace:DS4MapperTest.Behaviors">
 
     <Thickness x:Key="JsmccShellPadding">28,12,28,16</Thickness>
     <Thickness x:Key="JsmccCardPadding">20</Thickness>
@@ -395,5 +396,6 @@
 
     <Style TargetType="ScrollViewer">
         <Setter Property="PanningMode" Value="VerticalFirst"/>
+        <Setter Property="behaviors:ScrollViewerBehavior.BubbleWheelToParent" Value="True"/>
     </Style>
 </ResourceDictionary>
