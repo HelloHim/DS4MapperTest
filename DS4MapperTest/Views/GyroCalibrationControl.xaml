@@ -1,0 +1,75 @@
+<UserControl x:Class="DS4MapperTest.Views.GyroCalibrationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             mc:Ignorable="d"
+             d:DesignHeight="600"
+             d:DesignWidth="860">
+    <UserControl.Resources>
+        <Style x:Key="CalibRowBorder" TargetType="Border" BasedOn="{StaticResource JsmccSettingRowBorder}">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="CalibRowLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
+            <Setter Property="Width" Value="170"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  CanContentScroll="False">
+        <StackPanel Margin="0,0,10,12">
+            <TextBlock Text="Gyro" Style="{StaticResource JsmccSectionTitle}"/>
+            <TextBlock Text="Set up real-world calibration for the gyro so in-game aim rotation matches physical controller rotation."
+                       Style="{StaticResource JsmccBodyText}"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0"/>
+
+            <Border Style="{StaticResource JsmccCardBorder}" Margin="0,12,0,0">
+                <StackPanel>
+                    <Border Style="{StaticResource CalibRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Real World Calibration" Style="{StaticResource CalibRowLabel}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="27777.7778" DecimalPlaces="4" Increment="0.5"
+                                              Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding RealWorldCalibration, UpdateSourceTrigger=LostFocus}"/>
+                            <ComboBox Grid.Column="2"
+                                      ItemsSource="{Binding GamePresets}"
+                                      SelectedItem="{Binding SelectedPreset}"
+                                      DisplayMemberPath="Name"
+                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                      HorizontalAlignment="Left"
+                                      MinWidth="200"
+                                      Margin="8,0,0,0"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource CalibRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="In-game Sensitivity" Style="{StaticResource CalibRowLabel}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="1000000" DecimalPlaces="3" Increment="0.01"
+                                              Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding InGameSens, UpdateSourceTrigger=LostFocus}"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Text="Real world calibration is shared across all gyro, flick stick, and camera-turn bindings in this profile."
+                               Style="{StaticResource JsmccMutedText}"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

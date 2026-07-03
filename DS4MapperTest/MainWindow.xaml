@@ -128,11 +128,34 @@
                             <StackPanel>
                                 <TextBlock Text="Gyro &amp; Sensitivity" Style="{StaticResource JsmccPageTitle}"/>
                                 <TextBlock Text="Configure gyro behaviour, sensitivity, and curve settings."
-                                           Style="{StaticResource JsmccBodyText}"/>
-                                <Border Style="{StaticResource JsmccCardBorder}" Margin="0,18,0,0">
-                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
-                                               Style="{StaticResource PlaceholderCardText}"/>
-                                </Border>
+                                           Style="{StaticResource JsmccBodyText}"
+                                           Margin="0,0,0,12"/>
+
+                                <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
+                                    <TabItem Header="Gyro">
+                                        <views:GyroCalibrationControl DataContext="{Binding GyroCalibVM}"/>
+                                    </TabItem>
+                                    <TabItem Header="Sensitivity">
+                                        <Border Style="{StaticResource JsmccCardBorder}" Margin="0">
+                                            <StackPanel>
+                                                <TextBlock Text="Sensitivity" Style="{StaticResource JsmccSectionTitle}"/>
+                                                <TextBlock Text="Sensitivity settings will be added in a later step."
+                                                           Style="{StaticResource PlaceholderCardText}"
+                                                           Margin="0,6,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </TabItem>
+                                    <TabItem Header="Noise &amp; Steadying">
+                                        <Border Style="{StaticResource JsmccCardBorder}" Margin="0">
+                                            <StackPanel>
+                                                <TextBlock Text="Noise &amp; Steadying" Style="{StaticResource JsmccSectionTitle}"/>
+                                                <TextBlock Text="Noise and steadying settings will be added in a later step."
+                                                           Style="{StaticResource PlaceholderCardText}"
+                                                           Margin="0,6,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </TabItem>
+                                </TabControl>
                             </StackPanel>
                         </Border>
 
@@ -194,12 +217,18 @@
                                 Style="{StaticResource JsmccPanelBorder}">
                             <StackPanel>
                                 <TextBlock Text="Sticks" Style="{StaticResource JsmccPageTitle}"/>
-                                <TextBlock Text="Stick binding and stick behaviour settings will live here."
-                                           Style="{StaticResource JsmccBodyText}"/>
-                                <Border Style="{StaticResource JsmccCardBorder}" Margin="0,18,0,0">
-                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
-                                               Style="{StaticResource PlaceholderCardText}"/>
-                                </Border>
+                                <TextBlock Text="Configure stick bindings, modes, and analog behaviour."
+                                           Style="{StaticResource JsmccBodyText}"
+                                           Margin="0,0,0,12"/>
+
+                                <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
+                                    <TabItem Header="Bindings">
+                                        <views:SticksBindingsControl/>
+                                    </TabItem>
+                                    <TabItem Header="Modes &amp; Settings">
+                                        <views:SticksModeSettingsControl/>
+                                    </TabItem>
+                                </TabControl>
                             </StackPanel>
                         </Border>
 

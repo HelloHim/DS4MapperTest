@@ -89,6 +89,9 @@ namespace DS4MapperTest.ViewModels
         private StickSideViewModel rightStickKeybinds;
         public StickSideViewModel RightStickKeybinds => rightStickKeybinds ??= new StickSideViewModel(this, "RS");
 
+        private GyroCalibrationViewModel gyroCalibVM;
+        public GyroCalibrationViewModel GyroCalibVM => gyroCalibVM ??= new GyroCalibrationViewModel(mapper);
+
         private ObservableCollection<TriggerKeybindItem> triggerKeybinds =
             new ObservableCollection<TriggerKeybindItem>();
         public ObservableCollection<TriggerKeybindItem> TriggerKeybinds => triggerKeybinds;
