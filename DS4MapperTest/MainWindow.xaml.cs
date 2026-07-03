@@ -127,7 +127,10 @@ namespace DS4MapperTest
 
         private void NavRadio_Checked(object sender, RoutedEventArgs e)
         {
-            navPopup.IsOpen = false;
+            if (navPopup != null)
+            {
+                navPopup.IsOpen = false;
+            }
         }
 
         public async void StartCheckProcess()
