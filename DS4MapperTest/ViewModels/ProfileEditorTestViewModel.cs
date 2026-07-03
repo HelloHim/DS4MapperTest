@@ -635,6 +635,14 @@ namespace DS4MapperTest.ViewModels
 
         private void PopulateStickKeybinds()
         {
+            // StickTranslate/StickPadAction/StickMouse/StickCircular/StickAbsMouse/StickFlickStick
+            // prop view models read mapper.EditActionSet/EditLayer in their constructors (and again
+            // whenever a composite-layer-inherited action is first edited) to detect whether the
+            // bound action is a base-layer action that needs to be soft-copied into the current
+            // layer before editing. These refs stay populated for the life of the profile editor
+            // session since the Sticks tab is always live (not a modal edit window).
+            PopulateMapperEditActionRefs(mapper);
+
             (leftStickKeybinds ??= new StickSideViewModel(this, "LS")).Refresh();
             (rightStickKeybinds ??= new StickSideViewModel(this, "RS")).Refresh();
         }
