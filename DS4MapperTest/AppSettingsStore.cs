@@ -12,11 +12,18 @@ namespace DS4MapperTest
     {
         private string configPath;
         private int configVersion = AppGlobalData.CONFIG_VERSION;
+        private string themeMode = ThemeService.DEFAULT_THEME_MODE;
 
         public int ConfigVersion
         {
             get => configVersion;
             set => configVersion = value;
+        }
+
+        public string ThemeMode
+        {
+            get => themeMode;
+            set => themeMode = value;
         }
 
         public AppSettingsStore()
@@ -90,6 +97,12 @@ namespace DS4MapperTest
         {
             get => settings.ConfigVersion;
             set => settings.ConfigVersion = value;
+        }
+
+        public string ThemeMode
+        {
+            get => settings.ThemeMode;
+            set => settings.ThemeMode = value;
         }
 
         public AppSettingsSerializer(AppSettingsStore appStore)

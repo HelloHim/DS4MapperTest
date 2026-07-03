@@ -87,6 +87,8 @@ namespace DS4MapperTest
                 appGlobal.CreateControllerDeviceSettingsFile();
             }
 
+            ThemeService.Initialize(appGlobal);
+
             DispatcherUnhandledException += App_DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
