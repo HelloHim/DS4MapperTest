@@ -2,40 +2,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:hc="https://handyorg.github.io/handycontrol">
 
-    <Color x:Key="JsmccBg0Color">#161618</Color>
-    <Color x:Key="JsmccBg1Color">#25262B</Color>
-    <Color x:Key="JsmccBg15Color">#232327</Color>
-    <Color x:Key="JsmccBg2Color">#1E1E20</Color>
-    <Color x:Key="JsmccBgButtonHoverColor">#23252B</Color>
-    <Color x:Key="JsmccBgPrimaryColor">#262933</Color>
-    <Color x:Key="JsmccBgInputColor">#111111</Color>
-    <Color x:Key="JsmccTextStrongColor">#E8ECF3</Color>
-    <Color x:Key="JsmccTextMidColor">#BCC2CC</Color>
-    <Color x:Key="JsmccTextMutedColor">#8F949E</Color>
-    <Color x:Key="JsmccBorderColor">#2A2C33</Color>
-    <Color x:Key="JsmccBorderStrongColor">#343741</Color>
-    <Color x:Key="JsmccAccentColor">#6FA7FF</Color>
-    <Color x:Key="JsmccDangerBgColor">#22303838</Color>
-    <Color x:Key="JsmccDangerBorderColor">#99FF786F</Color>
-    <Color x:Key="JsmccDangerTextColor">#FFFFB7AF</Color>
-
-    <SolidColorBrush x:Key="JsmccBg0Brush" Color="{StaticResource JsmccBg0Color}"/>
-    <SolidColorBrush x:Key="JsmccBg1Brush" Color="{StaticResource JsmccBg1Color}"/>
-    <SolidColorBrush x:Key="JsmccBg15Brush" Color="{StaticResource JsmccBg15Color}"/>
-    <SolidColorBrush x:Key="JsmccBg2Brush" Color="{StaticResource JsmccBg2Color}"/>
-    <SolidColorBrush x:Key="JsmccBgButtonHoverBrush" Color="{StaticResource JsmccBgButtonHoverColor}"/>
-    <SolidColorBrush x:Key="JsmccBgPrimaryBrush" Color="{StaticResource JsmccBgPrimaryColor}"/>
-    <SolidColorBrush x:Key="JsmccBgInputBrush" Color="{StaticResource JsmccBgInputColor}"/>
-    <SolidColorBrush x:Key="JsmccTextStrongBrush" Color="{StaticResource JsmccTextStrongColor}"/>
-    <SolidColorBrush x:Key="JsmccTextMidBrush" Color="{StaticResource JsmccTextMidColor}"/>
-    <SolidColorBrush x:Key="JsmccTextMutedBrush" Color="{StaticResource JsmccTextMutedColor}"/>
-    <SolidColorBrush x:Key="JsmccBorderBrush" Color="{StaticResource JsmccBorderColor}"/>
-    <SolidColorBrush x:Key="JsmccBorderStrongBrush" Color="{StaticResource JsmccBorderStrongColor}"/>
-    <SolidColorBrush x:Key="JsmccAccentBrush" Color="{StaticResource JsmccAccentColor}"/>
-    <SolidColorBrush x:Key="JsmccDangerBgBrush" Color="{StaticResource JsmccDangerBgColor}"/>
-    <SolidColorBrush x:Key="JsmccDangerBorderBrush" Color="{StaticResource JsmccDangerBorderColor}"/>
-    <SolidColorBrush x:Key="JsmccDangerTextBrush" Color="{StaticResource JsmccDangerTextColor}"/>
-
     <Thickness x:Key="JsmccShellPadding">28,12,28,16</Thickness>
     <Thickness x:Key="JsmccCardPadding">20</Thickness>
     <CornerRadius x:Key="JsmccCardRadius">6</CornerRadius>
@@ -45,44 +11,44 @@
     <CornerRadius x:Key="JsmccPillRadius">999</CornerRadius>
 
     <Style x:Key="JsmccPageTitle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         <Setter Property="FontSize" Value="22"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Margin" Value="0,0,0,4"/>
     </Style>
 
     <Style x:Key="JsmccSectionTitle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         <Setter Property="FontSize" Value="17"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
 
     <Style x:Key="JsmccCardTitle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
 
     <Style x:Key="JsmccBodyText" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextMidBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextMidBrush}"/>
         <Setter Property="FontSize" Value="13"/>
     </Style>
 
     <Style x:Key="JsmccMutedText" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextMutedBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextMutedBrush}"/>
         <Setter Property="FontSize" Value="12"/>
     </Style>
 
     <Style x:Key="JsmccLabelText" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextMidBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextMidBrush}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="JsmccPanelBorder" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource JsmccBg2Brush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBg2Brush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="{StaticResource JsmccCardRadius}"/>
         <Setter Property="Padding" Value="8"/>
@@ -95,15 +61,15 @@
     </Style>
 
     <Style x:Key="JsmccCardBorder" TargetType="Border" BasedOn="{StaticResource JsmccPanelBorder}">
-        <Setter Property="Background" Value="{StaticResource JsmccBgInputBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgInputBrush}"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="Margin" Value="0,0,0,6"/>
         <Setter Property="Effect" Value="{x:Null}"/>
     </Style>
 
     <Style x:Key="JsmccSettingRowBorder" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource JsmccBg2Brush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBg2Brush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="{StaticResource JsmccCardRadius}"/>
         <Setter Property="Padding" Value="10,8"/>
@@ -111,9 +77,9 @@
     </Style>
 
     <Style x:Key="JsmccButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource JsmccBgInputBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgInputBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="14,7"/>
         <Setter Property="MinHeight" Value="34"/>
@@ -135,12 +101,12 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgButtonHoverBrush}"/>
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccBorderStrongBrush}"/>
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgButtonHoverBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccBorderStrongBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgPrimaryBrush}"/>
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccAccentBrush}"/>
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgPrimaryBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccAccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.5"/>
@@ -153,20 +119,20 @@
     </Style>
 
     <Style x:Key="JsmccPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource JsmccButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource JsmccBgPrimaryBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccAccentBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccAccentBrush}"/>
     </Style>
 
     <Style x:Key="JsmccDangerButtonStyle" TargetType="Button" BasedOn="{StaticResource JsmccButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource JsmccDangerBgBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccDangerBorderBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource JsmccDangerTextBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccDangerBgBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccDangerBorderBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccDangerTextBrush}"/>
     </Style>
 
     <Style x:Key="JsmccOutputButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource JsmccBgInputBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgInputBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="10,6"/>
         <Setter Property="MinHeight" Value="30"/>
@@ -192,12 +158,12 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgButtonHoverBrush}"/>
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccBorderStrongBrush}"/>
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgButtonHoverBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccBorderStrongBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgPrimaryBrush}"/>
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccAccentBrush}"/>
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgPrimaryBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccAccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.5"/>
@@ -210,9 +176,9 @@
     </Style>
 
     <Style x:Key="JsmccNavButtonStyle" TargetType="RadioButton">
-        <Setter Property="Background" Value="{StaticResource JsmccBgInputBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgInputBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="13,10"/>
         <Setter Property="Margin" Value="0,0,0,8"/>
@@ -234,12 +200,12 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgButtonHoverBrush}"/>
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccBorderStrongBrush}"/>
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgButtonHoverBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccBorderStrongBrush}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgButtonHoverBrush}"/>
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccAccentBrush}"/>
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgButtonHoverBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccAccentBrush}"/>
                             <Setter Property="BorderThickness" Value="2"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -249,7 +215,7 @@
     </Style>
 
     <Style x:Key="JsmccPillTabItemStyle" TargetType="TabItem">
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Padding" Value="14,7"/>
@@ -261,8 +227,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TabItem">
                     <Border x:Name="Chrome"
-                            Background="{StaticResource JsmccBgInputBrush}"
-                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                            Background="{DynamicResource JsmccBgInputBrush}"
+                            BorderBrush="{DynamicResource JsmccBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="{StaticResource JsmccTabRadius}">
                         <ContentPresenter ContentSource="Header"
@@ -272,12 +238,12 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgButtonHoverBrush}"/>
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccBorderStrongBrush}"/>
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgButtonHoverBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccBorderStrongBrush}"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgButtonHoverBrush}"/>
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccAccentBrush}"/>
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgButtonHoverBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccAccentBrush}"/>
                             <Setter TargetName="Chrome" Property="BorderThickness" Value="2"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -309,9 +275,9 @@
     </Style>
 
     <Style x:Key="JsmccComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
-        <Setter Property="Background" Value="{StaticResource JsmccBgInputBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgInputBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="10,5"/>
         <Setter Property="MinHeight" Value="34"/>
@@ -319,9 +285,9 @@
     </Style>
 
     <Style x:Key="JsmccTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
-        <Setter Property="Background" Value="{StaticResource JsmccBgInputBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgInputBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="8,5"/>
         <Setter Property="MinHeight" Value="32"/>
@@ -329,16 +295,16 @@
     </Style>
 
     <Style x:Key="JsmccNumericUpDownStyle" TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-        <Setter Property="Background" Value="{StaticResource JsmccBgInputBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgInputBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="MinHeight" Value="30"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
 
     <Style x:Key="JsmccToggleStyle" TargetType="CheckBox">
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
@@ -346,8 +312,8 @@
                 <ControlTemplate TargetType="CheckBox">
                     <Grid Width="40" Height="22">
                         <Border x:Name="Track"
-                                Background="{StaticResource JsmccBgButtonHoverBrush}"
-                                BorderBrush="{StaticResource JsmccBorderBrush}"
+                                Background="{DynamicResource JsmccBgButtonHoverBrush}"
+                                BorderBrush="{DynamicResource JsmccBorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="{StaticResource JsmccPillRadius}"/>
                         <Ellipse x:Name="Thumb"
@@ -355,20 +321,20 @@
                                  Height="17"
                                  HorizontalAlignment="Left"
                                  Margin="3,0,0,0"
-                                 Fill="{StaticResource JsmccBg2Brush}"
-                                 Stroke="{StaticResource JsmccBorderBrush}"
+                                 Fill="{DynamicResource JsmccBg2Brush}"
+                                 Stroke="{DynamicResource JsmccBorderBrush}"
                                  StrokeThickness="1"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Track" Property="Background" Value="{StaticResource JsmccAccentBrush}"/>
-                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource JsmccAccentBrush}"/>
+                            <Setter TargetName="Track" Property="Background" Value="{DynamicResource JsmccAccentBrush}"/>
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource JsmccAccentBrush}"/>
                             <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
                             <Setter TargetName="Thumb" Property="Margin" Value="0,0,3,0"/>
-                            <Setter TargetName="Thumb" Property="Stroke" Value="{StaticResource JsmccAccentBrush}"/>
+                            <Setter TargetName="Thumb" Property="Stroke" Value="{DynamicResource JsmccAccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource JsmccBorderStrongBrush}"/>
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource JsmccBorderStrongBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.5"/>
@@ -380,7 +346,7 @@
     </Style>
 
     <Style x:Key="CalibModeToggleStyle" TargetType="RadioButton">
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Padding" Value="14,7"/>
@@ -390,8 +356,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
                     <Border x:Name="Chrome"
-                            Background="{StaticResource JsmccBgInputBrush}"
-                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                            Background="{DynamicResource JsmccBgInputBrush}"
+                            BorderBrush="{DynamicResource JsmccBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="{StaticResource JsmccControlRadius}">
                         <ContentPresenter Margin="{TemplateBinding Padding}"
@@ -400,12 +366,12 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgButtonHoverBrush}"/>
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccBorderStrongBrush}"/>
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgButtonHoverBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccBorderStrongBrush}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource JsmccBgButtonHoverBrush}"/>
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource JsmccAccentBrush}"/>
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgButtonHoverBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccAccentBrush}"/>
                             <Setter Property="BorderThickness" Value="2"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -415,14 +381,14 @@
     </Style>
 
     <Style TargetType="ContextMenu">
-        <Setter Property="Background" Value="{StaticResource JsmccBg2Brush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource JsmccBorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBg2Brush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
     </Style>
 
     <Style TargetType="MenuItem">
-        <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
-        <Setter Property="Background" Value="{StaticResource JsmccBg2Brush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBg2Brush}"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="FontSize" Value="13"/>
     </Style>

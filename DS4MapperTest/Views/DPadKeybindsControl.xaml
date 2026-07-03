@@ -1,4 +1,4 @@
-<UserControl x:Class="DS4MapperTest.Views.DPadKeybindsControl"
+﻿<UserControl x:Class="DS4MapperTest.Views.DPadKeybindsControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -125,8 +125,8 @@
                                                            Grid.Column="0"
                                                            Grid.ColumnSpan="3"
                                                            Margin="0,6,0,0">
-                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
-                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
                                                             BorderThickness="1"
                                                             CornerRadius="4"
                                                             Padding="6,4"
@@ -140,8 +140,8 @@
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
-                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
                                                             BorderThickness="1"
                                                             CornerRadius="4"
                                                             Padding="6,4"
@@ -155,8 +155,8 @@
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
-                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
                                                             BorderThickness="1"
                                                             CornerRadius="4"
                                                             Padding="6,4"
@@ -175,8 +175,8 @@
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
-                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
                                                             BorderThickness="1"
                                                             CornerRadius="4"
                                                             Padding="6,4"
@@ -195,8 +195,8 @@
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
-                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
                                                             BorderThickness="1"
                                                             CornerRadius="4"
                                                             Padding="6,4"
@@ -215,8 +215,8 @@
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
-                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
                                                             BorderThickness="1"
                                                             CornerRadius="4"
                                                             Padding="6,4"
@@ -234,8 +234,8 @@
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
-                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
                                                             BorderThickness="1"
                                                             CornerRadius="4"
                                                             Padding="6,4"
@@ -253,8 +253,8 @@
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <Border Background="{StaticResource JsmccBgInputBrush}"
-                                                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
                                                             BorderThickness="1"
                                                             CornerRadius="4"
                                                             Padding="6,4"

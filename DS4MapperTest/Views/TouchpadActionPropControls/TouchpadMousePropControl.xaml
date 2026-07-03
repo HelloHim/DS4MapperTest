@@ -233,7 +233,7 @@
                         Margin="0,8,16,0">
                     <StackPanel>
                         <TextBlock Text="Acceleration" FontWeight="SemiBold"
-                                   Foreground="White"
+                                   Foreground="{DynamicResource JsmccTextStrongBrush}"
                                    Margin="4,0,0,4" />
 
                         <StackPanel Orientation="Horizontal">
