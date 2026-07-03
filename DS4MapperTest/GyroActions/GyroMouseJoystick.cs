@@ -245,7 +245,8 @@ namespace DS4MapperTest.GyroActions
 
             // Base speed 15 ms
             //double tempDouble = timeElapsed * 66.67;
-            double tempDouble = timeElapsed * gyroFrame.elapsedReference;
+            //double tempDouble = timeElapsed * gyroFrame.elapsedReference;
+            double tempDouble = 1.0;
             //Console.WriteLine("Elasped: ({0}) DOUBLE {1}", current.timeElapsed, tempDouble);
             int deltaX = mStickParams.useForXAxis == GyroMouseXAxisChoice.Yaw ?
                 gyroFrame.GyroYaw : gyroFrame.GyroRoll;

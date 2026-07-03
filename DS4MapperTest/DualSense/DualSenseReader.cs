@@ -222,7 +222,7 @@ namespace DS4MapperTest.DualSense
                         current.TotalMicroSec = previous.TotalMicroSec + (uint)(elapsedDeltaTime * 1000000);
                     }
 
-                    current.timeElapsed = tempTimeElapsed;
+                    current.timeElapsed = elapsedDeltaTime;
                     current.DS4Timestamp = (ushort)((tempStamp / 16) % ushort.MaxValue);
                     timeStampPrevious = tempStamp;
 
