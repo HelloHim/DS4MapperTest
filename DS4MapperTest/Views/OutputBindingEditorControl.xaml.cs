@@ -24,8 +24,18 @@ namespace DS4MapperTest.Views
     /// </summary>
     public partial class OutputBindingEditorControl : UserControl
     {
+        public static readonly DependencyProperty ShowDoneButtonProperty =
+            DependencyProperty.Register(nameof(ShowDoneButton), typeof(bool),
+                typeof(OutputBindingEditorControl), new PropertyMetadata(true));
+
         private ButtonActionEditViewModel buttonActionEditVM;
         public event EventHandler Finished;
+
+        public bool ShowDoneButton
+        {
+            get => (bool)GetValue(ShowDoneButtonProperty);
+            set => SetValue(ShowDoneButtonProperty, value);
+        }
 
         public OutputBindingEditorControl()
         {
@@ -59,6 +69,11 @@ namespace DS4MapperTest.Views
         }
 
         private void UnboundBtn_Click(object sender, RoutedEventArgs e)
+        {
+            AssignUnboundSelectedSlot();
+        }
+
+        public void AssignUnboundSelectedSlot()
         {
             DataContext = null;
 

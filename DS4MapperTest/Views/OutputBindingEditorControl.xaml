@@ -1,163 +1,265 @@
-﻿<UserControl x:Class="DS4MapperTest.Views.OutputBindingEditorControl"
+<UserControl x:Class="DS4MapperTest.Views.OutputBindingEditorControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:local="clr-namespace:DS4MapperTest.Views"
              xmlns:shared="clr-namespace:DS4MapperTest.Views.Shared"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450"
+             d:DesignWidth="800">
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="boolVisConv" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <Style x:Key="EditorFieldLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
+            <Setter Property="MinWidth" Value="92"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
     </UserControl.Resources>
-    <DockPanel Margin="8">
-        <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,12,0,0">
-            <Button Content="Done" Width="100" Click="Button_Click" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Margin="0,12,0,0">
-            <ComboBox ItemsSource="{Binding SlotItems}" SelectedIndex="{Binding SelectedSlotItemIndex}" DisplayMemberPath="DisplayName" />
-            <Button x:Name="addOutputSlot" Content="Add +" Click="AddOutputSlot_Click" Margin="8,0,0,0" />
-            <Button x:Name="removeOutputSlot" Content="Remove -" Click="RemoveOutputSlot_Click" IsEnabled="{Binding HasMultipleSlots}" Margin="8,0,0,0" />
-            <Button x:Name="unboundBtn" Content="Unbound" Click="UnboundBtn_Click" Margin="8,0,0,0">
-                <Button.Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource ButtonDefault}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding UnboundActive}" Value="True">
-                                <DataTrigger.Setters>
-                                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                                </DataTrigger.Setters>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-            <Button x:Name="cameraTurnBtn" Content="Flick Turn Bind" Click="CameraTurnBtn_Click" Margin="8,0,0,0">
-                <Button.Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource ButtonDefault}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding CameraTurnActive}" Value="True">
-                                <DataTrigger.Setters>
-                                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                                </DataTrigger.Setters>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-        </StackPanel>
 
-        <ScrollViewer DockPanel.Dock="Top">
-            <StackPanel>
-                <StackPanel Visibility="{Binding ShowCameraTurnOptions, Mode=OneWay, Converter={StaticResource boolVisConv}}" Margin="0,0,0,12">
+    <DockPanel>
+        <Button DockPanel.Dock="Bottom"
+                Content="Done"
+                Width="100"
+                Margin="0,10,0,0"
+                HorizontalAlignment="Left"
+                Click="Button_Click"
+                Style="{StaticResource JsmccButtonStyle}"
+                Visibility="{Binding ShowDoneButton, RelativeSource={RelativeSource AncestorType=local:OutputBindingEditorControl}, Converter={StaticResource BoolToVis}}"/>
+
+        <Border DockPanel.Dock="Top"
+                Background="{StaticResource JsmccBgInputBrush}"
+                BorderBrush="{StaticResource JsmccBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="5"
+                Padding="8"
+                Margin="0,0,0,8">
+            <WrapPanel>
+                <TextBlock Text="Output Slot" Style="{StaticResource EditorFieldLabel}"/>
+                <ComboBox ItemsSource="{Binding SlotItems}"
+                          SelectedIndex="{Binding SelectedSlotItemIndex}"
+                          DisplayMemberPath="DisplayName"
+                          MinWidth="118"
+                          Style="{StaticResource JsmccComboBoxStyle}"
+                          Margin="0,0,8,4"/>
+                <Button x:Name="addOutputSlot"
+                        Content="Add +"
+                        Click="AddOutputSlot_Click"
+                        Style="{StaticResource JsmccButtonStyle}"
+                        MinWidth="70"
+                        Margin="0,0,8,4"/>
+                <Button x:Name="removeOutputSlot"
+                        Content="Remove -"
+                        Click="RemoveOutputSlot_Click"
+                        IsEnabled="{Binding HasMultipleSlots}"
+                        Style="{StaticResource JsmccButtonStyle}"
+                        MinWidth="88"
+                        Margin="0,0,8,4"/>
+                <Button x:Name="unboundBtn"
+                        Content="Unbound"
+                        Click="UnboundBtn_Click"
+                        Style="{StaticResource JsmccButtonStyle}"
+                        MinWidth="86"
+                        Margin="0,0,8,4"/>
+            </WrapPanel>
+        </Border>
+
+        <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
+            <TabItem Header="Gamepad">
+                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                    <TextBlock Text="Output" Style="{StaticResource EditorFieldLabel}"/>
+                    <ComboBox ItemsSource="{Binding GamepadComboItems}"
+                              SelectedIndex="{Binding SelectedIndex, FallbackValue='0'}"
+                              DisplayMemberPath="DisplayName"
+                              MinWidth="180"
+                              Style="{StaticResource JsmccComboBoxStyle}"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Keyboard">
+                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                    <TextBlock Text="Key" Style="{StaticResource EditorFieldLabel}"/>
+                    <ComboBox ItemsSource="{Binding KeyboardComboItems}"
+                              SelectedIndex="{Binding SelectedKeyboardIndex, FallbackValue='0'}"
+                              DisplayMemberPath="DisplayName"
+                              MinWidth="180"
+                              Style="{StaticResource JsmccComboBoxStyle}"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Mouse Buttons">
+                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                    <TextBlock Text="Button" Style="{StaticResource EditorFieldLabel}"/>
+                    <ComboBox ItemsSource="{Binding MouseButtonComboItems}"
+                              SelectedIndex="{Binding SelectedMouseButtonIndex, FallbackValue='0'}"
+                              DisplayMemberPath="DisplayName"
+                              MinWidth="180"
+                              Style="{StaticResource JsmccComboBoxStyle}"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Mouse Wheel">
+                <StackPanel Margin="0,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="Angle" VerticalAlignment="Center" ToolTip="Signed degrees: positive = right, negative = left. Range: -180 to +180." />
-                        <hc:NumericUpDown Minimum="-180.0" Maximum="180.0" DecimalPlaces="1" Increment="1.0"
-                            Value="{Binding CameraTurnAngle, FallbackValue='180.0'}" Width="100" Margin="8,0,0,0" VerticalAlignment="Center" />
-                        <Label Content="°" Margin="2,0,0,0" BorderBrush="{x:Null}" VerticalAlignment="Center" />
+                        <TextBlock Text="Wheel" Style="{StaticResource EditorFieldLabel}"/>
+                        <ComboBox ItemsSource="{Binding MouseWheelButtonComboItems}"
+                                  SelectedIndex="{Binding SelectedMouseWheelButtonIndex, FallbackValue='0'}"
+                                  DisplayMemberPath="DisplayName"
+                                  MinWidth="180"
+                                  Style="{StaticResource JsmccComboBoxStyle}"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                        <Label Content="Duration" VerticalAlignment="Center" />
-                        <hc:NumericUpDown Minimum="1.0" Maximum="10000.0" DecimalPlaces="0" Increment="10.0"
-                            Value="{Binding CameraTurnDurationMs, FallbackValue='100.0'}" Width="100" Margin="8,0,0,0" VerticalAlignment="Center" />
-                        <Label Content="ms" Margin="2,0,0,0" BorderBrush="{x:Null}" VerticalAlignment="Center" />
+                    <WrapPanel Margin="0,8,0,0"
+                               Visibility="{Binding ShowWheelTickOptions, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="Tick Time" Style="{StaticResource EditorFieldLabel}"/>
+                        <CheckBox IsChecked="{Binding TickTimeEnabled}"
+                                  Style="{StaticResource JsmccToggleStyle}"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,12,4"/>
+                        <hc:NumericUpDown Minimum="0.0"
+                                          Maximum="1000.0"
+                                          DecimalPlaces="1"
+                                          Increment="10"
+                                          Value="{Binding TickTime,FallbackValue='100.0'}"
+                                          ValueFormat="0 ms"
+                                          Width="118"
+                                          Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                    </WrapPanel>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Mouse Move">
+                <StackPanel Margin="0,10,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Direction" Style="{StaticResource EditorFieldLabel}"/>
+                        <ComboBox ItemsSource="{Binding MouseDirComboItems}"
+                                  SelectedIndex="{Binding SelectedMouseDirIndex, FallbackValue='0'}"
+                                  DisplayMemberPath="DisplayName"
+                                  MinWidth="180"
+                                  Style="{StaticResource JsmccComboBoxStyle}"/>
                     </StackPanel>
-                    <shared:CalibrationModeControl />
+                    <WrapPanel Margin="0,8,0,0"
+                               Visibility="{Binding ShowMouseDirOptions, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="Mouse X" Style="{StaticResource EditorFieldLabel}"/>
+                        <hc:NumericUpDown Minimum="0.0"
+                                          Maximum="1000.0"
+                                          DecimalPlaces="0"
+                                          Increment="10"
+                                          Value="{Binding MouseXSpeed,FallbackValue='50'}"
+                                          Width="96"
+                                          Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Margin="0,0,8,4"/>
+                        <TextBlock Text="{Binding MouseXSpeedOutput, Mode=OneWay, StringFormat='{}{0} pps'}"
+                                   Style="{StaticResource JsmccMutedText}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,16,4"/>
+                        <TextBlock Text="Mouse Y" Style="{StaticResource EditorFieldLabel}"/>
+                        <hc:NumericUpDown Minimum="0.0"
+                                          Maximum="1000.0"
+                                          DecimalPlaces="0"
+                                          Increment="10"
+                                          Value="{Binding MouseYSpeed,FallbackValue='50'}"
+                                          Width="96"
+                                          Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Margin="0,0,8,4"/>
+                        <TextBlock Text="{Binding MouseYSpeedOutput, Mode=OneWay, StringFormat='{}{0} pps'}"
+                                   Style="{StaticResource JsmccMutedText}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,0,4"/>
+                    </WrapPanel>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Height="40" DockPanel.Dock="Top">
-                    <Label Content="Gamepad" VerticalAlignment="Top" />
-                    <ComboBox ItemsSource="{Binding GamepadComboItems}" SelectedIndex="{Binding SelectedIndex, FallbackValue='0'}" DisplayMemberPath="DisplayName" Height="40" MinWidth="100" VerticalAlignment="Top" Margin="8,0,0,0">
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Height="40" DockPanel.Dock="Top"  Margin="0,12,0,0">
-                    <Label Content="Keyboard" VerticalAlignment="Top" />
-                    <ComboBox ItemsSource="{Binding KeyboardComboItems}" SelectedIndex="{Binding SelectedKeyboardIndex, FallbackValue='0'}" DisplayMemberPath="DisplayName" Height="40" MinWidth="100" VerticalAlignment="Top" Margin="8,0,0,0">
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Height="40" DockPanel.Dock="Top" Margin="0,12,0,0">
-                    <Label Content="Mouse Buttons" VerticalAlignment="Top" />
-                    <ComboBox ItemsSource="{Binding MouseButtonComboItems}" SelectedIndex="{Binding SelectedMouseButtonIndex, FallbackValue='0'}" DisplayMemberPath="DisplayName" Height="40" MinWidth="100" VerticalAlignment="Top" Margin="8,0,0,0">
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" MinHeight="40" Margin="0,12,0,0">
-                    <Label Content="Mouse Wheel Btns" VerticalAlignment="Top" />
-                    <ComboBox ItemsSource="{Binding MouseWheelButtonComboItems}" SelectedIndex="{Binding SelectedMouseWheelButtonIndex, FallbackValue='0'}" DisplayMemberPath="DisplayName" Height="40" MinWidth="100" VerticalAlignment="Top" Margin="8,0,0,0">
-                    </ComboBox>
+            </TabItem>
 
-                    <Expander ExpandDirection="Right" Margin="8,0,0,0" Visibility="{Binding ShowWheelTickOptions, Mode=OneWay, Converter={StaticResource boolVisConv}}">
-                        <StackPanel Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="Tick Time Enabled" />
-                                <CheckBox IsChecked="{Binding TickTimeEnabled}" MinWidth="30" Margin="8,0,0,0" />
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                <Label Content="Tick Time" />
-                                <hc:NumericUpDown Minimum="0.0" Maximum="1000.0" DecimalPlaces="1" Increment="10"
-                                  Value="{Binding TickTime,FallbackValue='100.0'}" ValueFormat="0 ms" Margin="8,0,0,0">
-                                </hc:NumericUpDown>
-                            </StackPanel>
-
-                        </StackPanel>
-                    </Expander>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" MinHeight="40" Margin="0,12,0,0">
-                    <Label Content="Mouse Move Dir" VerticalAlignment="Top" />
-                    <ComboBox ItemsSource="{Binding MouseDirComboItems}" SelectedIndex="{Binding SelectedMouseDirIndex, FallbackValue='0'}" DisplayMemberPath="DisplayName" Height="40" MinWidth="100" VerticalAlignment="Top" Margin="8,0,0,0">
-                    </ComboBox>
-
-                    <Expander ExpandDirection="Right" Margin="8,0,0,0" Visibility="{Binding ShowMouseDirOptions, Mode=OneWay, Converter={StaticResource boolVisConv}}">
-                        <StackPanel Orientation="Vertical" Margin="8,0,0,0">
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="Mouse X" />
-                                <hc:NumericUpDown Minimum="0.0" Maximum="1000.0" DecimalPlaces="0" Increment="10"
-                                  Value="{Binding MouseXSpeed,FallbackValue='50'}" Margin="8,0,0,0">
-                                </hc:NumericUpDown>
-
-                                <TextBlock Text="{Binding MouseXSpeedOutput, Mode=OneWay, StringFormat='{}{0} pps'}" Width="50" Margin="8,0,0,0" Foreground="{StaticResource DefaultBrush}" VerticalAlignment="Center" />
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                <Label Content="Mouse Y" />
-                                <hc:NumericUpDown Minimum="0.0" Maximum="1000.0" DecimalPlaces="0" Increment="10"
-                                  Value="{Binding MouseYSpeed,FallbackValue='50'}" Margin="8,0,0,0">
-                                </hc:NumericUpDown>
-
-                                <TextBlock Text="{Binding MouseYSpeedOutput, Mode=OneWay, StringFormat='{}{0} pps'}" Width="50" Margin="8,0,0,0" Foreground="{StaticResource DefaultBrush}" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Expander>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,12,0,0">
-                    <Label Content="Layer Ops" VerticalAlignment="Top" />
-                    <ComboBox ItemsSource="{Binding LayerOperationsComboItems}" SelectedIndex="{Binding SelectedLayerOpsIndex, FallbackValue='0'}" DisplayMemberPath="DisplayName" Height="40" MinWidth="100" VerticalAlignment="Top" Margin="8,0,0,0">
-                    </ComboBox>
-
-                    <ComboBox ItemsSource="{Binding AvailableLayerComboItems}" SelectedIndex="{Binding SelectedLayerChoiceIndex, FallbackValue='0'}" DisplayMemberPath="DisplayName" Height="40" MinWidth="100" VerticalAlignment="Top" Visibility="{Binding ShowAvailableLayers, Mode=OneWay, Converter={StaticResource boolVisConv}}" Margin="8,0,0,0">
-                    </ComboBox>
-
-                    <ComboBox SelectedIndex="{Binding SelectedLayerChangeConditionIndex, FallbackValue='0'}" Height="40" MinWidth="100" VerticalAlignment="Top" Visibility="{Binding ShowLayerChangeConditions, Mode=OneWay, Converter={StaticResource boolVisConv}}" Margin="8,0,0,0">
+            <TabItem Header="Layer Ops">
+                <WrapPanel Margin="0,10,0,0">
+                    <TextBlock Text="Operation" Style="{StaticResource EditorFieldLabel}"/>
+                    <ComboBox ItemsSource="{Binding LayerOperationsComboItems}"
+                              SelectedIndex="{Binding SelectedLayerOpsIndex, FallbackValue='0'}"
+                              DisplayMemberPath="DisplayName"
+                              MinWidth="160"
+                              Style="{StaticResource JsmccComboBoxStyle}"
+                              Margin="0,0,8,4"/>
+                    <ComboBox ItemsSource="{Binding AvailableLayerComboItems}"
+                              SelectedIndex="{Binding SelectedLayerChoiceIndex, FallbackValue='0'}"
+                              DisplayMemberPath="DisplayName"
+                              MinWidth="160"
+                              Style="{StaticResource JsmccComboBoxStyle}"
+                              Visibility="{Binding ShowAvailableLayers, Mode=OneWay, Converter={StaticResource BoolToVis}}"
+                              Margin="0,0,8,4"/>
+                    <ComboBox SelectedIndex="{Binding SelectedLayerChangeConditionIndex, FallbackValue='0'}"
+                              MinWidth="130"
+                              Style="{StaticResource JsmccComboBoxStyle}"
+                              Visibility="{Binding ShowLayerChangeConditions, Mode=OneWay, Converter={StaticResource BoolToVis}}"
+                              Margin="0,0,8,4">
                         <ComboBoxItem>None</ComboBoxItem>
                         <ComboBoxItem>Pressed</ComboBoxItem>
                         <ComboBoxItem>Released</ComboBoxItem>
                     </ComboBox>
-                </StackPanel>
+                </WrapPanel>
+            </TabItem>
 
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,12,0,0">
-                    <Label Content="Switch Sets" VerticalAlignment="Top" />
-                    <ComboBox ItemsSource="{Binding AvailableSetsComboItems}" SelectedIndex="{Binding SelectedSetChoiceIndex, FallbackValue='0'}" DisplayMemberPath="DisplayName" Height="40" MinWidth="100" VerticalAlignment="Top" Margin="8,0,0,0">
-                    </ComboBox>
-
-                    <ComboBox SelectedIndex="{Binding SelectedSetChangeConditionIndex, FallbackValue='0'}" Height="40" MinWidth="100" VerticalAlignment="Top" Visibility="{Binding ShowAvailableSets, Mode=OneWay, Converter={StaticResource boolVisConv}}" Margin="8,0,0,0">
+            <TabItem Header="Switch Sets">
+                <WrapPanel Margin="0,10,0,0">
+                    <TextBlock Text="Set" Style="{StaticResource EditorFieldLabel}"/>
+                    <ComboBox ItemsSource="{Binding AvailableSetsComboItems}"
+                              SelectedIndex="{Binding SelectedSetChoiceIndex, FallbackValue='0'}"
+                              DisplayMemberPath="DisplayName"
+                              MinWidth="160"
+                              Style="{StaticResource JsmccComboBoxStyle}"
+                              Margin="0,0,8,4"/>
+                    <ComboBox SelectedIndex="{Binding SelectedSetChangeConditionIndex, FallbackValue='0'}"
+                              MinWidth="130"
+                              Style="{StaticResource JsmccComboBoxStyle}"
+                              Visibility="{Binding ShowAvailableSets, Mode=OneWay, Converter={StaticResource BoolToVis}}"
+                              Margin="0,0,8,4">
                         <ComboBoxItem>None</ComboBoxItem>
                         <ComboBoxItem>Pressed</ComboBoxItem>
                         <ComboBoxItem>Released</ComboBoxItem>
                     </ComboBox>
+                </WrapPanel>
+            </TabItem>
+
+            <TabItem Header="Advanced">
+                <StackPanel Margin="0,10,0,0">
+                    <Button x:Name="cameraTurnBtn"
+                            Content="Flick Turn Bind"
+                            Click="CameraTurnBtn_Click"
+                            Style="{StaticResource JsmccButtonStyle}"
+                            HorizontalAlignment="Left"
+                            MinWidth="128"/>
+                    <Border Background="{StaticResource JsmccBgInputBrush}"
+                            BorderBrush="{StaticResource JsmccBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            Padding="8"
+                            Margin="0,8,0,0"
+                            Visibility="{Binding ShowCameraTurnOptions, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <WrapPanel>
+                                <TextBlock Text="Angle" Style="{StaticResource EditorFieldLabel}"/>
+                                <hc:NumericUpDown Minimum="-180.0"
+                                                  Maximum="180.0"
+                                                  DecimalPlaces="1"
+                                                  Increment="1.0"
+                                                  Value="{Binding CameraTurnAngle, FallbackValue='180.0'}"
+                                                  Width="100"
+                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Margin="0,0,8,4"/>
+                                <TextBlock Text="Duration" Style="{StaticResource EditorFieldLabel}"/>
+                                <hc:NumericUpDown Minimum="1.0"
+                                                  Maximum="10000.0"
+                                                  DecimalPlaces="0"
+                                                  Increment="10.0"
+                                                  Value="{Binding CameraTurnDurationMs, FallbackValue='100.0'}"
+                                                  ValueFormat="0 ms"
+                                                  Width="118"
+                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Margin="0,0,8,4"/>
+                            </WrapPanel>
+                            <shared:CalibrationModeControl Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-
-            </StackPanel>
-        </ScrollViewer>
-
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </UserControl>

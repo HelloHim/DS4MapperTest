@@ -114,6 +114,7 @@
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="Auto"/>
                                                         <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="160"/>
@@ -263,6 +264,12 @@
                                                             </StackPanel>
                                                         </Border>
                                                     </WrapPanel>
+
+                                                    <ContentControl x:Name="InlineEditorHost"
+                                                                    Grid.Row="2"
+                                                                    Grid.Column="0"
+                                                                    Grid.ColumnSpan="3"
+                                                                    Visibility="Collapsed"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -294,116 +301,121 @@
 
                             <StackPanel Visibility="{Binding IsDualStageMode, Converter={StaticResource BoolToVis}}">
                                 <Border Style="{StaticResource JsmccSettingRowBorder}">
-                                    <WrapPanel>
-                                        <Border Style="{StaticResource TriggerChipBorder}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
-                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
-                                                         Width="160"
-                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
-                                            </StackPanel>
-                                        </Border>
+                                    <StackPanel>
+                                        <WrapPanel>
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
+                                                             Width="160"
+                                                             Style="{StaticResource JsmccTextBoxStyle}"/>
+                                                </StackPanel>
+                                            </Border>
 
-                                        <Border Style="{StaticResource TriggerChipBorder}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Dual Stage Mode" Style="{StaticResource TriggerControlLabel}"/>
-                                                <ComboBox SelectedIndex="{Binding SelectedDualStageModeIndex}"
-                                                          Width="190"
-                                                          Style="{StaticResource JsmccComboBoxStyle}">
-                                                    <ComboBoxItem>Threshold</ComboBoxItem>
-                                                    <ComboBoxItem>Exclusive Buttons</ComboBoxItem>
-                                                    <ComboBoxItem>Hair Trigger</ComboBoxItem>
-                                                    <ComboBoxItem>Hip Fire</ComboBoxItem>
-                                                    <ComboBoxItem>Hip Fire Exclusive Buttons</ComboBoxItem>
-                                                </ComboBox>
-                                            </StackPanel>
-                                        </Border>
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Dual Stage Mode" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <ComboBox SelectedIndex="{Binding SelectedDualStageModeIndex}"
+                                                              Width="190"
+                                                              Style="{StaticResource JsmccComboBoxStyle}">
+                                                        <ComboBoxItem>Threshold</ComboBoxItem>
+                                                        <ComboBoxItem>Exclusive Buttons</ComboBoxItem>
+                                                        <ComboBoxItem>Hair Trigger</ComboBoxItem>
+                                                        <ComboBoxItem>Hip Fire</ComboBoxItem>
+                                                        <ComboBoxItem>Hip Fire Exclusive Buttons</ComboBoxItem>
+                                                    </ComboBox>
+                                                </StackPanel>
+                                            </Border>
 
-                                        <Border Style="{StaticResource TriggerChipBorder}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Full Pull" Style="{StaticResource TriggerControlLabel}"/>
-                                                <Button Content="{Binding FullPullDisplayBind}"
-                                                        Tag="{Binding}"
-                                                        Click="EditFullPull_Click"
-                                                        Style="{StaticResource JsmccOutputButtonStyle}"/>
-                                            </StackPanel>
-                                        </Border>
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Full Pull" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <Button Content="{Binding FullPullDisplayBind}"
+                                                            Tag="{Binding}"
+                                                            Click="EditFullPull_Click"
+                                                            Style="{StaticResource JsmccOutputButtonStyle}"/>
+                                                </StackPanel>
+                                            </Border>
 
-                                        <Border Style="{StaticResource TriggerChipBorder}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Soft Pull" Style="{StaticResource TriggerControlLabel}"/>
-                                                <Button Content="{Binding SoftPullDisplayBind}"
-                                                        Tag="{Binding}"
-                                                        Click="EditSoftPull_Click"
-                                                        Style="{StaticResource JsmccOutputButtonStyle}"/>
-                                            </StackPanel>
-                                        </Border>
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Soft Pull" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <Button Content="{Binding SoftPullDisplayBind}"
+                                                            Tag="{Binding}"
+                                                            Click="EditSoftPull_Click"
+                                                            Style="{StaticResource JsmccOutputButtonStyle}"/>
+                                                </StackPanel>
+                                            </Border>
 
-                                        <Border Style="{StaticResource TriggerChipBorder}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Dead Zone" Style="{StaticResource TriggerControlLabel}"/>
-                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
-                                                                  Increment="0.01" Width="92"
-                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                  Value="{Binding DualDeadZone, UpdateSourceTrigger=LostFocus}"
-                                                                  ValueFormat="0.00"/>
-                                            </StackPanel>
-                                        </Border>
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Dead Zone" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                      Increment="0.01" Width="92"
+                                                                      Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                      Value="{Binding DualDeadZone, UpdateSourceTrigger=LostFocus}"
+                                                                      ValueFormat="0.00"/>
+                                                </StackPanel>
+                                            </Border>
 
-                                        <Border Style="{StaticResource TriggerChipBorder}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="AntiDead Zone" Style="{StaticResource TriggerControlLabel}"/>
-                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
-                                                                  Increment="0.01" Width="92"
-                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                  Value="{Binding DualAntiDeadZone, UpdateSourceTrigger=LostFocus}"
-                                                                  ValueFormat="0.00"/>
-                                            </StackPanel>
-                                        </Border>
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="AntiDead Zone" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                      Increment="0.01" Width="92"
+                                                                      Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                      Value="{Binding DualAntiDeadZone, UpdateSourceTrigger=LostFocus}"
+                                                                      ValueFormat="0.00"/>
+                                                </StackPanel>
+                                            </Border>
 
-                                        <Border Style="{StaticResource TriggerChipBorder}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Soft Max Zone" Style="{StaticResource TriggerControlLabel}"/>
-                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
-                                                                  Increment="0.01" Width="92"
-                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                  Value="{Binding DualMaxZone, UpdateSourceTrigger=LostFocus}"
-                                                                  ValueFormat="0.00"/>
-                                            </StackPanel>
-                                        </Border>
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Soft Max Zone" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                      Increment="0.01" Width="92"
+                                                                      Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                      Value="{Binding DualMaxZone, UpdateSourceTrigger=LostFocus}"
+                                                                      ValueFormat="0.00"/>
+                                                </StackPanel>
+                                            </Border>
 
-                                        <Border Style="{StaticResource TriggerChipBorder}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Hip Fire Delay" Style="{StaticResource TriggerControlLabel}"/>
-                                                <hc:NumericUpDown Minimum="0" Maximum="10000" DecimalPlaces="0"
-                                                                  Increment="10" Width="108"
-                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                  Value="{Binding HipFireDelay, UpdateSourceTrigger=LostFocus}"
-                                                                  ValueFormat="0 ms"/>
-                                            </StackPanel>
-                                        </Border>
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Hip Fire Delay" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <hc:NumericUpDown Minimum="0" Maximum="10000" DecimalPlaces="0"
+                                                                      Increment="10" Width="108"
+                                                                      Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                      Value="{Binding HipFireDelay, UpdateSourceTrigger=LostFocus}"
+                                                                      ValueFormat="0 ms"/>
+                                                </StackPanel>
+                                            </Border>
 
-                                        <Border Style="{StaticResource TriggerChipBorder}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Force Hip Fire Delay" Style="{StaticResource TriggerControlLabel}"/>
-                                                <CheckBox IsChecked="{Binding ForceHipFireDelay}"
-                                                          Style="{StaticResource JsmccToggleStyle}"
-                                                          VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </Border>
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Force Hip Fire Delay" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <CheckBox IsChecked="{Binding ForceHipFireDelay}"
+                                                              Style="{StaticResource JsmccToggleStyle}"
+                                                              VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Border>
 
-                                        <Border Style="{StaticResource TriggerChipBorder}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Full Pull Haptics" Style="{StaticResource TriggerControlLabel}"/>
-                                                <ComboBox ItemsSource="{Binding HapticsIntensityItems}"
-                                                          DisplayMemberPath="DisplayName"
-                                                          SelectedValuePath="ChoiceValue"
-                                                          SelectedValue="{Binding HapticsChoice}"
-                                                          Width="116"
-                                                          Style="{StaticResource JsmccComboBoxStyle}"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </WrapPanel>
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Full Pull Haptics" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <ComboBox ItemsSource="{Binding HapticsIntensityItems}"
+                                                              DisplayMemberPath="DisplayName"
+                                                              SelectedValuePath="ChoiceValue"
+                                                              SelectedValue="{Binding HapticsChoice}"
+                                                              Width="116"
+                                                              Style="{StaticResource JsmccComboBoxStyle}"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </WrapPanel>
+
+                                        <ContentControl x:Name="InlineEditorHost"
+                                                        Visibility="Collapsed"/>
+                                    </StackPanel>
                                 </Border>
                             </StackPanel>
 
