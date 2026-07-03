@@ -22,8 +22,15 @@ using DS4MapperTest.ViewModels.Common;
 
 namespace DS4MapperTest.ViewModels
 {
-    public class ProfileEditorTestViewModel
+    public class ProfileEditorTestViewModel : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void RaisePropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private ManualResetEventSlim actionResetEvent = new ManualResetEventSlim(false);
         public ManualResetEventSlim ActionResetEvent => actionResetEvent;
 
@@ -312,7 +319,29 @@ namespace DS4MapperTest.ViewModels
             get => tempProfile.OutputGamepadSettings.enabled;
             set
             {
+                if (tempProfile.OutputGamepadSettings.enabled == value) return;
                 tempProfile.OutputGamepadSettings.enabled = value;
+                RaisePropertyChanged(nameof(OutControllerEnabled));
+            }
+        }
+
+        private List<EnumChoiceSelection<Mapper.OutputContType>> outputControllerTypeChoices =
+            new List<EnumChoiceSelection<Mapper.OutputContType>>()
+        {
+            new EnumChoiceSelection<Mapper.OutputContType>("Xbox 360", Mapper.OutputContType.Xbox360),
+            new EnumChoiceSelection<Mapper.OutputContType>("DualShock 4", Mapper.OutputContType.DualShock4),
+        };
+        public List<EnumChoiceSelection<Mapper.OutputContType>> OutputControllerTypeOptions => outputControllerTypeChoices;
+
+        public Mapper.OutputContType CurrentOutputControllerType
+        {
+            get => tempProfile.OutputGamepadSettings.OutputGamepad;
+            set
+            {
+                if (tempProfile.OutputGamepadSettings.OutputGamepad == value) return;
+                tempProfile.OutputGamepadSettings.OutputGamepad = value;
+                RaisePropertyChanged(nameof(CurrentOutputControllerType));
+                RaisePropertyChanged(nameof(OutputControllerTypeIdx));
             }
         }
 
@@ -336,6 +365,7 @@ namespace DS4MapperTest.ViewModels
             }
             set
             {
+                Mapper.OutputContType oldValue = tempProfile.OutputGamepadSettings.OutputGamepad;
                 switch (value)
                 {
                     case 0:
@@ -347,6 +377,11 @@ namespace DS4MapperTest.ViewModels
                     default:
                         break;
                 }
+                if (oldValue != tempProfile.OutputGamepadSettings.OutputGamepad)
+                {
+                    RaisePropertyChanged(nameof(OutputControllerTypeIdx));
+                    RaisePropertyChanged(nameof(CurrentOutputControllerType));
+                }
             }
         }
 
@@ -355,7 +390,9 @@ namespace DS4MapperTest.ViewModels
             get => tempProfile.OutputGamepadSettings.ForceFeedbackEnabled;
             set
             {
+                if (tempProfile.OutputGamepadSettings.ForceFeedbackEnabled == value) return;
                 tempProfile.OutputGamepadSettings.ForceFeedbackEnabled = value;
+                RaisePropertyChanged(nameof(ForceFeedbackEnabled));
             }
         }
 
@@ -371,6 +408,51 @@ namespace DS4MapperTest.ViewModels
             //    tempProfile.LightbarSettings.SolidColor.green = value.G;
             //    tempProfile.LightbarSettings.SolidColor.blue = value.B;
             //}
+        }
+
+        public string LightbarHexColor
+        {
+            get => $"#{tempProfile.LightbarSettings.SolidColor.red:X2}{tempProfile.LightbarSettings.SolidColor.green:X2}{tempProfile.LightbarSettings.SolidColor.blue:X2}";
+            set
+            {
+                if (!TryParseHexColor(value, out byte red, out byte green, out byte blue)) return;
+                if (tempProfile.LightbarSettings.SolidColor.red == red &&
+                    tempProfile.LightbarSettings.SolidColor.green == green &&
+                    tempProfile.LightbarSettings.SolidColor.blue == blue)
+                {
+                    return;
+                }
+
+                UpdateSelectedSolidColor(red, green, blue);
+            }
+        }
+
+        public SolidColorBrush LightbarPreviewBrush => new SolidColorBrush(LightbarColor);
+
+        public bool IsSolidLightbarMode => tempProfile.LightbarSettings.Mode == LightbarMode.SolidColor;
+
+        public List<string> LightbarPresetHexColors { get; } = new List<string>()
+        {
+            "#FF0000",
+            "#00D084",
+            "#3A86FF",
+            "#FFB703",
+            "#C77DFF",
+            "#FFFFFF",
+        };
+
+        private static bool TryParseHexColor(string value, out byte red, out byte green, out byte blue)
+        {
+            red = green = blue = 0;
+            if (string.IsNullOrWhiteSpace(value)) return false;
+
+            string hex = value.Trim();
+            if (hex.StartsWith("#")) hex = hex.Substring(1);
+            if (hex.Length != 6) return false;
+
+            return byte.TryParse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, null, out red) &&
+                byte.TryParse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, null, out green) &&
+                byte.TryParse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, null, out blue);
         }
 
         public System.Windows.Media.Color LightbarPulseColor
@@ -408,6 +490,9 @@ namespace DS4MapperTest.ViewModels
                 tempProfile.LightbarSettings.Mode = value;
                 tempProfile.LightbarSettings.RaiseModeChanged();
                 CurrentLightbarModeChanged?.Invoke(this, EventArgs.Empty);
+                RaisePropertyChanged(nameof(CurrentLightbarMode));
+                RaisePropertyChanged(nameof(LightbarOptionsTabIndex));
+                RaisePropertyChanged(nameof(IsSolidLightbarMode));
             }
         }
         public event EventHandler CurrentLightbarModeChanged;
@@ -452,6 +537,9 @@ namespace DS4MapperTest.ViewModels
             tempProfile.LightbarSettings.SolidColor.red = red;
             tempProfile.LightbarSettings.SolidColor.green = green;
             tempProfile.LightbarSettings.SolidColor.blue = blue;
+            RaisePropertyChanged(nameof(LightbarColor));
+            RaisePropertyChanged(nameof(LightbarHexColor));
+            RaisePropertyChanged(nameof(LightbarPreviewBrush));
         }
 
         public void UpdateSelectedPulseColor(byte red, byte green, byte blue)

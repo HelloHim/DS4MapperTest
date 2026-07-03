@@ -449,23 +449,12 @@ namespace DS4MapperTest
             IsEnabled = true;
         }
 
-        private void ColorPicker_SelectedColorChanged(object sender, HandyControl.Data.FunctionEventArgs<Color> e)
+        private void LightbarPreset_Click(object sender, RoutedEventArgs e)
         {
-            editorTestVM?.UpdateSelectedSolidColor(ColorPicker.SelectedBrush.Color.R,
-                ColorPicker.SelectedBrush.Color.G, ColorPicker.SelectedBrush.Color.B);
+            if (editorTestVM == null || sender is not Button button || button.Tag is not string hexColor) return;
+            editorTestVM.LightbarHexColor = hexColor;
         }
 
-        private void ColorPickerBattery_SelectedColorChanged(object sender, HandyControl.Data.FunctionEventArgs<Color> e)
-        {
-            editorTestVM?.UpdateSelectedBatteryColor(ColorPickerBattery.SelectedBrush.Color.R,
-                ColorPickerBattery.SelectedBrush.Color.G, ColorPickerBattery.SelectedBrush.Color.B);
-        }
-
-        private void ColorPickerPulse_SelectedColorChanged(object sender, HandyControl.Data.FunctionEventArgs<Color> e)
-        {
-            editorTestVM?.UpdateSelectedPulseColor(ColorPickerPulse.SelectedBrush.Color.R,
-                ColorPickerPulse.SelectedBrush.Color.G, ColorPickerPulse.SelectedBrush.Color.B);
-        }
 
         private void ControlListVM_ReadProfileFailure(object sender, ReadProfileFailException e)
         {
@@ -478,10 +467,6 @@ namespace DS4MapperTest
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            ColorPicker.SelectedColorChanged -= ColorPicker_SelectedColorChanged;
-            ColorPickerBattery.SelectedColorChanged -= ColorPickerBattery_SelectedColorChanged;
-            ColorPickerPulse.SelectedColorChanged -= ColorPickerPulse_SelectedColorChanged;
-
             DataContext = null;
             editorTestVM?.UnregisterEvents();
 

@@ -26,6 +26,19 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Width" Value="48"/>
         </Style>
+
+        <Style x:Key="OtherSettingLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource JsmccTextStrongBrush}"/>
+        </Style>
+
+        <Style x:Key="LightbarPresetButtonStyle" TargetType="Button" BasedOn="{StaticResource JsmccButtonStyle}">
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
     </Window.Resources>
 
     <Grid Background="{StaticResource JsmccBg0Brush}">
@@ -110,15 +123,6 @@
                                 Style="{StaticResource JsmccPrimaryButtonStyle}"/>
                     </DockPanel>
                 </Border>
-
-                <Grid DockPanel.Dock="Top" Visibility="Collapsed">
-                    <hc:ColorPicker x:Name="ColorPicker"
-                                    SelectedColorChanged="ColorPicker_SelectedColorChanged"/>
-                    <hc:ColorPicker x:Name="ColorPickerBattery"
-                                    SelectedColorChanged="ColorPickerBattery_SelectedColorChanged"/>
-                    <hc:ColorPicker x:Name="ColorPickerPulse"
-                                    SelectedColorChanged="ColorPickerPulse_SelectedColorChanged"/>
-                </Grid>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
@@ -221,11 +225,153 @@
                                 Style="{StaticResource JsmccPanelBorder}">
                             <StackPanel>
                                 <TextBlock Text="Other" Style="{StaticResource JsmccPageTitle}"/>
-                                <TextBlock Text="Profile, documentation, and miscellaneous settings can move here later."
-                                           Style="{StaticResource JsmccBodyText}"/>
-                                <Border Style="{StaticResource JsmccCardBorder}" Margin="0,18,0,0">
-                                    <TextBlock Text="Placeholder only. Controls are not wired in this phase."
-                                               Style="{StaticResource PlaceholderCardText}"/>
+                                <TextBlock Text="Configure output controller, vibration, and lightbar options."
+                                           Style="{StaticResource JsmccBodyText}"
+                                           Margin="0,0,0,12"/>
+
+                                <Border Style="{StaticResource JsmccCardBorder}">
+                                    <StackPanel>
+                                        <TextBlock Text="Output Controller" Style="{StaticResource JsmccSectionTitle}"/>
+
+                                        <Grid Margin="0,10,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Output Controller" Style="{StaticResource OtherSettingLabel}"/>
+                                                <TextBlock Text="Enables controller output using the selected virtual controller type."
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="0,3,16,0"/>
+                                            </StackPanel>
+                                            <CheckBox Grid.Column="1"
+                                                      Style="{StaticResource JsmccToggleStyle}"
+                                                      IsChecked="{Binding OutControllerEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,12,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="220"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Controller Type" Style="{StaticResource OtherSettingLabel}"/>
+                                                <TextBlock Text="Selects the virtual controller type used for output."
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="0,3,16,0"/>
+                                            </StackPanel>
+                                            <ComboBox Grid.Column="1"
+                                                      ItemsSource="{Binding OutputControllerTypeOptions}"
+                                                      DisplayMemberPath="DisplayName"
+                                                      SelectedValuePath="ChoiceValue"
+                                                      SelectedValue="{Binding CurrentOutputControllerType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                                      VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource JsmccCardBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="Vibration/Haptic Feedback" Style="{StaticResource JsmccSectionTitle}"/>
+                                            <TextBlock Text="Enables vibration or haptic feedback where supported."
+                                                       Style="{StaticResource JsmccMutedText}"
+                                                       Margin="0,6,16,0"/>
+                                        </StackPanel>
+                                        <CheckBox Grid.Column="1"
+                                                  Style="{StaticResource JsmccToggleStyle}"
+                                                  IsChecked="{Binding ForceFeedbackEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+
+                                <Border Style="{StaticResource JsmccCardBorder}">
+                                    <StackPanel>
+                                        <TextBlock Text="Lightbar" Style="{StaticResource JsmccSectionTitle}"/>
+
+                                        <Grid Margin="0,10,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="220"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Lightbar Mode" Style="{StaticResource OtherSettingLabel}"/>
+                                                <TextBlock Text="Chooses the existing lightbar behaviour for supported controllers."
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="0,3,16,0"/>
+                                            </StackPanel>
+                                            <ComboBox Grid.Column="1"
+                                                      ItemsSource="{Binding LightbarModeOptions}"
+                                                      DisplayMemberPath="DisplayName"
+                                                      SelectedValuePath="ChoiceValue"
+                                                      SelectedValue="{Binding CurrentLightbarMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                                      VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,12,0,0"
+                                              IsEnabled="{Binding IsSolidLightbarMode}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Lightbar Colour" Style="{StaticResource OtherSettingLabel}"/>
+                                                <TextBlock Text="Sets the solid lightbar colour stored in the profile."
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="0,3,16,0"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1"
+                                                        Orientation="Horizontal"
+                                                        VerticalAlignment="Center">
+                                                <Border Width="34"
+                                                        Height="28"
+                                                        Background="{Binding LightbarPreviewBrush}"
+                                                        BorderBrush="{StaticResource JsmccBorderStrongBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource JsmccControlRadius}"
+                                                        Margin="0,0,8,0"/>
+                                                <TextBox Width="92"
+                                                         Text="{Binding LightbarHexColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         CharacterCasing="Upper"
+                                                         MaxLength="7"
+                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <ItemsControl ItemsSource="{Binding LightbarPresetHexColors}"
+                                                      Margin="0,10,0,0"
+                                                      IsEnabled="{Binding IsSolidLightbarMode}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Tag="{Binding}"
+                                                            ToolTip="{Binding}"
+                                                            Click="LightbarPreset_Click"
+                                                            Style="{StaticResource LightbarPresetButtonStyle}">
+                                                        <Border CornerRadius="5"
+                                                                Margin="3"
+                                                                BorderBrush="{StaticResource JsmccBorderStrongBrush}"
+                                                                BorderThickness="1">
+                                                            <Border.Background>
+                                                                <SolidColorBrush Color="{Binding}"/>
+                                                            </Border.Background>
+                                                        </Border>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
                                 </Border>
                             </StackPanel>
                         </Border>
