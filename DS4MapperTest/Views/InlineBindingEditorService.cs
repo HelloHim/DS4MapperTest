@@ -37,6 +37,11 @@ namespace DS4MapperTest.Views
             activeEditor = editor;
         }
 
+        public static void CloseAny()
+        {
+            CloseActive(null, cancel: true);
+        }
+
         public static ContentControl FindInlineHost(DependencyObject source)
         {
             DependencyObject current = source;
