@@ -1,0 +1,49 @@
+<UserControl x:Class="DS4MapperTest.Views.Shared.CalibrationModeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             mc:Ignorable="d"
+             d:DesignWidth="480" d:DesignHeight="170">
+    <GroupBox Margin="0,8,0,0">
+        <GroupBox.Header>
+            <TextBlock Text="Calibration" FontWeight="Bold" />
+        </GroupBox.Header>
+        <StackPanel Margin="4,4,4,0">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton Content="RWC Mode" GroupName="CalibrationMode"
+                             IsChecked="{Binding IsRwcMode, Mode=TwoWay}"
+                             VerticalAlignment="Center" />
+                <RadioButton Content="Counts Mode" GroupName="CalibrationMode"
+                             IsChecked="{Binding IsCountsMode, Mode=TwoWay}"
+                             VerticalAlignment="Center" Margin="16,0,0,0" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <Label Content="{Binding MasterCalibrationLabel}" Width="120" />
+                <hc:NumericUpDown Minimum="0.0" Maximum="999999.9999" Value="{Binding MasterCalibrationValue}" DecimalPlaces="4"
+                                  Increment="0.5" Width="100" Margin="8,0,0,0" VerticalAlignment="Center">
+                    <hc:NumericUpDown.Style>
+                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}" />
+                    </hc:NumericUpDown.Style>
+                </hc:NumericUpDown>
+
+                <ComboBox ItemsSource="{Binding GamePresets}" SelectedItem="{Binding SelectedPreset}"
+                          DisplayMemberPath="Name" Width="180" Margin="8,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <Label Content="In Game Sens" Width="120" />
+                <hc:NumericUpDown Minimum="0.001" Maximum="1000000.0" Value="{Binding InGameSens}" DecimalPlaces="3"
+                                  Increment="0.01" Width="100" Margin="8,0,0,0">
+                    <hc:NumericUpDown.Style>
+                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}" />
+                    </hc:NumericUpDown.Style>
+                </hc:NumericUpDown>
+            </StackPanel>
+
+            <TextBlock Text="Synced across profile" FontSize="11" Foreground="Gray" Margin="0,4,0,8" />
+        </StackPanel>
+    </GroupBox>
+</UserControl>
