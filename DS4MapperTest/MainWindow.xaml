@@ -8,10 +8,12 @@
         mc:Ignorable="d"
         Title="DS4Mapper"
         Height="720" Width="1100"
-        MinHeight="600" MinWidth="900"
+        MinHeight="600" MinWidth="680"
         Background="{DynamicResource JsmccBg0Brush}"
         Closed="Window_Closed"
-        PreviewKeyDown="Window_PreviewKeyDown">
+        Loaded="Window_Loaded"
+        PreviewKeyDown="Window_PreviewKeyDown"
+        SizeChanged="Window_SizeChanged">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
@@ -74,41 +76,57 @@
     <Grid Background="{DynamicResource JsmccBg0Brush}">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240"/>
+                <ColumnDefinition x:Name="navColumn" Width="240"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0"
+            <Border x:Name="navSidebarBorder"
+                    Grid.Column="0"
                     Background="{DynamicResource JsmccBg1Brush}"
                     BorderBrush="{DynamicResource JsmccBorderBrush}"
                     BorderThickness="0,0,1,0"
                     Padding="20,24">
-                <DockPanel LastChildFill="True">
-                    <StackPanel>
-                        <RadioButton x:Name="navGyroSensitivity"
-                                     GroupName="MainNav"
-                                     Content="Gyro &amp; Sensitivity"
-                                     Style="{StaticResource JsmccNavButtonStyle}"
-                                     IsChecked="True"/>
-                        <RadioButton x:Name="navKeybinds"
-                                     GroupName="MainNav"
-                                     Content="Keybinds"
-                                     Style="{StaticResource JsmccNavButtonStyle}"/>
-                        <RadioButton x:Name="navTrackpad"
-                                     GroupName="MainNav"
-                                     Content="Touchpad"
-                                     Style="{StaticResource JsmccNavButtonStyle}"/>
-                        <RadioButton x:Name="navSticks"
-                                     GroupName="MainNav"
-                                     Content="Sticks"
-                                     Style="{StaticResource JsmccNavButtonStyle}"/>
-                        <RadioButton x:Name="navOther"
-                                     GroupName="MainNav"
-                                     Content="Other"
-                                     Style="{StaticResource JsmccNavButtonStyle}"/>
-                    </StackPanel>
-                </DockPanel>
+                <StackPanel x:Name="navStackPanel">
+                    <RadioButton x:Name="navGyroSensitivity"
+                                 GroupName="MainNav"
+                                 Content="Gyro &amp; Sensitivity"
+                                 Style="{StaticResource JsmccNavButtonStyle}"
+                                 IsChecked="True"
+                                 Checked="NavRadio_Checked"/>
+                    <RadioButton x:Name="navKeybinds"
+                                 GroupName="MainNav"
+                                 Content="Keybinds"
+                                 Style="{StaticResource JsmccNavButtonStyle}"
+                                 Checked="NavRadio_Checked"/>
+                    <RadioButton x:Name="navTrackpad"
+                                 GroupName="MainNav"
+                                 Content="Touchpad"
+                                 Style="{StaticResource JsmccNavButtonStyle}"
+                                 Checked="NavRadio_Checked"/>
+                    <RadioButton x:Name="navSticks"
+                                 GroupName="MainNav"
+                                 Content="Sticks"
+                                 Style="{StaticResource JsmccNavButtonStyle}"
+                                 Checked="NavRadio_Checked"/>
+                    <RadioButton x:Name="navOther"
+                                 GroupName="MainNav"
+                                 Content="Other"
+                                 Style="{StaticResource JsmccNavButtonStyle}"
+                                 Checked="NavRadio_Checked"/>
+                </StackPanel>
             </Border>
+
+            <Popup x:Name="navPopup"
+                   PlacementTarget="{Binding ElementName=navHamburgerButton}"
+                   Placement="Bottom"
+                   StaysOpen="False"
+                   AllowsTransparency="True"
+                   PopupAnimation="Fade">
+                <Border x:Name="navPopupHost"
+                        Style="{StaticResource JsmccPanelBorder}"
+                        MinWidth="200"
+                        Margin="8"/>
+            </Popup>
 
             <DockPanel Grid.Column="1"
                        LastChildFill="True"
@@ -118,65 +136,86 @@
                         BorderBrush="{DynamicResource JsmccBorderBrush}"
                         BorderThickness="0,0,0,1"
                         Padding="28,13">
-                    <DockPanel LastChildFill="False">
-                        <StackPanel Orientation="Horizontal"
-                                    DockPanel.Dock="Left"
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ScrollViewer Grid.Column="0"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Disabled"
+                                      Margin="0,0,16,0"
+                                      Padding="0,0,0,4">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <Button x:Name="navHamburgerButton"
+                                        Content="&#9776;"
+                                        ToolTip="Menu"
+                                        Click="NavHamburgerButton_Click"
+                                        Style="{StaticResource JsmccOutputButtonStyle}"
+                                        MinWidth="34"
+                                        Visibility="Collapsed"
+                                        Margin="0,0,16,0"/>
+
+                                <TextBlock Text="Device"
+                                           Style="{StaticResource JsmccLabelText}"
+                                           Margin="0,0,10,0"/>
+
+                                <ComboBox x:Name="deviceComboBox"
+                                          Width="230"
+                                          DisplayMemberPath="DisplayName"
+                                          Style="{StaticResource JsmccComboBoxStyle}"
+                                          SelectionChanged="DeviceComboBox_SelectionChanged"
+                                          Margin="0,0,20,0"/>
+
+                                <TextBlock Text="Profile"
+                                           Style="{StaticResource JsmccLabelText}"
+                                           Margin="0,0,10,0"/>
+
+                                <ComboBox x:Name="profileComboBox"
+                                          Width="230"
+                                          DisplayMemberPath="Name"
+                                          Style="{StaticResource JsmccComboBoxStyle}"
+                                          SelectionChanged="ProfileComboBox_SelectionChanged"/>
+
+                                <Button Content="Manage"
+                                        Click="ManageProfilesBtn_Click"
+                                        Margin="8,0,0,0"
+                                        Style="{StaticResource JsmccButtonStyle}"/>
+
+                                <TextBlock x:Name="noDeviceHint"
+                                           Text="connect a controller to begin"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource JsmccTextMutedBrush}"
+                                           FontSize="12"
+                                           FontStyle="Italic"
+                                           Margin="14,0,0,0"
+                                           Visibility="Collapsed"/>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
                                     VerticalAlignment="Center">
-                            <TextBlock Text="Device"
-                                       Style="{StaticResource JsmccLabelText}"
-                                       Margin="0,0,10,0"/>
+                            <Border x:Name="saveStatusPill"
+                                    Visibility="Collapsed"
+                                    Style="{StaticResource SaveStatusPillSuccessStyle}">
+                                <TextBlock x:Name="saveStatusPillText"
+                                           Text="Saved &#x2713;"
+                                           Style="{StaticResource SaveStatusPillTextSuccessStyle}"/>
+                            </Border>
 
-                            <ComboBox x:Name="deviceComboBox"
-                                      Width="230"
-                                      DisplayMemberPath="DisplayName"
-                                      Style="{StaticResource JsmccComboBoxStyle}"
-                                      SelectionChanged="DeviceComboBox_SelectionChanged"
-                                      Margin="0,0,20,0"/>
+                            <Button x:Name="saveProfileButton"
+                                    Content="Save Profile"
+                                    Click="SaveProfileButton_Click"
+                                    Margin="12,0,0,0"
+                                    Style="{StaticResource JsmccPrimaryButtonStyle}"/>
 
-                            <TextBlock Text="Profile"
-                                       Style="{StaticResource JsmccLabelText}"
-                                       Margin="0,0,10,0"/>
-
-                            <ComboBox x:Name="profileComboBox"
-                                      Width="230"
-                                      DisplayMemberPath="Name"
-                                      Style="{StaticResource JsmccComboBoxStyle}"
-                                      SelectionChanged="ProfileComboBox_SelectionChanged"/>
-
-                            <Button Content="Manage"
-                                    Click="ManageProfilesBtn_Click"
-                                    Margin="8,0,0,0"
-                                    Style="{StaticResource JsmccButtonStyle}"/>
-
-                            <TextBlock x:Name="noDeviceHint"
-                                       Text="connect a controller to begin"
-                                       VerticalAlignment="Center"
-                                       Foreground="{DynamicResource JsmccTextMutedBrush}"
-                                       FontSize="12"
-                                       FontStyle="Italic"
-                                       Margin="14,0,0,0"
-                                       Visibility="Collapsed"/>
+                            <views:ThemeToggleControl Margin="12,0,0,0"
+                                                       VerticalAlignment="Center"/>
                         </StackPanel>
-
-                        <Border x:Name="saveStatusPill"
-                                DockPanel.Dock="Right"
-                                Visibility="Collapsed"
-                                Style="{StaticResource SaveStatusPillSuccessStyle}">
-                            <TextBlock x:Name="saveStatusPillText"
-                                       Text="Saved &#x2713;"
-                                       Style="{StaticResource SaveStatusPillTextSuccessStyle}"/>
-                        </Border>
-
-                        <Button x:Name="saveProfileButton"
-                                DockPanel.Dock="Right"
-                                Content="Save Profile"
-                                Click="SaveProfileButton_Click"
-                                Style="{StaticResource JsmccPrimaryButtonStyle}"/>
-
-                        <views:ThemeToggleControl DockPanel.Dock="Right"
-                                                   Margin="0,0,12,0"
-                                                   VerticalAlignment="Center"/>
-                    </DockPanel>
+                    </Grid>
                 </Border>
 
                 <Border x:Name="actionContextRow"
@@ -186,6 +225,9 @@
                         BorderThickness="0,0,0,1"
                         Padding="28,8"
                         Visibility="Collapsed">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  Padding="0,0,0,4">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Action Set"
                                    Style="{StaticResource JsmccLabelText}"
@@ -297,6 +339,7 @@
                                 MinWidth="30"
                                 Margin="4,0,0,0"/>
                     </StackPanel>
+                    </ScrollViewer>
                 </Border>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto"

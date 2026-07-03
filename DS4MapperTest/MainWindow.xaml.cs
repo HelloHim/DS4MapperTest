@@ -46,6 +46,9 @@ namespace DS4MapperTest
         private DispatcherTimer saveStatusHideTimer;
         private static readonly Logger saveProfileLogger = LogManager.GetCurrentClassLogger();
 
+        private const double NavCompactWidthThreshold = 820;
+        private bool isNavCompact;
+
         private class ProfileListEntry
         {
             public ProfileEntity Entity { get; }
@@ -80,6 +83,51 @@ namespace DS4MapperTest
             controlListVM.ControllerList.CollectionChanged += ControllerList_CollectionChanged;
             deviceComboBox.ItemsSource = controlListVM.ControllerList;
             noDeviceHint.Visibility = Visibility.Visible;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetNavCompactMode(ActualWidth < NavCompactWidthThreshold);
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            SetNavCompactMode(ActualWidth < NavCompactWidthThreshold);
+        }
+
+        private void SetNavCompactMode(bool compact)
+        {
+            if (compact == isNavCompact) return;
+            isNavCompact = compact;
+
+            if (compact)
+            {
+                navPopup.IsOpen = false;
+                navSidebarBorder.Child = null;
+                navPopupHost.Child = navStackPanel;
+                navSidebarBorder.Visibility = Visibility.Collapsed;
+                navColumn.Width = new GridLength(0);
+                navHamburgerButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                navPopup.IsOpen = false;
+                navPopupHost.Child = null;
+                navSidebarBorder.Child = navStackPanel;
+                navSidebarBorder.Visibility = Visibility.Visible;
+                navColumn.Width = new GridLength(240);
+                navHamburgerButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void NavHamburgerButton_Click(object sender, RoutedEventArgs e)
+        {
+            navPopup.IsOpen = !navPopup.IsOpen;
+        }
+
+        private void NavRadio_Checked(object sender, RoutedEventArgs e)
+        {
+            navPopup.IsOpen = false;
         }
 
         public async void StartCheckProcess()
