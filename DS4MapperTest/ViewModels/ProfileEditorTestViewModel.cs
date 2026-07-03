@@ -431,14 +431,45 @@ namespace DS4MapperTest.ViewModels
 
         public bool IsSolidLightbarMode => tempProfile.LightbarSettings.Mode == LightbarMode.SolidColor;
 
-        public List<string> LightbarPresetHexColors { get; } = new List<string>()
+        public class LightbarPresetColor
         {
-            "#FF0000",
-            "#00D084",
-            "#3A86FF",
-            "#FFB703",
-            "#C77DFF",
-            "#FFFFFF",
+            public string HexColor { get; }
+            public SolidColorBrush Brush { get; }
+
+            public LightbarPresetColor(string hexColor)
+            {
+                HexColor = hexColor;
+                if (TryParseHexColor(hexColor, out byte red, out byte green, out byte blue))
+                {
+                    Brush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(red, green, blue));
+                }
+                else
+                {
+                    Brush = new SolidColorBrush(System.Windows.Media.Colors.Transparent);
+                }
+            }
+        }
+
+        public List<LightbarPresetColor> LightbarPresetColors { get; } = new List<LightbarPresetColor>()
+        {
+            new LightbarPresetColor("#FF0000"),
+            new LightbarPresetColor("#FF8000"),
+            new LightbarPresetColor("#FFFF00"),
+            new LightbarPresetColor("#80FF00"),
+            new LightbarPresetColor("#00FF00"),
+            new LightbarPresetColor("#00FF80"),
+            new LightbarPresetColor("#00FFFF"),
+            new LightbarPresetColor("#0080FF"),
+            new LightbarPresetColor("#0000FF"),
+            new LightbarPresetColor("#8000FF"),
+            new LightbarPresetColor("#FF00FF"),
+            new LightbarPresetColor("#FF0080"),
+            new LightbarPresetColor("#FFFFFF"),
+            new LightbarPresetColor("#C0C0C0"),
+            new LightbarPresetColor("#808080"),
+            new LightbarPresetColor("#404040"),
+            new LightbarPresetColor("#000000"),
+            new LightbarPresetColor("#3A86FF"),
         };
 
         private static bool TryParseHexColor(string value, out byte red, out byte green, out byte blue)

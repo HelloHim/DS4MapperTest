@@ -37,7 +37,7 @@
             <Setter Property="Height" Value="28"/>
             <Setter Property="MinHeight" Value="28"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Margin" Value="0,0,8,3"/>
         </Style>
     </Window.Resources>
 
@@ -345,29 +345,22 @@
                                             </StackPanel>
                                         </Grid>
 
-                                        <ItemsControl ItemsSource="{Binding LightbarPresetHexColors}"
+                                        <ItemsControl ItemsSource="{Binding LightbarPresetColors}"
                                                       Margin="0,10,0,0"
                                                       IsEnabled="{Binding IsSolidLightbarMode}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal"/>
+                                                    <UniformGrid Columns="9" Rows="2"/>
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Button Tag="{Binding}"
-                                                            ToolTip="{Binding}"
+                                                    <Button Tag="{Binding HexColor}"
+                                                            ToolTip="{Binding HexColor}"
+                                                            Background="{Binding Brush}"
+                                                            BorderBrush="{StaticResource JsmccBorderStrongBrush}"
                                                             Click="LightbarPreset_Click"
-                                                            Style="{StaticResource LightbarPresetButtonStyle}">
-                                                        <Border CornerRadius="5"
-                                                                Margin="3"
-                                                                BorderBrush="{StaticResource JsmccBorderStrongBrush}"
-                                                                BorderThickness="1">
-                                                            <Border.Background>
-                                                                <SolidColorBrush Color="{Binding}"/>
-                                                            </Border.Background>
-                                                        </Border>
-                                                    </Button>
+                                                            Style="{StaticResource LightbarPresetButtonStyle}"/>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
