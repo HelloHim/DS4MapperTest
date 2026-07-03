@@ -9,12 +9,15 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using HidLibrary;
 using DS4MapperTest.Views;
 using DS4MapperTest.ViewModels;
+using NLog;
 
 namespace DS4MapperTest
 {
@@ -35,6 +38,10 @@ namespace DS4MapperTest
         private bool inHotPlug;
         private int hotplugCounter;
         private readonly ReaderWriterLockSlim hotplugCounterLock = new ReaderWriterLockSlim();
+
+        private bool isSavingProfile;
+        private DispatcherTimer saveStatusHideTimer;
+        private static readonly Logger saveProfileLogger = LogManager.GetCurrentClassLogger();
 
         private class ProfileListEntry
         {
@@ -441,12 +448,91 @@ namespace DS4MapperTest
 
         private async void SaveProfileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (editorTestVM == null) return;
+            if (editorTestVM == null || isSavingProfile) return;
 
+            isSavingProfile = true;
+            saveStatusHideTimer?.Stop();
+            HideSaveStatusPill(animate: false);
+
+            ProfileEditorTestViewModel activeVM = editorTestVM;
+            saveProfileButton.Content = "Saving...";
+            saveProfileButton.IsEnabled = false;
             IsEnabled = false;
-            editorTestVM.TestSave(editorTestVM.ProfileEnt, editorTestVM.DeviceMapper.ActionProfile);
-            await Task.Run(() => editorTestVM.ActionResetEvent.Wait());
+
+            Exception saveException = null;
+            try
+            {
+                await Task.Run(() => activeVM.TestSave(activeVM.ProfileEnt, activeVM.DeviceMapper.ActionProfile));
+            }
+            catch (Exception ex)
+            {
+                saveException = ex;
+            }
+
             IsEnabled = true;
+            saveProfileButton.IsEnabled = true;
+            isSavingProfile = false;
+
+            if (saveException == null)
+            {
+                saveProfileButton.Content = "Saved ✓";
+                ShowSaveStatusPill(success: true);
+                StartSaveStatusHideTimer(TimeSpan.FromSeconds(2.5), revertButton: true);
+            }
+            else
+            {
+                saveProfileLogger.Error(saveException, "Failed to save profile");
+                saveProfileButton.Content = "Save Profile";
+                ShowSaveStatusPill(success: false);
+                StartSaveStatusHideTimer(TimeSpan.FromSeconds(6), revertButton: false);
+            }
+        }
+
+        private void StartSaveStatusHideTimer(TimeSpan delay, bool revertButton)
+        {
+            saveStatusHideTimer = new DispatcherTimer { Interval = delay };
+            saveStatusHideTimer.Tick += (s, e) =>
+            {
+                saveStatusHideTimer.Stop();
+                HideSaveStatusPill(animate: true);
+                if (revertButton)
+                {
+                    saveProfileButton.Content = "Save Profile";
+                }
+            };
+            saveStatusHideTimer.Start();
+        }
+
+        private void ShowSaveStatusPill(bool success)
+        {
+            saveStatusPill.Style = (Style)FindResource(success ? "SaveStatusPillSuccessStyle" : "SaveStatusPillErrorStyle");
+            saveStatusPillText.Style = (Style)FindResource(success ? "SaveStatusPillTextSuccessStyle" : "SaveStatusPillTextErrorStyle");
+            saveStatusPillText.Text = success ? "Saved ✓" : "Save failed";
+            saveStatusPill.ToolTip = success
+                ? $"Saved at {DateTime.Now:HH:mm:ss}"
+                : "Check the log for details.";
+
+            saveStatusPill.Visibility = Visibility.Visible;
+            saveStatusPill.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(150)));
+        }
+
+        private void HideSaveStatusPill(bool animate)
+        {
+            if (saveStatusPill.Visibility != Visibility.Visible) return;
+
+            if (!animate)
+            {
+                saveStatusPill.BeginAnimation(OpacityProperty, null);
+                saveStatusPill.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            DoubleAnimation fadeOut = new DoubleAnimation(saveStatusPill.Opacity, 0, TimeSpan.FromMilliseconds(300));
+            fadeOut.Completed += (s, e) =>
+            {
+                saveStatusPill.Visibility = Visibility.Collapsed;
+            };
+            saveStatusPill.BeginAnimation(OpacityProperty, fadeOut);
         }
 
         private void LightbarPreset_Click(object sender, RoutedEventArgs e)
