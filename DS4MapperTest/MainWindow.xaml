@@ -122,6 +122,17 @@
                         <StackPanel Orientation="Horizontal"
                                     DockPanel.Dock="Left"
                                     VerticalAlignment="Center">
+                            <TextBlock Text="Device"
+                                       Style="{StaticResource JsmccLabelText}"
+                                       Margin="0,0,10,0"/>
+
+                            <ComboBox x:Name="deviceComboBox"
+                                      Width="230"
+                                      DisplayMemberPath="DisplayName"
+                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                      SelectionChanged="DeviceComboBox_SelectionChanged"
+                                      Margin="0,0,20,0"/>
+
                             <TextBlock Text="Profile"
                                        Style="{StaticResource JsmccLabelText}"
                                        Margin="0,0,10,0"/>
@@ -166,6 +177,126 @@
                                                    Margin="0,0,12,0"
                                                    VerticalAlignment="Center"/>
                     </DockPanel>
+                </Border>
+
+                <Border x:Name="actionContextRow"
+                        DockPanel.Dock="Top"
+                        Background="{DynamicResource JsmccBg1Brush}"
+                        BorderBrush="{DynamicResource JsmccBorderBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="28,8"
+                        Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Action Set"
+                                   Style="{StaticResource JsmccLabelText}"
+                                   Margin="0,0,8,0"/>
+
+                        <ComboBox x:Name="actionSetComboBox"
+                                  Width="140"
+                                  DisplayMemberPath="DisplayName"
+                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                  SelectionChanged="ActionSetComboBox_SelectionChanged"/>
+
+                        <Button x:Name="addSetButton"
+                                Content="+"
+                                ToolTip="Add Action Set"
+                                Click="AddSetBtn_Click"
+                                Style="{StaticResource JsmccOutputButtonStyle}"
+                                MinWidth="30"
+                                Margin="6,0,0,0"/>
+                        <Button x:Name="renameSetButton"
+                                Content="Rename"
+                                ToolTip="Rename Action Set"
+                                Click="RenameSetBtn_Click"
+                                Style="{StaticResource JsmccOutputButtonStyle}"
+                                Margin="6,0,0,0"/>
+                        <Button x:Name="removeSetButton"
+                                Content="Remove"
+                                ToolTip="Remove Action Set"
+                                Click="RemoveSetBtn_Click"
+                                Style="{StaticResource JsmccDangerButtonStyle}"
+                                Padding="10,6"
+                                MinHeight="30"
+                                FontSize="12"
+                                Margin="6,0,0,0"/>
+
+                        <TextBox x:Name="renameSetTextBox"
+                                 Width="140"
+                                 Visibility="Collapsed"
+                                 Style="{StaticResource JsmccTextBoxStyle}"
+                                 KeyDown="RenameSetTextBox_KeyDown"/>
+                        <Button x:Name="confirmRenameSetButton"
+                                Content="&#x2713;"
+                                ToolTip="Save name"
+                                Visibility="Collapsed"
+                                Click="ConfirmRenameSetBtn_Click"
+                                Style="{StaticResource JsmccOutputButtonStyle}"
+                                MinWidth="30"
+                                Margin="6,0,0,0"/>
+                        <Button x:Name="cancelRenameSetButton"
+                                Content="&#x2715;"
+                                ToolTip="Cancel"
+                                Visibility="Collapsed"
+                                Click="CancelRenameSetBtn_Click"
+                                Style="{StaticResource JsmccOutputButtonStyle}"
+                                MinWidth="30"
+                                Margin="4,0,0,0"/>
+
+                        <TextBlock Text="Layer"
+                                   Style="{StaticResource JsmccLabelText}"
+                                   Margin="28,0,8,0"/>
+
+                        <ComboBox x:Name="actionLayerComboBox"
+                                  Width="140"
+                                  DisplayMemberPath="DisplayName"
+                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                  SelectionChanged="ActionLayerComboBox_SelectionChanged"/>
+
+                        <Button x:Name="addLayerButton"
+                                Content="+"
+                                ToolTip="Add Action Layer"
+                                Click="AddLayerBtn_Click"
+                                Style="{StaticResource JsmccOutputButtonStyle}"
+                                MinWidth="30"
+                                Margin="6,0,0,0"/>
+                        <Button x:Name="renameLayerButton"
+                                Content="Rename"
+                                ToolTip="Rename Action Layer"
+                                Click="RenameLayerBtn_Click"
+                                Style="{StaticResource JsmccOutputButtonStyle}"
+                                Margin="6,0,0,0"/>
+                        <Button x:Name="removeLayerButton"
+                                Content="Remove"
+                                ToolTip="Remove Action Layer"
+                                Click="RemoveLayerBtn_Click"
+                                Style="{StaticResource JsmccDangerButtonStyle}"
+                                Padding="10,6"
+                                MinHeight="30"
+                                FontSize="12"
+                                Margin="6,0,0,0"/>
+
+                        <TextBox x:Name="renameLayerTextBox"
+                                 Width="140"
+                                 Visibility="Collapsed"
+                                 Style="{StaticResource JsmccTextBoxStyle}"
+                                 KeyDown="RenameLayerTextBox_KeyDown"/>
+                        <Button x:Name="confirmRenameLayerButton"
+                                Content="&#x2713;"
+                                ToolTip="Save name"
+                                Visibility="Collapsed"
+                                Click="ConfirmRenameLayerBtn_Click"
+                                Style="{StaticResource JsmccOutputButtonStyle}"
+                                MinWidth="30"
+                                Margin="6,0,0,0"/>
+                        <Button x:Name="cancelRenameLayerButton"
+                                Content="&#x2715;"
+                                ToolTip="Cancel"
+                                Visibility="Collapsed"
+                                Click="CancelRenameLayerBtn_Click"
+                                Style="{StaticResource JsmccOutputButtonStyle}"
+                                MinWidth="30"
+                                Margin="4,0,0,0"/>
+                    </StackPanel>
                 </Border>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto"

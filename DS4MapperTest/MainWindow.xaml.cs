@@ -29,6 +29,9 @@ namespace DS4MapperTest
 
         private DeviceListItem currentDeviceItem;
         private bool suppressCombo;
+        private bool suppressDeviceCombo;
+        private bool suppressActionSetCombo;
+        private bool suppressActionLayerCombo;
         private ProfileListEntry selectedListEntry;
 
         private IntPtr regHandle = new IntPtr();
@@ -75,6 +78,7 @@ namespace DS4MapperTest
             controlListVM = new ControllerListViewModel(manager);
             controlListVM.ReadProfileFailure += ControlListVM_ReadProfileFailure;
             controlListVM.ControllerList.CollectionChanged += ControllerList_CollectionChanged;
+            deviceComboBox.ItemsSource = controlListVM.ControllerList;
             noDeviceHint.Visibility = Visibility.Visible;
         }
 
@@ -94,23 +98,71 @@ namespace DS4MapperTest
                 DeviceListItem item = e.NewItems[0] as DeviceListItem;
                 Dispatcher.BeginInvoke((Action)(() => LoadProfileForDevice(item)));
             }
+            else if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                DeviceListItem removed = e.OldItems?[0] as DeviceListItem;
+                if (removed != null && removed == currentDeviceItem)
+                {
+                    Dispatcher.BeginInvoke((Action)(() => HandleCurrentDeviceRemoved()));
+                }
+            }
         }
 
-        private void LoadProfileForDevice(DeviceListItem item)
+        private void HandleCurrentDeviceRemoved()
         {
-            if (item == null || item.ProfileIndex < 0) return;
+            InlineBindingEditorService.CloseAny();
+            ExitRenameSetMode();
+            ExitRenameLayerMode();
+
+            editorTestVM?.UnregisterEvents();
+            editorTestVM = null;
+            currentDeviceItem = null;
+            DataContext = null;
+
+            suppressDeviceCombo = true;
+            deviceComboBox.SelectedItem = null;
+            suppressDeviceCombo = false;
+
+            bool loaded = false;
+            foreach (DeviceListItem candidate in controlListVM.ControllerList)
+            {
+                if (LoadProfileForDevice(candidate))
+                {
+                    loaded = true;
+                    break;
+                }
+            }
+
+            if (!loaded)
+            {
+                noDeviceHint.Visibility = Visibility.Visible;
+                actionContextRow.Visibility = Visibility.Collapsed;
+                profileComboBox.ItemsSource = null;
+                profileListBox.ItemsSource = null;
+                actionSetComboBox.ItemsSource = null;
+                actionLayerComboBox.ItemsSource = null;
+            }
+        }
+
+        private bool LoadProfileForDevice(DeviceListItem item)
+        {
+            if (item == null || item.ProfileIndex < 0) return false;
 
             BackendManager manager = (App.Current as App).Manager;
-            if (!manager.MapperDict.ContainsKey(item.Device.Index)) return;
+            if (!manager.MapperDict.ContainsKey(item.Device.Index)) return false;
 
             Mapper mapper = manager.MapperDict[item.Device.Index];
             InputDeviceType devType = mapper.DeviceType;
-            if (!manager.DeviceProfileListDict.ContainsKey(devType)) return;
+            if (!manager.DeviceProfileListDict.ContainsKey(devType)) return false;
 
             var profileList = manager.DeviceProfileListDict[devType].ProfileListCol;
-            if (item.ProfileIndex >= profileList.Count) return;
+            if (item.ProfileIndex >= profileList.Count) return false;
 
             ProfileEntity profileEnt = profileList[item.ProfileIndex];
+
+            InlineBindingEditorService.CloseAny();
+            ExitRenameSetMode();
+            ExitRenameLayerMode();
 
             editorTestVM?.UnregisterEvents();
             editorTestVM = new ProfileEditorTestViewModel(mapper, profileEnt, mapper.ActionProfile);
@@ -119,9 +171,52 @@ namespace DS4MapperTest
 
             currentDeviceItem = item;
             noDeviceHint.Visibility = Visibility.Collapsed;
+            actionContextRow.Visibility = Visibility.Visible;
 
+            RefreshDeviceCombo();
             RefreshProfileCombo();
             RefreshProfileList();
+            RefreshActionSetCombo();
+            RefreshActionLayerCombo();
+
+            return true;
+        }
+
+        private void RefreshDeviceCombo()
+        {
+            if (currentDeviceItem == null) return;
+
+            suppressDeviceCombo = true;
+            deviceComboBox.SelectedItem = currentDeviceItem;
+            suppressDeviceCombo = false;
+        }
+
+        private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (suppressDeviceCombo) return;
+
+            DeviceListItem newItem = deviceComboBox.SelectedItem as DeviceListItem;
+            if (newItem == null || newItem == currentDeviceItem) return;
+
+            if (editorTestVM?.CurrentProfile != null && editorTestVM.CurrentProfile.Dirty)
+            {
+                var confirm = MessageBox.Show(
+                    "The current profile has unsaved changes. Switch devices anyway?",
+                    "Unsaved Changes",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (confirm != MessageBoxResult.Yes)
+                {
+                    RefreshDeviceCombo();
+                    return;
+                }
+            }
+
+            if (!LoadProfileForDevice(newItem))
+            {
+                RefreshDeviceCombo();
+            }
         }
 
         private void RefreshProfileCombo()
@@ -133,6 +228,282 @@ namespace DS4MapperTest
             profileComboBox.ItemsSource = currentDeviceItem.DevProfileList;
             profileComboBox.SelectedIndex = currentDeviceItem.ProfileIndex;
             suppressCombo = false;
+        }
+
+        private void RefreshActionSetCombo()
+        {
+            if (editorTestVM == null)
+            {
+                actionSetComboBox.ItemsSource = null;
+                return;
+            }
+
+            suppressActionSetCombo = true;
+            actionSetComboBox.ItemsSource = editorTestVM.ActionSetItems;
+            actionSetComboBox.SelectedIndex = editorTestVM.SelectedActionSetIndex;
+            suppressActionSetCombo = false;
+
+            removeSetButton.IsEnabled = editorTestVM.SelectedActionSetIndex > 0;
+            removeSetButton.ToolTip = removeSetButton.IsEnabled
+                ? "Remove Action Set"
+                : "The default Action Set cannot be removed.";
+        }
+
+        private void RefreshActionLayerCombo()
+        {
+            if (editorTestVM == null)
+            {
+                actionLayerComboBox.ItemsSource = null;
+                return;
+            }
+
+            suppressActionLayerCombo = true;
+            actionLayerComboBox.ItemsSource = editorTestVM.LayerItems;
+            actionLayerComboBox.SelectedIndex = editorTestVM.SelectedActionLayerIndex;
+            suppressActionLayerCombo = false;
+
+            removeLayerButton.IsEnabled = editorTestVM.SelectedActionLayerIndex > 0;
+            removeLayerButton.ToolTip = removeLayerButton.IsEnabled
+                ? "Remove Action Layer"
+                : "The default Action Layer cannot be removed.";
+        }
+
+        private async void ActionSetComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (suppressActionSetCombo || editorTestVM == null) return;
+
+            int newIndex = actionSetComboBox.SelectedIndex;
+            if (newIndex < 0 || newIndex == editorTestVM.SelectedActionSetIndex) return;
+
+            await SwitchActionSetAsync(newIndex);
+        }
+
+        private async Task SwitchActionSetAsync(int newIndex)
+        {
+            IsEnabled = false;
+            InlineBindingEditorService.CloseAny();
+            ExitRenameSetMode();
+            ExitRenameLayerMode();
+
+            editorTestVM.SwitchActionSets(newIndex);
+
+            await Task.Run(() => editorTestVM.ActionResetEvent.Wait());
+
+            DataContext = null;
+            editorTestVM.RefreshSetBindings();
+            DataContext = editorTestVM;
+
+            RefreshActionSetCombo();
+            RefreshActionLayerCombo();
+
+            IsEnabled = true;
+        }
+
+        private async void ActionLayerComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (suppressActionLayerCombo || editorTestVM == null) return;
+
+            int newIndex = actionLayerComboBox.SelectedIndex;
+            if (newIndex < 0 || newIndex == editorTestVM.SelectedActionLayerIndex) return;
+
+            await SwitchActionLayerAsync(newIndex);
+        }
+
+        private async Task SwitchActionLayerAsync(int newIndex)
+        {
+            IsEnabled = false;
+            InlineBindingEditorService.CloseAny();
+            ExitRenameLayerMode();
+
+            editorTestVM.SwitchActionLayer(newIndex);
+
+            await Task.Run(() => editorTestVM.ActionResetEvent.Wait());
+
+            DataContext = null;
+            editorTestVM.RefreshLayerBindings();
+            DataContext = editorTestVM;
+
+            RefreshActionLayerCombo();
+
+            IsEnabled = true;
+        }
+
+        private void AddSetBtn_Click(object sender, RoutedEventArgs e)
+        {
+            editorTestVM?.AddSet();
+        }
+
+        private async void RemoveSetBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (editorTestVM == null || editorTestVM.SelectedActionSetIndex <= 0) return;
+
+            string setName = editorTestVM.ActionSetItems[editorTestVM.SelectedActionSetIndex].DisplayName;
+            var confirm = MessageBox.Show(
+                $"Remove action set \"{setName}\"?\n\nThis cannot be undone.",
+                "Confirm Remove",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            if (confirm != MessageBoxResult.Yes) return;
+
+            editorTestVM.RemoveSet();
+            await SwitchActionSetAsync(editorTestVM.SelectedActionSetIndex);
+        }
+
+        private void AddLayerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            editorTestVM?.AddLayer();
+        }
+
+        private async void RemoveLayerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (editorTestVM == null || editorTestVM.SelectedActionLayerIndex <= 0) return;
+
+            string layerName = editorTestVM.LayerItems[editorTestVM.SelectedActionLayerIndex].DisplayName;
+            var confirm = MessageBox.Show(
+                $"Remove action layer \"{layerName}\"?\n\nThis cannot be undone.",
+                "Confirm Remove",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            if (confirm != MessageBoxResult.Yes) return;
+
+            editorTestVM.RemoveLayer();
+            await SwitchActionLayerAsync(editorTestVM.SelectedActionLayerIndex);
+        }
+
+        private void RenameSetBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (editorTestVM == null) return;
+
+            renameSetTextBox.Text = editorTestVM.CurrentSetName;
+            actionSetComboBox.Visibility = Visibility.Collapsed;
+            addSetButton.Visibility = Visibility.Collapsed;
+            renameSetButton.Visibility = Visibility.Collapsed;
+            removeSetButton.Visibility = Visibility.Collapsed;
+            renameSetTextBox.Visibility = Visibility.Visible;
+            confirmRenameSetButton.Visibility = Visibility.Visible;
+            cancelRenameSetButton.Visibility = Visibility.Visible;
+            renameSetTextBox.Focus();
+            renameSetTextBox.SelectAll();
+        }
+
+        private void ConfirmRenameSetBtn_Click(object sender, RoutedEventArgs e)
+        {
+            CommitRenameSet();
+        }
+
+        private void CancelRenameSetBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ExitRenameSetMode();
+        }
+
+        private void RenameSetTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                CommitRenameSet();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                ExitRenameSetMode();
+                e.Handled = true;
+            }
+        }
+
+        private void CommitRenameSet()
+        {
+            if (editorTestVM == null) return;
+
+            string newName = renameSetTextBox.Text?.Trim();
+            if (string.IsNullOrEmpty(newName))
+            {
+                MessageBox.Show("Action set name cannot be empty.", "Rename",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            editorTestVM.CurrentSetName = newName;
+            RefreshActionSetCombo();
+            ExitRenameSetMode();
+        }
+
+        private void ExitRenameSetMode()
+        {
+            renameSetTextBox.Visibility = Visibility.Collapsed;
+            confirmRenameSetButton.Visibility = Visibility.Collapsed;
+            cancelRenameSetButton.Visibility = Visibility.Collapsed;
+            actionSetComboBox.Visibility = Visibility.Visible;
+            addSetButton.Visibility = Visibility.Visible;
+            renameSetButton.Visibility = Visibility.Visible;
+            removeSetButton.Visibility = Visibility.Visible;
+        }
+
+        private void RenameLayerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (editorTestVM == null) return;
+
+            renameLayerTextBox.Text = editorTestVM.CurrentLayerName;
+            actionLayerComboBox.Visibility = Visibility.Collapsed;
+            addLayerButton.Visibility = Visibility.Collapsed;
+            renameLayerButton.Visibility = Visibility.Collapsed;
+            removeLayerButton.Visibility = Visibility.Collapsed;
+            renameLayerTextBox.Visibility = Visibility.Visible;
+            confirmRenameLayerButton.Visibility = Visibility.Visible;
+            cancelRenameLayerButton.Visibility = Visibility.Visible;
+            renameLayerTextBox.Focus();
+            renameLayerTextBox.SelectAll();
+        }
+
+        private void ConfirmRenameLayerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            CommitRenameLayer();
+        }
+
+        private void CancelRenameLayerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ExitRenameLayerMode();
+        }
+
+        private void RenameLayerTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                CommitRenameLayer();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                ExitRenameLayerMode();
+                e.Handled = true;
+            }
+        }
+
+        private void CommitRenameLayer()
+        {
+            if (editorTestVM == null) return;
+
+            string newName = renameLayerTextBox.Text?.Trim();
+            if (string.IsNullOrEmpty(newName))
+            {
+                MessageBox.Show("Action layer name cannot be empty.", "Rename",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            editorTestVM.CurrentLayerName = newName;
+            RefreshActionLayerCombo();
+            ExitRenameLayerMode();
+        }
+
+        private void ExitRenameLayerMode()
+        {
+            renameLayerTextBox.Visibility = Visibility.Collapsed;
+            confirmRenameLayerButton.Visibility = Visibility.Collapsed;
+            cancelRenameLayerButton.Visibility = Visibility.Collapsed;
+            actionLayerComboBox.Visibility = Visibility.Visible;
+            addLayerButton.Visibility = Visibility.Visible;
+            renameLayerButton.Visibility = Visibility.Visible;
+            removeLayerButton.Visibility = Visibility.Visible;
         }
 
         private async void ProfileComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
