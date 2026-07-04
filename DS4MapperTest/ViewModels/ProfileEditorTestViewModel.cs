@@ -424,6 +424,9 @@ namespace DS4MapperTest.ViewModels
         public SolidColorBrush LightbarPreviewBrush => new SolidColorBrush(LightbarColor);
 
         public bool IsSolidLightbarMode => tempProfile.LightbarSettings.Mode == LightbarMode.SolidColor;
+        public bool IsRainbowLightbarMode => tempProfile.LightbarSettings.Mode == LightbarMode.Rainbow;
+        public bool IsPulseLightbarMode => tempProfile.LightbarSettings.Mode == LightbarMode.Pulse;
+        public bool IsBatteryLightbarMode => tempProfile.LightbarSettings.Mode == LightbarMode.Battery;
 
         public class LightbarPresetColor
         {
@@ -488,6 +491,24 @@ namespace DS4MapperTest.ViewModels
                 tempProfile.LightbarSettings.PulseColor.blue);
         }
 
+        public string LightbarPulseHexColor
+        {
+            get => $"#{tempProfile.LightbarSettings.PulseColor.red:X2}{tempProfile.LightbarSettings.PulseColor.green:X2}{tempProfile.LightbarSettings.PulseColor.blue:X2}";
+            set
+            {
+                if (!TryParseHexColor(value, out byte red, out byte green, out byte blue)) return;
+                if (tempProfile.LightbarSettings.PulseColor.red == red &&
+                    tempProfile.LightbarSettings.PulseColor.green == green &&
+                    tempProfile.LightbarSettings.PulseColor.blue == blue)
+                {
+                    return;
+                }
+
+                UpdateSelectedPulseColor(red, green, blue);
+            }
+        }
+
+        public SolidColorBrush LightbarPulsePreviewBrush => new SolidColorBrush(LightbarPulseColor);
 
         public System.Windows.Media.Color LightbarBatteryColor
         {
@@ -496,6 +517,25 @@ namespace DS4MapperTest.ViewModels
                 tempProfile.LightbarSettings.BatteryFullColor.green,
                 tempProfile.LightbarSettings.BatteryFullColor.blue);
         }
+
+        public string LightbarBatteryHexColor
+        {
+            get => $"#{tempProfile.LightbarSettings.BatteryFullColor.red:X2}{tempProfile.LightbarSettings.BatteryFullColor.green:X2}{tempProfile.LightbarSettings.BatteryFullColor.blue:X2}";
+            set
+            {
+                if (!TryParseHexColor(value, out byte red, out byte green, out byte blue)) return;
+                if (tempProfile.LightbarSettings.BatteryFullColor.red == red &&
+                    tempProfile.LightbarSettings.BatteryFullColor.green == green &&
+                    tempProfile.LightbarSettings.BatteryFullColor.blue == blue)
+                {
+                    return;
+                }
+
+                UpdateSelectedBatteryColor(red, green, blue);
+            }
+        }
+
+        public SolidColorBrush LightbarBatteryPreviewBrush => new SolidColorBrush(LightbarBatteryColor);
 
         private List<EnumChoiceSelection<LightbarMode>> lightbarModeChoices = new List<EnumChoiceSelection<LightbarMode>>()
         {
@@ -518,6 +558,9 @@ namespace DS4MapperTest.ViewModels
                 RaisePropertyChanged(nameof(CurrentLightbarMode));
                 RaisePropertyChanged(nameof(LightbarOptionsTabIndex));
                 RaisePropertyChanged(nameof(IsSolidLightbarMode));
+                RaisePropertyChanged(nameof(IsRainbowLightbarMode));
+                RaisePropertyChanged(nameof(IsPulseLightbarMode));
+                RaisePropertyChanged(nameof(IsBatteryLightbarMode));
             }
         }
         public event EventHandler CurrentLightbarModeChanged;
@@ -533,7 +576,10 @@ namespace DS4MapperTest.ViewModels
             get => tempProfile.LightbarSettings.rainbowSecondsCycle;
             set
             {
-                tempProfile.LightbarSettings.rainbowSecondsCycle = value;
+                int newValue = Math.Clamp(value, 0, 100);
+                if (tempProfile.LightbarSettings.rainbowSecondsCycle == newValue) return;
+                tempProfile.LightbarSettings.rainbowSecondsCycle = newValue;
+                RaisePropertyChanged(nameof(RainbowSecondsCycle));
             }
         }
 
@@ -572,6 +618,9 @@ namespace DS4MapperTest.ViewModels
             tempProfile.LightbarSettings.PulseColor.red = red;
             tempProfile.LightbarSettings.PulseColor.green = green;
             tempProfile.LightbarSettings.PulseColor.blue = blue;
+            RaisePropertyChanged(nameof(LightbarPulseColor));
+            RaisePropertyChanged(nameof(LightbarPulseHexColor));
+            RaisePropertyChanged(nameof(LightbarPulsePreviewBrush));
         }
 
         public void UpdateSelectedBatteryColor(byte red, byte green, byte blue)
@@ -579,6 +628,9 @@ namespace DS4MapperTest.ViewModels
             tempProfile.LightbarSettings.BatteryFullColor.red = red;
             tempProfile.LightbarSettings.BatteryFullColor.green = green;
             tempProfile.LightbarSettings.BatteryFullColor.blue = blue;
+            RaisePropertyChanged(nameof(LightbarBatteryColor));
+            RaisePropertyChanged(nameof(LightbarBatteryHexColor));
+            RaisePropertyChanged(nameof(LightbarBatteryPreviewBrush));
         }
 
         public void Test()
