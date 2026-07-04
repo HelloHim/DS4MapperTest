@@ -1398,6 +1398,159 @@ namespace DS4MapperTest.ViewModels
             return newAction;
         }
 
+        internal void SetDPadTopLevelMode(DPadTopLevelMode mode)
+        {
+            DPadMapAction oldAction = GetCurrentDPadMapAction();
+            if (oldAction == null) return;
+
+            if ((mode == DPadTopLevelMode.ActionPad && oldAction is DPadAction) ||
+                (mode == DPadTopLevelMode.Translate && oldAction is DPadTranslate) ||
+                (mode == DPadTopLevelMode.NoAction && oldAction is DPadNoAction))
+            {
+                return;
+            }
+
+            DPadMapAction newAction = mode switch
+            {
+                DPadTopLevelMode.ActionPad => new DPadAction(),
+                DPadTopLevelMode.Translate => new DPadTranslate(),
+                DPadTopLevelMode.NoAction => new DPadNoAction(),
+                _ => null,
+            };
+            if (newAction == null) return;
+
+            ReplaceDPadAction(oldAction, newAction);
+            PopulateDPadKeybinds();
+        }
+
+        internal void SetDPadTranslateName(string name)
+        {
+            DPadTranslate action = EnsureEditableDPadTranslateAction();
+            if (action == null || action.Name == name) return;
+
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                action.Name = name;
+                if (!action.ChangedProperties.Contains(DPadTranslate.PropertyKeyStrings.NAME))
+                {
+                    action.ChangedProperties.Add(DPadTranslate.PropertyKeyStrings.NAME);
+                }
+                action.RaiseNotifyPropertyChange(mapper, DPadTranslate.PropertyKeyStrings.NAME);
+            });
+        }
+
+        internal void SetDPadTranslateOutputDPad(DPadActionCodes code)
+        {
+            DPadTranslate action = EnsureEditableDPadTranslateAction();
+            if (action == null || action.OutputAction.DpadCode == code) return;
+
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                action.Release(mapper, ignoreReleaseActions: true);
+                action.OutputAction.DpadCode = code;
+                if (!action.ChangedProperties.Contains(DPadTranslate.PropertyKeyStrings.OUTPUT_PAD))
+                {
+                    action.ChangedProperties.Add(DPadTranslate.PropertyKeyStrings.OUTPUT_PAD);
+                }
+                action.RaiseNotifyPropertyChange(mapper, DPadTranslate.PropertyKeyStrings.OUTPUT_PAD);
+            });
+        }
+
+        private DPadTranslate EnsureEditableDPadTranslateAction()
+        {
+            DPadBindingItemsTest bindingItem = dpadBindings.Count > 0 ? dpadBindings[0] : null;
+            if (bindingItem?.MappedAction is not DPadTranslate oldAction) return null;
+
+            ActionSet editSet = actionSetItems[selectedActionSetIndex].Set;
+            ActionLayer editLayer = layerItems[selectedActionLayerIndex].Layer;
+            if (editLayer.LayerActions.Contains(oldAction))
+            {
+                return oldAction;
+            }
+
+            DPadTranslate newAction = new DPadTranslate();
+            if (editSet.UsingCompositeLayer &&
+                editSet.DefaultActionLayer.normalActionDict.TryGetValue(oldAction.MappingId, out MapAction baseAction) &&
+                baseAction is DPadTranslate baseTranslate)
+            {
+                newAction.SoftCopyFromParent(baseTranslate);
+            }
+            else
+            {
+                newAction.CopyBaseMapProps(oldAction);
+            }
+
+            newAction.Id = editLayer.FindNextAvailableId();
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                oldAction.Release(mapper, ignoreReleaseActions: true);
+                editLayer.AddDPadAction(newAction);
+
+                if (editSet.UsingCompositeLayer)
+                {
+                    editSet.RecompileCompositeLayer(mapper);
+                }
+                else
+                {
+                    editLayer.SyncActions();
+                    editSet.ClearCompositeLayerActions();
+                    editSet.PrepareCompositeLayer();
+                }
+            });
+
+            bindingItem.UpdateAction(newAction);
+            return newAction;
+        }
+
+        private void ReplaceDPadAction(DPadMapAction oldAction, DPadMapAction newAction)
+        {
+            if (oldAction == null || newAction == null) return;
+
+            ActionSet editSet = actionSetItems[selectedActionSetIndex].Set;
+            ActionLayer editLayer = layerItems[selectedActionLayerIndex].Layer;
+
+            newAction.CopyBaseMapProps(oldAction);
+            newAction.Id = oldAction.Id == MapAction.DEFAULT_UNBOUND_ID
+                ? editLayer.FindNextAvailableId()
+                : oldAction.Id;
+
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                oldAction.Release(mapper, ignoreReleaseActions: true);
+                if (editLayer.LayerActions.Contains(oldAction) &&
+                    oldAction.Id != MapAction.DEFAULT_UNBOUND_ID)
+                {
+                    editLayer.ReplaceDPadAction(oldAction, newAction);
+                }
+                else
+                {
+                    editLayer.AddDPadAction(newAction);
+                }
+
+                if (editSet.UsingCompositeLayer)
+                {
+                    MapAction baseLayerAction = editSet.DefaultActionLayer.normalActionDict[oldAction.MappingId];
+                    if (MapAction.IsSameType(baseLayerAction, newAction))
+                    {
+                        newAction.SoftCopyFromParent(baseLayerAction as DPadMapAction);
+                    }
+
+                    editSet.RecompileCompositeLayer(mapper);
+                }
+                else
+                {
+                    editLayer.SyncActions();
+                    editSet.ClearCompositeLayerActions();
+                    editSet.PrepareCompositeLayer();
+                }
+            });
+
+            if (dpadBindings.Count > 0)
+            {
+                dpadBindings[0].UpdateAction(newAction);
+            }
+        }
+
         internal ButtonAction EnsureEditableDPadDirectionAction(DPadDirectionKind kind)
         {
             DPadAction action = EnsureActionPadAction();
