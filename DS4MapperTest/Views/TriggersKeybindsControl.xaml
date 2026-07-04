@@ -232,6 +232,21 @@
                                                         </Border>
 
                                                         <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding SupportsTapWindow, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Tap Window" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <hc:NumericUpDown Minimum="0"
+                                                                                  Maximum="60000"
+                                                                                  DecimalPlaces="0"
+                                                                                  Increment="10"
+                                                                                  Width="108"
+                                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                                  Value="{Binding TapWindowMs, UpdateSourceTrigger=LostFocus}"
+                                                                                  ValueFormat="0 ms"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
                                                                 Visibility="{Binding SupportsDistanceOptions, Converter={StaticResource BoolToVis}}">
                                                             <StackPanel Orientation="Horizontal">
                                                                 <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
@@ -325,6 +340,14 @@
                                             </StackPanel>
                                         </Border>
                                     </WrapPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Visibility="{Binding IsNoActionMode, Converter={StaticResource BoolToVis}}">
+                                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                    <TextBlock Text="This trigger is disabled. Choose another mode to configure trigger output."
+                                               Style="{StaticResource JsmccMutedText}"
+                                               TextWrapping="Wrap"/>
                                 </Border>
                             </StackPanel>
 

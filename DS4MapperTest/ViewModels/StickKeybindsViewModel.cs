@@ -510,7 +510,10 @@ namespace DS4MapperTest.ViewModels
             {
                 FaceBindingFuncKind.Regular => new NormalPressFunc(emptyOutput),
                 FaceBindingFuncKind.Hold => CreateOutputFunc(new HoldPressFunc(), emptyOutput),
-                FaceBindingFuncKind.Double => CreateOutputFunc(new DoublePressFunc(), emptyOutput),
+                FaceBindingFuncKind.Double => CreateOutputFunc(new DoublePressFunc()
+                {
+                    DurationMs = DoublePressFunc.DEFAULT_TAP_WINDOW_MS,
+                }, emptyOutput),
                 FaceBindingFuncKind.Distance => CreateOutputFunc(new DistanceFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
@@ -562,6 +565,7 @@ namespace DS4MapperTest.ViewModels
         public bool SupportsTurbo => Func is NormalPressFunc || Func is HoldPressFunc;
         public bool SupportsFireDelay => Func is NormalPressFunc;
         public bool SupportsHoldTime => Func is HoldPressFunc;
+        public bool SupportsTapWindow => Func is DoublePressFunc;
         public bool SupportsReleaseOptions => Func is ReleaseFunc;
         public bool SupportsDistanceOptions => Func is DistanceFunc;
 
@@ -712,6 +716,26 @@ namespace DS4MapperTest.ViewModels
                     StickSideViewModel.MarkFunctionsChanged(editable);
                 });
                 OnPropertyChanged(nameof(HoldMs));
+            }
+        }
+
+        public int TapWindowMs
+        {
+            get => Func is DoublePressFunc doublePress ? doublePress.DurationMs : 0;
+            set
+            {
+                if (Func is not DoublePressFunc) return;
+
+                owner.Owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    ButtonAction editable = owner.Owner.EnsureEditableExtraButtonAction(owner.SlotKey);
+                    if (FindFunc(editable, Kind) is DoublePressFunc doublePress)
+                    {
+                        doublePress.DurationMs = value;
+                    }
+                    StickSideViewModel.MarkFunctionsChanged(editable);
+                });
+                OnPropertyChanged(nameof(TapWindowMs));
             }
         }
 

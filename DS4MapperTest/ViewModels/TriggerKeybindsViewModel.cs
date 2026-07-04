@@ -14,6 +14,7 @@ namespace DS4MapperTest.ViewModels
 {
     public enum TriggerBindingMode
     {
+        NoAction,
         Button,
         DualStage,
         TriggerTranslate,
@@ -28,6 +29,7 @@ namespace DS4MapperTest.ViewModels
         private readonly List<EnumChoiceSelection<TriggerBindingMode>> modeItems =
             new List<EnumChoiceSelection<TriggerBindingMode>>
             {
+                new EnumChoiceSelection<TriggerBindingMode>("No Action", TriggerBindingMode.NoAction),
                 new EnumChoiceSelection<TriggerBindingMode>("Button", TriggerBindingMode.Button),
                 new EnumChoiceSelection<TriggerBindingMode>("Dual Stage", TriggerBindingMode.DualStage),
                 new EnumChoiceSelection<TriggerBindingMode>("Trigger Translate", TriggerBindingMode.TriggerTranslate),
@@ -67,6 +69,7 @@ namespace DS4MapperTest.ViewModels
         public bool IsButtonMode => mappedAction is TriggerButtonAction;
         public bool IsDualStageMode => mappedAction is TriggerDualStageAction;
         public bool IsTriggerTranslateMode => mappedAction is TriggerTranslate;
+        public bool IsNoActionMode => mappedAction is TriggerNoAction;
         public bool HasHoldPress => HasFunc<HoldPressFunc>();
         public bool HasDoublePress => HasFunc<DoublePressFunc>();
         public bool HasDistancePress => HasFunc<DistanceFunc>();
@@ -86,6 +89,7 @@ namespace DS4MapperTest.ViewModels
                 {
                     TriggerDualStageAction => TriggerBindingMode.DualStage,
                     TriggerTranslate => TriggerBindingMode.TriggerTranslate,
+                    TriggerNoAction => TriggerBindingMode.NoAction,
                     _ => TriggerBindingMode.Button,
                 };
             }
@@ -97,6 +101,7 @@ namespace DS4MapperTest.ViewModels
                 {
                     TriggerBindingMode.DualStage => new TriggerDualStageAction(),
                     TriggerBindingMode.TriggerTranslate => new TriggerTranslate(),
+                    TriggerBindingMode.NoAction => new TriggerNoAction(),
                     _ => new TriggerButtonAction(),
                 };
 
@@ -559,7 +564,10 @@ namespace DS4MapperTest.ViewModels
             {
                 FaceBindingFuncKind.Regular => new NormalPressFunc(emptyOutput),
                 FaceBindingFuncKind.Hold => CreateOutputFunc(new HoldPressFunc(), emptyOutput),
-                FaceBindingFuncKind.Double => CreateOutputFunc(new DoublePressFunc(), emptyOutput),
+                FaceBindingFuncKind.Double => CreateOutputFunc(new DoublePressFunc()
+                {
+                    DurationMs = DoublePressFunc.DEFAULT_TAP_WINDOW_MS,
+                }, emptyOutput),
                 FaceBindingFuncKind.Distance => CreateOutputFunc(new DistanceFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
@@ -591,6 +599,7 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(IsButtonMode));
             OnPropertyChanged(nameof(IsDualStageMode));
             OnPropertyChanged(nameof(IsTriggerTranslateMode));
+            OnPropertyChanged(nameof(IsNoActionMode));
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(ButtonDeadZone));
             OnPropertyChanged(nameof(DualDeadZone));
@@ -645,6 +654,7 @@ namespace DS4MapperTest.ViewModels
         public bool SupportsTurbo => func is NormalPressFunc || func is HoldPressFunc;
         public bool SupportsFireDelay => func is NormalPressFunc;
         public bool SupportsHoldTime => func is HoldPressFunc;
+        public bool SupportsTapWindow => func is DoublePressFunc;
         public bool SupportsReleaseOptions => func is ReleaseFunc;
         public bool SupportsDistanceOptions => func is DistanceFunc;
 
@@ -786,6 +796,23 @@ namespace DS4MapperTest.ViewModels
                     MarkButtonChanged();
                 });
                 OnPropertyChanged(nameof(HoldMs));
+            }
+        }
+
+        public int TapWindowMs
+        {
+            get => func is DoublePressFunc doublePress ? doublePress.DurationMs : 0;
+            set
+            {
+                TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
+                if ((owner.FindButtonFunc(Kind) ?? func) is not DoublePressFunc doublePress) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    triggerAction?.EventButton.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                    doublePress.DurationMs = value;
+                    MarkButtonChanged();
+                });
+                OnPropertyChanged(nameof(TapWindowMs));
             }
         }
 
