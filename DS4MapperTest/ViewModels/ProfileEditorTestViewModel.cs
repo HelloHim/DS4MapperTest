@@ -126,10 +126,12 @@ namespace DS4MapperTest.ViewModels
         public void SetProfileNameWithoutDirty(string value)
         {
             if (tempProfile.Name == value) return;
+            bool wasDirty = tempProfile.Dirty;
             using (SuppressDirtyTracking())
             {
                 tempProfile.Name = value;
             }
+            RestoreProfileDirtyState(wasDirty);
             RaisePropertyChanged(nameof(ProfileName));
         }
 
