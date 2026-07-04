@@ -133,6 +133,36 @@
                 </StackPanel>
             </TabItem>
 
+            <TabItem Header="Sensitivity &amp; Calibration">
+                <StackPanel>
+                    <StackPanel Margin="0,0,0,6">
+                        <TextBlock Text="Sensitivity &amp; Calibration" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Calibration, base and vertical sensitivity, and acceleration curve settings are shown per touchpad input when the selected mode supports them."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding TouchpadBindings}"
+                                  ItemTemplate="{StaticResource TouchpadSectionTemplate}"
+                                  Tag="SensitivityCalibration"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Filtering &amp; Stabilisation">
+                <StackPanel>
+                    <StackPanel Margin="0,0,0,6">
+                        <TextBlock Text="Filtering &amp; Stabilisation" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Deadzone, angle snapping, jitter compensation, and smoothing settings are shown per touchpad input when the selected mode supports them."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding TouchpadBindings}"
+                                  ItemTemplate="{StaticResource TouchpadSectionTemplate}"
+                                  Tag="FilteringStabilisation"/>
+                </StackPanel>
+            </TabItem>
+
             <TabItem Header="Zones &amp; Gestures">
                 <StackPanel>
                     <StackPanel Margin="0,0,0,6">

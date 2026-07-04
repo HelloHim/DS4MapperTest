@@ -75,6 +75,8 @@ namespace DS4MapperTest.Views
             {
                 "Bindings" => CreateBindingContent(host, item),
                 "MouseMovement" => CreateSectionContent(host, item, section),
+                "SensitivityCalibration" => CreateSectionContent(host, item, section),
+                "FilteringStabilisation" => CreateSectionContent(host, item, section),
                 "ZonesGestures" => CreateSectionContent(host, item, section),
                 "TrackballScroll" => CreateSectionContent(host, item, section),
                 "Advanced" => CreateSectionContent(host, item, section),
@@ -102,6 +104,8 @@ namespace DS4MapperTest.Views
             bool hasSettings = section switch
             {
                 "MouseMovement" => item.IsMouseMovementAction,
+                "SensitivityCalibration" => item.IsSensitivityCalibrationAction,
+                "FilteringStabilisation" => item.IsFilteringStabilisationAction,
                 "ZonesGestures" => item.IsZoneGestureAction,
                 "TrackballScroll" => item.IsTrackballScrollAction,
                 "Advanced" => item.IsAdvancedAction,
@@ -135,6 +139,12 @@ namespace DS4MapperTest.Views
             {
                 case "MouseMovement":
                     parsedSection = TouchpadSettingsSection.MouseMovement;
+                    return true;
+                case "SensitivityCalibration":
+                    parsedSection = TouchpadSettingsSection.SensitivityCalibration;
+                    return true;
+                case "FilteringStabilisation":
+                    parsedSection = TouchpadSettingsSection.FilteringStabilisation;
                     return true;
                 case "ZonesGestures":
                     parsedSection = TouchpadSettingsSection.ZonesGestures;
@@ -293,6 +303,8 @@ namespace DS4MapperTest.Views
             return section switch
             {
                 "MouseMovement" => $"{item.DisplayName} is currently set to Unbound. Choose a movement mode in Bindings to configure movement settings.",
+                "SensitivityCalibration" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Bindings to configure sensitivity and calibration settings.",
+                "FilteringStabilisation" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Bindings to configure filtering and stabilisation settings.",
                 "ZonesGestures" => $"{item.DisplayName} is currently set to Unbound. Choose a zone or gesture-capable mode in Bindings to configure gesture settings.",
                 "TrackballScroll" => $"{item.DisplayName} is currently set to Unbound. Choose a trackball or scroll mode in Bindings to configure these settings.",
                 "Advanced" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Bindings to configure advanced settings.",
@@ -305,6 +317,8 @@ namespace DS4MapperTest.Views
             return section switch
             {
                 "MouseMovement" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no movement settings.",
+                "SensitivityCalibration" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no sensitivity and calibration settings.",
+                "FilteringStabilisation" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no filtering and stabilisation settings.",
                 "ZonesGestures" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no zone or gesture settings.",
                 "TrackballScroll" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no trackball or scroll settings.",
                 "Advanced" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no advanced settings.",

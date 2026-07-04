@@ -30,7 +30,26 @@
                         </ComboBox.Style>
                     </ComboBox>
                 </StackPanel>
+            </StackPanel>
 
+            <StackPanel x:Name="SensitivityFieldsPanel">
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Output Curve" />
+                    <ComboBox ItemsSource="{Binding OutputCurveItems}" SelectedValue="{Binding OutputCurve}" SelectedValuePath="ChoiceValue" DisplayMemberPath="DisplayName" Width="200" Margin="8,0,0,0">
+                        <ComboBox.Style>
+                            <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightOutputCurve}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ComboBox.Style>
+                    </ComboBox>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel x:Name="FilteringFieldsPanel">
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Dead Zone" />
                     <hc:NumericUpDown Minimum="1" Maximum="10000"
@@ -95,21 +114,6 @@
                             </Style>
                         </hc:NumericUpDown.Style>
                     </hc:NumericUpDown>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Output Curve" />
-                    <ComboBox ItemsSource="{Binding OutputCurveItems}" SelectedValue="{Binding OutputCurve}" SelectedValuePath="ChoiceValue" DisplayMemberPath="DisplayName" Width="200" Margin="8,0,0,0">
-                        <ComboBox.Style>
-                            <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightOutputCurve}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ComboBox.Style>
-                    </ComboBox>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
