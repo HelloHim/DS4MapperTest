@@ -12,6 +12,7 @@
     <DockPanel>
         <ScrollViewer DockPanel.Dock="Top">
             <StackPanel>
+            <StackPanel x:Name="ZonesFieldsPanel">
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Name" />
                     <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="200" Margin="8,0,0,0" />
@@ -167,8 +168,9 @@ SelectedValuePath="ChoiceValue" SelectedValue="{Binding ActionPresetChoice}" Min
                         </TextBox.Style>
                     </TextBox>
                 </StackPanel>
+            </StackPanel>
 
-
+                <StackPanel x:Name="AdvancedFieldsPanel">
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Expander ExpandDirection="Down" Header="Outer Ring" IsExpanded="False">
                         <StackPanel Orientation="Vertical">
@@ -242,10 +244,10 @@ SelectedValuePath="ChoiceValue" SelectedValue="{Binding ActionPresetChoice}" Min
                         </StackPanel>
                     </Expander>
                 </StackPanel>
-                
+                </StackPanel>
 
             </StackPanel>
         </ScrollViewer>
-        
+
     </DockPanel>
 </UserControl>
