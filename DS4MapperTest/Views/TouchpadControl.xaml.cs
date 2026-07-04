@@ -86,7 +86,7 @@ namespace DS4MapperTest.Views
         {
             if (item.MappedAction is TouchpadSingleButton)
             {
-                return CreateActionControl(host, item);
+                return CreateActionControl(host, item, null);
             }
 
             return null;
@@ -113,10 +113,45 @@ namespace DS4MapperTest.Views
                 return CreateMessage(GetNoSettingsMessage(item, section));
             }
 
-            return CreateActionControl(host, item);
+            return CreateActionControl(host, item, section);
         }
 
-        private FrameworkElement CreateActionControl(ContentControl host, TouchBindingItemsTest item)
+        private FrameworkElement CreateActionControl(ContentControl host, TouchBindingItemsTest item, string section)
+        {
+            FrameworkElement propControlElement = CreateActionControlCore(host, item);
+
+            if (propControlElement is ISectionAwareTouchpadPropControl sectionAware &&
+                TryParseSection(section, out TouchpadSettingsSection parsedSection))
+            {
+                sectionAware.ApplySection(parsedSection);
+            }
+
+            return propControlElement;
+        }
+
+        private static bool TryParseSection(string section, out TouchpadSettingsSection parsedSection)
+        {
+            switch (section)
+            {
+                case "MouseMovement":
+                    parsedSection = TouchpadSettingsSection.MouseMovement;
+                    return true;
+                case "ZonesGestures":
+                    parsedSection = TouchpadSettingsSection.ZonesGestures;
+                    return true;
+                case "TrackballScroll":
+                    parsedSection = TouchpadSettingsSection.TrackballScroll;
+                    return true;
+                case "Advanced":
+                    parsedSection = TouchpadSettingsSection.Advanced;
+                    return true;
+                default:
+                    parsedSection = default;
+                    return false;
+            }
+        }
+
+        private FrameworkElement CreateActionControlCore(ContentControl host, TouchBindingItemsTest item)
         {
             switch (item.MappedAction)
             {

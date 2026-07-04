@@ -11,6 +11,7 @@
     <DockPanel Margin="0,8,0,0">
         <ScrollViewer DockPanel.Dock="Top">
             <StackPanel>
+            <StackPanel x:Name="MovementFieldsPanel">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="Name" />
                     <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}" Width="200">
@@ -90,36 +91,6 @@
                             </Style>
                         </CheckBox.Style>
                     </CheckBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Trackball" />
-                    <CheckBox IsChecked="{Binding TrackballEnabled}" VerticalAlignment="Center" Margin="8,0,0,0">
-                        <CheckBox.Style>
-                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightTrackballEnabled}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </CheckBox.Style>
-                    </CheckBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Trackball Friction" />
-                    <TextBox Text="{Binding TrackballFriction, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightTrackballFriction}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
                 </StackPanel>
 
                 <!-- Calibration block — synced across profile -->
@@ -375,6 +346,40 @@
                         </StackPanel>
                     </GroupBox>
                 </StackPanel>
+
+            </StackPanel>
+
+            <StackPanel x:Name="TrackballFieldsPanel">
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Trackball" />
+                    <CheckBox IsChecked="{Binding TrackballEnabled}" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <CheckBox.Style>
+                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightTrackballEnabled}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </CheckBox.Style>
+                    </CheckBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Trackball Friction" />
+                    <TextBox Text="{Binding TrackballFriction, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightTrackballFriction}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                </StackPanel>
+            </StackPanel>
 
             </StackPanel>
         </ScrollViewer>

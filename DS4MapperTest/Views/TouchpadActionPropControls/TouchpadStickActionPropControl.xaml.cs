@@ -21,7 +21,7 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
     /// <summary>
     /// Interaction logic for TouchpadStickActionPropControl.xaml
     /// </summary>
-    public partial class TouchpadStickActionPropControl : UserControl
+    public partial class TouchpadStickActionPropControl : UserControl, ISectionAwareTouchpadPropControl
     {
         public class DirButtonBindingArgs : EventArgs
         {
@@ -65,6 +65,14 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
             // Force re-eval of bindings
             DataContext = null;
             DataContext = touchStickPropVM;
+        }
+
+        public void ApplySection(TouchpadSettingsSection section)
+        {
+            MovementFieldsPanel.Visibility = section == TouchpadSettingsSection.MouseMovement
+                ? Visibility.Visible : Visibility.Collapsed;
+            AdvancedFieldsPanel.Visibility = section == TouchpadSettingsSection.Advanced
+                ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void btnEditTest_Click(object sender, RoutedEventArgs e)

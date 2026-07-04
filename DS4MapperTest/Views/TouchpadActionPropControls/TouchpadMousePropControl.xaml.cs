@@ -22,7 +22,7 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
     /// <summary>
     /// Interaction logic for TouchpadMousePropControl.xaml
     /// </summary>
-    public partial class TouchpadMousePropControl : UserControl
+    public partial class TouchpadMousePropControl : UserControl, ISectionAwareTouchpadPropControl
     {
         private TouchpadMousePropViewModel touchMousePropVM;
         public TouchpadMousePropViewModel TouchMousePropVM => touchMousePropVM;
@@ -37,6 +37,14 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
             touchMousePropVM = new TouchpadMousePropViewModel(mapper, action);
 
             DataContext = touchMousePropVM;
+        }
+
+        public void ApplySection(TouchpadSettingsSection section)
+        {
+            MovementFieldsPanel.Visibility = section == TouchpadSettingsSection.MouseMovement
+                ? Visibility.Visible : Visibility.Collapsed;
+            TrackballFieldsPanel.Visibility = section == TouchpadSettingsSection.TrackballScroll
+                ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void LegacySensNUD_PreviewKeyDown(object sender, KeyEventArgs e)

@@ -21,7 +21,7 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
     /// <summary>
     /// Interaction logic for TouchpadMouseJoystickPropControl.xaml
     /// </summary>
-    public partial class TouchpadMouseJoystickPropControl : UserControl
+    public partial class TouchpadMouseJoystickPropControl : UserControl, ISectionAwareTouchpadPropControl
     {
         private TouchpadMouseJoystickPropViewModel touchMouseJoyPropVM;
         public TouchpadMouseJoystickPropViewModel TouchMouseJoyPropVM => touchMouseJoyPropVM;
@@ -38,6 +38,14 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
             touchMouseJoyPropVM = new TouchpadMouseJoystickPropViewModel(mapper, action);
 
             DataContext = touchMouseJoyPropVM;
+        }
+
+        public void ApplySection(TouchpadSettingsSection section)
+        {
+            MovementFieldsPanel.Visibility = section == TouchpadSettingsSection.MouseMovement
+                ? Visibility.Visible : Visibility.Collapsed;
+            TrackballFieldsPanel.Visibility = section == TouchpadSettingsSection.TrackballScroll
+                ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }
