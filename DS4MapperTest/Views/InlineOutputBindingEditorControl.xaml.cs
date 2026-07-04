@@ -62,20 +62,23 @@ namespace DS4MapperTest.Views
         {
             if (mapper == null || action == null || func == null || snapshot == null) return;
 
-            mapper.ProcessMappingChangeAction(() =>
+            using (mapper.SuppressProfileDirtyTracking())
             {
-                action.Release(mapper, ignoreReleaseActions: true);
-                func.OutputActions.Clear();
-                foreach (OutputActionData data in CloneOutputs(snapshot))
+                mapper.ProcessMappingChangeAction(() =>
                 {
-                    func.OutputActions.Add(data);
-                }
+                    action.Release(mapper, ignoreReleaseActions: true);
+                    func.OutputActions.Clear();
+                    foreach (OutputActionData data in CloneOutputs(snapshot))
+                    {
+                        func.OutputActions.Add(data);
+                    }
 
-                if (!action.ChangedProperties.Contains(ButtonAction.PropertyKeyStrings.FUNCTIONS))
-                {
-                    action.ChangedProperties.Add(ButtonAction.PropertyKeyStrings.FUNCTIONS);
-                }
-            });
+                    if (!action.ChangedProperties.Contains(ButtonAction.PropertyKeyStrings.FUNCTIONS))
+                    {
+                        action.ChangedProperties.Add(ButtonAction.PropertyKeyStrings.FUNCTIONS);
+                    }
+                });
+            }
         }
 
         private static List<OutputActionData> CloneOutputs(IEnumerable<OutputActionData> source)
