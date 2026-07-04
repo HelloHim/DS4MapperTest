@@ -420,7 +420,7 @@
                                         <views:PaddlesKeybindsControl/>
                                     </TabItem>
                                     <TabItem Header="Extra">
-                                        <views:AlwaysOnKeybindsControl/>
+                                        <views:ExtraKeybindsControl/>
                                     </TabItem>
                                 </TabControl>
                             </StackPanel>

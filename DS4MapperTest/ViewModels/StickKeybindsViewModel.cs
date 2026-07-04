@@ -54,9 +54,8 @@ namespace DS4MapperTest.ViewModels
         public ObservableCollection<StickExtraBindingItem> ExtraBindings => extraBindings;
         public bool HasExtraBindings => extraBindings.Count > 0;
 
-        public FaceButtonBindingItem ClickBindingItem =>
-            (side == "LS" ? owner.LeftStickClickBinding : owner.RightStickClickBinding)
-                .FirstOrDefault();
+        public ObservableCollection<FaceButtonBindingItem> ClickBindingItems =>
+            side == "LS" ? owner.LeftStickClickBinding : owner.RightStickClickBinding;
 
         public StickBindingItemsTest BindingItem =>
             owner.StickBindings.FirstOrDefault(item => item.BindingName == side);
@@ -106,7 +105,7 @@ namespace DS4MapperTest.ViewModels
             RebuildSettingsViewModel();
             RebuildExtraBindings();
 
-            OnPropertyChanged(nameof(ClickBindingItem));
+            OnPropertyChanged(nameof(ClickBindingItems));
         }
 
         private static int ResolveModeIndex(StickMapAction action)

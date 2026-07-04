@@ -145,6 +145,10 @@ namespace DS4MapperTest.ViewModels
             new ObservableCollection<FaceButtonBindingItem>();
         public ObservableCollection<FaceButtonBindingItem> RightStickClickBinding => rightStickClickBinding;
 
+        private ObservableCollection<FaceButtonBindingItem> extraButtonBindings =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> ExtraButtonBindings => extraButtonBindings;
+
         private StickSideViewModel leftStickKeybinds;
         public StickSideViewModel LeftStickKeybinds => leftStickKeybinds ??= new StickSideViewModel(this, "LS");
 
@@ -167,6 +171,11 @@ namespace DS4MapperTest.ViewModels
         {
             get => buttonBindingsIndexDict;
         }
+
+        // Tracks which backend button bindings have been claimed by a named
+        // section so the Extra fallback never shows a duplicate card
+        private HashSet<string> claimedButtonBindings =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private ObservableCollection<TouchBindingItemsTest> touchpadBindings =
             new ObservableCollection<TouchBindingItemsTest>();
@@ -737,6 +746,7 @@ namespace DS4MapperTest.ViewModels
             bumperButtonBindings.Clear();
             centerButtonBindings.Clear();
             paddleButtonBindings.Clear();
+            extraButtonBindings.Clear();
             triggerKeybinds.Clear();
             touchpadBindings.Clear();
             touchpadMouseMovementBindings.Clear();
@@ -763,6 +773,7 @@ namespace DS4MapperTest.ViewModels
             bumperButtonBindings.Clear();
             centerButtonBindings.Clear();
             paddleButtonBindings.Clear();
+            extraButtonBindings.Clear();
             triggerKeybinds.Clear();
             touchpadBindings.Clear();
             touchpadMouseMovementBindings.Clear();
@@ -796,6 +807,7 @@ namespace DS4MapperTest.ViewModels
         private void PopulateCurrentLayerBindings()
         {
             int tempBtnInd = 0;
+            claimedButtonBindings.Clear();
 
             foreach(InputBindingMeta meta in
                 mapper.BindingList.Where((item) => item.controlType == InputBindingMeta.InputControlType.Button))
@@ -902,6 +914,7 @@ namespace DS4MapperTest.ViewModels
             PopulateTriggerKeybinds();
             PopulateDPadKeybinds();
             PopulateStickClickBindings();
+            PopulateExtraButtonBindings();
             PopulateStickKeybinds();
             PopulateTouchpadGroups();
             RaisePropertyChanged(nameof(HasAlwaysOnKeybinds));
@@ -941,14 +954,70 @@ namespace DS4MapperTest.ViewModels
         private void PopulateStickClickBindings()
         {
             leftStickClickBinding.Clear();
-            AddFirstMatchingButtonBinding(leftStickClickBinding,
-                new string[] { "L3" },
-                "LS / Left Stick Click");
+            AddFirstMatchingButtonBinding(leftStickClickBinding, claimedButtonBindings,
+                new string[] { "L3", "LSClick" },
+                "LS / Left Stick Click",
+                "Stick click button");
+            AddFirstMatchingButtonBinding(leftStickClickBinding, claimedButtonBindings,
+                new string[] { "LSTouch" },
+                "LS Touch / Left Stick Touch",
+                "Stick touch sensor");
 
             rightStickClickBinding.Clear();
-            AddFirstMatchingButtonBinding(rightStickClickBinding,
-                new string[] { "R3" },
-                "RS / Right Stick Click");
+            AddFirstMatchingButtonBinding(rightStickClickBinding, claimedButtonBindings,
+                new string[] { "R3", "RSClick" },
+                "RS / Right Stick Click",
+                "Stick click button");
+            AddFirstMatchingButtonBinding(rightStickClickBinding, claimedButtonBindings,
+                new string[] { "RSTouch" },
+                "RS Touch / Right Stick Touch",
+                "Stick touch sensor");
+        }
+
+        private void PopulateExtraButtonBindings()
+        {
+            extraButtonBindings.Clear();
+
+            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
+                new string[] { "FnL" },
+                "Fn Left",
+                "Function button");
+            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
+                new string[] { "FnR" },
+                "Fn Right",
+                "Function button");
+            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
+                new string[] { "LeftGripSense" },
+                "Left Grip Sense",
+                "Grip sensor");
+            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
+                new string[] { "RightGripSense" },
+                "Right Grip Sense",
+                "Grip sensor");
+            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
+                new string[] { "LeftPadTouch" },
+                "Left Pad Touch",
+                "Touchpad touch sensor");
+            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
+                new string[] { "RightPadTouch" },
+                "Right Pad Touch",
+                "Touchpad touch sensor");
+
+            // Fallback: surface any backend button binding no named section
+            // claimed. Follows mapper BindingList order so the list is stable
+            foreach (BindingItemsTest item in buttonBindings)
+            {
+                if (claimedButtonBindings.Contains(item.BindingName))
+                {
+                    continue;
+                }
+
+                claimedButtonBindings.Add(item.BindingName);
+                string label = !string.IsNullOrWhiteSpace(item.DisplayInputMapString)
+                    ? item.DisplayInputMapString
+                    : item.BindingName;
+                extraButtonBindings.Add(new FaceButtonBindingItem(this, item, label));
+            }
         }
 
         private void PopulateStickKeybinds()
@@ -1005,6 +1074,7 @@ namespace DS4MapperTest.ViewModels
                 if (item != null)
                 {
                     faceButtonBindings.Add(new FaceButtonBindingItem(this, item, displayNames[i]));
+                    claimedButtonBindings.Add(item.BindingName);
                 }
             }
         }
@@ -1040,6 +1110,7 @@ namespace DS4MapperTest.ViewModels
                 if (item != null)
                 {
                     bumperButtonBindings.Add(new FaceButtonBindingItem(this, item, displayNames[i]));
+                    claimedButtonBindings.Add(item.BindingName);
                 }
             }
         }
@@ -1048,33 +1119,31 @@ namespace DS4MapperTest.ViewModels
         {
             centerButtonBindings.Clear();
 
-            HashSet<string> claimedBindings = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
                 new string[] { "Options", "Start", "Plus" },
                 "Options / Menu",
                 "System button");
-            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
                 new string[] { "Share", "Create", "Capture", "Back", "Minus" },
                 "Share / View",
                 "System button");
-            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
                 new string[] { "PS", "Home", "Guide", "Steam" },
                 "PS / Home",
                 "System button");
-            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
                 new string[] { "Mute" },
                 "Mic",
                 "System button");
-            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
                 new string[] { "QAM" },
                 "QAM",
                 "Quick Access Menu button");
-            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
                 new string[] { "Select" },
                 "Select",
                 "Center/select button");
-            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
                 new string[] { "TouchClick" },
                 "DS4/DS Touch Click",
                 "DualShock/DualSense touchpad click");
@@ -1097,11 +1166,17 @@ namespace DS4MapperTest.ViewModels
                 new string[] { "PR", "RSideR" },
                 "Paddle 4");
             AddFirstMatchingButtonBinding(paddleButtonBindings,
+                new string[] { "L5" },
+                "L5 / Rear Button");
+            AddFirstMatchingButtonBinding(paddleButtonBindings,
+                new string[] { "R5" },
+                "R5 / Rear Button");
+            AddFirstMatchingButtonBinding(paddleButtonBindings,
                 new string[] { "LeftGrip" },
-                "Left Grip Sense");
+                "Left Grip");
             AddFirstMatchingButtonBinding(paddleButtonBindings,
                 new string[] { "RightGrip" },
-                "Right Grip Sense");
+                "Right Grip");
         }
 
         private void AddFirstMatchingButtonBinding(
@@ -1109,7 +1184,7 @@ namespace DS4MapperTest.ViewModels
             string[] aliases,
             string displayName)
         {
-            AddFirstMatchingButtonBinding(target, null, aliases, displayName, null);
+            AddFirstMatchingButtonBinding(target, claimedButtonBindings, aliases, displayName, null);
         }
 
         private bool AddFirstMatchingButtonBinding(
@@ -1159,6 +1234,7 @@ namespace DS4MapperTest.ViewModels
             {
                 if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
                 {
+                    claimedButtonBindings.Add(buttonBindings[index].BindingName);
                     return new FaceButtonBindingItem(this, buttonBindings[index],
                         "Touchpad Click", "Physical pad click");
                 }

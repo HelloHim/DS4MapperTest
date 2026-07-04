@@ -18,19 +18,22 @@
     <StackPanel Margin="0,0,0,18">
         <StackPanel Margin="0,0,0,6">
             <TextBlock Text="{Binding SideLabel}" Style="{StaticResource JsmccSectionTitle}"/>
-            <TextBlock Text="Stick click is always available. Additional bindings below depend on the current stick mode."
+            <TextBlock Text="Stick click and touch bindings are always available. Additional bindings below depend on the current stick mode."
                        Style="{StaticResource JsmccBodyText}"
                        TextWrapping="Wrap"
                        Margin="0,4,0,0"/>
         </StackPanel>
 
-        <Border Style="{StaticResource JsmccCardBorder}" DataContext="{Binding ClickBindingItem}">
+        <ItemsControl ItemsSource="{Binding ClickBindingItems}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+        <Border Style="{StaticResource JsmccCardBorder}">
             <DockPanel LastChildFill="True">
                 <DockPanel DockPanel.Dock="Top" LastChildFill="False" Margin="0,0,0,2">
                     <StackPanel DockPanel.Dock="Left">
                         <TextBlock Text="{Binding DisplayName}"
                                    Style="{StaticResource JsmccCardTitle}"/>
-                        <TextBlock Text="Stick click button"
+                        <TextBlock Text="{Binding Subtitle}"
                                    Style="{StaticResource JsmccMutedText}"
                                    Margin="0,3,0,0"/>
                     </StackPanel>
@@ -311,6 +314,9 @@
                 </ItemsControl>
             </DockPanel>
         </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
 
         <TextBlock Text="Mode Bindings"
                    Style="{StaticResource JsmccSectionTitle}"
