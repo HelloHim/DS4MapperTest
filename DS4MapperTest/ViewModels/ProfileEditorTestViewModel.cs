@@ -1155,22 +1155,16 @@ namespace DS4MapperTest.ViewModels
 
             AddFirstMatchingButtonBinding(paddleButtonBindings,
                 new string[] { "BLP", "L4", "LSideL" },
-                "Paddle 1");
+                "L Paddle 1 / L4 / L SL");
             AddFirstMatchingButtonBinding(paddleButtonBindings,
-                new string[] { "BRP", "R4", "LSideR" },
-                "Paddle 2");
+                new string[] { "BRP", "R4", "RSideL" },
+                "R Paddle 1 / R4 / R SL");
             AddFirstMatchingButtonBinding(paddleButtonBindings,
-                new string[] { "PL", "RSideL" },
-                "Paddle 3");
+                new string[] { "L5", "PL", "LSideR" },
+                "L Paddle 2 / L5 / L SR");
             AddFirstMatchingButtonBinding(paddleButtonBindings,
-                new string[] { "PR", "RSideR" },
-                "Paddle 4");
-            AddFirstMatchingButtonBinding(paddleButtonBindings,
-                new string[] { "L5" },
-                "L5 / Rear Button");
-            AddFirstMatchingButtonBinding(paddleButtonBindings,
-                new string[] { "R5" },
-                "R5 / Rear Button");
+                new string[] { "R5", "PR", "RSideR" },
+                "R Paddle 2 / R5 / R SR");
             AddFirstMatchingButtonBinding(paddleButtonBindings,
                 new string[] { "LeftGrip" },
                 "Left Grip");
