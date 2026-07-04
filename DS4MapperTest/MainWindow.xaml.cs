@@ -34,6 +34,7 @@ namespace DS4MapperTest
         private bool suppressActionSetCombo;
         private bool suppressActionLayerCombo;
         private ProfileListEntry selectedListEntry;
+        private NewProfileCreateViewModel overlayNewProfileVM;
 
         private IntPtr regHandle = new IntPtr();
         private const int DBT_DEVICEARRIVAL = 0x8000;
@@ -695,11 +696,13 @@ namespace DS4MapperTest
 
         private void CloseProfileOverlay_Click(object sender, RoutedEventArgs e)
         {
+            HideNewProfilePanel();
             profilesOverlay.Visibility = Visibility.Collapsed;
         }
 
         private void ProfilesOverlayBackdrop_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            HideNewProfilePanel();
             profilesOverlay.Visibility = Visibility.Collapsed;
         }
 
@@ -707,6 +710,7 @@ namespace DS4MapperTest
         {
             if (e.Key == Key.Escape && profilesOverlay.Visibility == Visibility.Visible)
             {
+                HideNewProfilePanel();
                 profilesOverlay.Visibility = Visibility.Collapsed;
                 e.Handled = true;
             }
@@ -719,12 +723,30 @@ namespace DS4MapperTest
             BackendManager manager = (App.Current as App).Manager;
             Mapper mapper = editorTestVM.DeviceMapper;
 
-            NewProfileCreateWindow newProfWin = new NewProfileCreateWindow();
-            newProfWin.PostInit(mapper, manager);
-            newProfWin.Owner = this;
-            newProfWin.ShowDialog();
+            overlayNewProfileVM = new NewProfileCreateViewModel(mapper, manager);
+            newProfilePanel.DataContext = overlayNewProfileVM;
+            newProfilePanel.Visibility = Visibility.Visible;
+        }
 
-            NewProfileCreateViewModel newProfVM = newProfWin.NewProfCreateVM;
+        private void CancelNewProfileBtn_Click(object sender, RoutedEventArgs e)
+        {
+            HideNewProfilePanel();
+        }
+
+        private void CreateNewProfileBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentDeviceItem == null || overlayNewProfileVM == null) return;
+
+            bool validForm = overlayNewProfileVM.ValidateForm();
+            if (!validForm) return;
+
+            overlayNewProfileVM.CreateProfile();
+
+            NewProfileCreateViewModel newProfVM = overlayNewProfileVM;
+            HideNewProfilePanel();
+
+            BackendManager manager = (App.Current as App).Manager;
+            Mapper mapper = newProfVM.Mapper;
             if (newProfVM == null || !newProfVM.ProfileCreated) return;
 
             var profileList = manager.DeviceProfileListDict[mapper.DeviceType].ProfileListCol;
@@ -738,6 +760,44 @@ namespace DS4MapperTest
             {
                 RefreshProfileList();
             }
+        }
+
+        private void NewProfileBrowseBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (overlayNewProfileVM == null) return;
+
+            SaveFileDialog fileDialog = new SaveFileDialog
+            {
+                InitialDirectory = overlayNewProfileVM.Mapper.AppGlobal.GetDeviceProfileFolderLocation(overlayNewProfileVM.Mapper.DeviceType),
+                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*"
+            };
+
+            if (fileDialog.ShowDialog() != true) return;
+
+            string tempFile = fileDialog.FileName;
+            string destDir = Path.GetDirectoryName(tempFile);
+            if (!string.Equals(fileDialog.InitialDirectory, destDir, StringComparison.OrdinalIgnoreCase))
+            {
+                overlayNewProfileVM.ProfilePath = tempFile;
+                overlayNewProfileVM.ValidateForm();
+                return;
+            }
+
+            if (!tempFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                tempFile += ".json";
+            }
+
+            overlayNewProfileVM.ProfilePath = tempFile;
+            overlayNewProfileVM.ClearOldErrors();
+        }
+
+        private void HideNewProfilePanel()
+        {
+            overlayNewProfileVM?.ClearOldErrors();
+            overlayNewProfileVM = null;
+            newProfilePanel.DataContext = null;
+            newProfilePanel.Visibility = Visibility.Collapsed;
         }
 
         private void CopyActiveBtn_Click(object sender, RoutedEventArgs e)

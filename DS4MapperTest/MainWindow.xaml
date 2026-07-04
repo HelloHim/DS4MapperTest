@@ -782,6 +782,79 @@
                                     Margin="0,0,0,6"/>
                         </WrapPanel>
 
+                        <Border x:Name="newProfilePanel"
+                                Visibility="Collapsed"
+                                Style="{StaticResource JsmccCardBorder}"
+                                Padding="12"
+                                Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="New Profile"
+                                           Style="{StaticResource JsmccCardTitle}"/>
+                                <TextBlock Text="Create a profile for the current controller."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           Margin="0,3,0,12"/>
+
+                                <StackPanel Margin="0,0,0,10">
+                                    <TextBlock Text="Profile Path"
+                                               Style="{StaticResource JsmccLabelText}"
+                                               Margin="0,0,0,4"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0"
+                                                 Text="{Binding ProfilePath, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                                 Style="{StaticResource JsmccTextBoxStyle}"/>
+                                        <Button Grid.Column="1"
+                                                Content="Browse"
+                                                Click="NewProfileBrowseBtn_Click"
+                                                Style="{StaticResource JsmccButtonStyle}"
+                                                Margin="8,0,0,0"/>
+                                    </Grid>
+                                    <TextBlock Text="{Binding ProfilePathErrors}"
+                                               Foreground="{DynamicResource JsmccDangerTextBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0"
+                                               Visibility="{Binding HasProfilePathError, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,0,10">
+                                    <TextBlock Text="Output Controller Type"
+                                               Style="{StaticResource JsmccLabelText}"
+                                               Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding OutputContList}"
+                                              SelectedIndex="{Binding OutputControllerTypeIdx, Mode=TwoWay}"
+                                              DisplayMemberPath="Name"
+                                              Style="{StaticResource ComboBoxBaseStyle}"
+                                              MinWidth="180"/>
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,0,12">
+                                    <TextBlock Text="Creator"
+                                               Style="{StaticResource JsmccLabelText}"
+                                               Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding Creator, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                             Style="{StaticResource JsmccTextBoxStyle}"/>
+                                    <TextBlock Text="{Binding CreatorErrors}"
+                                               Foreground="{DynamicResource JsmccDangerTextBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0"
+                                               Visibility="{Binding HasCreatorError, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Content="Cancel"
+                                            Click="CancelNewProfileBtn_Click"
+                                            Style="{StaticResource JsmccButtonStyle}"
+                                            Margin="0,0,8,0"/>
+                                    <Button Content="Create"
+                                            Click="CreateNewProfileBtn_Click"
+                                            Style="{StaticResource JsmccPrimaryButtonStyle}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
                         <ListBox x:Name="profileListBox"
                                  MaxHeight="240"
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
