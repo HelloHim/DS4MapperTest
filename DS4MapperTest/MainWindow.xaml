@@ -83,6 +83,24 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource JsmccWarningTextBrush}"/>
         </Style>
+
+        <DataTemplate x:Key="DeviceComboBoxItemTemplate">
+            <Grid MinWidth="200">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding DisplayName}"
+                           Foreground="{DynamicResource JsmccTextStrongBrush}"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Battery}"
+                           Style="{StaticResource JsmccMutedText}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Background="{DynamicResource JsmccBg0Brush}">
@@ -176,8 +194,8 @@
                                            Margin="0,0,10,0"/>
 
                                 <ComboBox x:Name="deviceComboBox"
-                                          Width="230"
-                                          DisplayMemberPath="DisplayName"
+                                          Width="280"
+                                          ItemTemplate="{StaticResource DeviceComboBoxItemTemplate}"
                                           Style="{StaticResource JsmccComboBoxStyle}"
                                           SelectionChanged="DeviceComboBox_SelectionChanged"/>
                             </StackPanel>

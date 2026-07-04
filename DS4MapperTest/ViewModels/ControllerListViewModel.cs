@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -294,12 +295,20 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
-    public class DeviceListItem
+    public class DeviceListItem : INotifyPropertyChanged
     {
         private int itemIndex;
         private InputDeviceBase device;
         private ProfileList profileListHolder;
         private int profileIndex = -1;
+        private bool batteryKnown;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void RaisePropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public InputDeviceBase Device
         {
@@ -323,7 +332,13 @@ namespace DS4MapperTest.ViewModels
 
         public string Battery
         {
-            get => $"{device.Battery}%";
+            get
+            {
+                uint batteryValue = device.Battery;
+                return batteryKnown && batteryValue <= 100
+                    ? $"{batteryValue}%"
+                    : "Battery unknown";
+            }
         }
         public event EventHandler BatteryChanged;
 
@@ -362,6 +377,7 @@ namespace DS4MapperTest.ViewModels
             this.device = device;
             this.itemIndex = itemIndex;
             this.profileListHolder = profileListHolder;
+            batteryKnown = device.Battery > 0 && device.Battery <= 100;
             device.BatteryChanged += Device_BatteryChanged;
 
             editProfCommand = new BasicActionCommand((parameter) =>
@@ -372,6 +388,8 @@ namespace DS4MapperTest.ViewModels
 
         private void Device_BatteryChanged(object sender, EventArgs e)
         {
+            batteryKnown = device.Battery <= 100;
+            RaisePropertyChanged(nameof(Battery));
             BatteryChanged?.Invoke(this, EventArgs.Empty);
         }
 
