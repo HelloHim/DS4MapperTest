@@ -346,6 +346,47 @@
         </Setter>
     </Style>
 
+    <Style x:Key="JsmccChipToggleStyle" TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="{DynamicResource JsmccTextMutedBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgInputBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10,5"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource JsmccPillRadius}">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccBorderStrongBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBgPrimaryBrush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccAccentBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45"/>
+                            <Setter Property="Cursor" Value="Arrow"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="CalibModeToggleStyle" TargetType="RadioButton">
         <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         <Setter Property="FontSize" Value="12"/>

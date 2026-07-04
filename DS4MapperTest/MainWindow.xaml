@@ -362,13 +362,13 @@
                                         <views:GyroActionsPanel/>
                                     </TabItem>
                                     <TabItem Header="Gyro">
-                                        <views:GyroCalibrationControl DataContext="{Binding GyroCalibVM}"/>
+                                        <views:GyroOutputControl/>
                                     </TabItem>
                                     <TabItem Header="Sensitivity">
-                                        <views:GyroSensitivityControl DataContext="{Binding GyroSensitivityVM}"/>
+                                        <views:GyroSensitivityControl/>
                                     </TabItem>
                                     <TabItem Header="Noise &amp; Steadying">
-                                        <views:GyroNoiseSteadyingControl DataContext="{Binding GyroNoiseSteadyingVM}"/>
+                                        <views:GyroNoiseSteadyingControl/>
                                     </TabItem>
                                 </TabControl>
                             </StackPanel>

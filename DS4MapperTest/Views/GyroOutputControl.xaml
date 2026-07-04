@@ -1,0 +1,151 @@
+<UserControl x:Class="DS4MapperTest.Views.GyroOutputControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="500"
+             d:DesignWidth="860">
+    <UserControl.Resources>
+        <Style x:Key="OutputRowBorder" TargetType="Border" BasedOn="{StaticResource JsmccSettingRowBorder}">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="OutputRowLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
+            <Setter Property="Width" Value="190"/>
+        </Style>
+
+        <DataTemplate x:Key="MouseOutputTemplate">
+            <Border Style="{StaticResource JsmccCardBorder}">
+                <StackPanel>
+                    <TextBlock Text="Motion Output" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                    <Border Style="{StaticResource OutputRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="190"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Invert" Style="{StaticResource OutputRowLabel}"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding InvertChoiceItems}" DisplayMemberPath="DisplayName"
+                                      SelectedValuePath="Choice" SelectedValue="{Binding InvertChoice}"
+                                      Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="JoystickOutputTemplate">
+            <Border Style="{StaticResource JsmccCardBorder}">
+                <StackPanel>
+                    <TextBlock Text="Motion Output" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                    <Border Style="{StaticResource OutputRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="190"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Output Stick" Style="{StaticResource OutputRowLabel}"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding OutputStickHolder.OutputStickItems}"
+                                      SelectedIndex="{Binding OutputStickIndex}" DisplayMemberPath="DisplayName"
+                                      Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
+                        </Grid>
+                    </Border>
+                    <Border Style="{StaticResource OutputRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="190"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Output Axes" Style="{StaticResource OutputRowLabel}"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding OutputAxesItems}" DisplayMemberPath="DisplayName"
+                                      SelectedValuePath="ChoiceValue" SelectedValue="{Binding OutputAxesChoice}"
+                                      Style="{StaticResource JsmccComboBoxStyle}" MinWidth="180"/>
+                        </Grid>
+                    </Border>
+                    <Border Style="{StaticResource OutputRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="190"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Invert" Style="{StaticResource OutputRowLabel}"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding InvertChoiceItems}" DisplayMemberPath="DisplayName"
+                                      SelectedValuePath="Choice" SelectedValue="{Binding InvertChoice}"
+                                      Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DirSwipeOutputTemplate">
+            <Border Style="{StaticResource JsmccCardBorder}">
+                <StackPanel>
+                    <TextBlock Text="Swipe Direction Bindings" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                    <TextBlock Text="Choose which button output fires when the gyro is swiped in each direction."
+                               Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                    <Grid HorizontalAlignment="Left">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Margin="0,0,20,8">
+                            <TextBlock Text="Up" Style="{StaticResource JsmccLabelText}" Width="50"/>
+                            <Button x:Name="btnUpEdit" Content="{Binding ActionUpBtnDisplayBind, Mode=OneWay, FallbackValue='Unbound'}"
+                                    Click="BtnUpEdit_Click" Style="{StaticResource JsmccOutputButtonStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8">
+                            <TextBlock Text="Down" Style="{StaticResource JsmccLabelText}" Width="50"/>
+                            <Button x:Name="btnDownEdit" Content="{Binding ActionDownBtnDisplayBind, Mode=OneWay, FallbackValue='Unbound'}"
+                                    Click="BtnDownEdit_Click" Style="{StaticResource JsmccOutputButtonStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Margin="0,0,20,0">
+                            <TextBlock Text="Left" Style="{StaticResource JsmccLabelText}" Width="50"/>
+                            <Button x:Name="btnLeftEdit" Content="{Binding ActionLeftBtnDisplayBind, Mode=OneWay, FallbackValue='Unbound'}"
+                                    Click="BtnLeftEdit_Click" Style="{StaticResource JsmccOutputButtonStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1">
+                            <TextBlock Text="Right" Style="{StaticResource JsmccLabelText}" Width="50"/>
+                            <Button x:Name="btnRightEdit" Content="{Binding ActionRightBtnDisplayBind, Mode=OneWay, FallbackValue='Unbound'}"
+                                    Click="BtnRightEdit_Click" Style="{StaticResource JsmccOutputButtonStyle}"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GyroOutputBindingTemplate">
+            <Border Style="{StaticResource JsmccCardBorder}">
+                <StackPanel>
+                    <TextBlock Text="{Binding ActionDisplayName}" Style="{StaticResource JsmccCardTitle}"/>
+                    <ContentControl Tag="Output" DataContext="{Binding}"
+                                    Loaded="InlineSettingsHost_Loaded" Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  CanContentScroll="False">
+        <StackPanel Margin="0,0,10,12">
+            <TextBlock Text="Gyro" Style="{StaticResource JsmccSectionTitle}"/>
+            <TextBlock Text="Controls the gyro's output direction and motion behaviour: which axes it drives, invert, and (for Directional Swipe) which button each swipe direction presses."
+                       Style="{StaticResource JsmccBodyText}"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0"/>
+
+            <ItemsControl ItemsSource="{Binding GyroBindings}" ItemTemplate="{StaticResource GyroOutputBindingTemplate}" Margin="0,12,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
