@@ -5,11 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:views="clr-namespace:DS4MapperTest.Views"
+             xmlns:converters="clr-namespace:DS4MapperTest.Converters"
              mc:Ignorable="d"
              d:DesignHeight="520"
              d:DesignWidth="860">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVis"/>
 
         <Style x:Key="SharedControlLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
             <Setter Property="Margin" Value="0,0,8,0"/>
@@ -51,9 +53,14 @@
                                 <StackPanel DockPanel.Dock="Left">
                                     <TextBlock Text="{Binding DisplayName}"
                                                Style="{StaticResource JsmccCardTitle}"/>
+                                    <TextBlock Text="{Binding Subtitle}"
+                                               Style="{StaticResource JsmccMutedText}"
+                                               Margin="0,3,0,0"
+                                               Visibility="{Binding HasSubtitle, Converter={StaticResource BoolToVis}}"/>
                                     <TextBlock Text="{Binding CardSubtitle, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}"
                                                Style="{StaticResource JsmccMutedText}"
-                                               Margin="0,3,0,0"/>
+                                               Margin="0,3,0,0"
+                                               Visibility="{Binding HasSubtitle, Converter={StaticResource InvertBoolToVis}}"/>
                                 </StackPanel>
 
                                 <Button DockPanel.Dock="Right"

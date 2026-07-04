@@ -745,6 +745,7 @@ namespace DS4MapperTest.ViewModels
                         TryGetValue(meta.id, out TouchpadMapAction tempTouchAct))
                 {
                     TouchBindingItemsTest tempItem = new TouchBindingItemsTest(meta.id, meta.displayName, tempTouchAct, mapper);
+                    tempItem.TouchpadClickBinding = CreateTouchpadClickBinding(tempItem);
                     touchpadBindings.Add(tempItem);
                 }
             }
@@ -756,6 +757,7 @@ namespace DS4MapperTest.ViewModels
                         TryGetValue(meta.id, out TouchpadMapAction tempTouchAct))
                 {
                     TouchBindingItemsTest tempItem = new TouchBindingItemsTest(meta.id, meta.displayName, tempTouchAct, mapper);
+                    tempItem.TouchpadClickBinding = CreateTouchpadClickBinding(tempItem);
                     touchpadBindings.Add(tempItem);
                 }
             }
@@ -975,18 +977,36 @@ namespace DS4MapperTest.ViewModels
         {
             centerButtonBindings.Clear();
 
-            AddFirstMatchingButtonBinding(centerButtonBindings,
+            HashSet<string> claimedBindings = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
                 new string[] { "Options", "Start", "Plus" },
-                "Options / Menu");
-            AddFirstMatchingButtonBinding(centerButtonBindings,
+                "Options / Menu",
+                "System button");
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
                 new string[] { "Share", "Create", "Capture", "Back", "Minus" },
-                "Share / View");
-            AddFirstMatchingButtonBinding(centerButtonBindings,
+                "Share / View",
+                "System button");
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
                 new string[] { "PS", "Home", "Guide", "Steam" },
-                "PS / Home");
-            AddFirstMatchingButtonBinding(centerButtonBindings,
+                "PS / Home",
+                "System button");
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
                 new string[] { "Mute" },
-                "Mic");
+                "Mic",
+                "System button");
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
+                new string[] { "QAM" },
+                "QAM",
+                "Quick Access Menu button");
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
+                new string[] { "Select" },
+                "Select",
+                "Center/select button");
+            AddFirstMatchingButtonBinding(centerButtonBindings, claimedBindings,
+                new string[] { "TouchClick" },
+                "DS4/DS Touch Click",
+                "DualShock/DualSense touchpad click");
         }
 
         private void PopulatePaddleButtonBindings()
@@ -1018,9 +1038,24 @@ namespace DS4MapperTest.ViewModels
             string[] aliases,
             string displayName)
         {
+            AddFirstMatchingButtonBinding(target, null, aliases, displayName, null);
+        }
+
+        private bool AddFirstMatchingButtonBinding(
+            ObservableCollection<FaceButtonBindingItem> target,
+            HashSet<string> claimedBindings,
+            string[] aliases,
+            string displayName,
+            string subtitle)
+        {
             BindingItemsTest item = null;
             foreach (string alias in aliases)
             {
+                if (claimedBindings != null && claimedBindings.Contains(alias))
+                {
+                    continue;
+                }
+
                 if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
                 {
                     item = buttonBindings[index];
@@ -1030,8 +1065,35 @@ namespace DS4MapperTest.ViewModels
 
             if (item != null)
             {
-                target.Add(new FaceButtonBindingItem(this, item, displayName));
+                target.Add(new FaceButtonBindingItem(this, item, displayName, subtitle));
+                claimedBindings?.Add(item.BindingName);
+                return true;
             }
+
+            return false;
+        }
+
+        private FaceButtonBindingItem CreateTouchpadClickBinding(TouchBindingItemsTest touchpadItem)
+        {
+            string[] aliases = touchpadItem.BindingName switch
+            {
+                "LeftTouchpad" => new string[] { "LeftPadClick", "LeftTouchpadClick" },
+                "TouchpadLeft" => new string[] { "LeftPadClick", "LeftTouchpadClick" },
+                "RightTouchpad" => new string[] { "RightPadClick", "RightTouchpadClick" },
+                "TouchpadRight" => new string[] { "RightPadClick", "RightTouchpadClick" },
+                _ => Array.Empty<string>(),
+            };
+
+            foreach (string alias in aliases)
+            {
+                if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
+                {
+                    return new FaceButtonBindingItem(this, buttonBindings[index],
+                        "Touchpad Click", "Physical pad click");
+                }
+            }
+
+            return null;
         }
 
         private void PopulateTriggerKeybinds()
@@ -1965,6 +2027,9 @@ namespace DS4MapperTest.ViewModels
             //set => bindingName = value;
         }
         //public event EventHandler BindingNameChanged;
+
+        public FaceButtonBindingItem TouchpadClickBinding { get; set; }
+        public bool HasTouchpadClickBinding => TouchpadClickBinding != null;
 
         private TouchpadMapAction mappedAction;
         public TouchpadMapAction MappedAction
