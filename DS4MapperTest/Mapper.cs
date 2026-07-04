@@ -274,6 +274,33 @@ namespace DS4MapperTest
             get => editLayer; set => editLayer = value;
         }
 
+        private int suppressProfileDirtyTracking;
+        public event EventHandler ProfileEditCommitted;
+
+        public IDisposable SuppressProfileDirtyTracking()
+        {
+            suppressProfileDirtyTracking++;
+            return new ProfileDirtyTrackingScope(this);
+        }
+
+        private sealed class ProfileDirtyTrackingScope : IDisposable
+        {
+            private Mapper mapper;
+
+            public ProfileDirtyTrackingScope(Mapper mapper)
+            {
+                this.mapper = mapper;
+            }
+
+            public void Dispose()
+            {
+                if (mapper == null) return;
+                mapper.suppressProfileDirtyTracking =
+                    Math.Max(0, mapper.suppressProfileDirtyTracking - 1);
+                mapper = null;
+            }
+        }
+
         // VK, Count
         protected static Dictionary<uint, int> keyReferenceCountDict = new Dictionary<uint, int>();
         // VK
@@ -2844,6 +2871,10 @@ namespace DS4MapperTest
             */
 
             BaseReader.HaltReportingRunAction(tempAct);
+            if (suppressProfileDirtyTracking == 0)
+            {
+                ProfileEditCommitted?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public abstract void EstablishForceFeedback();

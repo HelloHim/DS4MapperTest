@@ -52,12 +52,66 @@ namespace DS4MapperTest.ViewModels
             get => tempProfile;
         }
 
+        private bool suppressDirtyTracking;
+
+        public bool IsProfileDirty => tempProfile?.Dirty == true;
+
+        public void MarkProfileDirty()
+        {
+            if (suppressDirtyTracking || tempProfile == null) return;
+            if (tempProfile.Dirty) return;
+
+            tempProfile.Dirty = true;
+            RaisePropertyChanged(nameof(IsProfileDirty));
+        }
+
+        public void MarkProfileClean()
+        {
+            if (tempProfile == null) return;
+            if (!tempProfile.Dirty)
+            {
+                RaisePropertyChanged(nameof(IsProfileDirty));
+                return;
+            }
+
+            tempProfile.Dirty = false;
+            RaisePropertyChanged(nameof(IsProfileDirty));
+        }
+
+        public IDisposable SuppressDirtyTracking()
+        {
+            return new DirtyTrackingScope(this);
+        }
+
+        private sealed class DirtyTrackingScope : IDisposable
+        {
+            private ProfileEditorTestViewModel owner;
+            private readonly IDisposable mapperScope;
+
+            public DirtyTrackingScope(ProfileEditorTestViewModel owner)
+            {
+                this.owner = owner;
+                owner.suppressDirtyTracking = true;
+                mapperScope = owner.mapper.SuppressProfileDirtyTracking();
+            }
+
+            public void Dispose()
+            {
+                if (owner == null) return;
+                mapperScope?.Dispose();
+                owner.suppressDirtyTracking = false;
+                owner = null;
+            }
+        }
+
         public string ProfileName
         {
             get => tempProfile.Name;
             set
             {
+                if (tempProfile.Name == value) return;
                 tempProfile.Name = value;
+                MarkProfileDirty();
             }
         }
 
@@ -292,6 +346,7 @@ namespace DS4MapperTest.ViewModels
                 if (currentName == value) return;
                 layerItems[selectedActionLayerIndex].Layer.Name = value;
                 layerItems[selectedActionLayerIndex].RaiseDisplayNameChanged();
+                MarkProfileDirty();
             }
         }
 
@@ -304,6 +359,7 @@ namespace DS4MapperTest.ViewModels
                 if (currentName == value) return;
                 actionSetItems[selectedActionSetIndex].Set.Name = value;
                 actionSetItems[selectedActionSetIndex].RaiseDisplayNameChanged();
+                MarkProfileDirty();
             }
         }
 
@@ -322,6 +378,7 @@ namespace DS4MapperTest.ViewModels
                 if (tempProfile.OutputGamepadSettings.enabled == value) return;
                 tempProfile.OutputGamepadSettings.enabled = value;
                 RaisePropertyChanged(nameof(OutControllerEnabled));
+                MarkProfileDirty();
             }
         }
 
@@ -342,6 +399,7 @@ namespace DS4MapperTest.ViewModels
                 tempProfile.OutputGamepadSettings.OutputGamepad = value;
                 RaisePropertyChanged(nameof(CurrentOutputControllerType));
                 RaisePropertyChanged(nameof(OutputControllerTypeIdx));
+                MarkProfileDirty();
             }
         }
 
@@ -381,6 +439,7 @@ namespace DS4MapperTest.ViewModels
                 {
                     RaisePropertyChanged(nameof(OutputControllerTypeIdx));
                     RaisePropertyChanged(nameof(CurrentOutputControllerType));
+                    MarkProfileDirty();
                 }
             }
         }
@@ -393,6 +452,7 @@ namespace DS4MapperTest.ViewModels
                 if (tempProfile.OutputGamepadSettings.ForceFeedbackEnabled == value) return;
                 tempProfile.OutputGamepadSettings.ForceFeedbackEnabled = value;
                 RaisePropertyChanged(nameof(ForceFeedbackEnabled));
+                MarkProfileDirty();
             }
         }
 
@@ -567,6 +627,7 @@ namespace DS4MapperTest.ViewModels
                 RaisePropertyChanged(nameof(IsRainbowLightbarMode));
                 RaisePropertyChanged(nameof(IsPulseLightbarMode));
                 RaisePropertyChanged(nameof(IsBatteryLightbarMode));
+                MarkProfileDirty();
             }
         }
         public event EventHandler CurrentLightbarModeChanged;
@@ -586,6 +647,7 @@ namespace DS4MapperTest.ViewModels
                 if (tempProfile.LightbarSettings.rainbowSecondsCycle == newValue) return;
                 tempProfile.LightbarSettings.rainbowSecondsCycle = newValue;
                 RaisePropertyChanged(nameof(RainbowSecondsCycle));
+                MarkProfileDirty();
             }
         }
 
@@ -596,7 +658,13 @@ namespace DS4MapperTest.ViewModels
             this.tempProfile = currentProfile;
 
             tempProfile.DirtyChanged += TempProfile_DirtyChanged;
+            mapper.ProfileEditCommitted += Mapper_ProfileEditCommitted;
             CurrentLightbarModeChanged += ProfileEditorTestViewModel_CurrentLightbarModeChanged;
+        }
+
+        private void Mapper_ProfileEditCommitted(object sender, EventArgs e)
+        {
+            MarkProfileDirty();
         }
 
         private void ProfileEditorTestViewModel_CurrentLightbarModeChanged(object sender, EventArgs e)
@@ -606,7 +674,7 @@ namespace DS4MapperTest.ViewModels
 
         private void TempProfile_DirtyChanged(object sender, EventArgs e)
         {
-            //throw new NotImplementedException();
+            RaisePropertyChanged(nameof(IsProfileDirty));
         }
 
         public void UpdateSelectedSolidColor(byte red, byte green, byte blue)
@@ -617,6 +685,7 @@ namespace DS4MapperTest.ViewModels
             RaisePropertyChanged(nameof(LightbarColor));
             RaisePropertyChanged(nameof(LightbarHexColor));
             RaisePropertyChanged(nameof(LightbarPreviewBrush));
+            MarkProfileDirty();
         }
 
         public void UpdateSelectedPulseColor(byte red, byte green, byte blue)
@@ -627,6 +696,7 @@ namespace DS4MapperTest.ViewModels
             RaisePropertyChanged(nameof(LightbarPulseColor));
             RaisePropertyChanged(nameof(LightbarPulseHexColor));
             RaisePropertyChanged(nameof(LightbarPulsePreviewBrush));
+            MarkProfileDirty();
         }
 
         public void UpdateSelectedBatteryColor(byte red, byte green, byte blue)
@@ -637,6 +707,7 @@ namespace DS4MapperTest.ViewModels
             RaisePropertyChanged(nameof(LightbarBatteryColor));
             RaisePropertyChanged(nameof(LightbarBatteryHexColor));
             RaisePropertyChanged(nameof(LightbarBatteryPreviewBrush));
+            MarkProfileDirty();
         }
 
         public void Test()
@@ -1700,13 +1771,16 @@ namespace DS4MapperTest.ViewModels
             actionSetItems[ind].ItemActive = true;
 
             actionResetEvent.Reset();
-            mapper.ProcessMappingChangeAction(() =>
+            using (SuppressDirtyTracking())
             {
-                mapper.ActionProfile.SwitchSets(ind, mapper);
-                mapper.ActionProfile.CurrentActionSet.RecompileCompositeLayer(mapper);
+                mapper.ProcessMappingChangeAction(() =>
+                {
+                    mapper.ActionProfile.SwitchSets(ind, mapper);
+                    mapper.ActionProfile.CurrentActionSet.RecompileCompositeLayer(mapper);
 
-                actionResetEvent.Set();
-            });
+                    actionResetEvent.Set();
+                });
+            }
 
             SelectedActionLayerIndex = 0;
         }
@@ -1719,11 +1793,14 @@ namespace DS4MapperTest.ViewModels
             layerItems[layerInd].ItemActive = true;
 
             actionResetEvent.Reset();
-            mapper.ProcessMappingChangeAction(() =>
+            using (SuppressDirtyTracking())
             {
-                mapper.ActionProfile.CurrentActionSet.SwitchActionLayer(mapper, layerInd);
-                actionResetEvent.Set();
-            });
+                mapper.ProcessMappingChangeAction(() =>
+                {
+                    mapper.ActionProfile.CurrentActionSet.SwitchActionLayer(mapper, layerInd);
+                    actionResetEvent.Set();
+                });
+            }
         }
 
         public void TestFakeSave(ProfileEntity entity, Profile profile)
@@ -1766,23 +1843,26 @@ namespace DS4MapperTest.ViewModels
             string tempOutJson = string.Empty;
             actionResetEvent.Reset();
 
-            mapper.ProcessMappingChangeAction(() =>
+            using (SuppressDirtyTracking())
             {
-                ProfileSerializer profileSerializer = new ProfileSerializer(tempProfile);
-                tempOutJson = JsonConvert.SerializeObject(profileSerializer, Formatting.Indented,
-                    new JsonSerializerSettings()
-                    {
-                        //Converters = new List<JsonConverter>()
-                        //{
-                        //    new MapActionSubTypeConverter(),
-                        //}
-                        //TypeNameHandling = TypeNameHandling.Objects
-                        //ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                    });
-                //Trace.WriteLine(tempOutJson);
+                mapper.ProcessMappingChangeAction(() =>
+                {
+                    ProfileSerializer profileSerializer = new ProfileSerializer(tempProfile);
+                    tempOutJson = JsonConvert.SerializeObject(profileSerializer, Formatting.Indented,
+                        new JsonSerializerSettings()
+                        {
+                            //Converters = new List<JsonConverter>()
+                            //{
+                            //    new MapActionSubTypeConverter(),
+                            //}
+                            //TypeNameHandling = TypeNameHandling.Objects
+                            //ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                        });
+                    //Trace.WriteLine(tempOutJson);
 
-                actionResetEvent.Set();
-            });
+                    actionResetEvent.Set();
+                });
+            }
 
             actionResetEvent.Wait();
 
@@ -1876,6 +1956,7 @@ namespace DS4MapperTest.ViewModels
         public void UnregisterEvents()
         {
             tempProfile.DirtyChanged -= TempProfile_DirtyChanged;
+            mapper.ProfileEditCommitted -= Mapper_ProfileEditCommitted;
         }
     }
 

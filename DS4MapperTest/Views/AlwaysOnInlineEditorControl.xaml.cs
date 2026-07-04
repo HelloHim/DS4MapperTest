@@ -191,8 +191,11 @@ namespace DS4MapperTest.Views
         {
             if (snapshotAction == null || currentAction == null) return;
 
-            profileVm.ReplaceAlwaysOnAction(currentAction, CloneAction(snapshotAction),
-                copyProps: false);
+            using (profileVm.SuppressDirtyTracking())
+            {
+                profileVm.ReplaceAlwaysOnAction(currentAction, CloneAction(snapshotAction),
+                    copyProps: false);
+            }
         }
 
         private static ButtonMapAction CloneAction(ButtonMapAction source)

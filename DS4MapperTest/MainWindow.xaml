@@ -60,6 +60,11 @@
             <Setter Property="BorderBrush" Value="{DynamicResource JsmccDangerBorderBrush}"/>
         </Style>
 
+        <Style x:Key="SaveStatusPillWarningStyle" TargetType="Border" BasedOn="{StaticResource SaveStatusPillBaseStyle}">
+            <Setter Property="Background" Value="{DynamicResource JsmccWarningBgBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource JsmccWarningBorderBrush}"/>
+        </Style>
+
         <Style x:Key="SaveStatusPillTextSuccessStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -70,6 +75,12 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource JsmccDangerTextBrush}"/>
+        </Style>
+
+        <Style x:Key="SaveStatusPillTextWarningStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource JsmccWarningTextBrush}"/>
         </Style>
     </Window.Resources>
 
@@ -200,6 +211,13 @@
                         <StackPanel Grid.Column="1"
                                     Orientation="Horizontal"
                                     VerticalAlignment="Center">
+                            <Border x:Name="unsavedStatusPill"
+                                    Visibility="{Binding IsProfileDirty, Converter={StaticResource BoolToVis}}"
+                                    Style="{StaticResource SaveStatusPillWarningStyle}">
+                                <TextBlock Text="Unsaved changes"
+                                           Style="{StaticResource SaveStatusPillTextWarningStyle}"/>
+                            </Border>
+
                             <Border x:Name="saveStatusPill"
                                     Visibility="Collapsed"
                                     Style="{StaticResource SaveStatusPillSuccessStyle}">

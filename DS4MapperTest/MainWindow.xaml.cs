@@ -49,6 +49,13 @@ namespace DS4MapperTest
         private const double NavCompactWidthThreshold = 820;
         private bool isNavCompact;
 
+        private enum DirtySwitchDecision
+        {
+            Save,
+            Discard,
+            Cancel,
+        }
+
         private class ProfileListEntry
         {
             public ProfileEntity Entity { get; }
@@ -242,26 +249,17 @@ namespace DS4MapperTest
             suppressDeviceCombo = false;
         }
 
-        private void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void DeviceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (suppressDeviceCombo) return;
 
             DeviceListItem newItem = deviceComboBox.SelectedItem as DeviceListItem;
             if (newItem == null || newItem == currentDeviceItem) return;
 
-            if (editorTestVM?.CurrentProfile != null && editorTestVM.CurrentProfile.Dirty)
+            if (!await ConfirmDiscardProfileChangesAsync())
             {
-                var confirm = MessageBox.Show(
-                    "The current profile has unsaved changes. Switch devices anyway?",
-                    "Unsaved Changes",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (confirm != MessageBoxResult.Yes)
-                {
-                    RefreshDeviceCombo();
-                    return;
-                }
+                RefreshDeviceCombo();
+                return;
             }
 
             if (!LoadProfileForDevice(newItem))
@@ -600,6 +598,12 @@ namespace DS4MapperTest
 
         private async Task SwitchProfileAsync(DeviceListItem item, int newIndex)
         {
+            if (!await ConfirmDiscardProfileChangesAsync())
+            {
+                RefreshProfileCombo();
+                return;
+            }
+
             IsEnabled = false;
             suppressCombo = true;
             await Task.Run(() => { item.ProfileIndex = newIndex; });
@@ -870,7 +874,12 @@ namespace DS4MapperTest
 
         private async void SaveProfileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (editorTestVM == null || isSavingProfile) return;
+            await SaveCurrentProfileAsync();
+        }
+
+        private async Task<bool> SaveCurrentProfileAsync()
+        {
+            if (editorTestVM == null || isSavingProfile) return false;
 
             isSavingProfile = true;
             saveStatusHideTimer?.Stop();
@@ -897,9 +906,11 @@ namespace DS4MapperTest
 
             if (saveException == null)
             {
+                activeVM.MarkProfileClean();
                 saveProfileButton.Content = "Saved ✓";
                 ShowSaveStatusPill(success: true);
                 StartSaveStatusHideTimer(TimeSpan.FromSeconds(2.5), revertButton: true);
+                return true;
             }
             else
             {
@@ -907,7 +918,99 @@ namespace DS4MapperTest
                 saveProfileButton.Content = "Save Profile";
                 ShowSaveStatusPill(success: false);
                 StartSaveStatusHideTimer(TimeSpan.FromSeconds(6), revertButton: false);
+                return false;
             }
+        }
+
+        private async Task<bool> ConfirmDiscardProfileChangesAsync()
+        {
+            if (editorTestVM?.CurrentProfile?.Dirty != true) return true;
+
+            DirtySwitchDecision decision = ShowDirtySwitchDialog();
+            switch (decision)
+            {
+                case DirtySwitchDecision.Save:
+                    return await SaveCurrentProfileAsync();
+                case DirtySwitchDecision.Discard:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private DirtySwitchDecision ShowDirtySwitchDialog()
+        {
+            DirtySwitchDecision decision = DirtySwitchDecision.Cancel;
+            Window dialog = new Window
+            {
+                Owner = this,
+                Title = "Unsaved Changes",
+                SizeToContent = SizeToContent.WidthAndHeight,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                ResizeMode = ResizeMode.NoResize,
+                Background = (Brush)FindResource("JsmccBg1Brush"),
+            };
+
+            StackPanel root = new StackPanel { Width = 360 };
+            TextBlock message = new TextBlock
+            {
+                Text = "The current profile has unsaved changes.",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 14),
+            };
+            message.Style = (Style)FindResource("JsmccBodyText");
+            root.Children.Add(message);
+
+            StackPanel buttons = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+            };
+
+            Button saveButton = CreateDirtyDialogButton("Save", "JsmccPrimaryButtonStyle");
+            Button discardButton = CreateDirtyDialogButton("Discard", "JsmccDangerButtonStyle");
+            Button cancelButton = CreateDirtyDialogButton("Cancel", "JsmccButtonStyle");
+
+            saveButton.Click += (_, _) =>
+            {
+                decision = DirtySwitchDecision.Save;
+                dialog.DialogResult = true;
+            };
+            discardButton.Click += (_, _) =>
+            {
+                decision = DirtySwitchDecision.Discard;
+                dialog.DialogResult = true;
+            };
+            cancelButton.Click += (_, _) =>
+            {
+                decision = DirtySwitchDecision.Cancel;
+                dialog.DialogResult = false;
+            };
+
+            buttons.Children.Add(saveButton);
+            buttons.Children.Add(discardButton);
+            buttons.Children.Add(cancelButton);
+            root.Children.Add(buttons);
+
+            dialog.Content = new Border
+            {
+                Padding = new Thickness(18),
+                Child = root,
+            };
+            dialog.ShowDialog();
+
+            return decision;
+        }
+
+        private Button CreateDirtyDialogButton(string content, string styleKey)
+        {
+            return new Button
+            {
+                Content = content,
+                Style = (Style)FindResource(styleKey),
+                MinWidth = 82,
+                Margin = new Thickness(8, 0, 0, 0),
+            };
         }
 
         private void StartSaveStatusHideTimer(TimeSpan delay, bool revertButton)
