@@ -73,9 +73,10 @@
                                                       Tag="Hold"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddHoldPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click"/>
-                                            <MenuItem Header="Double Press - Not currently supported"
-                                                      IsEnabled="False"
-                                                      ToolTip="Not currently supported"/>
+                                            <MenuItem Header="Double Press"
+                                                      Tag="Double"
+                                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddDoublePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Click="AddExtraBindingMenuItem_Click"/>
                                             <MenuItem Header="Start Press"
                                                       Tag="Start"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
