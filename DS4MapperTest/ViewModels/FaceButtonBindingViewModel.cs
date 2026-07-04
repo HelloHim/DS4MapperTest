@@ -13,6 +13,7 @@ namespace DS4MapperTest.ViewModels
         Regular,
         Hold,
         Double,
+        Distance,
         Start,
         Release,
     }
@@ -46,10 +47,12 @@ namespace DS4MapperTest.ViewModels
 
         public bool HasHoldPress => HasFunc<HoldPressFunc>();
         public bool HasDoublePress => HasFunc<DoublePressFunc>();
+        public bool HasDistancePress => HasFunc<DistanceFunc>();
         public bool HasStartPress => HasFunc<StartPressFunc>();
         public bool HasReleasePress => HasFunc<ReleaseFunc>();
         public bool CanAddHoldPress => !HasHoldPress;
         public bool CanAddDoublePress => !HasDoublePress;
+        public bool CanAddDistancePress => !HasDistancePress;
         public bool CanAddStartPress => !HasStartPress;
         public bool CanAddReleasePress => !HasReleasePress;
 
@@ -90,6 +93,9 @@ namespace DS4MapperTest.ViewModels
                             break;
                         case DoublePressFunc:
                             functionItems.Add(new FaceButtonFuncItem(this, FaceBindingFuncKind.Double, func));
+                            break;
+                        case DistanceFunc:
+                            functionItems.Add(new FaceButtonFuncItem(this, FaceBindingFuncKind.Distance, func));
                             break;
                         case StartPressFunc:
                             functionItems.Add(new FaceButtonFuncItem(this, FaceBindingFuncKind.Start, func));
@@ -176,6 +182,7 @@ namespace DS4MapperTest.ViewModels
             {
                 FaceBindingFuncKind.Hold => HasHoldPress,
                 FaceBindingFuncKind.Double => HasDoublePress,
+                FaceBindingFuncKind.Distance => HasDistancePress,
                 FaceBindingFuncKind.Start => HasStartPress,
                 FaceBindingFuncKind.Release => HasReleasePress,
                 _ => false,
@@ -198,6 +205,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Regular => new NormalPressFunc(emptyOutput),
                 FaceBindingFuncKind.Hold => CreateOutputFunc(new HoldPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Double => CreateOutputFunc(new DoublePressFunc(), emptyOutput),
+                FaceBindingFuncKind.Distance => CreateOutputFunc(new DistanceFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
                 _ => null,
@@ -223,10 +231,12 @@ namespace DS4MapperTest.ViewModels
         {
             OnPropertyChanged(nameof(HasHoldPress));
             OnPropertyChanged(nameof(HasDoublePress));
+            OnPropertyChanged(nameof(HasDistancePress));
             OnPropertyChanged(nameof(HasStartPress));
             OnPropertyChanged(nameof(HasReleasePress));
             OnPropertyChanged(nameof(CanAddHoldPress));
             OnPropertyChanged(nameof(CanAddDoublePress));
+            OnPropertyChanged(nameof(CanAddDistancePress));
             OnPropertyChanged(nameof(CanAddStartPress));
             OnPropertyChanged(nameof(CanAddReleasePress));
         }
@@ -255,12 +265,14 @@ namespace DS4MapperTest.ViewModels
         public bool SupportsFireDelay => func is NormalPressFunc;
         public bool SupportsHoldTime => func is HoldPressFunc;
         public bool SupportsReleaseOptions => func is ReleaseFunc;
+        public bool SupportsDistanceOptions => func is DistanceFunc;
 
         public string DisplayName => Kind switch
         {
             FaceBindingFuncKind.Regular => "Regular Press",
             FaceBindingFuncKind.Hold => "Hold Press",
             FaceBindingFuncKind.Double => "Double Press",
+            FaceBindingFuncKind.Distance => "Distance",
             FaceBindingFuncKind.Start => "Start Press",
             FaceBindingFuncKind.Release => "Release Press",
             _ => "Binding",
@@ -436,6 +448,38 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        public string DistanceName
+        {
+            get => func is DistanceFunc distanceFunc ? distanceFunc.Name : "";
+            set
+            {
+                if (func is not DistanceFunc distanceFunc) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    owner.Owner.ReleaseFaceAction(owner);
+                    distanceFunc.Name = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                });
+                OnPropertyChanged(nameof(DistanceName));
+            }
+        }
+
+        public double DistanceValue
+        {
+            get => func is DistanceFunc distanceFunc ? distanceFunc.distance : 0.0;
+            set
+            {
+                if (func is not DistanceFunc distanceFunc) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    owner.Owner.ReleaseFaceAction(owner);
+                    distanceFunc.distance = Math.Clamp(value, 0.0, 1.0);
+                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                });
+                OnPropertyChanged(nameof(DistanceValue));
+            }
+        }
+
         public FaceButtonFuncItem(FaceButtonBindingItem owner, FaceBindingFuncKind kind,
             ActionFunc func)
         {
@@ -455,6 +499,8 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(ReleaseDurationMs));
             OnPropertyChanged(nameof(ReleaseDelayMs));
             OnPropertyChanged(nameof(ReleaseInterruptable));
+            OnPropertyChanged(nameof(DistanceName));
+            OnPropertyChanged(nameof(DistanceValue));
             OnPropertyChanged(nameof(IsTurboEnabled));
         }
 

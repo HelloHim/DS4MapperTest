@@ -705,9 +705,30 @@ namespace DS4MapperTest
         {
             private DistanceFunc distanceFunc;
 
+            public string Name
+            {
+                get => distanceFunc.Name;
+                set => distanceFunc.Name = value;
+            }
+            public bool ShouldSerializeName()
+            {
+                return !string.IsNullOrEmpty(distanceFunc.Name);
+            }
+
+            public double Distance
+            {
+                get => distanceFunc.distance;
+                set => distanceFunc.distance = Math.Clamp(value, 0.0, 1.0);
+            }
+            public bool ShouldSerializeDistance()
+            {
+                return distanceFunc.distance != 0.0;
+            }
+
             public bool IsDefault()
             {
-                return true;
+                return string.IsNullOrEmpty(distanceFunc.Name) &&
+                    distanceFunc.distance == 0.0;
             }
 
             public DistanceSettings(DistanceFunc actionFunc)

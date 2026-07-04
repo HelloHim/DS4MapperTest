@@ -88,6 +88,10 @@
                                                       Tag="Double"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddDoublePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="TouchpadClickAddExtraBindingMenuItem_Click"/>
+                                            <MenuItem Header="Distance"
+                                                      Tag="Distance"
+                                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddDistancePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Click="TouchpadClickAddExtraBindingMenuItem_Click"/>
                                             <MenuItem Header="Start Press"
                                                       Tag="Start"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
@@ -243,6 +247,40 @@
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
                                                                               Value="{Binding HoldMs, UpdateSourceTrigger=LostFocus}"
                                                                               ValueFormat="0 ms"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsDistanceOptions, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Name" Style="{StaticResource JsmccLabelText}" Margin="0,0,8,0"/>
+                                                            <TextBox Text="{Binding DistanceName, UpdateSourceTrigger=LostFocus}"
+                                                                     Width="128"
+                                                                     Style="{StaticResource JsmccTextBoxStyle}"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsDistanceOptions, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Distance" Style="{StaticResource JsmccLabelText}" Margin="0,0,8,0"/>
+                                                            <hc:NumericUpDown Minimum="0.0"
+                                                                              Maximum="1.0"
+                                                                              DecimalPlaces="1"
+                                                                              Increment="0.1"
+                                                                              Width="108"
+                                                                              Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                              Value="{Binding DistanceValue, UpdateSourceTrigger=LostFocus}"/>
                                                         </StackPanel>
                                                     </Border>
 
