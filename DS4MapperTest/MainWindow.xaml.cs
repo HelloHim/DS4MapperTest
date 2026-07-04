@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
@@ -43,6 +44,9 @@ namespace DS4MapperTest
         private readonly ReaderWriterLockSlim hotplugCounterLock = new ReaderWriterLockSlim();
 
         private bool isSavingProfile;
+        private bool isTogglingService;
+        private bool isClosingAfterDirtyPrompt;
+        private bool isDirtyClosePromptActive;
         private DispatcherTimer saveStatusHideTimer;
         private static readonly Logger saveProfileLogger = LogManager.GetCurrentClassLogger();
 
@@ -86,10 +90,13 @@ namespace DS4MapperTest
 
             BackendManager manager = (App.Current as App).Manager;
             controlListVM = new ControllerListViewModel(manager);
+            manager.ServiceStarted += BackendManager_ServiceStateChanged;
+            manager.ServiceStopped += BackendManager_ServiceStateChanged;
             controlListVM.ReadProfileFailure += ControlListVM_ReadProfileFailure;
             controlListVM.ControllerList.CollectionChanged += ControllerList_CollectionChanged;
             deviceComboBox.ItemsSource = controlListVM.ControllerList;
             noDeviceHint.Visibility = Visibility.Visible;
+            UpdateServiceControls(manager);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -142,11 +149,78 @@ namespace DS4MapperTest
 
         public async void StartCheckProcess()
         {
-            await Task.Run(async () =>
+            await SetMappingServiceRunningAsync(true);
+        }
+
+        private async void ServiceToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            BackendManager manager = (Application.Current as App).Manager;
+            await SetMappingServiceRunningAsync(!manager.IsRunning);
+        }
+
+        private async Task SetMappingServiceRunningAsync(bool shouldRun)
+        {
+            BackendManager manager = (Application.Current as App).Manager;
+            if (manager == null || isTogglingService || manager.ChangingService) return;
+            if (shouldRun == manager.IsRunning)
             {
-                (Application.Current as App).Manager.Start();
-                await Task.Delay(1000);
-            });
+                UpdateServiceControls(manager);
+                return;
+            }
+
+            isTogglingService = true;
+            UpdateServiceControls(manager);
+
+            Exception serviceException = null;
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    if (shouldRun)
+                    {
+                        manager.Start();
+                        await Task.Delay(1000);
+                    }
+                    else
+                    {
+                        manager.Stop();
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                serviceException = ex;
+            }
+
+            isTogglingService = false;
+            UpdateServiceControls(manager);
+
+            if (serviceException != null)
+            {
+                MessageBox.Show(
+                    $"Failed to {(shouldRun ? "start" : "stop")} mapping service:\n{serviceException.Message}",
+                    "Mapping Service",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void BackendManager_ServiceStateChanged(object sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke((Action)(() => UpdateServiceControls(sender as BackendManager)));
+        }
+
+        private void UpdateServiceControls(BackendManager manager)
+        {
+            if (serviceToggleButton == null || serviceStatusText == null) return;
+
+            bool running = manager?.IsRunning == true;
+            bool changing = isTogglingService || manager?.ChangingService == true;
+            serviceToggleButton.Content = running ? "Stop" : "Start";
+            serviceToggleButton.IsEnabled = !changing;
+            serviceStatusText.Text = changing
+                ? (running ? "Stopping..." : "Starting...")
+                : (running ? "Running" : "Stopped");
         }
 
         private void ControllerList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -804,7 +878,7 @@ namespace DS4MapperTest
                 if (editorTestVM != null &&
                     string.Equals(ent.ProfilePath, editorTestVM.ProfileEnt?.ProfilePath, StringComparison.OrdinalIgnoreCase))
                 {
-                    editorTestVM.ProfileName = newName;
+                    editorTestVM.SetProfileNameWithoutDirty(newName);
                 }
 
                 RefreshProfileCombo();
@@ -1088,8 +1162,38 @@ namespace DS4MapperTest
             }));
         }
 
+        private async void Window_Closing(object sender, CancelEventArgs e)
+        {
+            if (isClosingAfterDirtyPrompt) return;
+            if (isDirtyClosePromptActive)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            if (editorTestVM?.CurrentProfile?.Dirty != true) return;
+
+            e.Cancel = true;
+            isDirtyClosePromptActive = true;
+
+            bool canClose = await ConfirmDiscardProfileChangesAsync();
+            isDirtyClosePromptActive = false;
+
+            if (!canClose) return;
+
+            isClosingAfterDirtyPrompt = true;
+            Close();
+        }
+
         private void Window_Closed(object sender, EventArgs e)
         {
+            BackendManager manager = (App.Current as App).Manager;
+            if (manager != null)
+            {
+                manager.ServiceStarted -= BackendManager_ServiceStateChanged;
+                manager.ServiceStopped -= BackendManager_ServiceStateChanged;
+            }
+
             DataContext = null;
             editorTestVM?.UnregisterEvents();
 

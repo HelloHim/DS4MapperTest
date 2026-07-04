@@ -78,6 +78,13 @@ namespace DS4MapperTest.ViewModels
             RaisePropertyChanged(nameof(IsProfileDirty));
         }
 
+        public void RestoreProfileDirtyState(bool isDirty)
+        {
+            if (tempProfile == null) return;
+            tempProfile.Dirty = isDirty;
+            RaisePropertyChanged(nameof(IsProfileDirty));
+        }
+
         public IDisposable SuppressDirtyTracking()
         {
             return new DirtyTrackingScope(this);
@@ -113,6 +120,16 @@ namespace DS4MapperTest.ViewModels
                 tempProfile.Name = value;
                 MarkProfileDirty();
             }
+        }
+
+        public void SetProfileNameWithoutDirty(string value)
+        {
+            if (tempProfile.Name == value) return;
+            using (SuppressDirtyTracking())
+            {
+                tempProfile.Name = value;
+            }
+            RaisePropertyChanged(nameof(ProfileName));
         }
 
         private List<BindingItemsTest> buttonBindings = new List<BindingItemsTest>();
