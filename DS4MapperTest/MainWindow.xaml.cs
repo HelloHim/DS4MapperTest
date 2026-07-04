@@ -1236,8 +1236,15 @@ namespace DS4MapperTest
             e.Cancel = true;
             isDirtyClosePromptActive = true;
 
-            bool canClose = await ConfirmDiscardProfileChangesAsync();
-            isDirtyClosePromptActive = false;
+            bool canClose;
+            try
+            {
+                canClose = await ConfirmDiscardProfileChangesAsync();
+            }
+            finally
+            {
+                isDirtyClosePromptActive = false;
+            }
 
             if (!canClose) return;
 
