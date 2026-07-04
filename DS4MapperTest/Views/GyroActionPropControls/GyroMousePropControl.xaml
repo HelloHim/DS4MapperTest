@@ -3,652 +3,85 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:local="clr-namespace:DS4MapperTest.Views.GyroActionPropControls"
              xmlns:local1="clr-namespace:DS4MapperTest.Views"
-             xmlns:localConverters="clr-namespace:DS4MapperTest.Converters"
-             xmlns:shared="clr-namespace:DS4MapperTest.Views.Shared"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
-    <UserControl.Resources>
-        <localConverters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVisibilityConverter"/>
-    </UserControl.Resources>
-    <DockPanel>
-        <ScrollViewer DockPanel.Dock="Top">
+    <StackPanel>
+        <local1:GyroActionSelectControl x:Name="gyroSelectControl" />
+
+        <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,8,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Name" Style="{StaticResource JsmccLabelText}"/>
+                <TextBox Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
+                         Style="{StaticResource JsmccTextBoxStyle}" Width="220" HorizontalAlignment="Left"/>
+            </Grid>
+        </Border>
+
+        <Border Style="{StaticResource JsmccCardBorder}" Margin="0,12,0,0">
             <StackPanel>
-                <local1:GyroActionSelectControl x:Name="gyroSelectControl" />
+                <TextBlock Text="Activation" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                <TextBlock Text="Choose which controller buttons arm the gyro, and how they combine."
+                           Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Name" />
-                    <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="200" Margin="8,0,0,0">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightName}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-                </StackPanel>
+                <TextBlock Text="Trigger Buttons" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
+                <ItemsControl ItemsSource="{Binding TriggerButtonItems}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <ToggleButton Content="{Binding DisplayString}"
+                                          IsChecked="{Binding Enabled, Mode=TwoWay}"
+                                          Style="{StaticResource JsmccChipToggleStyle}"
+                                          Margin="0,0,6,6"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="_Dead Zone" />
-                    <TextBox Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus, StringFormat='F2'}" Width="100" Margin="8,0,0,0">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightDeadZone}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-
-                    <Label Content="dps" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Vertical Dead Zone" ToolTip="Suppresses vertical (pitch) input below this threshold. Independent of the regular dead zone" />
-                    <TextBox Text="{Binding VerticalDeadZone, UpdateSourceTrigger=LostFocus, StringFormat='F2'}" Width="100" Margin="8,0,0,0">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightVerticalDeadZone}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-
-                    <Label Content="dps" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Angle Snapping" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="45.0" DecimalPlaces="1" Increment="0.1"
-                                      Value="{Binding GyroAngleSnapDegrees, FallbackValue='0.0'}"
-                                      Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightGyroAngleSnapDegrees}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                    <Label Content="degrees" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Smooth Angle Snapping" />
-                    <CheckBox IsChecked="{Binding GyroSmoothAngleSnap}" VerticalAlignment="Center"
-                              Margin="8,0,0,0" Content="Off / On">
-                        <CheckBox.Style>
-                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightGyroSmoothAngleSnap}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </CheckBox.Style>
-                    </CheckBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Trigger Buttons" />
-                    <ListView ItemsSource="{Binding TriggerButtonItems}" Height="100" Margin="8,0,0,0">
-                        <ListView.View>
-                            <GridView>
-                                <GridView.Columns>
-                                    <GridViewColumn Width="200" Header="Action">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding DisplayString}" />
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn Width="50">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <CheckBox IsChecked="{Binding Enabled}" />
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                </GridView.Columns>
-
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-
-                    <StackPanel Margin="8,0,0,0">
-                        <Label Content="Used Triggers" HorizontalAlignment="Left" />
-                        <TextBlock Text="{Binding GyroTriggerString}" Style="{StaticResource TextBlockDefault}" MinWidth="100" Margin="0,8,0,0" HorizontalAlignment="Left" />
-                    </StackPanel>
-
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Trigger Cond" />
-                    <ComboBox ItemsSource="{Binding GyroTriggerCondItems}" DisplayMemberPath="DisplayName"
-                          SelectedValuePath="ChoiceValue" SelectedValue="{Binding GyroTriggerCondChoice}" MinWidth="100" Margin="8,0,0,0">
-                        <ComboBox.Style>
-                            <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightGyroTriggerCond}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ComboBox.Style>
-                    </ComboBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Trigger Activates (Ratchet)" />
-                    <CheckBox IsChecked="{Binding GyroTriggerActivates}" Width="20" VerticalAlignment="Center" Margin="8,0,0,0">
-                        <CheckBox.Style>
-                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightGyroTriggerActivates}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </CheckBox.Style>
-                    </CheckBox>
-                </StackPanel>
-
-                <shared:CalibrationModeControl />
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Sensitivity" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
-                                  Value="{Binding Sensitivity,FallbackValue='1.0'}" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightSensitivity}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-
-                    <Label Content="RWS" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                </StackPanel>
-
-                <StackPanel Orientation="Vertical" Margin="0,8,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Opacity" Value="1.0" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
-                                        <Setter Property="Opacity" Value="0.4" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <RadioButton GroupName="VerticalSensitivityMode"
-                                     IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
-                                     VerticalAlignment="Center" />
-                        <Label Content="Vertical RWS" Margin="4,0,0,0" />
-                        <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
-                                          Value="{Binding VerticalScale, FallbackValue='1.0'}"
-                                          IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
-                                          Width="100" Margin="8,0,0,0" VerticalAlignment="Center">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
-                                            <Setter Property="Opacity" Value="0.7" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-                        <Label Content="RWS" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Opacity" Value="1.0" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="True">
-                                        <Setter Property="Opacity" Value="0.4" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <RadioButton GroupName="VerticalSensitivityMode"
-                                     IsChecked="{Binding VerticalScaleIsMultiplierMode, Mode=TwoWay}"
-                                     VerticalAlignment="Center" />
-                        <Label Content="Vertical Scale" Margin="4,0,0,0" />
-                        <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
-                                          Value="{Binding VerticalScaleMultiplier, FallbackValue='1.0'}"
-                                          IsEnabled="{Binding VerticalScaleIsMultiplierMode}"
-                                          Width="100" Margin="8,0,0,0" VerticalAlignment="Center">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
-                                            <Setter Property="Opacity" Value="0.7" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-                    </StackPanel>
-                </StackPanel>
-
-                <Border Background="#187F7F7F" BorderBrush="#667F7F7F"
-                        BorderThickness="1" CornerRadius="4" Padding="12"
-                        Margin="0,8,16,0">
-                    <StackPanel>
-                        <TextBlock Text="Acceleration" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource JsmccTextStrongBrush}"
-                                   Margin="4,0,0,4" />
-
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Acceleration Curve" />
-                            <ComboBox ItemsSource="{Binding AccelCurveChoiceItems}" DisplayMemberPath="DisplayName"
-          SelectedValuePath="Choice" SelectedValue="{Binding AccelCurveChoice}" MinWidth="200" Margin="8,0,0,0">
-                                <ComboBox.Style>
-                                    <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HighlightAccelCurve}" Value="False">
-                                                <Setter Property="Opacity" Value="0.7" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ComboBox.Style>
-                            </ComboBox>
-                        </StackPanel>
-
-                        <Expander Header="Advanced Settings" IsExpanded="False"
-                                  Margin="4,8,0,0"
-                                  Visibility="{Binding AccelCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
-                            <StackPanel Orientation="Vertical" Margin="12,8,0,0">
-
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Min Sens X" HorizontalAlignment="Left" />
-
-                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
-Value="{Binding MinAccelXSens,FallbackValue='0.0'}" Margin="8,0,0,0">
-                                <hc:NumericUpDown.Style>
-                                    <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HighlightMinAccelXSens}" Value="False">
-                                                <Setter Property="Opacity" Value="0.7" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </hc:NumericUpDown.Style>
-                            </hc:NumericUpDown>
-
-                            <Label Content="RWS" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-
-                            <Label Content="Min Sens Y" HorizontalAlignment="Left" Margin="8,0,0,0" />
-
-                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
-Value="{Binding MinAccelYSens,FallbackValue='0.0'}" Margin="8,0,0,0">
-                                <hc:NumericUpDown.Style>
-                                    <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HighlightMinAccelYSens}" Value="False">
-                                                <Setter Property="Opacity" Value="0.7" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </hc:NumericUpDown.Style>
-                            </hc:NumericUpDown>
-
-                            <Label Content="RWS" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                        </StackPanel>
-
-
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                        <Label Content="Max Sens X" />
-
-                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
-Value="{Binding MaxAccelXSens,FallbackValue='1.0'}" Margin="8,0,0,0">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightMaxAccelXSens}" Value="False">
-                                            <Setter Property="Opacity" Value="0.7" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-
-                        <Label Content="RWS" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-
-
-                        <Label Content="Max Sens Y" HorizontalAlignment="Left" Margin="8,0,0,0" />
-
-                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
-Value="{Binding MaxAccelYSens,FallbackValue='1.0'}" Margin="8,0,0,0">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightMaxAccelYSens}" Value="False">
-                                            <Setter Property="Opacity" Value="0.7" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-
-                        <Label Content="RWS" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                    </StackPanel>
-
-
-                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Min Threshold" />
-
-                            <hc:NumericUpDown Minimum="0.0" Maximum="500.0" DecimalPlaces="2" Increment="0.5"
-Value="{Binding MinGyroThreshold,FallbackValue='0.0'}" Margin="8,0,0,0">
-                                <hc:NumericUpDown.Style>
-                                    <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HighlightMinGyroThreshold}" Value="False">
-                                                <Setter Property="Opacity" Value="0.7" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </hc:NumericUpDown.Style>
-                            </hc:NumericUpDown>
-
-                            <Label Content="dps" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="16,0,0,0"
-                                    Visibility="{Binding NaturalCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}, FallbackValue=Collapsed}">
-                            <Label Content="Natural Midpoint (vHalf)" />
-                            <hc:NumericUpDown Minimum="1.0" Maximum="500.0" DecimalPlaces="2" Increment="0.5"
-Value="{Binding NaturalVHalf,FallbackValue='1.0'}" Margin="8,0,0,0">
-                                <hc:NumericUpDown.Style>
-                                    <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HighlightNaturalVHalf}" Value="False">
-                                                <Setter Property="Opacity" Value="0.7" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </hc:NumericUpDown.Style>
-                            </hc:NumericUpDown>
-
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="16,0,0,0" Visibility="{Binding UsesMaxThreshold, Converter={StaticResource Boolean2VisibilityConverter}, FallbackValue=Visible}">
-                            <Label Content="Max Threshold" />
-                            <hc:NumericUpDown Minimum="0.0" Maximum="500.0" DecimalPlaces="2" Increment="0.5"
-Value="{Binding MaxGyroThreshold,FallbackValue='1.0'}" Margin="8,0,0,0">
-                                <hc:NumericUpDown.Style>
-                                    <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HighlightMinGyroThreshold}" Value="False">
-                                                <Setter Property="Opacity" Value="0.7" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </hc:NumericUpDown.Style>
-                            </hc:NumericUpDown>
-
-                            <Label Content="dps" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="16,0,0,0"
-                                    Visibility="{Binding PowerCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}, FallbackValue='Collapsed'}">
-
-                            <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
-                                <Label Content="Power vRef" />
-                                <hc:NumericUpDown Minimum="0.01" Maximum="500.0" DecimalPlaces="2" Increment="0.5"
-Value="{Binding PowerCurveVRef,FallbackValue='1.0'}" Margin="8,0,0,0">
-                                    <hc:NumericUpDown.Style>
-                                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HighlightPowerCurveVRef}" Value="False">
-                                                    <Setter Property="Opacity" Value="0.7" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </hc:NumericUpDown.Style>
-                                </hc:NumericUpDown>
-
-                                <Label Content="dps" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
-                                <Label Content="Power Exponent" />
-                                <hc:NumericUpDown Minimum="0.01" Maximum="500.0" DecimalPlaces="2" Increment="0.5"
-Value="{Binding PowerCurveExponent,FallbackValue='1.0'}" Margin="8,0,0,0">
-                                    <hc:NumericUpDown.Style>
-                                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HighlightPowerCurveExponent}" Value="False">
-                                                    <Setter Property="Opacity" Value="0.7" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </hc:NumericUpDown.Style>
-                                </hc:NumericUpDown>
-
-                            </StackPanel>
-
-                        </StackPanel>
-
-                    </StackPanel>
-
-                    <Button Content="Reset to Defaults"
-                            Command="{Binding ResetAccelerationDefaultsComm}"
-                            HorizontalAlignment="Left" Margin="0,8,0,0" />
-                            </StackPanel>
-                        </Expander>
-                    </StackPanel>
+                <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,6,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Selected Triggers" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBlock Grid.Column="1" Text="{Binding GyroTriggerString}" Style="{StaticResource JsmccBodyText}" TextWrapping="Wrap"/>
+                    </Grid>
                 </Border>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Multiplier Compensation" />
-                    <CheckBox IsChecked="{Binding MultiplierCompensation}"
-                              VerticalAlignment="Center" Margin="8,0,0,0">
-                        <CheckBox.Style>
-                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightMultiplierCompensation}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </CheckBox.Style>
-                    </CheckBox>
-                </StackPanel>
+                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Trigger Condition" Style="{StaticResource JsmccLabelText}"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding GyroTriggerCondItems}" DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="ChoiceValue" SelectedValue="{Binding GyroTriggerCondChoice}"
+                                  Style="{StaticResource JsmccComboBoxStyle}" MinWidth="120"/>
+                    </Grid>
+                </Border>
 
-                <StackPanel Orientation="Vertical" Margin="0,8,0,0"
-                            Visibility="{Binding MultiplierCompensation, Converter={StaticResource Boolean2VisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="Horizontal Multiplier" />
-                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
-                                          Value="{Binding AccelerationMultiplier,FallbackValue='1.0'}"
-                                          Width="100" Margin="8,0,0,0">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightAccelerationMultiplier}" Value="False">
-                                            <Setter Property="Opacity" Value="0.7" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Opacity" Value="1.0" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding VerticalAccelerationIsAbsoluteMode}" Value="False">
-                                        <Setter Property="Opacity" Value="0.4" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <RadioButton GroupName="VerticalAccelerationMode"
-                                     IsChecked="{Binding VerticalAccelerationIsAbsoluteMode, Mode=TwoWay}"
-                                     VerticalAlignment="Center" />
-                        <Label Content="Vertical Multiplier" Margin="4,0,0,0" />
-                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
-                                          Value="{Binding VerticalAccelerationMultiplier,FallbackValue='1.0'}"
-                                          IsEnabled="{Binding VerticalAccelerationIsAbsoluteMode}"
-                                          Width="100" Margin="8,0,0,0">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightVerticalAccelerationMultiplier}" Value="False">
-                                            <Setter Property="Opacity" Value="0.7" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Opacity" Value="1.0" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding VerticalAccelerationIsScaleMode}" Value="False">
-                                        <Setter Property="Opacity" Value="0.4" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <RadioButton GroupName="VerticalAccelerationMode"
-                                     IsChecked="{Binding VerticalAccelerationIsScaleMode, Mode=TwoWay}"
-                                     VerticalAlignment="Center" />
-                        <Label Content="Vertical Scale" Margin="4,0,0,0" />
-                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
-                                          Value="{Binding VerticalAccelerationScale,FallbackValue='1.0'}"
-                                          IsEnabled="{Binding VerticalAccelerationIsScaleMode}"
-                                          Width="100" Margin="8,0,0,0">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightVerticalAccelerationMultiplier}" Value="False">
-                                            <Setter Property="Opacity" Value="0.7" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Invert" />
-                    <ComboBox ItemsSource="{Binding InvertChoiceItems}" DisplayMemberPath="DisplayName"
-                          SelectedValuePath="Choice" SelectedValue="{Binding InvertChoice}" MinWidth="100" Margin="8,0,0,0">
-                        <ComboBox.Style>
-                            <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightInvert}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ComboBox.Style>
-                    </ComboBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Jitter Compensation" />
-                    <CheckBox IsChecked="{Binding GyroJitterCompensation}" Width="20" VerticalAlignment="Center" Margin="8,0,0,0">
-                        <CheckBox.Style>
-                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightGyroJitterCompensation}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </CheckBox.Style>
-                    </CheckBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <GroupBox MinWidth="200">
-                        <GroupBox.Header>
-                            <CheckBox IsChecked="{Binding SmoothingEnabled}"
-                                      HorizontalAlignment="Left" HorizontalContentAlignment="Left">
-                                Use Smoothing
-                            </CheckBox>
-                        </GroupBox.Header>
-
-                        <StackPanel IsEnabled="{Binding SmoothingEnabled}">
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="Presets" />
-
-                                <ComboBox ItemsSource="{Binding SmoothPresetChoiceItems}" DisplayMemberPath="DisplayName"
-      SelectedValuePath="Choice" SelectedValue="{Binding SmoothPresetChoice}" MinWidth="100" Margin="8,0,0,0">
-                                </ComboBox>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="1&#x20ac; MinCutoff" />
-                                <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="1" Increment="0.1"
-                                  Value="{Binding SmoothingMinCutoff,FallbackValue='1.0'}" Margin="8,0,0,0">
-                                    <hc:NumericUpDown.Style>
-                                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HighlightSmoothingFilter}" Value="False">
-                                                    <Setter Property="Opacity" Value="0.7" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </hc:NumericUpDown.Style>
-                                </hc:NumericUpDown>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="1&#x20ac; Beta" />
-                                <hc:NumericUpDown Minimum="0.0" Maximum="1.0" DecimalPlaces="1" Increment="0.1"
-                                  Value="{Binding SmoothingBeta,FallbackValue='1.0'}" Margin="8,0,0,0">
-                                    <hc:NumericUpDown.Style>
-                                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HighlightSmoothingFilter}" Value="False">
-                                                    <Setter Property="Opacity" Value="0.7" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </hc:NumericUpDown.Style>
-                                </hc:NumericUpDown>
-                            </StackPanel>
-
-                        </StackPanel>
-                    </GroupBox>
-                </StackPanel>
-
-
+                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Trigger Activates (Ratchet)" Style="{StaticResource JsmccLabelText}"/>
+                        <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}" IsChecked="{Binding GyroTriggerActivates}"/>
+                    </Grid>
+                </Border>
+                <TextBlock Text="When on, the gyro stays active once triggered until the trigger condition is met again."
+                           Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,4,0,0"/>
             </StackPanel>
-        </ScrollViewer>
-
-    </DockPanel>
+        </Border>
+    </StackPanel>
 </UserControl>

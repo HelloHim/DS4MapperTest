@@ -8,8 +8,8 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <DockPanel LastChildFill="False">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <Label Content="Transform Type" />
-            <ComboBox SelectedIndex="{Binding SelectedIndex}" MinWidth="160" Margin="8,0,0,0">
+            <TextBlock Text="Gyro Mode" Style="{StaticResource JsmccLabelText}" Width="120" VerticalAlignment="Center"/>
+            <ComboBox SelectedIndex="{Binding SelectedIndex}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="180" Margin="8,0,0,0">
                 <ComboBoxItem>Unbound</ComboBoxItem>
                 <ComboBoxItem>Mouse</ComboBoxItem>
                 <ComboBoxItem>Mouse-like Joystick</ComboBoxItem>
