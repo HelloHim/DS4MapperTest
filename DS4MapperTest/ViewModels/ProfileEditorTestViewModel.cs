@@ -220,6 +220,12 @@ namespace DS4MapperTest.ViewModels
         private List<BindingItemsTest> alwaysOnBindings = new List<BindingItemsTest>();
         public List<BindingItemsTest> AlwaysOnBindings => alwaysOnBindings;
 
+        private ObservableCollection<AlwaysOnBindingItem> alwaysOnKeybinds =
+            new ObservableCollection<AlwaysOnBindingItem>();
+        public ObservableCollection<AlwaysOnBindingItem> AlwaysOnKeybinds => alwaysOnKeybinds;
+
+        public bool HasAlwaysOnKeybinds => alwaysOnKeybinds.Count > 0;
+
         private int selectAlwaysOnBindIndex = -1;
         public int SelectAlwaysOnBindIndex
         {
@@ -697,6 +703,7 @@ namespace DS4MapperTest.ViewModels
             gyroBindings.Clear();
             dpadBindings.Clear();
             alwaysOnBindings.Clear();
+            alwaysOnKeybinds.Clear();
 
             PopulateCurrentLayerBindings();
         }
@@ -807,6 +814,11 @@ namespace DS4MapperTest.ViewModels
                         "Always On",
                         tempBtnAct, mapper);
                     alwaysOnBindings.Add(tempItem);
+                    if (tempBtnAct is not ButtonNoAction)
+                    {
+                        alwaysOnKeybinds.Add(new AlwaysOnBindingItem(this, tempItem,
+                            alwaysOnKeybinds.Count));
+                    }
                 }
             }
 
@@ -819,6 +831,7 @@ namespace DS4MapperTest.ViewModels
             PopulateStickClickBindings();
             PopulateStickKeybinds();
             PopulateTouchpadGroups();
+            RaisePropertyChanged(nameof(HasAlwaysOnKeybinds));
         }
 
         private void PopulateTouchpadGroups()
@@ -1214,6 +1227,80 @@ namespace DS4MapperTest.ViewModels
             {
                 action.Release(mapper, ignoreReleaseActions: true);
             }
+        }
+
+        internal ButtonMapAction GetCurrentAlwaysOnAction()
+        {
+            ActionSet editSet = actionSetItems[selectedActionSetIndex].Set;
+            ActionLayer editLayer = layerItems[selectedActionLayerIndex].Layer;
+            editLayer.actionSetActionDict.TryGetValue(editSet.ActionButtonId,
+                out ButtonMapAction action);
+
+            return action;
+        }
+
+        internal AlwaysOnBindingItem AddAlwaysOnBinding()
+        {
+            ButtonMapAction oldAction = GetCurrentAlwaysOnAction();
+            if (oldAction == null) return null;
+            if (oldAction is not ButtonNoAction)
+            {
+                return alwaysOnKeybinds.FirstOrDefault();
+            }
+
+            ButtonAction newAction = new ButtonAction(new ActionUtil.NormalPressFunc(
+                new MapperUtil.OutputActionData(
+                    MapperUtil.OutputActionData.ActionType.Empty, 0)));
+            newAction.MappingId = oldAction.MappingId;
+            newAction.Id = oldAction.Id != MapAction.DEFAULT_UNBOUND_ID
+                ? oldAction.Id
+                : mapper.EditLayer.FindNextAvailableId();
+
+            ReplaceAlwaysOnAction(oldAction, newAction);
+            RefreshLayerBindings();
+
+            AlwaysOnBindingItem item = alwaysOnKeybinds.FirstOrDefault();
+            if (item != null)
+            {
+                item.RestoreActionOnCancel = new ButtonNoAction
+                {
+                    MappingId = newAction.MappingId,
+                    Id = newAction.Id,
+                };
+            }
+
+            return item;
+        }
+
+        internal void RemoveAlwaysOnBinding(AlwaysOnBindingItem item)
+        {
+            if (item == null) return;
+
+            ButtonMapAction oldAction = item.MappedAction;
+            ButtonNoAction newAction = new ButtonNoAction
+            {
+                MappingId = oldAction.MappingId,
+                Id = oldAction.Id,
+            };
+
+            ReplaceAlwaysOnAction(oldAction, newAction, copyProps: false);
+            RefreshLayerBindings();
+        }
+
+        internal void ReplaceAlwaysOnAction(ButtonMapAction oldAction,
+            ButtonMapAction newAction, bool copyProps = true)
+        {
+            if (oldAction == null || newAction == null) return;
+
+            AlwaysOnButtonFuncEditViewModel editVm =
+                new AlwaysOnButtonFuncEditViewModel(mapper, oldAction);
+            if (newAction.Id == MapAction.DEFAULT_UNBOUND_ID)
+            {
+                editVm.MigrationActionId(newAction);
+            }
+
+            newAction.MappingId = oldAction.MappingId;
+            editVm.SwitchLayerAction(oldAction, newAction, copyProps);
         }
 
         private static void EnsureRegularPressFunc(ButtonAction action)
@@ -2004,6 +2091,51 @@ namespace DS4MapperTest.ViewModels
         {
             MappedActionTypeChanged?.Invoke(this, EventArgs.Empty);
             DisplayBindChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    public class AlwaysOnBindingItem : INotifyPropertyChanged
+    {
+        private readonly ProfileEditorTestViewModel owner;
+        private readonly BindingItemsTest sourceItem;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public ProfileEditorTestViewModel Owner => owner;
+        public int Index { get; }
+        public string DisplayName => $"Always-On Action {Index + 1}";
+        public string HelperText => "Current action set/layer";
+        public ButtonMapAction MappedAction => sourceItem.MappedAction;
+        public bool IsUnbound => MappedAction is ButtonNoAction;
+        public ButtonMapAction RestoreActionOnCancel { get; set; }
+
+        public string DisplayBind
+        {
+            get
+            {
+                string result = MappedAction?.DescribeActions(owner.DeviceMapper);
+                return string.IsNullOrWhiteSpace(result) ? "Unbound" : result;
+            }
+        }
+
+        public AlwaysOnBindingItem(ProfileEditorTestViewModel owner,
+            BindingItemsTest sourceItem, int index)
+        {
+            this.owner = owner;
+            this.sourceItem = sourceItem;
+            Index = index;
+        }
+
+        public void Refresh()
+        {
+            OnPropertyChanged(nameof(MappedAction));
+            OnPropertyChanged(nameof(IsUnbound));
+            OnPropertyChanged(nameof(DisplayBind));
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
