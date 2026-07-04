@@ -956,7 +956,7 @@ namespace DS4MapperTest.ViewModels
             leftStickClickBinding.Clear();
             AddFirstMatchingButtonBinding(leftStickClickBinding, claimedButtonBindings,
                 new string[] { "L3", "LSClick" },
-                "LS / Left Stick Click",
+                "Left Stick Click",
                 "Stick click button");
             AddFirstMatchingButtonBinding(leftStickClickBinding, claimedButtonBindings,
                 new string[] { "LSTouch" },
@@ -966,7 +966,7 @@ namespace DS4MapperTest.ViewModels
             rightStickClickBinding.Clear();
             AddFirstMatchingButtonBinding(rightStickClickBinding, claimedButtonBindings,
                 new string[] { "R3", "RSClick" },
-                "RS / Right Stick Click",
+                "Right Stick Click",
                 "Stick click button");
             AddFirstMatchingButtonBinding(rightStickClickBinding, claimedButtonBindings,
                 new string[] { "RSTouch" },
