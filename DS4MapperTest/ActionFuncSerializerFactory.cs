@@ -36,6 +36,7 @@ namespace DS4MapperTest
                     serializer = new AnalogFuncSerializer(tempFunc);
                     break;
                 case DoublePressFunc:
+                    serializer = new DoublePressFuncSerializer(tempFunc);
                     break;
                 default:
                     break;

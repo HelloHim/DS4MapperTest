@@ -35,6 +35,7 @@ namespace DS4MapperTest.Views
             FaceBindingFuncKind? kind = tag switch
             {
                 "Hold" => FaceBindingFuncKind.Hold,
+                "Double" => FaceBindingFuncKind.Double,
                 "Start" => FaceBindingFuncKind.Start,
                 "Release" => FaceBindingFuncKind.Release,
                 _ => null,

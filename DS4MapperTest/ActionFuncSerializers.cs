@@ -266,6 +266,85 @@ namespace DS4MapperTest
         }
     }
 
+    public class DoublePressFuncSerializer : ActionFuncSerializer
+    {
+        public class DoublePressSettings
+        {
+            private DoublePressFunc doublePressFunc;
+
+            public int DurationMs
+            {
+                get => doublePressFunc.DurationMs;
+                set => doublePressFunc.DurationMs = value;
+            }
+            public bool ShouldSerializeDurationMs()
+            {
+                return doublePressFunc.DurationMs != 0;
+            }
+
+            public bool Toggle
+            {
+                get => doublePressFunc.toggleEnabled;
+                set => doublePressFunc.toggleEnabled = value;
+            }
+            public bool ShouldSerializeToggle()
+            {
+                return doublePressFunc.toggleEnabled == true;
+            }
+
+            public bool IsDefault()
+            {
+                return doublePressFunc.DurationMs == 0 &&
+                    doublePressFunc.toggleEnabled == false;
+            }
+
+            public DoublePressSettings(DoublePressFunc actionFunc)
+            {
+                doublePressFunc = actionFunc;
+            }
+        }
+
+        private const string typeString = "DoublePress";
+        private DoublePressFunc doublePressFunc = new DoublePressFunc();
+        private DoublePressSettings settings;
+
+        [JsonIgnore]
+        public DoublePressFunc DoublePressFunc
+        {
+            get => doublePressFunc; set => doublePressFunc = value;
+        }
+
+        public DoublePressSettings Settings
+        {
+            get => settings;
+            set => settings = value;
+        }
+        public bool ShouldSerializeSettings()
+        {
+            return !settings.IsDefault();
+        }
+
+        public DoublePressFuncSerializer() : base()
+        {
+            this.type = typeString;
+            actionFunc = doublePressFunc;
+            settings = new DoublePressSettings(doublePressFunc);
+        }
+
+        public DoublePressFuncSerializer(ActionFunc tempFunc) : base(tempFunc)
+        {
+            if (tempFunc is DoublePressFunc temp)
+            {
+                doublePressFunc = temp;
+                this.type = typeString;
+                actionFunc = doublePressFunc;
+                settings = new DoublePressSettings(doublePressFunc);
+
+                PopulateOutputActionData();
+            }
+        }
+    }
+
     public class ReleaseFuncSerializer: ActionFuncSerializer
     {
         public class ReleaseFuncSettings
@@ -709,6 +788,12 @@ namespace DS4MapperTest
                     holdInstance.ActionDataSerializers.RemoveAll((item) => item == null);
                     resultInstance = holdInstance;
                     break;
+                case "DoublePress":
+                    DoublePressFuncSerializer doublePressInstance = new DoublePressFuncSerializer();
+                    JsonConvert.PopulateObject(j.ToString(), doublePressInstance);
+                    doublePressInstance.ActionDataSerializers.RemoveAll((item) => item == null);
+                    resultInstance = doublePressInstance;
+                    break;
                 case "Release":
                     ReleaseFuncSerializer releaseInstance = new ReleaseFuncSerializer();
                     JsonConvert.PopulateObject(j.ToString(), releaseInstance);
@@ -767,6 +852,13 @@ namespace DS4MapperTest
                     if (current is HoldPressFuncSerializer holdFuncSerializer)
                     {
                         serializer.Serialize(writer, holdFuncSerializer);
+                    }
+
+                    break;
+                case "DoublePress":
+                    if (current is DoublePressFuncSerializer doublePressFuncSerializer)
+                    {
+                        serializer.Serialize(writer, doublePressFuncSerializer);
                     }
 
                     break;

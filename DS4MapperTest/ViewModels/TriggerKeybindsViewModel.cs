@@ -68,9 +68,11 @@ namespace DS4MapperTest.ViewModels
         public bool IsDualStageMode => mappedAction is TriggerDualStageAction;
         public bool IsTriggerTranslateMode => mappedAction is TriggerTranslate;
         public bool HasHoldPress => HasFunc<HoldPressFunc>();
+        public bool HasDoublePress => HasFunc<DoublePressFunc>();
         public bool HasStartPress => HasFunc<StartPressFunc>();
         public bool HasReleasePress => HasFunc<ReleaseFunc>();
         public bool CanAddHoldPress => IsButtonMode && !HasHoldPress;
+        public bool CanAddDoublePress => IsButtonMode && !HasDoublePress;
         public bool CanAddStartPress => IsButtonMode && !HasStartPress;
         public bool CanAddReleasePress => IsButtonMode && !HasReleasePress;
 
@@ -378,6 +380,7 @@ namespace DS4MapperTest.ViewModels
             {
                 FaceBindingFuncKind.Regular => buttonAction.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Hold => buttonAction.ActionFuncs.OfType<HoldPressFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.Double => buttonAction.ActionFuncs.OfType<DoublePressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Start => buttonAction.ActionFuncs.OfType<StartPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Release => buttonAction.ActionFuncs.OfType<ReleaseFunc>().FirstOrDefault(),
                 _ => null,
@@ -418,6 +421,9 @@ namespace DS4MapperTest.ViewModels
                     {
                         case HoldPressFunc:
                             functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Hold, func));
+                            break;
+                        case DoublePressFunc:
+                            functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Double, func));
                             break;
                         case StartPressFunc:
                             functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Start, func));
@@ -525,6 +531,7 @@ namespace DS4MapperTest.ViewModels
             return kind switch
             {
                 FaceBindingFuncKind.Hold => HasHoldPress,
+                FaceBindingFuncKind.Double => HasDoublePress,
                 FaceBindingFuncKind.Start => HasStartPress,
                 FaceBindingFuncKind.Release => HasReleasePress,
                 _ => false,
@@ -545,6 +552,7 @@ namespace DS4MapperTest.ViewModels
             {
                 FaceBindingFuncKind.Regular => new NormalPressFunc(emptyOutput),
                 FaceBindingFuncKind.Hold => CreateOutputFunc(new HoldPressFunc(), emptyOutput),
+                FaceBindingFuncKind.Double => CreateOutputFunc(new DoublePressFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
                 _ => null,
@@ -595,9 +603,11 @@ namespace DS4MapperTest.ViewModels
         private void RaiseAvailabilityChanged()
         {
             OnPropertyChanged(nameof(HasHoldPress));
+            OnPropertyChanged(nameof(HasDoublePress));
             OnPropertyChanged(nameof(HasStartPress));
             OnPropertyChanged(nameof(HasReleasePress));
             OnPropertyChanged(nameof(CanAddHoldPress));
+            OnPropertyChanged(nameof(CanAddDoublePress));
             OnPropertyChanged(nameof(CanAddStartPress));
             OnPropertyChanged(nameof(CanAddReleasePress));
         }
@@ -621,7 +631,7 @@ namespace DS4MapperTest.ViewModels
         public bool IsExtraBinding => Kind != FaceBindingFuncKind.Regular && func != null;
         public bool CanRemove => IsExtraBinding;
         public bool IsTurboEnabled => SupportsTurbo && TurboEnabled;
-        public bool SupportsToggle => func is NormalPressFunc || func is HoldPressFunc || func is StartPressFunc || func is ReleaseFunc;
+        public bool SupportsToggle => func is NormalPressFunc || func is HoldPressFunc || func is DoublePressFunc || func is StartPressFunc || func is ReleaseFunc;
         public bool SupportsTurbo => func is NormalPressFunc || func is HoldPressFunc;
         public bool SupportsFireDelay => func is NormalPressFunc;
         public bool SupportsHoldTime => func is HoldPressFunc;
@@ -631,6 +641,7 @@ namespace DS4MapperTest.ViewModels
         {
             FaceBindingFuncKind.Regular => "Regular Press",
             FaceBindingFuncKind.Hold => "Hold Press",
+            FaceBindingFuncKind.Double => "Double Press",
             FaceBindingFuncKind.Start => "Start Press",
             FaceBindingFuncKind.Release => "Release Press",
             _ => "Binding",
