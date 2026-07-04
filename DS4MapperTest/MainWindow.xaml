@@ -402,11 +402,7 @@
                                         <views:PaddlesKeybindsControl/>
                                     </TabItem>
                                     <TabItem Header="Extra">
-                                        <Border Style="{StaticResource JsmccCardBorder}" Margin="0">
-                                            <StackPanel>
-                                                <TextBlock Text="Extra" Style="{StaticResource JsmccSectionTitle}"/>
-                                            </StackPanel>
-                                        </Border>
+                                        <views:AlwaysOnKeybindsControl/>
                                     </TabItem>
                                 </TabControl>
                             </StackPanel>
