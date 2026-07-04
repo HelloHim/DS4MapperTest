@@ -17,6 +17,7 @@ using DS4MapperTest.StickActions;
 using DS4MapperTest.GyroActions;
 using DS4MapperTest.DPadActions;
 using DS4MapperTest.MapperUtil;
+using DS4MapperTest.SteamControllerLibrary;
 using System.Windows.Media;
 using DS4MapperTest.ViewModels.Common;
 
@@ -200,6 +201,12 @@ namespace DS4MapperTest.ViewModels
         {
             get => touchpadBindings;
         }
+
+        private SteamControllerPadRotationViewModel steamPadRotation;
+        public SteamControllerPadRotationViewModel SteamPadRotation =>
+            steamPadRotation ??= SteamControllerPadRotationViewModel.Create(mapper);
+
+        public bool HasSteamPadRotation => SteamPadRotation != null;
 
         private ObservableCollection<TouchBindingItemsTest> touchpadMouseMovementBindings =
             new ObservableCollection<TouchBindingItemsTest>();
@@ -2042,6 +2049,7 @@ namespace DS4MapperTest.ViewModels
 
         public void UnregisterEvents()
         {
+            steamPadRotation?.Dispose();
             tempProfile.DirtyChanged -= TempProfile_DirtyChanged;
             mapper.ProfileEditCommitted -= Mapper_ProfileEditCommitted;
         }
@@ -2786,6 +2794,75 @@ namespace DS4MapperTest.ViewModels
         private void OnPropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+    }
+
+    public class SteamControllerPadRotationViewModel : INotifyPropertyChanged, IDisposable
+    {
+        private readonly SteamControllerDevice device;
+        private readonly SteamControllerControllerOptions options;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public int LeftPadRotation
+        {
+            get => options.LeftTouchpadRotation;
+            set
+            {
+                if (options.LeftTouchpadRotation == value) return;
+                options.LeftTouchpadRotation = value;
+            }
+        }
+
+        public int RightPadRotation
+        {
+            get => options.RightTouchpadRotation;
+            set
+            {
+                if (options.RightTouchpadRotation == value) return;
+                options.RightTouchpadRotation = value;
+            }
+        }
+
+        private SteamControllerPadRotationViewModel(SteamControllerDevice device)
+        {
+            this.device = device;
+            options = device.NativeDeviceOptions;
+            options.LeftTouchpadRotationChanged += LeftTouchpadRotationChanged;
+            options.RightTouchpadRotationChanged += RightTouchpadRotationChanged;
+        }
+
+        public static SteamControllerPadRotationViewModel Create(Mapper mapper)
+        {
+            if (mapper?.BaseDevice is not SteamControllerDevice steamDevice)
+            {
+                return null;
+            }
+
+            return new SteamControllerPadRotationViewModel(steamDevice);
+        }
+
+        private void LeftTouchpadRotationChanged(object sender, EventArgs e)
+        {
+            Save();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LeftPadRotation)));
+        }
+
+        private void RightTouchpadRotationChanged(object sender, EventArgs e)
+        {
+            Save();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RightPadRotation)));
+        }
+
+        private void Save()
+        {
+            AppGlobalDataSingleton.Instance.SaveControllerDeviceSettings(device, device.DeviceOptions);
+        }
+
+        public void Dispose()
+        {
+            options.LeftTouchpadRotationChanged -= LeftTouchpadRotationChanged;
+            options.RightTouchpadRotationChanged -= RightTouchpadRotationChanged;
         }
     }
 }

@@ -520,6 +520,90 @@
                                    TextWrapping="Wrap"
                                    Margin="0,4,0,0"/>
                     </StackPanel>
+                    <Border Style="{StaticResource TouchpadInlineCard}"
+                            DataContext="{Binding SteamPadRotation}">
+                        <Border.Visibility>
+                            <Binding Path="DataContext.HasSteamPadRotation"
+                                     RelativeSource="{RelativeSource AncestorType=UserControl}"
+                                     Converter="{StaticResource BoolToVis}"/>
+                        </Border.Visibility>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                <TextBlock Text="Steam Controller Pad Rotation"
+                                           Style="{StaticResource JsmccCardTitle}"
+                                           TextWrapping="Wrap"/>
+                                <TextBlock Text="Adjusts the physical pad rotation used by Steam Controller touchpads."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="140"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="112"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="Left Pad Rotation"
+                                                   Style="{StaticResource JsmccLabelText}"
+                                                   VerticalAlignment="Center"/>
+                                        <Slider Grid.Column="1"
+                                                Minimum="-180"
+                                                Maximum="180"
+                                                Value="{Binding LeftPadRotation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Margin="8,0,12,0"
+                                                VerticalAlignment="Center"/>
+                                        <hc:NumericUpDown Grid.Column="2"
+                                                          Minimum="-180"
+                                                          Maximum="180"
+                                                          DecimalPlaces="0"
+                                                          Increment="1"
+                                                          Value="{Binding LeftPadRotation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                          ValueFormat="0 deg"/>
+                                    </Grid>
+                                </Border>
+
+                                <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,8,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="140"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="112"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="Right Pad Rotation"
+                                                   Style="{StaticResource JsmccLabelText}"
+                                                   VerticalAlignment="Center"/>
+                                        <Slider Grid.Column="1"
+                                                Minimum="-180"
+                                                Maximum="180"
+                                                Value="{Binding RightPadRotation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Margin="8,0,12,0"
+                                                VerticalAlignment="Center"/>
+                                        <hc:NumericUpDown Grid.Column="2"
+                                                          Minimum="-180"
+                                                          Maximum="180"
+                                                          DecimalPlaces="0"
+                                                          Increment="1"
+                                                          Value="{Binding RightPadRotation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                          ValueFormat="0 deg"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                     <ItemsControl ItemsSource="{Binding TouchpadBindings}"
                                   ItemTemplate="{StaticResource TouchpadSectionTemplate}"
                                   Tag="Advanced"/>
