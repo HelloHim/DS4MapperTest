@@ -57,6 +57,10 @@ namespace DS4MapperTest.ViewModels
 
         public bool IsProfileDirty => tempProfile?.Dirty == true;
 
+        public bool SupportsLightbar =>
+            mapper?.DeviceType == InputDeviceType.DS4 ||
+            mapper?.DeviceType == InputDeviceType.DualSense;
+
         public void MarkProfileDirty()
         {
             if (suppressDirtyTracking || tempProfile == null) return;

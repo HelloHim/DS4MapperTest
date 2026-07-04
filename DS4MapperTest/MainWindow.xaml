@@ -541,7 +541,8 @@
                                     </Grid>
                                 </Border>
 
-                                <Border Style="{StaticResource JsmccCardBorder}">
+                                <Border Style="{StaticResource JsmccCardBorder}"
+                                        Visibility="{Binding SupportsLightbar, Converter={StaticResource BoolToVis}}">
                                     <StackPanel>
                                         <TextBlock Text="Lightbar" Style="{StaticResource JsmccSectionTitle}"/>
 
