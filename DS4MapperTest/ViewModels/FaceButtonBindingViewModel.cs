@@ -28,6 +28,8 @@ namespace DS4MapperTest.ViewModels
         public ProfileEditorTestViewModel Owner => owner;
         public string BindingName { get; }
         public string DisplayName { get; }
+        public string Subtitle { get; }
+        public bool HasSubtitle => !string.IsNullOrWhiteSpace(Subtitle);
         public ObservableCollection<FaceButtonFuncItem> FunctionItems => functionItems;
 
         public ButtonMapAction MappedAction
@@ -49,11 +51,12 @@ namespace DS4MapperTest.ViewModels
         public bool CanAddReleasePress => !HasReleasePress;
 
         public FaceButtonBindingItem(ProfileEditorTestViewModel owner,
-            BindingItemsTest sourceItem, string displayName)
+            BindingItemsTest sourceItem, string displayName, string subtitle = null)
         {
             this.owner = owner;
             BindingName = sourceItem.BindingName;
             DisplayName = displayName;
+            Subtitle = subtitle;
             mappedAction = sourceItem.MappedAction;
 
             RefreshFunctions();
