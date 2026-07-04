@@ -963,6 +963,18 @@ namespace DS4MapperTest
             editorTestVM.LightbarHexColor = hexColor;
         }
 
+        private void LightbarPulsePreset_Click(object sender, RoutedEventArgs e)
+        {
+            if (editorTestVM == null || sender is not Button button || button.Tag is not string hexColor) return;
+            editorTestVM.LightbarPulseHexColor = hexColor;
+        }
+
+        private void LightbarBatteryPreset_Click(object sender, RoutedEventArgs e)
+        {
+            if (editorTestVM == null || sender is not Button button || button.Tag is not string hexColor) return;
+            editorTestVM.LightbarBatteryHexColor = hexColor;
+        }
+
 
         private void ControlListVM_ReadProfileFailure(object sender, ReadProfileFailException e)
         {

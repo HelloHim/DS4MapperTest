@@ -538,7 +538,7 @@
                                         </Grid>
 
                                         <Grid Margin="0,12,0,0"
-                                              IsEnabled="{Binding IsSolidLightbarMode}">
+                                              Visibility="{Binding IsSolidLightbarMode, Converter={StaticResource BoolToVis}}">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
@@ -569,7 +569,7 @@
 
                                         <ItemsControl ItemsSource="{Binding LightbarPresetColors}"
                                                       Margin="0,10,0,0"
-                                                      IsEnabled="{Binding IsSolidLightbarMode}">
+                                                      Visibility="{Binding IsSolidLightbarMode, Converter={StaticResource BoolToVis}}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <UniformGrid Columns="9" Rows="2"/>
@@ -582,6 +582,125 @@
                                                             Background="{Binding Brush}"
                                                             BorderBrush="{DynamicResource JsmccBorderStrongBrush}"
                                                             Click="LightbarPreset_Click"
+                                                            Style="{StaticResource LightbarPresetButtonStyle}"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <Grid Margin="0,12,0,0"
+                                              Visibility="{Binding IsRainbowLightbarMode, Converter={StaticResource BoolToVis}}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Cycle Time" Style="{StaticResource OtherSettingLabel}"/>
+                                                <TextBlock Text="Time in seconds for one full rainbow cycle."
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="0,3,16,0"/>
+                                            </StackPanel>
+                                            <TextBox Grid.Column="1"
+                                                     Width="92"
+                                                     Text="{Binding RainbowSecondsCycle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource JsmccTextBoxStyle}"
+                                                     VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,12,0,0"
+                                              Visibility="{Binding IsPulseLightbarMode, Converter={StaticResource BoolToVis}}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Pulse Colour" Style="{StaticResource OtherSettingLabel}"/>
+                                                <TextBlock Text="Colour used by the pulse lightbar effect."
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="0,3,16,0"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1"
+                                                        Orientation="Horizontal"
+                                                        VerticalAlignment="Center">
+                                                <Border Width="34"
+                                                        Height="28"
+                                                        Background="{Binding LightbarPulsePreviewBrush}"
+                                                        BorderBrush="{DynamicResource JsmccBorderStrongBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource JsmccControlRadius}"
+                                                        Margin="0,0,8,0"/>
+                                                <TextBox Width="92"
+                                                         Text="{Binding LightbarPulseHexColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         CharacterCasing="Upper"
+                                                         MaxLength="7"
+                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <ItemsControl ItemsSource="{Binding LightbarPresetColors}"
+                                                      Margin="0,10,0,0"
+                                                      Visibility="{Binding IsPulseLightbarMode, Converter={StaticResource BoolToVis}}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Columns="9" Rows="2"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Tag="{Binding HexColor}"
+                                                            ToolTip="{Binding HexColor}"
+                                                            Background="{Binding Brush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderStrongBrush}"
+                                                            Click="LightbarPulsePreset_Click"
+                                                            Style="{StaticResource LightbarPresetButtonStyle}"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <Grid Margin="0,12,0,0"
+                                              Visibility="{Binding IsBatteryLightbarMode, Converter={StaticResource BoolToVis}}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Battery Colour" Style="{StaticResource OtherSettingLabel}"/>
+                                                <TextBlock Text="Colour used by the battery lightbar mode where supported."
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="0,3,16,0"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1"
+                                                        Orientation="Horizontal"
+                                                        VerticalAlignment="Center">
+                                                <Border Width="34"
+                                                        Height="28"
+                                                        Background="{Binding LightbarBatteryPreviewBrush}"
+                                                        BorderBrush="{DynamicResource JsmccBorderStrongBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource JsmccControlRadius}"
+                                                        Margin="0,0,8,0"/>
+                                                <TextBox Width="92"
+                                                         Text="{Binding LightbarBatteryHexColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         CharacterCasing="Upper"
+                                                         MaxLength="7"
+                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <ItemsControl ItemsSource="{Binding LightbarPresetColors}"
+                                                      Margin="0,10,0,0"
+                                                      Visibility="{Binding IsBatteryLightbarMode, Converter={StaticResource BoolToVis}}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Columns="9" Rows="2"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Tag="{Binding HexColor}"
+                                                            ToolTip="{Binding HexColor}"
+                                                            Background="{Binding Brush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderStrongBrush}"
+                                                            Click="LightbarBatteryPreset_Click"
                                                             Style="{StaticResource LightbarPresetButtonStyle}"/>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
