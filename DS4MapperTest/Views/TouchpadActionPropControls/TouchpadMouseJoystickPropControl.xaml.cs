@@ -44,6 +44,10 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
         {
             MovementFieldsPanel.Visibility = section == TouchpadSettingsSection.MouseMovement
                 ? Visibility.Visible : Visibility.Collapsed;
+            SensitivityFieldsPanel.Visibility = section == TouchpadSettingsSection.SensitivityCalibration
+                ? Visibility.Visible : Visibility.Collapsed;
+            FilteringFieldsPanel.Visibility = section == TouchpadSettingsSection.FilteringStabilisation
+                ? Visibility.Visible : Visibility.Collapsed;
             TrackballFieldsPanel.Visibility = section == TouchpadSettingsSection.TrackballScroll
                 ? Visibility.Visible : Visibility.Collapsed;
         }

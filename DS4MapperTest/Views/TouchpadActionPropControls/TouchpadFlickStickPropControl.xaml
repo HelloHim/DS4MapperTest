@@ -12,28 +12,10 @@
         <ScrollViewer DockPanel.Dock="Top">
             <StackPanel>
 
+            <StackPanel x:Name="MovementFieldsPanel">
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Name" />
                     <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="200" Margin="8,0,0,0" />
-                </StackPanel>
-
-                <!-- Calibration block - synced across profile -->
-                <shared:CalibrationModeControl />
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Flick Threshold" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="1.0" Value="{Binding FlickThreshold}" DecimalPlaces="2"
-      Increment="0.05" Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightFlickThreshold}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
@@ -105,6 +87,30 @@ Increment="1.0" Width="100" Margin="8,0,0,0">
 
                     <Label Content="u/s" Margin="8,0,0,0" />
                 </StackPanel>
+            </StackPanel>
+
+            <StackPanel x:Name="SensitivityFieldsPanel">
+                <!-- Calibration block - synced across profile -->
+                <shared:CalibrationModeControl />
+            </StackPanel>
+
+            <StackPanel x:Name="FilteringFieldsPanel">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Flick Threshold" />
+                    <hc:NumericUpDown Minimum="0.0" Maximum="1.0" Value="{Binding FlickThreshold}" DecimalPlaces="2"
+      Increment="0.05" Width="100" Margin="8,0,0,0">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightFlickThreshold}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+                </StackPanel>
+            </StackPanel>
 
             </StackPanel>
         </ScrollViewer>

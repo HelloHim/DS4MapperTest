@@ -26,73 +26,9 @@
                         </TextBox.Style>
                     </TextBox>
                 </StackPanel>
+            </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Dead Zone" />
-                    <TextBox Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0"
-                         ToolTip="Expressed as raw delta units">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightDeadZone}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Vertical Dead Zone" />
-                    <TextBox Text="{Binding VerticalDeadZone, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0"
-                         ToolTip="Suppresses vertical (Y) movement below this threshold. Expressed as raw delta units">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightVerticalDeadZone}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Angle Snapping" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="45.0" DecimalPlaces="1" Increment="0.1"
-                                      Value="{Binding TrackpadAngleSnapDegrees, FallbackValue='0.0'}"
-                                      Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightTrackpadAngleSnapDegrees}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                    <Label Content="degrees" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Smooth Angle Snapping" />
-                    <CheckBox IsChecked="{Binding TrackpadSmoothAngleSnap}" VerticalAlignment="Center"
-                              Margin="8,0,0,0" Content="Off / On">
-                        <CheckBox.Style>
-                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightTrackpadSmoothAngleSnap}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </CheckBox.Style>
-                    </CheckBox>
-                </StackPanel>
-
+            <StackPanel x:Name="SensitivityFieldsPanel">
                 <!-- Calibration block — synced across profile -->
                 <shared:CalibrationModeControl />
 
@@ -292,6 +228,74 @@
                         </Expander>
                     </StackPanel>
                 </Border>
+            </StackPanel>
+
+            <StackPanel x:Name="FilteringFieldsPanel">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Dead Zone" />
+                    <TextBox Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0"
+                         ToolTip="Expressed as raw delta units">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightDeadZone}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Vertical Dead Zone" />
+                    <TextBox Text="{Binding VerticalDeadZone, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0"
+                         ToolTip="Suppresses vertical (Y) movement below this threshold. Expressed as raw delta units">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightVerticalDeadZone}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Angle Snapping" />
+                    <hc:NumericUpDown Minimum="0.0" Maximum="45.0" DecimalPlaces="1" Increment="0.1"
+                                      Value="{Binding TrackpadAngleSnapDegrees, FallbackValue='0.0'}"
+                                      Width="100" Margin="8,0,0,0">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightTrackpadAngleSnapDegrees}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+                    <Label Content="degrees" Margin="2,0,0,0" BorderBrush="{x:Null}" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Smooth Angle Snapping" />
+                    <CheckBox IsChecked="{Binding TrackpadSmoothAngleSnap}" VerticalAlignment="Center"
+                              Margin="8,0,0,0" Content="Off / On">
+                        <CheckBox.Style>
+                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightTrackpadSmoothAngleSnap}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </CheckBox.Style>
+                    </CheckBox>
+                </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <GroupBox MinWidth="200">

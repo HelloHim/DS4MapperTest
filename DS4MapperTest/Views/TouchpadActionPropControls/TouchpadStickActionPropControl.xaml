@@ -39,7 +39,105 @@
                         </ComboBox.Style>
                     </ComboBox>
                 </StackPanel>
+
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Invert" />
+                    <ComboBox ItemsSource="{Binding InvertItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue"
+                          SelectedValue="{Binding Invert}" MinWidth="200" Margin="8,0,0,0">
+                        <ComboBox.Style>
+                            <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightInvert}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ComboBox.Style>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Force Center" />
+                    <CheckBox IsChecked="{Binding ForceCenter}" Content="Enable" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <CheckBox.Style>
+                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightForceCenterChanged}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </CheckBox.Style>
+                    </CheckBox>
+
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel x:Name="SensitivityFieldsPanel">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Max Output" />
+                    <CheckBox IsChecked="{Binding MaxOutputEnabled}" Content="Enable" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <CheckBox.Style>
+                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightMaxOutputEnabled}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </CheckBox.Style>
+                    </CheckBox>
+
+                    <hc:NumericUpDown Minimum="0.0" Maximum="1.0" Value="{Binding MaxOutput}" DecimalPlaces="2"
+                                      IsEnabled="{Binding MaxOutputEnabled}" Width="100" Margin="8,0,0,0">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightMaxOutput}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Output Curve" />
+                    <ComboBox ItemsSource="{Binding OutputCurveChoices}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue"
+                          SelectedValue="{Binding OutputCurve}" MinWidth="200" Margin="8,0,0,0">
+                        <ComboBox.Style>
+                            <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightOutputCurve}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ComboBox.Style>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Vertical Scale" />
+                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="1" Increment="0.1"
+                                  Value="{Binding VerticalScale,FallbackValue='1.0'}" Margin="8,0,0,0">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel x:Name="FilteringFieldsPanel">
+                <StackPanel Orientation="Horizontal">
                     <Label Content="_Dead Zone" />
                     <TextBox Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
                         <TextBox.Style>
@@ -83,35 +181,6 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Max Output" />
-                    <CheckBox IsChecked="{Binding MaxOutputEnabled}" Content="Enable" VerticalAlignment="Center" Margin="8,0,0,0">
-                        <CheckBox.Style>
-                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightMaxOutputEnabled}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </CheckBox.Style>
-                    </CheckBox>
-
-                    <hc:NumericUpDown Minimum="0.0" Maximum="1.0" Value="{Binding MaxOutput}" DecimalPlaces="2"
-                                      IsEnabled="{Binding MaxOutputEnabled}" Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightMaxOutput}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Dead Zone Type" />
                     <ComboBox ItemsSource="{Binding DeadZoneModesChoices}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue"
                           SelectedValue="{Binding DeadZoneType}" MinWidth="200" Margin="8,0,0,0">
@@ -119,55 +188,6 @@
                             <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding HighlightDeadZoneType}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ComboBox.Style>
-                    </ComboBox>
-                </StackPanel>
-
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Output Curve" />
-                    <ComboBox ItemsSource="{Binding OutputCurveChoices}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue"
-                          SelectedValue="{Binding OutputCurve}" MinWidth="200" Margin="8,0,0,0">
-                        <ComboBox.Style>
-                            <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightOutputCurve}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ComboBox.Style>
-                    </ComboBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Vertical Scale" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="1" Increment="0.1"
-                                  Value="{Binding VerticalScale,FallbackValue='1.0'}" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Invert" />
-                    <ComboBox ItemsSource="{Binding InvertItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue"
-                          SelectedValue="{Binding Invert}" MinWidth="200" Margin="8,0,0,0">
-                        <ComboBox.Style>
-                            <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightInvert}" Value="False">
                                         <Setter Property="Opacity" Value="0.7" />
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -202,22 +222,6 @@
                             </Style>
                         </hc:NumericUpDown.Style>
                     </hc:NumericUpDown>
-
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Force Center" />
-                    <CheckBox IsChecked="{Binding ForceCenter}" Content="Enable" VerticalAlignment="Center" Margin="8,0,0,0">
-                        <CheckBox.Style>
-                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightForceCenterChanged}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </CheckBox.Style>
-                    </CheckBox>
 
                 </StackPanel>
 

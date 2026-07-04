@@ -9,12 +9,11 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <DockPanel>
         <StackPanel>
+            <StackPanel x:Name="ZonesFieldsPanel">
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Name" />
                 <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="200" Margin="8,0,0,0" />
             </StackPanel>
-
-
 
             <StackPanel Orientation="Horizontal" MinHeight="80" Margin="0,12,0,0">
                 <Label Content="Bindings" />
@@ -50,8 +49,10 @@
 
                 </Grid>
             </StackPanel>
+            </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+            <StackPanel x:Name="FilteringFieldsPanel">
+            <StackPanel Orientation="Horizontal">
                 <Label Content="Dead Zone X" />
                 <hc:NumericUpDown ValueFormat="0 unit" Value="{Binding DeadZoneX, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
                     <hc:NumericUpDown.Style>
@@ -95,6 +96,7 @@
                         </Style>
                     </hc:NumericUpDown.Style>
                 </hc:NumericUpDown>
+            </StackPanel>
             </StackPanel>
 
         </StackPanel>
