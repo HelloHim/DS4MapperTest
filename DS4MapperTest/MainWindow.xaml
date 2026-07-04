@@ -10,6 +10,7 @@
         Height="720" Width="1100"
         MinHeight="600" MinWidth="680"
         Background="{DynamicResource JsmccBg0Brush}"
+        Closing="Window_Closing"
         Closed="Window_Closed"
         Loaded="Window_Loaded"
         PreviewKeyDown="Window_PreviewKeyDown"
@@ -211,6 +212,19 @@
                         <StackPanel Grid.Column="1"
                                     Orientation="Horizontal"
                                     VerticalAlignment="Center">
+                            <TextBlock x:Name="serviceStatusText"
+                                       Text="Stopped"
+                                       Style="{StaticResource JsmccMutedText}"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"/>
+
+                            <Button x:Name="serviceToggleButton"
+                                    Content="Start"
+                                    Click="ServiceToggleButton_Click"
+                                    Margin="8,0,0,0"
+                                    MinWidth="64"
+                                    Style="{StaticResource JsmccButtonStyle}"/>
+
                             <Border x:Name="unsavedStatusPill"
                                     Visibility="{Binding IsProfileDirty, Converter={StaticResource BoolToVis}}"
                                     Style="{StaticResource SaveStatusPillWarningStyle}">
