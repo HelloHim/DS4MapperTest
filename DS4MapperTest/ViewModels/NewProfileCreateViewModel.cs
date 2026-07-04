@@ -11,12 +11,19 @@ using static DS4MapperTest.Mapper;
 
 namespace DS4MapperTest.ViewModels
 {
-    public class NewProfileCreateViewModel : INotifyDataErrorInfo
+    public class NewProfileCreateViewModel : INotifyDataErrorInfo, INotifyPropertyChanged
     {
         private Mapper mapper;
         public Mapper Mapper => mapper;
 
         private BackendManager manager;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void RaisePropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public class OutputContTypeAssoc
         {
@@ -30,7 +37,9 @@ namespace DS4MapperTest.ViewModels
             get => profilePath;
             set
             {
+                if (profilePath == value) return;
                 profilePath = value;
+                RaisePropertyChanged(nameof(ProfilePath));
                 ProfilePathChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -42,7 +51,9 @@ namespace DS4MapperTest.ViewModels
             get => creator;
             set
             {
+                if (creator == value) return;
                 creator = value;
+                RaisePropertyChanged(nameof(Creator));
                 CreatorChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -64,7 +75,9 @@ namespace DS4MapperTest.ViewModels
             get => outputControllerTypeIdx;
             set
             {
+                if (outputControllerTypeIdx == value) return;
                 outputControllerTypeIdx = value;
+                RaisePropertyChanged(nameof(OutputControllerTypeIdx));
             }
         }
 
@@ -272,10 +285,14 @@ namespace DS4MapperTest.ViewModels
                 switch(key)
                 {
                     case "ProfilePath":
+                        RaisePropertyChanged(nameof(ProfilePathErrors));
+                        RaisePropertyChanged(nameof(HasProfilePathError));
                         ProfilePathErrorsChanged?.Invoke(this, EventArgs.Empty);
                         HasProfilePathErrorChanged?.Invoke(this, EventArgs.Empty);
                         break;
                     case "Creator":
+                        RaisePropertyChanged(nameof(CreatorErrors));
+                        RaisePropertyChanged(nameof(HasCreatorError));
                         CreatorErrorsChanged?.Invoke(this, EventArgs.Empty);
                         HasCreatorErrorChanged?.Invoke(this, EventArgs.Empty);
                         break;
