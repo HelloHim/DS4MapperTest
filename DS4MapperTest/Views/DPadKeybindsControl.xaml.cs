@@ -12,14 +12,6 @@ namespace DS4MapperTest.Views
             InitializeComponent();
         }
 
-        private void ToggleAdvancedButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is ProfileEditorTestViewModel profileVm)
-            {
-                profileVm.DPadKeybinds.IsAdvancedExpanded = !profileVm.DPadKeybinds.IsAdvancedExpanded;
-            }
-        }
-
         private void AddExtraBindingButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.ContextMenu != null)

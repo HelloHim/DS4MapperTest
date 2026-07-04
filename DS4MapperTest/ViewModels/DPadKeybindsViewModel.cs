@@ -10,6 +10,13 @@ using DS4MapperTest.ViewModels.DPadActionPropViewModels;
 
 namespace DS4MapperTest.ViewModels
 {
+    public enum DPadTopLevelMode
+    {
+        ActionPad,
+        Translate,
+        NoAction,
+    }
+
     public enum DPadDirectionKind
     {
         Up,
@@ -30,16 +37,46 @@ namespace DS4MapperTest.ViewModels
             new PadModeItem("Four Way Cardinal", DPadAction.DPadMode.FourWayCardinal),
             new PadModeItem("Four Way Diagonal", DPadAction.DPadMode.FourWayDiagonal),
         };
+        private readonly List<DPadTopLevelModeItem> topLevelModeItems = new List<DPadTopLevelModeItem>
+        {
+            new DPadTopLevelModeItem("Action Pad", DPadTopLevelMode.ActionPad),
+            new DPadTopLevelModeItem("Translate", DPadTopLevelMode.Translate),
+            new DPadTopLevelModeItem("No Action", DPadTopLevelMode.NoAction),
+        };
+        private readonly List<DPadOutputItem> outputDPadItems = new List<DPadOutputItem>
+        {
+            new DPadOutputItem("Unbound", DPadActionCodes.Empty),
+            new DPadOutputItem("X360 D-Pad", DPadActionCodes.DPad1),
+            new DPadOutputItem("D-Pad 2", DPadActionCodes.DPad2),
+        };
 
         private bool suppressPadModeChange;
+        private bool suppressTopLevelModeChange;
         private int selectedPadModeIndex;
-        private bool isAdvancedExpanded;
+        private int selectedTopLevelModeIndex;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ProfileEditorTestViewModel Owner => owner;
         public ObservableCollection<DPadDirectionBindingItem> Directions => directions;
         public List<PadModeItem> PadModeItems => padModeItems;
+        public List<DPadTopLevelModeItem> TopLevelModeItems => topLevelModeItems;
+        public List<DPadOutputItem> OutputDPadItems => outputDPadItems;
+
+        public int SelectedTopLevelModeIndex
+        {
+            get => selectedTopLevelModeIndex;
+            set
+            {
+                if (selectedTopLevelModeIndex == value) return;
+                selectedTopLevelModeIndex = value;
+                OnPropertyChanged(nameof(SelectedTopLevelModeIndex));
+
+                if (suppressTopLevelModeChange || value < 0 || value >= topLevelModeItems.Count) return;
+                owner.SetDPadTopLevelMode(topLevelModeItems[value].Mode);
+                Refresh();
+            }
+        }
 
         public int SelectedPadModeIndex
         {
@@ -56,22 +93,37 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
-        public bool IsAdvancedExpanded
+        public bool IsActionPad => owner.GetCurrentDPadMapAction() is DPadAction;
+        public bool IsTranslate => owner.GetCurrentDPadMapAction() is DPadTranslate;
+        public bool IsNoAction => owner.GetCurrentDPadMapAction() is DPadNoAction;
+
+        public string ModeHelperText
         {
-            get => isAdvancedExpanded;
-            set
+            get
             {
-                if (isAdvancedExpanded == value) return;
-                isAdvancedExpanded = value;
-                OnPropertyChanged(nameof(IsAdvancedExpanded));
+                return owner.GetCurrentDPadMapAction() switch
+                {
+                    DPadAction => "Bind each D-Pad direction to actions.",
+                    DPadTranslate => "Translate D-Pad input using the existing DS4MapperTest translate settings.",
+                    DPadNoAction => "Disable D-Pad action output for this profile set/layer.",
+                    _ => "Select how this D-Pad input should behave.",
+                };
             }
         }
 
-        public bool IsActionPad => owner.GetCurrentDPadMapAction() is DPadAction;
+        public string TranslateName
+        {
+            get => owner.GetCurrentDPadMapAction() is DPadTranslate action ? action.Name : "";
+            set => owner.SetDPadTranslateName(value);
+        }
 
-        public string BehaviourStatusText => IsActionPad
-            ? "Using Action Pad. Each direction below is bound individually."
-            : "Using standard controller D-Pad output. Editing a direction below switches to Action Pad.";
+        public DPadActionCodes TranslateOutputDPad
+        {
+            get => owner.GetCurrentDPadMapAction() is DPadTranslate action
+                ? action.OutputAction.DpadCode
+                : DPadActionCodes.Empty;
+            set => owner.SetDPadTranslateOutputDPad(value);
+        }
 
         public DPadKeybindsViewModel(ProfileEditorTestViewModel owner)
         {
@@ -88,6 +140,19 @@ namespace DS4MapperTest.ViewModels
         public void Refresh()
         {
             DPadMapAction current = owner.GetCurrentDPadMapAction();
+            DPadTopLevelMode topLevelMode = current switch
+            {
+                DPadAction => DPadTopLevelMode.ActionPad,
+                DPadTranslate => DPadTopLevelMode.Translate,
+                DPadNoAction => DPadTopLevelMode.NoAction,
+                _ => DPadTopLevelMode.NoAction,
+            };
+            int topLevelIndex = topLevelModeItems.FindIndex(item => item.Mode == topLevelMode);
+
+            suppressTopLevelModeChange = true;
+            SelectedTopLevelModeIndex = topLevelIndex >= 0 ? topLevelIndex : 0;
+            suppressTopLevelModeChange = false;
+
             DPadAction.DPadMode mode = current is DPadAction dpadAction
                 ? dpadAction.CurrentMode
                 : DPadAction.DPadMode.Standard;
@@ -109,7 +174,11 @@ namespace DS4MapperTest.ViewModels
         private void RefreshBehaviourState()
         {
             OnPropertyChanged(nameof(IsActionPad));
-            OnPropertyChanged(nameof(BehaviourStatusText));
+            OnPropertyChanged(nameof(IsTranslate));
+            OnPropertyChanged(nameof(IsNoAction));
+            OnPropertyChanged(nameof(ModeHelperText));
+            OnPropertyChanged(nameof(TranslateName));
+            OnPropertyChanged(nameof(TranslateOutputDPad));
         }
 
         private void OnPropertyChanged(string propertyName)
@@ -578,6 +647,30 @@ namespace DS4MapperTest.ViewModels
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class DPadTopLevelModeItem
+    {
+        public string DisplayName { get; }
+        public DPadTopLevelMode Mode { get; }
+
+        public DPadTopLevelModeItem(string displayName, DPadTopLevelMode mode)
+        {
+            DisplayName = displayName;
+            Mode = mode;
+        }
+    }
+
+    public class DPadOutputItem
+    {
+        public string DisplayName { get; }
+        public DPadActionCodes Code { get; }
+
+        public DPadOutputItem(string displayName, DPadActionCodes code)
+        {
+            DisplayName = displayName;
+            Code = code;
         }
     }
 }
