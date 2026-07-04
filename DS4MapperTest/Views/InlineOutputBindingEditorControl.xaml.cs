@@ -16,6 +16,7 @@ namespace DS4MapperTest.Views
         private ButtonAction action;
         private ActionFunc func;
         private List<OutputActionData> snapshot;
+        private bool snapshotHadFunctionsChange;
         private bool profileWasDirty;
 
         public event EventHandler Applied;
@@ -32,6 +33,8 @@ namespace DS4MapperTest.Views
             this.action = action;
             this.func = func;
             snapshot = CloneOutputs(func.OutputActions);
+            snapshotHadFunctionsChange =
+                action.ChangedProperties.Contains(ButtonAction.PropertyKeyStrings.FUNCTIONS);
             profileWasDirty = mapper?.ActionProfile?.Dirty == true;
 
             TitleText.Text = title;
@@ -75,9 +78,16 @@ namespace DS4MapperTest.Views
                         func.OutputActions.Add(data);
                     }
 
-                    if (!action.ChangedProperties.Contains(ButtonAction.PropertyKeyStrings.FUNCTIONS))
+                    if (snapshotHadFunctionsChange)
                     {
-                        action.ChangedProperties.Add(ButtonAction.PropertyKeyStrings.FUNCTIONS);
+                        if (!action.ChangedProperties.Contains(ButtonAction.PropertyKeyStrings.FUNCTIONS))
+                        {
+                            action.ChangedProperties.Add(ButtonAction.PropertyKeyStrings.FUNCTIONS);
+                        }
+                    }
+                    else
+                    {
+                        action.ChangedProperties.Remove(ButtonAction.PropertyKeyStrings.FUNCTIONS);
                     }
                 });
 
