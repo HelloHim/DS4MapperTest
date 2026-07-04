@@ -204,7 +204,10 @@ namespace DS4MapperTest.ViewModels
             {
                 FaceBindingFuncKind.Regular => new NormalPressFunc(emptyOutput),
                 FaceBindingFuncKind.Hold => CreateOutputFunc(new HoldPressFunc(), emptyOutput),
-                FaceBindingFuncKind.Double => CreateOutputFunc(new DoublePressFunc(), emptyOutput),
+                FaceBindingFuncKind.Double => CreateOutputFunc(new DoublePressFunc()
+                {
+                    DurationMs = DoublePressFunc.DEFAULT_TAP_WINDOW_MS,
+                }, emptyOutput),
                 FaceBindingFuncKind.Distance => CreateOutputFunc(new DistanceFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
@@ -264,6 +267,7 @@ namespace DS4MapperTest.ViewModels
         public bool SupportsTurbo => func is NormalPressFunc || func is HoldPressFunc;
         public bool SupportsFireDelay => func is NormalPressFunc;
         public bool SupportsHoldTime => func is HoldPressFunc;
+        public bool SupportsTapWindow => func is DoublePressFunc;
         public bool SupportsReleaseOptions => func is ReleaseFunc;
         public bool SupportsDistanceOptions => func is DistanceFunc;
 
@@ -400,6 +404,22 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        public int TapWindowMs
+        {
+            get => func is DoublePressFunc doublePress ? doublePress.DurationMs : 0;
+            set
+            {
+                if (func is not DoublePressFunc doublePress) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    owner.Owner.ReleaseFaceAction(owner);
+                    doublePress.DurationMs = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                });
+                OnPropertyChanged(nameof(TapWindowMs));
+            }
+        }
+
         public string ReleaseDurationMs
         {
             get => func is ReleaseFunc releaseFunc ? releaseFunc.DurationMs.ToString() : "0";
@@ -496,6 +516,7 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(TurboDurationMs));
             OnPropertyChanged(nameof(FireDelayMs));
             OnPropertyChanged(nameof(HoldMs));
+            OnPropertyChanged(nameof(TapWindowMs));
             OnPropertyChanged(nameof(ReleaseDurationMs));
             OnPropertyChanged(nameof(ReleaseDelayMs));
             OnPropertyChanged(nameof(ReleaseInterruptable));

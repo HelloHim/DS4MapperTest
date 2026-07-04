@@ -10,6 +10,8 @@ namespace DS4MapperTest.ActionUtil
 {
     public class DoublePressFunc : ActionFunc
     {
+        public const int DEFAULT_TAP_WINDOW_MS = 150;
+
         private enum TapStatus : uint
         {
             Inactive,

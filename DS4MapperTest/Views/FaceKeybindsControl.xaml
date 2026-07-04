@@ -220,6 +220,26 @@
                                                             CornerRadius="4"
                                                             Padding="6,4"
                                                             Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsTapWindow, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Tap Window" Style="{StaticResource FaceControlLabel}"/>
+                                                            <hc:NumericUpDown Minimum="0"
+                                                                              Maximum="60000"
+                                                                              DecimalPlaces="0"
+                                                                              Increment="10"
+                                                                              Width="108"
+                                                                              Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                              Value="{Binding TapWindowMs, UpdateSourceTrigger=LostFocus}"
+                                                                              ValueFormat="0 ms"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
                                                             Visibility="{Binding SupportsDistanceOptions, Converter={StaticResource BoolToVis}}">
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock Text="Name" Style="{StaticResource FaceControlLabel}"/>
