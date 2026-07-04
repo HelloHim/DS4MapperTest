@@ -199,8 +199,8 @@ namespace DS4MapperTest.ViewModels
         public event EventHandler SelectStickBindIndexChanged;
 
 
-        private List<GyroBindingItemsTest> gyroBindings = new List<GyroBindingItemsTest>();
-        public List<GyroBindingItemsTest> GyroBindings => gyroBindings;
+        private ObservableCollection<GyroBindingItemsTest> gyroBindings = new ObservableCollection<GyroBindingItemsTest>();
+        public ObservableCollection<GyroBindingItemsTest> GyroBindings => gyroBindings;
 
         public bool HasGyroBindings
         {
