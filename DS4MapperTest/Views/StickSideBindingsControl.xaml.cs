@@ -35,6 +35,7 @@ namespace DS4MapperTest.Views
             {
                 "Hold" => FaceBindingFuncKind.Hold,
                 "Double" => FaceBindingFuncKind.Double,
+                "Distance" => FaceBindingFuncKind.Distance,
                 "Start" => FaceBindingFuncKind.Start,
                 "Release" => FaceBindingFuncKind.Release,
                 _ => null,
@@ -96,6 +97,7 @@ namespace DS4MapperTest.Views
             {
                 "Hold" => FaceBindingFuncKind.Hold,
                 "Double" => FaceBindingFuncKind.Double,
+                "Distance" => FaceBindingFuncKind.Distance,
                 "Start" => FaceBindingFuncKind.Start,
                 "Release" => FaceBindingFuncKind.Release,
                 _ => null,

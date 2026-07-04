@@ -69,10 +69,12 @@ namespace DS4MapperTest.ViewModels
         public bool IsTriggerTranslateMode => mappedAction is TriggerTranslate;
         public bool HasHoldPress => HasFunc<HoldPressFunc>();
         public bool HasDoublePress => HasFunc<DoublePressFunc>();
+        public bool HasDistancePress => HasFunc<DistanceFunc>();
         public bool HasStartPress => HasFunc<StartPressFunc>();
         public bool HasReleasePress => HasFunc<ReleaseFunc>();
         public bool CanAddHoldPress => IsButtonMode && !HasHoldPress;
         public bool CanAddDoublePress => IsButtonMode && !HasDoublePress;
+        public bool CanAddDistancePress => IsButtonMode && !HasDistancePress;
         public bool CanAddStartPress => IsButtonMode && !HasStartPress;
         public bool CanAddReleasePress => IsButtonMode && !HasReleasePress;
 
@@ -381,6 +383,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Regular => buttonAction.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Hold => buttonAction.ActionFuncs.OfType<HoldPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Double => buttonAction.ActionFuncs.OfType<DoublePressFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.Distance => buttonAction.ActionFuncs.OfType<DistanceFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Start => buttonAction.ActionFuncs.OfType<StartPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Release => buttonAction.ActionFuncs.OfType<ReleaseFunc>().FirstOrDefault(),
                 _ => null,
@@ -424,6 +427,9 @@ namespace DS4MapperTest.ViewModels
                             break;
                         case DoublePressFunc:
                             functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Double, func));
+                            break;
+                        case DistanceFunc:
+                            functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Distance, func));
                             break;
                         case StartPressFunc:
                             functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Start, func));
@@ -532,6 +538,7 @@ namespace DS4MapperTest.ViewModels
             {
                 FaceBindingFuncKind.Hold => HasHoldPress,
                 FaceBindingFuncKind.Double => HasDoublePress,
+                FaceBindingFuncKind.Distance => HasDistancePress,
                 FaceBindingFuncKind.Start => HasStartPress,
                 FaceBindingFuncKind.Release => HasReleasePress,
                 _ => false,
@@ -553,6 +560,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Regular => new NormalPressFunc(emptyOutput),
                 FaceBindingFuncKind.Hold => CreateOutputFunc(new HoldPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Double => CreateOutputFunc(new DoublePressFunc(), emptyOutput),
+                FaceBindingFuncKind.Distance => CreateOutputFunc(new DistanceFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
                 _ => null,
@@ -604,10 +612,12 @@ namespace DS4MapperTest.ViewModels
         {
             OnPropertyChanged(nameof(HasHoldPress));
             OnPropertyChanged(nameof(HasDoublePress));
+            OnPropertyChanged(nameof(HasDistancePress));
             OnPropertyChanged(nameof(HasStartPress));
             OnPropertyChanged(nameof(HasReleasePress));
             OnPropertyChanged(nameof(CanAddHoldPress));
             OnPropertyChanged(nameof(CanAddDoublePress));
+            OnPropertyChanged(nameof(CanAddDistancePress));
             OnPropertyChanged(nameof(CanAddStartPress));
             OnPropertyChanged(nameof(CanAddReleasePress));
         }
@@ -636,12 +646,14 @@ namespace DS4MapperTest.ViewModels
         public bool SupportsFireDelay => func is NormalPressFunc;
         public bool SupportsHoldTime => func is HoldPressFunc;
         public bool SupportsReleaseOptions => func is ReleaseFunc;
+        public bool SupportsDistanceOptions => func is DistanceFunc;
 
         public string DisplayName => Kind switch
         {
             FaceBindingFuncKind.Regular => "Regular Press",
             FaceBindingFuncKind.Hold => "Hold Press",
             FaceBindingFuncKind.Double => "Double Press",
+            FaceBindingFuncKind.Distance => "Distance",
             FaceBindingFuncKind.Start => "Start Press",
             FaceBindingFuncKind.Release => "Release Press",
             _ => "Binding",
@@ -828,6 +840,40 @@ namespace DS4MapperTest.ViewModels
                     MarkButtonChanged();
                 });
                 OnPropertyChanged(nameof(ReleaseInterruptable));
+            }
+        }
+
+        public string DistanceName
+        {
+            get => func is DistanceFunc distanceFunc ? distanceFunc.Name : "";
+            set
+            {
+                TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
+                if ((owner.FindButtonFunc(Kind) ?? func) is not DistanceFunc distanceFunc) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    triggerAction?.EventButton.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                    distanceFunc.Name = value;
+                    MarkButtonChanged();
+                });
+                OnPropertyChanged(nameof(DistanceName));
+            }
+        }
+
+        public double DistanceValue
+        {
+            get => func is DistanceFunc distanceFunc ? distanceFunc.distance : 0.0;
+            set
+            {
+                TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
+                if ((owner.FindButtonFunc(Kind) ?? func) is not DistanceFunc distanceFunc) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    triggerAction?.EventButton.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                    distanceFunc.distance = Math.Clamp(value, 0.0, 1.0);
+                    MarkButtonChanged();
+                });
+                OnPropertyChanged(nameof(DistanceValue));
             }
         }
 
