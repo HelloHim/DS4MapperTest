@@ -63,6 +63,8 @@ namespace DS4MapperTest.ViewModels
         public List<PadModeItem> PadModeItems => padModeItems;
         public List<DPadTopLevelModeItem> TopLevelModeItems => topLevelModeItems;
         public List<DPadOutputItem> OutputDPadItems => outputDPadItems;
+        public bool HasDPadBindings => owner.HasDPadBindings;
+        public bool ShowDPadEmptyState => !HasDPadBindings;
 
         public int SelectedTopLevelModeIndex
         {
@@ -174,6 +176,8 @@ namespace DS4MapperTest.ViewModels
 
         private void RefreshBehaviourState()
         {
+            OnPropertyChanged(nameof(HasDPadBindings));
+            OnPropertyChanged(nameof(ShowDPadEmptyState));
             OnPropertyChanged(nameof(IsActionPad));
             OnPropertyChanged(nameof(IsTranslate));
             OnPropertyChanged(nameof(IsNoAction));

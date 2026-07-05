@@ -16,38 +16,6 @@
     </UserControl.Resources>
 
     <StackPanel DataContext="{Binding DPadKeybinds}">
-        <Border Style="{StaticResource JsmccCardBorder}">
-            <StackPanel>
-                <TextBlock Text="D-Pad Mode" Style="{StaticResource JsmccCardTitle}"/>
-                <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,8,0,0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="160"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Column="0"
-                                   Text="Mode"
-                                   Style="{StaticResource JsmccLabelText}"
-                                   VerticalAlignment="Center"/>
-                        <ComboBox Grid.Column="1"
-                                  ItemsSource="{Binding TopLevelModeItems}"
-                                  DisplayMemberPath="DisplayName"
-                                  SelectedIndex="{Binding SelectedTopLevelModeIndex}"
-                                  Style="{StaticResource JsmccComboBoxStyle}"
-                                  Width="180"/>
-                        <TextBlock Grid.Column="2"
-                                   Text="{Binding ModeHelperText}"
-                                   Style="{StaticResource JsmccMutedText}"
-                                   TextWrapping="Wrap"
-                                   VerticalAlignment="Center"
-                                   Margin="12,0,0,0"/>
-                    </Grid>
-                </Border>
-            </StackPanel>
-        </Border>
-
         <StackPanel Margin="0,0,0,6">
             <TextBlock Text="D-Pad" Style="{StaticResource JsmccSectionTitle}"/>
             <TextBlock Text="Choose whether this D-Pad uses direction bindings, translates to controller D-Pad output, or stays disabled."
@@ -57,7 +25,51 @@
         </StackPanel>
 
         <Border Style="{StaticResource JsmccCardBorder}"
-                Visibility="{Binding IsTranslate, Converter={StaticResource BoolToVis}}">
+                Visibility="{Binding ShowDPadEmptyState, Converter={StaticResource BoolToVis}}">
+            <StackPanel>
+                <TextBlock Text="No D-Pad binding available" Style="{StaticResource JsmccCardTitle}"/>
+                <TextBlock Text="This controller does not expose a D-Pad binding in the current profile."
+                           Style="{StaticResource JsmccMutedText}"
+                           TextWrapping="Wrap"
+                           Margin="0,3,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Visibility="{Binding HasDPadBindings, Converter={StaticResource BoolToVis}}">
+            <Border Style="{StaticResource JsmccCardBorder}">
+                <StackPanel>
+                    <TextBlock Text="D-Pad Mode" Style="{StaticResource JsmccCardTitle}"/>
+                    <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,8,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Text="Mode"
+                                       Style="{StaticResource JsmccLabelText}"
+                                       VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding TopLevelModeItems}"
+                                      DisplayMemberPath="DisplayName"
+                                      SelectedIndex="{Binding SelectedTopLevelModeIndex}"
+                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                      Width="180"/>
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding ModeHelperText}"
+                                       Style="{StaticResource JsmccMutedText}"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Center"
+                                       Margin="12,0,0,0"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource JsmccCardBorder}"
+                    Visibility="{Binding IsTranslate, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <TextBlock Text="Translate Settings" Style="{StaticResource JsmccCardTitle}"/>
                 <TextBlock Text="D-Pad is set to Translate. These settings use the existing DS4MapperTest DPadTranslate action."
@@ -104,10 +116,10 @@
                     </Grid>
                 </Border>
             </StackPanel>
-        </Border>
+            </Border>
 
-        <Border Style="{StaticResource JsmccCardBorder}"
-                Visibility="{Binding IsNoAction, Converter={StaticResource BoolToVis}}">
+            <Border Style="{StaticResource JsmccCardBorder}"
+                    Visibility="{Binding IsNoAction, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <TextBlock Text="No Action" Style="{StaticResource JsmccCardTitle}"/>
                 <TextBlock Text="D-Pad is set to No Action. Direction bindings are disabled for this D-Pad mode."
@@ -115,10 +127,10 @@
                            TextWrapping="Wrap"
                            Margin="0,3,0,0"/>
             </StackPanel>
-        </Border>
+            </Border>
 
-        <Border Style="{StaticResource JsmccCardBorder}"
-                Visibility="{Binding IsActionPad, Converter={StaticResource BoolToVis}}">
+            <Border Style="{StaticResource JsmccCardBorder}"
+                    Visibility="{Binding IsActionPad, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <TextBlock Text="Action Pad Direction Mode" Style="{StaticResource JsmccCardTitle}"/>
                 <TextBlock Text="Controls how diagonal D-Pad presses are resolved into the direction bindings."
@@ -132,10 +144,10 @@
                           Width="220"
                           HorizontalAlignment="Left"/>
             </StackPanel>
-        </Border>
+            </Border>
 
-        <ItemsControl ItemsSource="{Binding Directions}"
-                      Visibility="{Binding IsActionPad, Converter={StaticResource BoolToVis}}">
+            <ItemsControl ItemsSource="{Binding Directions}"
+                          Visibility="{Binding IsActionPad, Converter={StaticResource BoolToVis}}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border Style="{StaticResource JsmccCardBorder}">
@@ -447,6 +459,7 @@
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
-        </ItemsControl>
+            </ItemsControl>
+        </StackPanel>
     </StackPanel>
 </UserControl>
