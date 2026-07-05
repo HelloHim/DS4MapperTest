@@ -79,6 +79,19 @@
                             </DockPanel>
 
                             <StackPanel Visibility="{Binding IsButtonMode, Converter={StaticResource BoolToVis}}">
+                                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                    <WrapPanel>
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
+                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
+                                                         Width="160"
+                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </Border>
+
                                 <DockPanel LastChildFill="False" Margin="0,0,0,4">
                                     <Button DockPanel.Dock="Right"
                                             Content="Add Extra Binding"
