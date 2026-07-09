@@ -710,6 +710,8 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 PropertyChanged?.Invoke(this,
                     new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
                 PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                PropertyChanged?.Invoke(this,
                     new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
                 VerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
@@ -1842,6 +1844,8 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
             VerticalScaleMultiplierChanged?.Invoke(this, EventArgs.Empty);
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nameof(VerticalScale)));
             PropertyChanged?.Invoke(this,
                 new PropertyChangedEventArgs(nameof(VerticalScaleMultiplier)));
 
