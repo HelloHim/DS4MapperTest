@@ -51,6 +51,19 @@ namespace DS4MapperTest.Views
             set => SetValue(ShowNameSettingsProperty, value);
         }
 
+        public static readonly DependencyProperty ShowActivationSettingsProperty =
+            DependencyProperty.Register(
+                nameof(ShowActivationSettings),
+                typeof(bool),
+                typeof(GyroActionsPanel),
+                new PropertyMetadata(true));
+
+        public bool ShowActivationSettings
+        {
+            get => (bool)GetValue(ShowActivationSettingsProperty);
+            set => SetValue(ShowActivationSettingsProperty, value);
+        }
+
         public static readonly DependencyProperty ShowPanelHeaderProperty =
             DependencyProperty.Register(
                 nameof(ShowPanelHeader),
@@ -140,6 +153,7 @@ namespace DS4MapperTest.Views
                         propControl.ShowActionSelect = ShowActionSelect;
                         propControl.ShowActionSettings = ShowActionSettings;
                         propControl.ShowNameSettings = ShowNameSettings;
+                        propControl.ShowActivationSettings = ShowActivationSettings;
                         propControl.PostInit(item.Mapper, item.MappedAction);
                         propControl.ActionTypeIndexChanged += (s, ind) => HandleActionTypeChanged(host, item, ind);
                         return propControl;
@@ -150,6 +164,7 @@ namespace DS4MapperTest.Views
                         propControl.ShowActionSelect = ShowActionSelect;
                         propControl.ShowActionSettings = ShowActionSettings;
                         propControl.ShowNameSettings = ShowNameSettings;
+                        propControl.ShowActivationSettings = ShowActivationSettings;
                         propControl.PostInit(item.Mapper, item.MappedAction);
                         propControl.ActionTypeIndexChanged += (s, ind) => HandleActionTypeChanged(host, item, ind);
                         return propControl;
@@ -160,6 +175,7 @@ namespace DS4MapperTest.Views
                         propControl.ShowActionSelect = ShowActionSelect;
                         propControl.ShowActionSettings = ShowActionSettings;
                         propControl.ShowNameSettings = ShowNameSettings;
+                        propControl.ShowActivationSettings = ShowActivationSettings;
                         propControl.PostInit(item.Mapper, item.MappedAction);
                         propControl.ActionTypeIndexChanged += (s, ind) => HandleActionTypeChanged(host, item, ind);
                         return propControl;

@@ -12,11 +12,12 @@
     </UserControl.Resources>
     <DockPanel Margin="8">
         <StackPanel DockPanel.Dock="Top">
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Name" />
+            <StackPanel x:Name="ExtraFieldsPanel" Orientation="Horizontal" Visibility="Collapsed">
+                <Label Content="Action Name" />
                 <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="200" Margin="8,0,0,0" />
             </StackPanel>
 
+            <StackPanel x:Name="TrackballFieldsPanel">
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Forward" />
                 <Button x:Name="btnEditForward" Content="{Binding ForwardDisplayBind,Mode=OneTime,FallbackValue='Test Forward'}" Click="BtnEditForward_Click" Margin="8,0,0,0" MinWidth="60" />
@@ -57,6 +58,7 @@
                         </Style>
                     </ComboBox.Style>
                 </ComboBox>
+            </StackPanel>
             </StackPanel>
 
         </StackPanel>

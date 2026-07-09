@@ -80,6 +80,7 @@ namespace DS4MapperTest.Views
                 "ZonesGestures" => CreateSectionContent(host, item, section),
                 "TrackballScroll" => CreateSectionContent(host, item, section),
                 "Advanced" => CreateSectionContent(host, item, section),
+                "Extra" => CreateSectionContent(host, item, section),
                 _ => null,
             };
         }
@@ -109,6 +110,7 @@ namespace DS4MapperTest.Views
                 "ZonesGestures" => item.IsZoneGestureAction,
                 "TrackballScroll" => item.IsTrackballScrollAction,
                 "Advanced" => item.IsAdvancedAction,
+                "Extra" => item.IsExtraAction,
                 _ => false,
             };
 
@@ -154,6 +156,9 @@ namespace DS4MapperTest.Views
                     return true;
                 case "Advanced":
                     parsedSection = TouchpadSettingsSection.Advanced;
+                    return true;
+                case "Extra":
+                    parsedSection = TouchpadSettingsSection.Extra;
                     return true;
                 default:
                     parsedSection = default;

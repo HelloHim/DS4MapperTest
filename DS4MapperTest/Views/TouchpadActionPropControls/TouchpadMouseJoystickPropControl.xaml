@@ -10,12 +10,14 @@
     <DockPanel Margin="0,8,0,0">
         <ScrollViewer DockPanel.Dock="Top">
             <StackPanel>
-            <StackPanel x:Name="MovementFieldsPanel">
+            <StackPanel x:Name="ExtraFieldsPanel">
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Name" />
+                    <Label Content="Action Name" />
                     <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="200" Margin="8,0,0,0" />
                 </StackPanel>
+            </StackPanel>
 
+            <StackPanel x:Name="MovementFieldsPanel">
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Output Stick" />
                     <ComboBox ItemsSource="{Binding OutputStickItems}" SelectedIndex="{Binding OutputStickIndex}" DisplayMemberPath="DisplayName" Width="200" Margin="8,0,0,0">

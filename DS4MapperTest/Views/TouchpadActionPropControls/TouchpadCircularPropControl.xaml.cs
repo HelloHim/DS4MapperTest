@@ -22,7 +22,7 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
     /// <summary>
     /// Interaction logic for TouchpadCircularPropControl.xaml
     /// </summary>
-    public partial class TouchpadCircularPropControl : UserControl
+    public partial class TouchpadCircularPropControl : UserControl, ISectionAwareTouchpadPropControl
     {
         private TouchpadCircularPropViewModel touchCircVM;
         public TouchpadCircularPropViewModel TouchCircVM => touchCircVM;
@@ -45,6 +45,14 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
             // Force re-eval of bindings
             DataContext = null;
             DataContext = touchCircVM;
+        }
+
+        public void ApplySection(TouchpadSettingsSection section)
+        {
+            ExtraFieldsPanel.Visibility = section == TouchpadSettingsSection.Extra
+                ? Visibility.Visible : Visibility.Collapsed;
+            TrackballFieldsPanel.Visibility = section == TouchpadSettingsSection.TrackballScroll
+                ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void BtnEditForward_Click(object sender, RoutedEventArgs e)

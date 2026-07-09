@@ -28,6 +28,7 @@ namespace DS4MapperTest.Views.GyroActionPropControls
         public bool ShowActionSelect { get; set; } = true;
         public bool ShowActionSettings { get; set; } = true;
         public bool ShowNameSettings { get; set; } = true;
+        public bool ShowActivationSettings { get; set; } = true;
 
         public event EventHandler<int> ActionTypeIndexChanged;
 
@@ -44,7 +45,7 @@ namespace DS4MapperTest.Views.GyroActionPropControls
             gyroSelectControl.PostInit(mapper, action);
             gyroSelectControl.Visibility = ShowActionSelect ? Visibility.Visible : Visibility.Collapsed;
             nameSettings.Visibility = ShowActionSettings && ShowNameSettings ? Visibility.Visible : Visibility.Collapsed;
-            activationSettings.Visibility = ShowActionSettings ? Visibility.Visible : Visibility.Collapsed;
+            activationSettings.Visibility = ShowActionSettings && ShowActivationSettings ? Visibility.Visible : Visibility.Collapsed;
             gyroSelectControl.GyroActSelVM.SelectedIndexChanged += GyroActSelVM_SelectedIndexChanged;
         }
 

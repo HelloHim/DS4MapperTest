@@ -426,14 +426,17 @@
                                                                 ShowPanelHeader="False"
                                                                 ShowBindingHeader="False"/>
                                     </TabItem>
-                                    <TabItem Header="Sensitivity">
+                                    <TabItem Header="Sensitivity &amp; Calibration">
                                         <views:GyroSensitivityControl/>
                                     </TabItem>
                                     <TabItem Header="Noise &amp; Steadying">
                                         <views:GyroNoiseSteadyingControl/>
                                     </TabItem>
                                     <TabItem Header="Extra">
-                                        <Grid/>
+                                        <views:GyroActionsPanel ShowActionSelect="False"
+                                                                ShowActivationSettings="False"
+                                                                ShowPanelHeader="False"
+                                                                ShowBindingHeader="False"/>
                                     </TabItem>
                                 </TabControl>
                             </StackPanel>

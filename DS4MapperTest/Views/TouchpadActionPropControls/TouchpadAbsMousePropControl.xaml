@@ -8,11 +8,14 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <DockPanel Margin="0,8,0,0">
         <StackPanel DockPanel.Dock="Top">
-            <StackPanel x:Name="MovementFieldsPanel">
+            <StackPanel x:Name="ExtraFieldsPanel">
             <StackPanel Orientation="Horizontal">
-                <Label Content="Name" />
+                <Label Content="Action Name" />
                 <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="200" Margin="8,0,0,0" />
             </StackPanel>
+            </StackPanel>
+
+            <StackPanel x:Name="MovementFieldsPanel">
             </StackPanel>
 
             <StackPanel x:Name="FilteringFieldsPanel">
