@@ -354,6 +354,18 @@ namespace DS4MapperTest.ViewModels
         }
         public event EventHandler ProfileIndexChanged;
 
+        // Realign profileIndex after DevProfileList has been mutated. The
+        // ProfileIndex setter skips equal values, so it cannot force a reload
+        // when a removal leaves the numeric index unchanged
+        public void ResyncProfileIndex(int value, bool reloadProfile)
+        {
+            profileIndex = value;
+            if (reloadProfile)
+            {
+                ProfileIndexChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         public ObservableCollection<ProfileEntity> DevProfileList
         {
             get => profileListHolder.ProfileListCol;
