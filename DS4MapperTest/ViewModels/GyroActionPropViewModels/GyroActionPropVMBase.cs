@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DS4MapperTest.ViewModels.Common;
 using DS4MapperTest.GyroActions;
+using DS4MapperTest.MapperUtil;
 
 namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 {
@@ -38,6 +39,13 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         Stiff,
         Normie,
         Loose,
+    }
+
+    public enum GyroActivationModeChoice
+    {
+        AlwaysOn,
+        HoldToEnable,
+        HoldToDisable,
     }
 
     public class SmoothPresetChoiceItem
@@ -108,14 +116,46 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler NameChanged;
 
+        protected List<EnumChoiceSelection<GyroActivationModeChoice>> gyroActivationModeItems =
+            new List<EnumChoiceSelection<GyroActivationModeChoice>>()
+        {
+            new EnumChoiceSelection<GyroActivationModeChoice>("Always On", GyroActivationModeChoice.AlwaysOn),
+            new EnumChoiceSelection<GyroActivationModeChoice>("Hold to Enable", GyroActivationModeChoice.HoldToEnable),
+            new EnumChoiceSelection<GyroActivationModeChoice>("Hold to Disable", GyroActivationModeChoice.HoldToDisable),
+        };
+
+        public List<EnumChoiceSelection<GyroActivationModeChoice>> GyroActivationModeItems => gyroActivationModeItems;
+
         protected List<EnumChoiceSelection<bool>> gyroTriggerCondItems =
             new List<EnumChoiceSelection<bool>>()
         {
-            new EnumChoiceSelection<bool>("And", true),
-            new EnumChoiceSelection<bool>("Or", false),
+            new EnumChoiceSelection<bool>("Any selected", false),
+            new EnumChoiceSelection<bool>("All selected", true),
         };
 
         public List<EnumChoiceSelection<bool>> GyroTriggerCondItems => gyroTriggerCondItems;
+
+        protected static GyroActivationModeChoice GetGyroActivationMode(
+            IEnumerable<JoypadActionCodes> gyroTriggerButtons, bool triggerActivates)
+        {
+            return gyroTriggerButtons.Contains(JoypadActionCodes.AlwaysOn) && triggerActivates
+                ? GyroActivationModeChoice.AlwaysOn
+                : triggerActivates
+                    ? GyroActivationModeChoice.HoldToEnable
+                    : GyroActivationModeChoice.HoldToDisable;
+        }
+
+        protected static void SetTriggerItemEnabled(
+            IEnumerable<GyroTriggerButtonItem> triggerItems,
+            JoypadActionCodes code,
+            bool enabled)
+        {
+            GyroTriggerButtonItem item = triggerItems.FirstOrDefault((candidate) => candidate.Code == code);
+            if (item != null && item.Enabled != enabled)
+            {
+                item.Enabled = enabled;
+            }
+        }
 
         public virtual event EventHandler ActionPropertyChanged;
         public event EventHandler<GyroMapAction> ActionChanged;

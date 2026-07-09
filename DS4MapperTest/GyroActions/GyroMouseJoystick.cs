@@ -140,7 +140,7 @@ namespace DS4MapperTest.GyroActions
                 outputStick = StickActionCodes.RS,
                 maxOutput = 1.0,
                 triggerActivates = true,
-                andCond = true,
+                andCond = false,
                 gyroTriggerButtons = new JoypadActionCodes[1]
                 {
                     JoypadActionCodes.AlwaysOn,

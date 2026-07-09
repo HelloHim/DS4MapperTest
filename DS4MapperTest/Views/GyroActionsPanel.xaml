@@ -17,9 +17,33 @@
         <DataTemplate x:Key="GyroBindingTemplate">
             <Border Style="{StaticResource GyroActionCard}">
                 <StackPanel>
-                    <TextBlock Text="{Binding DisplayInputMapString}" Style="{StaticResource JsmccCardTitle}"/>
-                    <TextBlock Text="{Binding ActionDisplayName}" Style="{StaticResource JsmccMutedText}" Margin="0,3,0,6"/>
-                    <TextBlock Text="{Binding BindingStatus}" Style="{StaticResource JsmccBodyText}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding DisplayInputMapString}"
+                               Style="{StaticResource JsmccCardTitle}"
+                               Visibility="{Binding ShowBindingHeader, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}"/>
+                    <TextBlock Text="{Binding ActionDisplayName}" Margin="0,3,0,6">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource JsmccMutedText}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ShowBindingHeader, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="{Binding BindingStatus}" TextWrapping="Wrap" Margin="0,0,0,8">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource JsmccBodyText}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ShowBindingHeader, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                     <ContentControl DataContext="{Binding}" Loaded="GyroBindingHost_Loaded"/>
                 </StackPanel>
             </Border>
@@ -30,7 +54,8 @@
                   HorizontalScrollBarVisibility="Disabled"
                   CanContentScroll="False">
         <StackPanel>
-            <StackPanel Margin="0,0,0,6">
+            <StackPanel Margin="0,0,0,6"
+                        Visibility="{Binding ShowPanelHeader, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}">
                 <TextBlock Text="Gyro Action" Style="{StaticResource JsmccSectionTitle}"/>
                 <TextBlock Text="Choose the gyro mode, name the binding, and decide which buttons arm it. Output direction, sensitivity, and noise steadying are tuned in Gyro Behaviour, Sensitivity, and Noise &amp; Steadying."
                            Style="{StaticResource JsmccBodyText}"

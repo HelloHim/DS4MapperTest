@@ -28,63 +28,59 @@
                 Style="{StaticResource JsmccCardBorder}"
                 Margin="0,12,0,0">
             <StackPanel>
-                <TextBlock Text="Activation" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
-                <TextBlock Text="Choose which controller buttons arm the gyro, and how they combine."
-                           Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,0,0,8"/>
-
-                <TextBlock Text="Trigger Buttons" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
-                <ItemsControl ItemsSource="{Binding TriggerButtonItems}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <ToggleButton Content="{Binding DisplayString}"
-                                          IsChecked="{Binding Enabled, Mode=TwoWay}"
-                                          Style="{StaticResource JsmccChipToggleStyle}"
-                                          Margin="0,0,6,6"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,6,0,0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Selected Triggers" Style="{StaticResource JsmccLabelText}"/>
-                        <TextBlock Grid.Column="1" Text="{Binding GyroTriggerString}" Style="{StaticResource JsmccBodyText}" TextWrapping="Wrap"/>
-                    </Grid>
-                </Border>
-
                 <Border Style="{StaticResource JsmccSettingRowBorder}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="150"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Trigger Condition" Style="{StaticResource JsmccLabelText}"/>
-                        <ComboBox Grid.Column="1" ItemsSource="{Binding GyroTriggerCondItems}" DisplayMemberPath="DisplayName"
-                                  SelectedValuePath="ChoiceValue" SelectedValue="{Binding GyroTriggerCondChoice}"
-                                  Style="{StaticResource JsmccComboBoxStyle}" MinWidth="120"/>
+                        <TextBlock Grid.Column="0" Text="Activation Mode" Style="{StaticResource JsmccLabelText}"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding GyroActivationModeItems}" DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="ChoiceValue" SelectedValue="{Binding GyroActivationModeChoice}"
+                                  Style="{StaticResource JsmccComboBoxStyle}" MinWidth="150"/>
                     </Grid>
                 </Border>
 
-                <Border Style="{StaticResource JsmccSettingRowBorder}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Trigger Activates (Ratchet)" Style="{StaticResource JsmccLabelText}"/>
-                        <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}" IsChecked="{Binding GyroTriggerActivates}"/>
-                    </Grid>
-                </Border>
-                <TextBlock Text="When on, the gyro stays active once triggered until the trigger condition is met again."
-                           Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                <StackPanel Visibility="{Binding GyroActivationButtonsUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                    <TextBlock Text="Activation Buttons" Style="{StaticResource JsmccLabelText}" Margin="0,4,0,4"/>
+                    <ItemsControl ItemsSource="{Binding ActivationButtonItems}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton Content="{Binding DisplayString}"
+                                              IsChecked="{Binding Enabled, Mode=TwoWay}"
+                                              Style="{StaticResource JsmccChipToggleStyle}"
+                                              Margin="0,0,6,6"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,6,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Multiple Gyro Button Behaviour"
+                                       Style="{StaticResource JsmccLabelText}"
+                                       Margin="0,0,14,0"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <RadioButton Content="Any selected"
+                                             IsChecked="{Binding GyroTriggerAnySelected, Mode=TwoWay}"
+                                             Style="{StaticResource CalibModeToggleStyle}"
+                                             Margin="0,0,6,0"/>
+                                <RadioButton Content="All selected"
+                                             IsChecked="{Binding GyroTriggerAllSelected, Mode=TwoWay}"
+                                             Style="{StaticResource CalibModeToggleStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
             </StackPanel>
         </Border>
     </StackPanel>
