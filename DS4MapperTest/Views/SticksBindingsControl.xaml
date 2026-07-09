@@ -7,12 +7,37 @@
              mc:Ignorable="d"
              d:DesignHeight="720"
              d:DesignWidth="860">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
                   CanContentScroll="False">
         <StackPanel Margin="0,0,10,12">
-            <views:StickSideBindingsControl DataContext="{Binding LeftStickKeybinds}"/>
-            <views:StickSideBindingsControl DataContext="{Binding RightStickKeybinds}"/>
+            <Border>
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource JsmccCardBorder}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding LeftStickKeybinds.HasBinding}" Value="False"/>
+                                    <Condition Binding="{Binding RightStickKeybinds.HasBinding}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="No stick bindings available for this controller."
+                           Style="{StaticResource JsmccBodyText}"
+                           TextWrapping="Wrap"/>
+            </Border>
+
+            <views:StickSideBindingsControl DataContext="{Binding LeftStickKeybinds}"
+                                            Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
+            <views:StickSideBindingsControl DataContext="{Binding RightStickKeybinds}"
+                                            Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
