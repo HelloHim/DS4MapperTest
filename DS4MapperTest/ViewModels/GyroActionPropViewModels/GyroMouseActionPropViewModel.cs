@@ -196,6 +196,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.accelCurve;
             set
             {
+                if (!_modelReady) return;
                 if (action.mouseParams.accelCurve == value) return;
                 _prevAccelCurve = action.mouseParams.accelCurve;
                 action.mouseParams.accelCurve = value;
@@ -210,7 +211,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.minAccelXSens;
             set
             {
-                action.mouseParams.minAccelXSens = Math.Clamp(value, 0.0, 100.0);
+                if (!_modelReady) return;
+                double minAccelXSens = Math.Clamp(value, 0.0, 100.0);
+                if (action.mouseParams.minAccelXSens == minAccelXSens) return;
+                action.mouseParams.minAccelXSens = minAccelXSens;
                 MinAccelXSensChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -222,7 +226,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.maxAccelXSens;
             set
             {
-                action.mouseParams.maxAccelXSens = Math.Clamp(value, 0.0, 100.0);
+                if (!_modelReady) return;
+                double maxAccelXSens = Math.Clamp(value, 0.0, 100.0);
+                if (action.mouseParams.maxAccelXSens == maxAccelXSens) return;
+                action.mouseParams.maxAccelXSens = maxAccelXSens;
                 MaxAccelXSensChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -236,7 +243,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.minAccelYSens;
             set
             {
-                action.mouseParams.minAccelYSens = Math.Clamp(value, 0.0, 100.0);
+                if (!_modelReady) return;
+                double minAccelYSens = Math.Clamp(value, 0.0, 100.0);
+                if (action.mouseParams.minAccelYSens == minAccelYSens) return;
+                action.mouseParams.minAccelYSens = minAccelYSens;
                 MinAccelYSensChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -248,7 +258,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.maxAccelYSens;
             set
             {
-                action.mouseParams.maxAccelYSens = Math.Clamp(value, 0.0, 100.0);
+                if (!_modelReady) return;
+                double maxAccelYSens = Math.Clamp(value, 0.0, 100.0);
+                if (action.mouseParams.maxAccelYSens == maxAccelYSens) return;
+                action.mouseParams.maxAccelYSens = maxAccelYSens;
                 MaxAccelYSensChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -261,7 +274,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.minGyroThreshold;
             set
             {
-                action.mouseParams.minGyroThreshold = Math.Clamp(value, 0.0, 500.0);
+                if (!_modelReady) return;
+                double minGyroThreshold = Math.Clamp(value, 0.0, 500.0);
+                if (action.mouseParams.minGyroThreshold == minGyroThreshold) return;
+                action.mouseParams.minGyroThreshold = minGyroThreshold;
                 MinGyroThresholdChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -273,7 +289,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.maxGyroThreshold;
             set
             {
-                action.mouseParams.maxGyroThreshold = Math.Clamp(value, 0.0, 500.0);
+                if (!_modelReady) return;
+                double maxGyroThreshold = Math.Clamp(value, 0.0, 500.0);
+                if (action.mouseParams.maxGyroThreshold == maxGyroThreshold) return;
+                action.mouseParams.maxGyroThreshold = maxGyroThreshold;
                 MaxGyroThresholdChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -305,8 +324,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.naturalVHalf;
             set
             {
-                if (action.mouseParams.naturalVHalf == value) return;
-                action.mouseParams.naturalVHalf = Math.Clamp(value, 1.0, 500.0);
+                if (!_modelReady) return;
+                double naturalVHalf = Math.Clamp(value, 1.0, 500.0);
+                if (action.mouseParams.naturalVHalf == naturalVHalf) return;
+                action.mouseParams.naturalVHalf = naturalVHalf;
                 NaturalVHalfChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -329,8 +350,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.powerVRef;
             set
             {
-                if (action.mouseParams.powerVRef == value) return;
-                action.mouseParams.powerVRef = Math.Clamp(value, 0.1, 500.0);
+                if (!_modelReady) return;
+                double powerVRef = Math.Clamp(value, 0.1, 500.0);
+                if (action.mouseParams.powerVRef == powerVRef) return;
+                action.mouseParams.powerVRef = powerVRef;
                 PowerCurveVRefChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -342,8 +365,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => action.mouseParams.powerExponent;
             set
             {
-                if (action.mouseParams.powerExponent == value) return;
-                action.mouseParams.powerExponent = Math.Clamp(value, 1.0, 500.0);
+                if (!_modelReady) return;
+                double powerExponent = Math.Clamp(value, 1.0, 500.0);
+                if (action.mouseParams.powerExponent == powerExponent) return;
+                action.mouseParams.powerExponent = powerExponent;
                 PowerCurveExponentChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -1139,21 +1164,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             }
 
             PopulateModel();
-            if (this.action.mouseParams.accelCurve ==
-                GyroMouseAccelCurveChoice.None)
-            {
-                this.action.mouseParams.minAccelXSens =
-                    this.action.mouseParams.sensitivity;
-                this.action.mouseParams.minAccelYSens =
-                    this.action.mouseParams.verticalScale;
-            }
-            else
-            {
-                this.action.mouseParams.sensitivity = Math.Clamp(
-                    this.action.mouseParams.minAccelXSens, 0.0, 10.0);
-                this.action.mouseParams.verticalScale = Math.Clamp(
-                    this.action.mouseParams.minAccelYSens, 0.0, 10.0);
-            }
             _prevAccelCurve = this.action.mouseParams.accelCurve;
 
             copyTestRWCComm = new BasicActionCommand((parameter) =>
