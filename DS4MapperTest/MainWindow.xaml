@@ -413,7 +413,9 @@
                                                       HorizontalScrollBarVisibility="Disabled"
                                                       CanContentScroll="False">
                                             <StackPanel>
-                                                <views:GyroActionsPanel ShowActionSettings="False"/>
+                                                <views:GyroActionsPanel ShowActionSettings="False"
+                                                                        PanelTitle="Gyro Action"
+                                                                        PanelDescription="Choose what the gyro outputs. Output direction, invert, sensitivity, and noise steadying are tuned below and in the neighbouring tabs."/>
                                                 <views:GyroOutputControl Margin="0,10,0,0"/>
                                             </StackPanel>
                                         </ScrollViewer>
