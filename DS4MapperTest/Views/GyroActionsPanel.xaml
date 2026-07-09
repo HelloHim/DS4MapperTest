@@ -28,6 +28,9 @@
                                     <DataTrigger Binding="{Binding ShowBindingHeader, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
+                                    <DataTrigger Binding="{Binding ShowActionSettings, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </TextBlock.Style>
@@ -40,11 +43,30 @@
                                     <DataTrigger Binding="{Binding ShowBindingHeader, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
+                                    <DataTrigger Binding="{Binding ShowActionSettings, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
                     <ContentControl DataContext="{Binding}" Loaded="GyroBindingHost_Loaded"/>
+                    <TextBlock Text="{Binding BindingStatus}" TextWrapping="Wrap" Margin="0,8,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource JsmccBodyText}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding ShowActionSettings, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False"/>
+                                            <Condition Binding="{Binding ShowBindingHeader, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
             </Border>
         </DataTemplate>
@@ -56,8 +78,8 @@
         <StackPanel>
             <StackPanel Margin="0,0,0,6"
                         Visibility="{Binding ShowPanelHeader, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}">
-                <TextBlock Text="Gyro Action" Style="{StaticResource JsmccSectionTitle}"/>
-                <TextBlock Text="Choose the gyro mode, name the binding, and decide which buttons arm it. Output direction, sensitivity, and noise steadying are tuned in Gyro Behaviour, Sensitivity, and Noise &amp; Steadying."
+                <TextBlock Text="{Binding PanelTitle, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource JsmccSectionTitle}"/>
+                <TextBlock Text="{Binding PanelDescription, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            Style="{StaticResource JsmccBodyText}"
                            TextWrapping="Wrap"
                            Margin="0,4,0,0"/>

@@ -77,6 +77,33 @@ namespace DS4MapperTest.Views
             set => SetValue(ShowBindingHeaderProperty, value);
         }
 
+        public static readonly DependencyProperty PanelTitleProperty =
+            DependencyProperty.Register(
+                nameof(PanelTitle),
+                typeof(string),
+                typeof(GyroActionsPanel),
+                new PropertyMetadata("Gyro Action"));
+
+        public string PanelTitle
+        {
+            get => (string)GetValue(PanelTitleProperty);
+            set => SetValue(PanelTitleProperty, value);
+        }
+
+        public static readonly DependencyProperty PanelDescriptionProperty =
+            DependencyProperty.Register(
+                nameof(PanelDescription),
+                typeof(string),
+                typeof(GyroActionsPanel),
+                new PropertyMetadata(
+                    "Choose the gyro mode, name the binding, and decide which buttons arm it. Output direction, sensitivity, and noise steadying are tuned in Gyro Behaviour, Sensitivity, and Noise & Steadying."));
+
+        public string PanelDescription
+        {
+            get => (string)GetValue(PanelDescriptionProperty);
+            set => SetValue(PanelDescriptionProperty, value);
+        }
+
         public GyroActionsPanel()
         {
             InitializeComponent();

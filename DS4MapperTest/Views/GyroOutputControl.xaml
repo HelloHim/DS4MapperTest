@@ -16,67 +16,77 @@
         </Style>
 
         <DataTemplate x:Key="MouseOutputTemplate">
-            <Border Style="{StaticResource JsmccCardBorder}">
-                <StackPanel>
-                    <TextBlock Text="Motion Output" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
-                    <Border Style="{StaticResource OutputRowBorder}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="190"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Invert" Style="{StaticResource OutputRowLabel}"/>
-                            <ComboBox Grid.Column="1" ItemsSource="{Binding InvertChoiceItems}" DisplayMemberPath="DisplayName"
-                                      SelectedValuePath="Choice" SelectedValue="{Binding InvertChoice}"
-                                      Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
-                        </Grid>
-                    </Border>
-                </StackPanel>
-            </Border>
+            <StackPanel>
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Invert" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                        <Border Style="{StaticResource OutputRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Invert" Style="{StaticResource OutputRowLabel}"/>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding InvertChoiceItems}" DisplayMemberPath="DisplayName"
+                                          SelectedValuePath="Choice" SelectedValue="{Binding InvertChoice}"
+                                          Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="JoystickOutputTemplate">
-            <Border Style="{StaticResource JsmccCardBorder}">
-                <StackPanel>
-                    <TextBlock Text="Motion Output" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
-                    <Border Style="{StaticResource OutputRowBorder}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="190"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Output Stick" Style="{StaticResource OutputRowLabel}"/>
-                            <ComboBox Grid.Column="1" ItemsSource="{Binding OutputStickHolder.OutputStickItems}"
-                                      SelectedIndex="{Binding OutputStickIndex}" DisplayMemberPath="DisplayName"
-                                      Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
-                        </Grid>
-                    </Border>
-                    <Border Style="{StaticResource OutputRowBorder}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="190"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Output Axes" Style="{StaticResource OutputRowLabel}"/>
-                            <ComboBox Grid.Column="1" ItemsSource="{Binding OutputAxesItems}" DisplayMemberPath="DisplayName"
-                                      SelectedValuePath="ChoiceValue" SelectedValue="{Binding OutputAxesChoice}"
-                                      Style="{StaticResource JsmccComboBoxStyle}" MinWidth="180"/>
-                        </Grid>
-                    </Border>
-                    <Border Style="{StaticResource OutputRowBorder}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="190"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Invert" Style="{StaticResource OutputRowLabel}"/>
-                            <ComboBox Grid.Column="1" ItemsSource="{Binding InvertChoiceItems}" DisplayMemberPath="DisplayName"
-                                      SelectedValuePath="Choice" SelectedValue="{Binding InvertChoice}"
-                                      Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
-                        </Grid>
-                    </Border>
-                </StackPanel>
-            </Border>
+            <StackPanel>
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Motion Output" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                        <Border Style="{StaticResource OutputRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Output Stick" Style="{StaticResource OutputRowLabel}"/>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding OutputStickHolder.OutputStickItems}"
+                                          SelectedIndex="{Binding OutputStickIndex}" DisplayMemberPath="DisplayName"
+                                          Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource OutputRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Output Axes" Style="{StaticResource OutputRowLabel}"/>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding OutputAxesItems}" DisplayMemberPath="DisplayName"
+                                          SelectedValuePath="ChoiceValue" SelectedValue="{Binding OutputAxesChoice}"
+                                          Style="{StaticResource JsmccComboBoxStyle}" MinWidth="180"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Invert" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                        <Border Style="{StaticResource OutputRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Invert" Style="{StaticResource OutputRowLabel}"/>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding InvertChoiceItems}" DisplayMemberPath="DisplayName"
+                                          SelectedValuePath="Choice" SelectedValue="{Binding InvertChoice}"
+                                          Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="DirSwipeOutputTemplate">
@@ -125,13 +135,8 @@
         </DataTemplate>
 
         <DataTemplate x:Key="GyroOutputBindingTemplate">
-            <Border Style="{StaticResource JsmccCardBorder}">
-                <StackPanel>
-                    <TextBlock Text="{Binding ActionDisplayName}" Style="{StaticResource JsmccCardTitle}"/>
-                    <ContentControl Tag="Output" DataContext="{Binding}"
-                                    Loaded="InlineSettingsHost_Loaded" Margin="0,8,0,0"/>
-                </StackPanel>
-            </Border>
+            <ContentControl Tag="Output" DataContext="{Binding}"
+                            Loaded="InlineSettingsHost_Loaded"/>
         </DataTemplate>
     </UserControl.Resources>
 
@@ -139,7 +144,7 @@
                   HorizontalScrollBarVisibility="Disabled"
                   CanContentScroll="False">
         <StackPanel Margin="0,0,10,12">
-            <TextBlock Text="Gyro" Style="{StaticResource JsmccSectionTitle}"/>
+            <TextBlock Text="Mode Settings" Style="{StaticResource JsmccSectionTitle}"/>
             <TextBlock Text="Controls the gyro's output direction and motion behaviour: which axes it drives, invert, and (for Directional Swipe) which button each swipe direction presses."
                        Style="{StaticResource JsmccBodyText}"
                        TextWrapping="Wrap"
