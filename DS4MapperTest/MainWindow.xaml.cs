@@ -951,14 +951,19 @@ namespace DS4MapperTest
             }
         }
 
-        private void DeleteProfileBtn_Click(object sender, RoutedEventArgs e)
+        private async void DeleteProfileBtn_Click(object sender, RoutedEventArgs e)
         {
             if (selectedListEntry == null || currentDeviceItem == null) return;
 
             ProfileEntity ent = selectedListEntry.Entity;
-            bool isActive = string.Equals(ent.ProfilePath, editorTestVM?.ProfileEnt?.ProfilePath, StringComparison.OrdinalIgnoreCase);
+            var profileList = currentDeviceItem.DevProfileList;
+            ProfileEntity activeEnt = editorTestVM?.ProfileEnt;
+            bool isActive = string.Equals(ent.ProfilePath, activeEnt?.ProfilePath, StringComparison.OrdinalIgnoreCase);
 
-            if (isActive && currentDeviceItem.DevProfileList.Count <= 1)
+            int deleteIndex = profileList.IndexOf(ent);
+            if (deleteIndex < 0) return;
+
+            if (isActive && profileList.Count <= 1)
             {
                 MessageBox.Show("Cannot delete the only remaining profile.", "Delete",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -973,36 +978,50 @@ namespace DS4MapperTest
 
             if (confirm != MessageBoxResult.Yes) return;
 
+            try
+            {
+                File.Delete(ent.ProfilePath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to delete profile:\n{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             if (isActive)
             {
-                int nextIndex = currentDeviceItem.ProfileIndex > 0 ? currentDeviceItem.ProfileIndex - 1 : 1;
-                string pathToDelete = ent.ProfilePath;
-                _ = Task.Run(() => { currentDeviceItem.ProfileIndex = nextIndex; })
-                    .ContinueWith(_ =>
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            try { File.Delete(pathToDelete); } catch { }
-                            currentDeviceItem.DevProfileList.Remove(ent);
-                            LoadProfileForDevice(currentDeviceItem);
-                        });
-                    });
+                ProfileEntity replacement = deleteIndex > 0
+                    ? profileList[deleteIndex - 1]
+                    : profileList[deleteIndex + 1];
+
+                IsEnabled = false;
+                suppressCombo = true;
+                profileList.Remove(ent);
+                int newIndex = profileList.IndexOf(replacement);
+
+                await Task.Run(() => currentDeviceItem.ResyncProfileIndex(newIndex, reloadProfile: true));
+
+                suppressCombo = false;
+                LoadProfileForDevice(currentDeviceItem);
+                IsEnabled = true;
             }
             else
             {
-                try
+                suppressCombo = true;
+                profileList.Remove(ent);
+                if (activeEnt != null)
                 {
-                    File.Delete(ent.ProfilePath);
-                    currentDeviceItem.DevProfileList.Remove(ent);
-                    selectedListEntry = null;
-                    selectedProfilePanel.Visibility = Visibility.Collapsed;
-                    RefreshProfileList();
+                    int activeIndex = profileList.IndexOf(activeEnt);
+                    if (activeIndex >= 0)
+                    {
+                        currentDeviceItem.ResyncProfileIndex(activeIndex, reloadProfile: false);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to delete profile:\n{ex.Message}", "Error",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                suppressCombo = false;
+
+                RefreshProfileCombo();
+                RefreshProfileList();
             }
         }
 
