@@ -1483,5 +1483,35 @@ namespace DS4MapperUnitTests
 
             Assert.AreEqual(daggerFallGyroMouseProfileStr, tempOutJson);
         }
+
+        [TestMethod]
+        public void GyroMouseAccelerationMaxYSensitivityZeroRoundTrips()
+        {
+            GyroMouse mouseAction = new GyroMouse();
+            mouseAction.Id = 13;
+            mouseAction.mouseParams.accelCurve = GyroMouseAccelCurveChoice.Linear;
+            mouseAction.mouseParams.maxAccelYSens = 0.0;
+            mouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.MAX_ACCEL_Y_SENS);
+
+            GyroMouseSerializer profileSerializer =
+                new GyroMouseSerializer(null, mouseAction);
+            string json = JsonConvert.SerializeObject(
+                profileSerializer,
+                Formatting.Indented);
+
+            Assert.IsTrue(json.Contains(@"""MaxAccelYSens"": 0.0"));
+
+            GyroMouseSerializer reloadedSerializer = new GyroMouseSerializer();
+            JsonConvert.PopulateObject(json, reloadedSerializer);
+            reloadedSerializer.Settings.DeadZone = 0.35;
+            string resavedJson = JsonConvert.SerializeObject(
+                reloadedSerializer,
+                Formatting.Indented);
+
+            GyroMouse reloadedAction =
+                (GyroMouse)reloadedSerializer.MapAction;
+            Assert.AreEqual(0.0, reloadedAction.mouseParams.maxAccelYSens);
+            Assert.IsTrue(resavedJson.Contains(@"""MaxAccelYSens"": 0.0"));
+        }
     }
 }
