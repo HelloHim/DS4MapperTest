@@ -49,6 +49,7 @@ namespace DS4MapperTest.ViewModels
         private int selectedModeIndex = -1;
         private bool suppressModeChange;
         private object settingsViewModel;
+        private StickPadActionPropViewModel padSettingsVM;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -166,6 +167,12 @@ namespace DS4MapperTest.ViewModels
 
         private void RebuildSettingsViewModel()
         {
+            if (padSettingsVM != null)
+            {
+                padSettingsVM.SelectedPadModeIndexChanged -= PadSettingsVM_SelectedPadModeIndexChanged;
+                padSettingsVM = null;
+            }
+
             StickMapAction action = CurrentAction;
             SettingsViewModel = action switch
             {
@@ -177,6 +184,20 @@ namespace DS4MapperTest.ViewModels
                 StickFlickStick => new StickFlickStickPropViewModel(owner.DeviceMapper, action),
                 _ => (object)new StickNoActionPropViewModel(),
             };
+
+            if (SettingsViewModel is StickPadActionPropViewModel padPropVM)
+            {
+                // ChangeStickPadMode is subscribed first inside the prop view
+                // model constructor, so CurrentMode is already updated when
+                // this handler fires
+                padSettingsVM = padPropVM;
+                padSettingsVM.SelectedPadModeIndexChanged += PadSettingsVM_SelectedPadModeIndexChanged;
+            }
+        }
+
+        private void PadSettingsVM_SelectedPadModeIndexChanged(object sender, EventArgs e)
+        {
+            RebuildExtraBindings();
         }
 
         private void RebuildExtraBindings()
@@ -185,16 +206,29 @@ namespace DS4MapperTest.ViewModels
 
             switch (CurrentAction)
             {
-                case StickPadAction:
-                    extraBindings.Add(new StickExtraBindingItem(this, "Up", "Up"));
-                    extraBindings.Add(new StickExtraBindingItem(this, "UpRight", "Up-Right"));
-                    extraBindings.Add(new StickExtraBindingItem(this, "Right", "Right"));
-                    extraBindings.Add(new StickExtraBindingItem(this, "DownRight", "Down-Right"));
-                    extraBindings.Add(new StickExtraBindingItem(this, "Down", "Down"));
-                    extraBindings.Add(new StickExtraBindingItem(this, "DownLeft", "Down-Left"));
-                    extraBindings.Add(new StickExtraBindingItem(this, "Left", "Left"));
-                    extraBindings.Add(new StickExtraBindingItem(this, "UpLeft", "Up-Left"));
-                    break;
+                case StickPadAction padAction:
+                    {
+                        // Mirror ShowCardinalPad/ShowDiagonalPad from
+                        // StickPadActionPropViewModel. Hidden slots keep their
+                        // saved bindings; only the cards are filtered
+                        bool showCardinal =
+                            padAction.CurrentMode == StickPadAction.DPadMode.Standard ||
+                            padAction.CurrentMode == StickPadAction.DPadMode.EightWay ||
+                            padAction.CurrentMode == StickPadAction.DPadMode.FourWayCardinal;
+                        bool showDiagonal =
+                            padAction.CurrentMode == StickPadAction.DPadMode.EightWay ||
+                            padAction.CurrentMode == StickPadAction.DPadMode.FourWayDiagonal;
+
+                        if (showCardinal) extraBindings.Add(new StickExtraBindingItem(this, "Up", "Up"));
+                        if (showDiagonal) extraBindings.Add(new StickExtraBindingItem(this, "UpRight", "Up-Right"));
+                        if (showCardinal) extraBindings.Add(new StickExtraBindingItem(this, "Right", "Right"));
+                        if (showDiagonal) extraBindings.Add(new StickExtraBindingItem(this, "DownRight", "Down-Right"));
+                        if (showCardinal) extraBindings.Add(new StickExtraBindingItem(this, "Down", "Down"));
+                        if (showDiagonal) extraBindings.Add(new StickExtraBindingItem(this, "DownLeft", "Down-Left"));
+                        if (showCardinal) extraBindings.Add(new StickExtraBindingItem(this, "Left", "Left"));
+                        if (showDiagonal) extraBindings.Add(new StickExtraBindingItem(this, "UpLeft", "Up-Left"));
+                        break;
+                    }
                 case StickCircular:
                     extraBindings.Add(new StickExtraBindingItem(this, "CW", "Clockwise"));
                     extraBindings.Add(new StickExtraBindingItem(this, "CCW", "Counter-clockwise"));
