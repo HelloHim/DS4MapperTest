@@ -21,7 +21,7 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
     /// <summary>
     /// Interaction logic for TouchpadSingleButtonPropControl.xaml
     /// </summary>
-    public partial class TouchpadSingleButtonPropControl : UserControl
+    public partial class TouchpadSingleButtonPropControl : UserControl, ISectionAwareTouchpadPropControl
     {
         private TouchpadSingleButtonPropViewModel touchSingleBtnVM;
         public TouchpadSingleButtonPropViewModel TouchSingleBtnVM => touchSingleBtnVM;
@@ -44,6 +44,14 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
             // Force re-eval of bindings
             DataContext = null;
             DataContext = touchSingleBtnVM;
+        }
+
+        public void ApplySection(TouchpadSettingsSection section)
+        {
+            ExtraFieldsPanel.Visibility = section == TouchpadSettingsSection.Extra
+                ? Visibility.Visible : Visibility.Collapsed;
+            BindingFieldsPanel.Visibility = section == TouchpadSettingsSection.Extra
+                ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void BtnEditBinding_Click(object sender, RoutedEventArgs e)

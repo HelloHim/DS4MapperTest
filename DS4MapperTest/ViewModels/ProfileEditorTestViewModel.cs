@@ -2311,22 +2311,20 @@ namespace DS4MapperTest.ViewModels
                 {
                     TouchpadNoAction => "No touchpad output is assigned.",
                     TouchpadSingleButton => "Button binding settings are available below.",
-                    TouchpadMouse => "Movement is in Mouse & Movement. Sensitivity and calibration are in Sensitivity & Calibration. Deadzone and smoothing are in Filtering & Stabilisation. Trackball settings are in Trackball & Scroll.",
-                    TouchpadAbsAction => "Movement is in Mouse & Movement. Deadzone settings are in Filtering & Stabilisation. Outer ring and release settings are in Advanced.",
-                    TouchpadMouseJoystick => "Movement is in Mouse & Movement. Output curve is in Sensitivity & Calibration. Deadzone and smoothing are in Filtering & Stabilisation. Trackball settings are in Trackball & Scroll.",
-                    TouchpadStickAction => "Movement is in Mouse & Movement. Output curve and vertical scale are in Sensitivity & Calibration. Deadzone and smoothing are in Filtering & Stabilisation. Outer ring settings are in Advanced.",
+                    TouchpadMouse => "Movement is in Mouse & Movement. Sensitivity and calibration are in Sensitivity & Calibration. Deadzone and smoothing are in Filters. Trackball settings are in Trackball & Scroll. Action name is in Extra.",
+                    TouchpadAbsAction => "Movement is in Mouse & Movement. Deadzone settings are in Filters. Outer ring and release settings are in Advanced. Action name is in Extra.",
+                    TouchpadMouseJoystick => "Movement is in Mouse & Movement. Output curve is in Sensitivity & Calibration. Deadzone and smoothing are in Filters. Trackball settings are in Trackball & Scroll. Action name is in Extra.",
+                    TouchpadStickAction => "Movement is in Mouse & Movement. Output curve and vertical scale are in Sensitivity & Calibration. Deadzone and smoothing are in Filters. Outer ring settings are in Advanced. Action name is in Extra.",
                     TouchpadActionPad => "Zone settings are available in Zones & Gestures. Outer ring settings are available in Advanced.",
-                    TouchpadDirectionalSwipe => "Gesture bindings are in Zones & Gestures. Deadzone and delay are in Filtering & Stabilisation.",
-                    TouchpadCircular => "Scroll settings are available in Trackball & Scroll.",
-                    TouchpadFlickStick => "Movement is in Mouse & Movement. Calibration is in Sensitivity & Calibration. Flick threshold is in Filtering & Stabilisation.",
+                    TouchpadDirectionalSwipe => "Gesture bindings are in Zones & Gestures. Deadzone and delay are in Filters. Action name is in Extra.",
+                    TouchpadCircular => "Scroll settings are available in Trackball & Scroll. Action name is in Extra.",
+                    TouchpadFlickStick => "Movement is in Mouse & Movement. Calibration is in Sensitivity & Calibration. Flick threshold is in Filters. Action name is in Extra.",
                     _ => "This touchpad mode uses DS4MapperTest's existing settings.",
                 };
             }
         }
 
         public bool IsMouseMovementAction =>
-            mappedAction is TouchpadMouse ||
-            mappedAction is TouchpadAbsAction ||
             mappedAction is TouchpadMouseJoystick ||
             mappedAction is TouchpadStickAction ||
             mappedAction is TouchpadFlickStick;
@@ -2358,6 +2356,8 @@ namespace DS4MapperTest.ViewModels
             mappedAction is TouchpadAbsAction ||
             mappedAction is TouchpadActionPad ||
             mappedAction is TouchpadStickAction;
+
+        public bool IsExtraAction => mappedAction is not TouchpadNoAction;
 
         public bool IsUnbound => mappedAction is TouchpadNoAction;
 
@@ -2397,6 +2397,7 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(IsZoneGestureAction));
             OnPropertyChanged(nameof(IsTrackballScrollAction));
             OnPropertyChanged(nameof(IsAdvancedAction));
+            OnPropertyChanged(nameof(IsExtraAction));
             OnPropertyChanged(nameof(IsUnbound));
         }
 

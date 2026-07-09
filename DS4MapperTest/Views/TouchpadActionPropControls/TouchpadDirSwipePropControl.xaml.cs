@@ -48,6 +48,8 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
 
         public void ApplySection(TouchpadSettingsSection section)
         {
+            ExtraFieldsPanel.Visibility = section == TouchpadSettingsSection.Extra
+                ? Visibility.Visible : Visibility.Collapsed;
             ZonesFieldsPanel.Visibility = section == TouchpadSettingsSection.ZonesGestures
                 ? Visibility.Visible : Visibility.Collapsed;
             FilteringFieldsPanel.Visibility = section == TouchpadSettingsSection.FilteringStabilisation

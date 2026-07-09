@@ -42,6 +42,8 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
 
         public void ApplySection(TouchpadSettingsSection section)
         {
+            ExtraFieldsPanel.Visibility = section == TouchpadSettingsSection.Extra
+                ? Visibility.Visible : Visibility.Collapsed;
             MovementFieldsPanel.Visibility = section == TouchpadSettingsSection.MouseMovement
                 ? Visibility.Visible : Visibility.Collapsed;
             SensitivityFieldsPanel.Visibility = section == TouchpadSettingsSection.SensitivityCalibration

@@ -8,6 +8,7 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
         ZonesGestures,
         TrackballScroll,
         Advanced,
+        Extra,
     }
 
     public interface ISectionAwareTouchpadPropControl

@@ -466,10 +466,10 @@
                 </StackPanel>
             </TabItem>
 
-            <TabItem Header="Filtering &amp; Stabilisation">
+            <TabItem Header="Filters">
                 <StackPanel>
                     <StackPanel Margin="0,0,0,6">
-                        <TextBlock Text="Filtering &amp; Stabilisation" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Filters" Style="{StaticResource JsmccSectionTitle}"/>
                         <TextBlock Text="Deadzone, angle snapping, jitter compensation, and smoothing settings are shown per touchpad input when the selected mode supports them."
                                    Style="{StaticResource JsmccBodyText}"
                                    TextWrapping="Wrap"
@@ -607,6 +607,21 @@
                     <ItemsControl ItemsSource="{Binding TouchpadBindings}"
                                   ItemTemplate="{StaticResource TouchpadSectionTemplate}"
                                   Tag="Advanced"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Extra">
+                <StackPanel>
+                    <StackPanel Margin="0,0,0,6">
+                        <TextBlock Text="Extra" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Action names and other metadata are shown per touchpad input when available."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding TouchpadBindings}"
+                                  ItemTemplate="{StaticResource TouchpadSectionTemplate}"
+                                  Tag="Extra"/>
                 </StackPanel>
             </TabItem>
         </TabControl>
