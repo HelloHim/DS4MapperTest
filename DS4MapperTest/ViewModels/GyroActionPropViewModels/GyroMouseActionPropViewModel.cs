@@ -76,6 +76,48 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
         private List<GyroTriggerButtonItem> triggerButtonItems;
         public List<GyroTriggerButtonItem> TriggerButtonItems => triggerButtonItems;
+        public List<GyroTriggerButtonItem> ActivationButtonItems =>
+            triggerButtonItems.Where((item) => item.Code != JoypadActionCodes.AlwaysOn).ToList();
+
+        public GyroActivationModeChoice GyroActivationModeChoice
+        {
+            get => GetGyroActivationMode(
+                action.mouseParams.gyroTriggerButtons,
+                action.mouseParams.triggerActivates);
+            set
+            {
+                if (GyroActivationModeChoice == value) return;
+
+                if (value == GyroActivationModeChoice.AlwaysOn)
+                {
+                    foreach (GyroTriggerButtonItem item in ActivationButtonItems)
+                    {
+                        if (item.Enabled)
+                        {
+                            item.Enabled = false;
+                        }
+                    }
+
+                    SetTriggerItemEnabled(triggerButtonItems, JoypadActionCodes.AlwaysOn, true);
+                    GyroTriggerActivates = true;
+                }
+                else
+                {
+                    SetTriggerItemEnabled(triggerButtonItems, JoypadActionCodes.AlwaysOn, false);
+                    GyroTriggerActivates = value == GyroActivationModeChoice.HoldToEnable;
+                }
+
+                GyroActivationModeChoiceChanged?.Invoke(this, EventArgs.Empty);
+                GyroActivationButtonsUsedChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroActivationModeChoice)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroActivationButtonsUsed)));
+            }
+        }
+        public event EventHandler GyroActivationModeChoiceChanged;
+
+        public bool GyroActivationButtonsUsed =>
+            GyroActivationModeChoice != GyroActivationModeChoice.AlwaysOn;
+        public event EventHandler GyroActivationButtonsUsedChanged;
 
         public string GyroTriggerString
         {
@@ -113,9 +155,35 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 action.mouseParams.andCond = value;
                 GyroTriggerCondChoiceChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroTriggerAnySelected)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroTriggerAllSelected)));
             }
         }
         public event EventHandler GyroTriggerCondChoiceChanged;
+
+        public bool GyroTriggerAnySelected
+        {
+            get => !GyroTriggerCondChoice;
+            set
+            {
+                if (value)
+                {
+                    GyroTriggerCondChoice = false;
+                }
+            }
+        }
+
+        public bool GyroTriggerAllSelected
+        {
+            get => GyroTriggerCondChoice;
+            set
+            {
+                if (value)
+                {
+                    GyroTriggerCondChoice = true;
+                }
+            }
+        }
 
         public bool GyroTriggerActivates
         {
@@ -2031,11 +2099,15 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             HighlightGyroTriggersChanged?.Invoke(this, EventArgs.Empty);
             GyroTriggerStringChanged?.Invoke(this, EventArgs.Empty);
+            GyroActivationModeChoiceChanged?.Invoke(this, EventArgs.Empty);
+            GyroActivationButtonsUsedChanged?.Invoke(this, EventArgs.Empty);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroActivationModeChoice)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroActivationButtonsUsed)));
             ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
-    public class GyroTriggerButtonItem
+    public class GyroTriggerButtonItem : INotifyPropertyChanged
     {
         private string displayString;
         public string DisplayString
@@ -2052,11 +2124,14 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get => enabled;
             set
             {
+                if (enabled == value) return;
                 enabled = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Enabled)));
                 EnabledChanged?.Invoke(this, EventArgs.Empty);
             }
         }
         public event EventHandler EnabledChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public GyroTriggerButtonItem(string displayString, JoypadActionCodes code,
             bool enabled=false)

@@ -128,7 +128,7 @@ namespace DS4MapperTest.GyroActions
                 deadzoneX = 80.0, // dps
                 deadzoneY = 80.0, // dps
                 delayTime = 20,
-                andCond = true,
+                andCond = false,
                 gyroTriggerButtons = new JoypadActionCodes[1]
                 {
                     JoypadActionCodes.AlwaysOn,

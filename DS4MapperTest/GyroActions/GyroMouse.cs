@@ -248,7 +248,7 @@ namespace DS4MapperTest.GyroActions
                 naturalVHalf = GyroMouseParams.NATURAL_VHALF_DEFAULT,
                 verticalScale = GyroMouseParams.VERTICAL_SCALE_DEFAULT,
                 triggerActivates = true,
-                andCond = true,
+                andCond = false,
                 gyroTriggerButtons = new JoypadActionCodes[1]
                 {
                     JoypadActionCodes.AlwaysOn,

@@ -23,6 +23,7 @@ namespace DS4MapperTest.Views.GyroActionPropControls
     {
         public bool ShowActionSelect { get; set; } = true;
         public bool ShowActionSettings { get; set; } = true;
+        public bool ShowNameSettings { get; set; } = true;
 
         public event EventHandler<int> ActionTypeIndexChanged;
 
