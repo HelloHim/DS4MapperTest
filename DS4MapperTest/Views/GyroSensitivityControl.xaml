@@ -24,6 +24,9 @@
 
         <DataTemplate x:Key="MouseSensitivityTemplate">
             <StackPanel>
+                <TabControl Style="{StaticResource JsmccPillTabControlStyle}"
+                            SelectionChanged="SensitivityModeTabs_SelectionChanged">
+                    <TabItem Header="Static Sensitivity">
                 <Border Style="{StaticResource JsmccCardBorder}">
                     <StackPanel>
                         <TextBlock Text="Static Sensitivity" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
@@ -97,7 +100,10 @@
                                 Margin="0,6,0,0"/>
                     </StackPanel>
                 </Border>
+                    </TabItem>
 
+                    <TabItem Header="Acceleration Curve">
+                        <StackPanel>
                 <Border Style="{StaticResource JsmccCardBorder}">
                     <StackPanel>
                         <TextBlock Text="Acceleration Curve" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
@@ -123,18 +129,20 @@
                             <Border Style="{StaticResource SensRowBorder}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Minimum Sensitivity X/Y" Style="{StaticResource SensRowLabel}"/>
+                                    <TextBlock Grid.Column="0" Text="Min Sens X" Style="{StaticResource SensRowLabel}" Width="90"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                                         <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="3" Increment="0.1"
                                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           Value="{Binding MinAccelXSens, FallbackValue='4.0'}"/>
                                         <TextBlock Text="RWS" Style="{StaticResource SensUnitLabel}"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="16,0,0,0">
+                                    <TextBlock Grid.Column="2" Text="Min Sens Y" Style="{StaticResource SensRowLabel}" Width="90" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="3" Orientation="Horizontal">
                                         <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="3" Increment="0.1"
                                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           Value="{Binding MinAccelYSens, FallbackValue='0.6'}"/>
@@ -146,18 +154,20 @@
                             <Border Style="{StaticResource SensRowBorder}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Maximum Sensitivity X/Y" Style="{StaticResource SensRowLabel}"/>
+                                    <TextBlock Grid.Column="0" Text="Max Sens X" Style="{StaticResource SensRowLabel}" Width="90"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                                         <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
                                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           Value="{Binding MaxAccelXSens, FallbackValue='4.0'}"/>
                                         <TextBlock Text="RWS" Style="{StaticResource SensUnitLabel}"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="16,0,0,0">
+                                    <TextBlock Grid.Column="2" Text="Max Sens Y" Style="{StaticResource SensRowLabel}" Width="90" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="3" Orientation="Horizontal">
                                         <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
                                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           Value="{Binding MaxAccelYSens, FallbackValue='0.6'}"/>
@@ -165,47 +175,40 @@
                                     </StackPanel>
                                 </Grid>
                             </Border>
+
+                            <Border Style="{StaticResource SensRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Minimum Threshold" Style="{StaticResource SensRowLabel}"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <hc:NumericUpDown Minimum="0.0" Maximum="500.0" DecimalPlaces="2" Increment="0.5"
+                                                          Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                          Value="{Binding MinGyroThreshold, FallbackValue='0.0'}"/>
+                                        <TextBlock Text="dps" Style="{StaticResource SensUnitLabel}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource SensRowBorder}"
+                                    Visibility="{Binding UsesMaxThreshold, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Maximum Threshold" Style="{StaticResource SensRowLabel}"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <hc:NumericUpDown Minimum="0.0" Maximum="500.0" DecimalPlaces="2" Increment="0.5"
+                                                          Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                          Value="{Binding MaxGyroThreshold, FallbackValue='0.0'}"/>
+                                        <TextBlock Text="dps" Style="{StaticResource SensUnitLabel}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
                         </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <Border Style="{StaticResource JsmccCardBorder}"
-                        Visibility="{Binding AccelCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
-                    <StackPanel>
-                        <TextBlock Text="Acceleration" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
-
-                        <Border Style="{StaticResource SensRowBorder}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="190"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Minimum Threshold" Style="{StaticResource SensRowLabel}"/>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                    <hc:NumericUpDown Minimum="0.0" Maximum="500.0" DecimalPlaces="2" Increment="0.5"
-                                                      Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                      Value="{Binding MinGyroThreshold, FallbackValue='0.0'}"/>
-                                    <TextBlock Text="dps" Style="{StaticResource SensUnitLabel}"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
-                        <Border Style="{StaticResource SensRowBorder}"
-                                Visibility="{Binding UsesMaxThreshold, Converter={StaticResource Boolean2VisibilityConverter}}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="190"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Maximum Threshold" Style="{StaticResource SensRowLabel}"/>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                    <hc:NumericUpDown Minimum="0.0" Maximum="500.0" DecimalPlaces="2" Increment="0.5"
-                                                      Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                      Value="{Binding MaxGyroThreshold, FallbackValue='0.0'}"/>
-                                    <TextBlock Text="dps" Style="{StaticResource SensUnitLabel}"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
                     </StackPanel>
                 </Border>
 
@@ -315,6 +318,9 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
             </StackPanel>
         </DataTemplate>
 

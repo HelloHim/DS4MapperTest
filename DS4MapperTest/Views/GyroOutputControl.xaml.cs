@@ -72,7 +72,7 @@ namespace DS4MapperTest.Views
             if (item.IsUnbound)
             {
                 host.Content = CreateMessage(
-                    "Gyro Mode is currently set to Unbound. Choose a gyro mode in the Action tab to configure gyro output settings.");
+                    "Gyro Mode is currently set to Unbound. Choose a gyro mode in Gyro Behaviour to configure gyro output settings.");
                 return;
             }
 
