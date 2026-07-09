@@ -13,6 +13,9 @@ namespace DS4MapperTest.Views.GyroActionPropControls
         private GyroDirSwipeActionPropViewModel gyroDirSwipeVM;
         public GyroDirSwipeActionPropViewModel GyroDirSwipeVM => gyroDirSwipeVM;
 
+        public bool ShowActionSelect { get; set; } = true;
+        public bool ShowActionSettings { get; set; } = true;
+
         public event EventHandler<int> ActionTypeIndexChanged;
 
         public GyroDirSwipePropControl()
@@ -26,6 +29,10 @@ namespace DS4MapperTest.Views.GyroActionPropControls
             DataContext = gyroDirSwipeVM;
 
             gyroSelectControl.PostInit(mapper, action);
+            gyroSelectControl.Visibility = ShowActionSelect ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            nameSettings.Visibility = ShowActionSettings ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            activationSettings.Visibility = ShowActionSettings ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            dirSwipeSettingsHint.Visibility = ShowActionSettings ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
             gyroSelectControl.GyroActSelVM.SelectedIndexChanged += GyroActSelVM_SelectedIndexChanged;
         }
 

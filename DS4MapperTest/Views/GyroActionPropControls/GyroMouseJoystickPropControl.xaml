@@ -10,7 +10,9 @@
     <StackPanel>
         <local1:GyroActionSelectControl x:Name="gyroSelectControl" />
 
-        <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,8,0,0">
+        <Border x:Name="nameSettings"
+                Style="{StaticResource JsmccSettingRowBorder}"
+                Margin="0,8,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="120"/>
@@ -22,7 +24,9 @@
             </Grid>
         </Border>
 
-        <Border Style="{StaticResource JsmccCardBorder}" Margin="0,12,0,0">
+        <Border x:Name="activationSettings"
+                Style="{StaticResource JsmccCardBorder}"
+                Margin="0,12,0,0">
             <StackPanel>
                 <TextBlock Text="Activation" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
                 <TextBlock Text="Choose which controller buttons arm the gyro, and how they combine."

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using DS4MapperTest.GyroActions;
 using DS4MapperTest.ViewModels;
 using DS4MapperTest.ViewModels.GyroActionPropViewModels;
 
@@ -62,12 +63,26 @@ namespace DS4MapperTest.Views
             }
         }
 
+        private void SensitivityModeTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.Source is not TabControl tabControl ||
+                tabControl.SelectedItem is not TabItem selectedTab ||
+                selectedTab.Header as string != "Acceleration Curve" ||
+                tabControl.DataContext is not GyroMouseActionPropViewModel vm ||
+                vm.AccelCurveChoice != GyroMouseAccelCurveChoice.None)
+            {
+                return;
+            }
+
+            vm.AccelCurveChoice = GyroMouseAccelCurveChoice.Linear;
+        }
+
         private void RenderInlineHost(ContentControl host, GyroBindingItemsTest item)
         {
             if (item.IsUnbound)
             {
                 host.Content = CreateMessage(
-                    "Gyro Mode is currently set to Unbound. Choose a gyro mode in the Action tab to configure sensitivity settings.");
+                    "Gyro Mode is currently set to Unbound. Choose a gyro mode in Gyro Behaviour to configure sensitivity settings.");
                 return;
             }
 

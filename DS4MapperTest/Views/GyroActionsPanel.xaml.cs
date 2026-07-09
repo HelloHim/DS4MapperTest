@@ -12,6 +12,32 @@ namespace DS4MapperTest.Views
     /// </summary>
     public partial class GyroActionsPanel : UserControl
     {
+        public static readonly DependencyProperty ShowActionSelectProperty =
+            DependencyProperty.Register(
+                nameof(ShowActionSelect),
+                typeof(bool),
+                typeof(GyroActionsPanel),
+                new PropertyMetadata(true));
+
+        public bool ShowActionSelect
+        {
+            get => (bool)GetValue(ShowActionSelectProperty);
+            set => SetValue(ShowActionSelectProperty, value);
+        }
+
+        public static readonly DependencyProperty ShowActionSettingsProperty =
+            DependencyProperty.Register(
+                nameof(ShowActionSettings),
+                typeof(bool),
+                typeof(GyroActionsPanel),
+                new PropertyMetadata(true));
+
+        public bool ShowActionSettings
+        {
+            get => (bool)GetValue(ShowActionSettingsProperty);
+            set => SetValue(ShowActionSettingsProperty, value);
+        }
+
         public GyroActionsPanel()
         {
             InitializeComponent();
@@ -45,6 +71,8 @@ namespace DS4MapperTest.Views
                 case GyroMouse:
                     {
                         GyroMousePropControl propControl = new GyroMousePropControl();
+                        propControl.ShowActionSelect = ShowActionSelect;
+                        propControl.ShowActionSettings = ShowActionSettings;
                         propControl.PostInit(item.Mapper, item.MappedAction);
                         propControl.ActionTypeIndexChanged += (s, ind) => HandleActionTypeChanged(host, item, ind);
                         return propControl;
@@ -52,6 +80,8 @@ namespace DS4MapperTest.Views
                 case GyroMouseJoystick:
                     {
                         GyroMouseJoystickPropControl propControl = new GyroMouseJoystickPropControl();
+                        propControl.ShowActionSelect = ShowActionSelect;
+                        propControl.ShowActionSettings = ShowActionSettings;
                         propControl.PostInit(item.Mapper, item.MappedAction);
                         propControl.ActionTypeIndexChanged += (s, ind) => HandleActionTypeChanged(host, item, ind);
                         return propControl;
@@ -59,6 +89,8 @@ namespace DS4MapperTest.Views
                 case GyroDirectionalSwipe:
                     {
                         GyroDirSwipePropControl propControl = new GyroDirSwipePropControl();
+                        propControl.ShowActionSelect = ShowActionSelect;
+                        propControl.ShowActionSettings = ShowActionSettings;
                         propControl.PostInit(item.Mapper, item.MappedAction);
                         propControl.ActionTypeIndexChanged += (s, ind) => HandleActionTypeChanged(host, item, ind);
                         return propControl;
@@ -67,6 +99,8 @@ namespace DS4MapperTest.Views
                 default:
                     {
                         GyroNoActionControl propControl = new GyroNoActionControl();
+                        propControl.ShowActionSelect = ShowActionSelect;
+                        propControl.ShowActionSettings = ShowActionSettings;
                         propControl.PostInit(item.Mapper, item.MappedAction);
                         propControl.ActionTypeIndexChanged += (s, ind) => HandleActionTypeChanged(host, item, ind);
                         return propControl;

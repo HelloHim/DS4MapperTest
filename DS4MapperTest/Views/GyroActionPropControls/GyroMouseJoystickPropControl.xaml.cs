@@ -25,6 +25,8 @@ namespace DS4MapperTest.Views.GyroActionPropControls
         private GyroMouseJoystickPropViewModel gyroMouseJoyVM;
         public GyroMouseJoystickPropViewModel GyroMouseJoyVM => gyroMouseJoyVM;
 
+        public bool ShowActionSelect { get; set; } = true;
+        public bool ShowActionSettings { get; set; } = true;
 
         public event EventHandler<int> ActionTypeIndexChanged;
 
@@ -39,6 +41,9 @@ namespace DS4MapperTest.Views.GyroActionPropControls
             DataContext = gyroMouseJoyVM;
 
             gyroSelectControl.PostInit(mapper, action);
+            gyroSelectControl.Visibility = ShowActionSelect ? Visibility.Visible : Visibility.Collapsed;
+            nameSettings.Visibility = ShowActionSettings ? Visibility.Visible : Visibility.Collapsed;
+            activationSettings.Visibility = ShowActionSettings ? Visibility.Visible : Visibility.Collapsed;
             gyroSelectControl.GyroActSelVM.SelectedIndexChanged += GyroActSelVM_SelectedIndexChanged;
         }
 
