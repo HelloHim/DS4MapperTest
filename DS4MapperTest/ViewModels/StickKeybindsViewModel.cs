@@ -36,6 +36,11 @@ namespace DS4MapperTest.ViewModels
             new StickModeItem("Flick Stick", 6),
         };
 
+        // The original Steam Controller registers its single stick as "Stick";
+        // every other mapper uses "LS"/"RS"
+        private static readonly string[] leftStickAliases = new string[] { "LS", "Stick" };
+        private static readonly string[] rightStickAliases = new string[] { "RS" };
+
         private readonly ProfileEditorTestViewModel owner;
         private readonly string side;
         private readonly ObservableCollection<StickExtraBindingItem> extraBindings =
@@ -57,8 +62,25 @@ namespace DS4MapperTest.ViewModels
         public ObservableCollection<FaceButtonBindingItem> ClickBindingItems =>
             side == "LS" ? owner.LeftStickClickBinding : owner.RightStickClickBinding;
 
-        public StickBindingItemsTest BindingItem =>
-            owner.StickBindings.FirstOrDefault(item => item.BindingName == side);
+        public StickBindingItemsTest BindingItem
+        {
+            get
+            {
+                foreach (string alias in side == "LS" ? leftStickAliases : rightStickAliases)
+                {
+                    StickBindingItemsTest item = owner.StickBindings.FirstOrDefault(binding =>
+                        string.Equals(binding.BindingName, alias, StringComparison.OrdinalIgnoreCase));
+                    if (item != null)
+                    {
+                        return item;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        public bool HasBinding => BindingItem != null;
 
         public StickMapAction CurrentAction => BindingItem?.MappedAction;
 
@@ -105,6 +127,7 @@ namespace DS4MapperTest.ViewModels
             RebuildSettingsViewModel();
             RebuildExtraBindings();
 
+            OnPropertyChanged(nameof(HasBinding));
             OnPropertyChanged(nameof(ClickBindingItems));
         }
 
