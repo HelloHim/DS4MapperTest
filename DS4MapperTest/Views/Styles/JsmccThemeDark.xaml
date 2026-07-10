@@ -92,4 +92,20 @@
     <SolidColorBrush x:Key="JsmccTouchpadGridLimitBrush" Color="{StaticResource JsmccTouchpadGridLimitColor}"/>
 
     <SolidColorBrush x:Key="JsmccToggleOnTrackBrush" Color="{StaticResource JsmccToggleOnTrackColor}"/>
+
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource JsmccAccentColor}"/>
+    <SolidColorBrush x:Key="LightPrimaryBrush" Color="{StaticResource JsmccBgPrimaryColor}"/>
+    <SolidColorBrush x:Key="DarkPrimaryBrush" Color="{StaticResource JsmccAccentColor}"/>
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="{StaticResource JsmccTextStrongColor}"/>
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="{StaticResource JsmccTextMidColor}"/>
+    <SolidColorBrush x:Key="ThirdlyTextBrush" Color="{StaticResource JsmccTextMutedColor}"/>
+    <SolidColorBrush x:Key="ReverseTextBrush" Color="{StaticResource JsmccBg2Color}"/>
+    <SolidColorBrush x:Key="TextIconBrush" Color="{StaticResource JsmccTextStrongColor}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource JsmccBorderColor}"/>
+    <SolidColorBrush x:Key="SecondaryBorderBrush" Color="{StaticResource JsmccBorderStrongColor}"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource JsmccBg0Color}"/>
+    <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource JsmccBg2Color}"/>
+    <SolidColorBrush x:Key="SecondaryRegionBrush" Color="{StaticResource JsmccBgInputColor}"/>
+    <SolidColorBrush x:Key="ThirdlyRegionBrush" Color="{StaticResource JsmccBgButtonHoverColor}"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource JsmccAccentColor}"/>
 </ResourceDictionary>
