@@ -187,6 +187,102 @@ SelectedValuePath="Choice" SelectedValue="{Binding SmoothPresetChoice}" MinWidth
                     </GroupBox>
                 </StackPanel>
 
+                <GroupBox Header="Trackpad Stability" MinWidth="360" Margin="0,8,16,0">
+                    <StackPanel Margin="8,4,8,8">
+                        <TextBlock Text="Filters physical edge and corner jitter before normal deadzone, smoothing, curve, and stick output. Off preserves the old path."
+                                   TextWrapping="Wrap" Margin="0,0,0,8" />
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Mode" />
+                            <ComboBox ItemsSource="{Binding StabilityModeItems}"
+                                      DisplayMemberPath="DisplayName"
+                                      SelectedValuePath="ChoiceValue"
+                                      SelectedValue="{Binding StabilityMode}"
+                                      MinWidth="120" Margin="8,0,0,0" />
+                        </StackPanel>
+
+                        <Expander Header="Advanced Stability Settings"
+                                  IsExpanded="{Binding StabilityAdvancedExpanded}" Margin="0,8,0,0">
+                            <StackPanel Margin="12,8,0,0">
+                                <TextBlock Text="Changing these values can switch the mode to Custom. Matching an existing preset switches the mode back to that preset."
+                                           TextWrapping="Wrap" Margin="0,0,0,8" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="Touch Start ms"
+                                           ToolTip="Suppresses movement briefly after finger-down so unstable first samples cannot twitch the camera." />
+                                    <hc:NumericUpDown Minimum="0" Maximum="30" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityTouchSettleMs}" Width="90" Margin="8,0,0,0" />
+                                    <Label Content="Base Noise" Margin="16,0,0,0"
+                                           ToolTip="Raw coordinate movement below this floor is treated as touchpad sensor noise." />
+                                    <hc:NumericUpDown Minimum="0" Maximum="100" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityBaseNoiseFloor}" Width="90" Margin="8,0,0,0" />
+                                    <Label Content="Exit Mult" Margin="16,0,0,0"
+                                           ToolTip="Multiplier for leaving the locked state. Higher values require clearer movement before unlocking." />
+                                    <hc:NumericUpDown Minimum="1" Maximum="3" DecimalPlaces="2" Increment="0.1"
+                                                      Value="{Binding StabilityHysteresisExitMultiplier}" Width="90" Margin="8,0,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <CheckBox Content="Edge Guard" IsChecked="{Binding StabilityEdgeGuardEnabled}"
+                                              ToolTip="Raises the noise floor near physical trackpad edges and corners." />
+                                    <Label Content="Left %" Margin="16,0,0,0"
+                                           ToolTip="Width of the left-edge guard zone as a percentage of the pad." />
+                                    <hc:NumericUpDown Minimum="0" Maximum="30" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityLeftEdgePercent}" Width="80" Margin="8,0,0,0" />
+                                    <Label Content="Top %" Margin="16,0,0,0"
+                                           ToolTip="Height of the top-edge guard zone as a percentage of the pad." />
+                                    <hc:NumericUpDown Minimum="0" Maximum="30" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityTopEdgePercent}" Width="80" Margin="8,0,0,0" />
+                                    <Label Content="Top-left x" Margin="16,0,0,0"
+                                           ToolTip="Extra noise multiplier when the touch is in the top-left corner." />
+                                    <hc:NumericUpDown Minimum="1" Maximum="6" DecimalPlaces="1" Increment="0.1"
+                                                      Value="{Binding StabilityTopLeftCornerMultiplier}" Width="80" Margin="8,0,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <CheckBox Content="Edge Start Gate" IsChecked="{Binding StabilityEdgeStartGateEnabled}"
+                                              ToolTip="If a touch starts in an edge zone, hold output at zero until movement is clearly intentional." />
+                                    <Label Content="Threshold" Margin="16,0,0,0"
+                                           ToolTip="Distance needed to break out of the edge start gate." />
+                                    <hc:NumericUpDown Minimum="0" Maximum="300" DecimalPlaces="1" Increment="5"
+                                                      Value="{Binding StabilityEdgeStartThreshold}" Width="90" Margin="8,0,0,0" />
+                                    <CheckBox Content="Edge Lock" IsChecked="{Binding StabilityEdgeLockEnabled}"
+                                              Margin="16,0,0,0"
+                                              ToolTip="Relocks quickly when movement pauses inside an edge zone." />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <CheckBox Content="Stationary Hold" IsChecked="{Binding StabilityStationaryHoldEnabled}"
+                                              ToolTip="Applies stronger noise suppression after the thumb has been still briefly." />
+                                    <Label Content="Detect ms" Margin="16,0,0,0"
+                                           ToolTip="Time the thumb must remain quiet before stationary hold activates." />
+                                    <hc:NumericUpDown Minimum="0" Maximum="200" DecimalPlaces="1" Increment="5"
+                                                      Value="{Binding StabilityStationaryDetectionMs}" Width="90" Margin="8,0,0,0" />
+                                    <Label Content="Noise x" Margin="16,0,0,0"
+                                           ToolTip="Multiplier applied to the noise floor while stationary hold is active." />
+                                    <hc:NumericUpDown Minimum="1" Maximum="4" DecimalPlaces="1" Increment="0.1"
+                                                      Value="{Binding StabilityStationaryNoiseMultiplier}" Width="80" Margin="8,0,0,0" />
+                                    <Label Content="Breakout" Margin="16,0,0,0"
+                                           ToolTip="Movement required to leave stationary hold and resume normal movement." />
+                                    <hc:NumericUpDown Minimum="0" Maximum="200" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityStationaryBreakoutThreshold}" Width="90" Margin="8,0,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <CheckBox Content="Delta Clamp" IsChecked="{Binding StabilityDeltaClampEnabled}"
+                                              ToolTip="Caps abnormal one-frame deltas as a safety net." />
+                                    <Label Content="Max Delta" Margin="16,0,0,0"
+                                           ToolTip="Maximum allowed per-frame coordinate delta when delta clamp is enabled." />
+                                    <hc:NumericUpDown Minimum="10" Maximum="500" DecimalPlaces="1" Increment="10"
+                                                      Value="{Binding StabilityMaxDeltaPerFrame}" Width="90" Margin="8,0,0,0" />
+                                    <Label Content="Fast Pass" Margin="16,0,0,0"
+                                           ToolTip="Movement above this threshold passes through quickly as intentional fast movement." />
+                                    <hc:NumericUpDown Minimum="0" Maximum="200" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityFastPassthroughThreshold}" Width="90" Margin="8,0,0,0" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </GroupBox>
+
             </StackPanel>
 
             <StackPanel x:Name="TrackballFieldsPanel">

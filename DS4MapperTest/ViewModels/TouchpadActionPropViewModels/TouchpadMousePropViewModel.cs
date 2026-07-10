@@ -682,6 +682,233 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         };
         public List<SmoothPresetChoiceItem> SmoothPresetChoiceItems => smoothPresetChoiceItems;
 
+        private readonly List<EnumChoiceSelection<TouchpadStabilityMode>> stabilityModeItems =
+            new List<EnumChoiceSelection<TouchpadStabilityMode>>()
+            {
+                new EnumChoiceSelection<TouchpadStabilityMode>("Off", TouchpadStabilityMode.Off),
+                new EnumChoiceSelection<TouchpadStabilityMode>("Feather", TouchpadStabilityMode.Feather),
+                new EnumChoiceSelection<TouchpadStabilityMode>("Gentle", TouchpadStabilityMode.Gentle),
+                new EnumChoiceSelection<TouchpadStabilityMode>("Mild", TouchpadStabilityMode.Mild),
+                new EnumChoiceSelection<TouchpadStabilityMode>("Light", TouchpadStabilityMode.Light),
+                new EnumChoiceSelection<TouchpadStabilityMode>("Balanced", TouchpadStabilityMode.Balanced),
+                new EnumChoiceSelection<TouchpadStabilityMode>("Steady", TouchpadStabilityMode.Steady),
+                new EnumChoiceSelection<TouchpadStabilityMode>("Strong", TouchpadStabilityMode.Strong),
+                new EnumChoiceSelection<TouchpadStabilityMode>("Custom", TouchpadStabilityMode.Custom),
+            };
+        public List<EnumChoiceSelection<TouchpadStabilityMode>> StabilityModeItems =>
+            stabilityModeItems;
+
+        private bool stabilityAdvancedExpanded;
+        public bool StabilityAdvancedExpanded
+        {
+            get => stabilityAdvancedExpanded;
+            set
+            {
+                if (stabilityAdvancedExpanded == value) return;
+                stabilityAdvancedExpanded = value;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(StabilityAdvancedExpanded)));
+            }
+        }
+
+        public TouchpadStabilityMode StabilityMode
+        {
+            get => action.StabilitySettings.Mode;
+            set
+            {
+                if (action.StabilitySettings.Mode == value) return;
+                if (action.StabilitySettings.Mode == TouchpadStabilityMode.Custom)
+                {
+                    action.StabilitySettings.CaptureCustomPreset();
+                }
+
+                if (value == TouchpadStabilityMode.Custom)
+                {
+                    action.StabilitySettings.RestoreCustomPreset();
+                    action.StabilitySettings.Mode = TouchpadStabilityMode.Custom;
+                }
+                else
+                {
+                    action.StabilitySettings.ApplyPreset(value);
+                }
+
+                StabilityModeChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                RaiseStabilityPropertyChanges();
+            }
+        }
+        public event EventHandler StabilityModeChanged;
+
+        public double StabilityTouchSettleMs
+        {
+            get => action.StabilitySettings.TouchSettleMs;
+            set => SetStabilityValue(Math.Clamp(value, 0.0, 30.0),
+                () => action.StabilitySettings.TouchSettleMs,
+                v => action.StabilitySettings.TouchSettleMs = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_TOUCH_SETTLE,
+                nameof(StabilityTouchSettleMs));
+        }
+
+        public double StabilityBaseNoiseFloor
+        {
+            get => action.StabilitySettings.BaseNoiseFloor;
+            set => SetStabilityValue(Math.Clamp(value, 0.0, 100.0),
+                () => action.StabilitySettings.BaseNoiseFloor,
+                v => action.StabilitySettings.BaseNoiseFloor = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_NOISE,
+                nameof(StabilityBaseNoiseFloor));
+        }
+
+        public double StabilityHysteresisExitMultiplier
+        {
+            get => action.StabilitySettings.HysteresisExitMultiplier;
+            set => SetStabilityValue(Math.Clamp(value, 1.0, 3.0),
+                () => action.StabilitySettings.HysteresisExitMultiplier,
+                v => action.StabilitySettings.HysteresisExitMultiplier = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_NOISE,
+                nameof(StabilityHysteresisExitMultiplier));
+        }
+
+        public double StabilityFastPassthroughThreshold
+        {
+            get => action.StabilitySettings.FastPassthroughThreshold;
+            set => SetStabilityValue(Math.Clamp(value, 0.0, 200.0),
+                () => action.StabilitySettings.FastPassthroughThreshold,
+                v => action.StabilitySettings.FastPassthroughThreshold = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_NOISE,
+                nameof(StabilityFastPassthroughThreshold));
+        }
+
+        public bool StabilityEdgeGuardEnabled
+        {
+            get => action.StabilitySettings.EdgeGuardEnabled;
+            set => SetStabilityValue(value,
+                () => action.StabilitySettings.EdgeGuardEnabled,
+                v => action.StabilitySettings.EdgeGuardEnabled = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD,
+                nameof(StabilityEdgeGuardEnabled));
+        }
+
+        public double StabilityLeftEdgePercent
+        {
+            get => action.StabilitySettings.LeftEdgePercent;
+            set => SetStabilityValue(Math.Clamp(value, 0.0, 30.0),
+                () => action.StabilitySettings.LeftEdgePercent,
+                v => action.StabilitySettings.LeftEdgePercent = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD,
+                nameof(StabilityLeftEdgePercent));
+        }
+
+        public double StabilityTopEdgePercent
+        {
+            get => action.StabilitySettings.TopEdgePercent;
+            set => SetStabilityValue(Math.Clamp(value, 0.0, 30.0),
+                () => action.StabilitySettings.TopEdgePercent,
+                v => action.StabilitySettings.TopEdgePercent = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD,
+                nameof(StabilityTopEdgePercent));
+        }
+
+        public double StabilityTopLeftCornerMultiplier
+        {
+            get => action.StabilitySettings.TopLeftCornerMultiplier;
+            set => SetStabilityValue(Math.Clamp(value, 1.0, 6.0),
+                () => action.StabilitySettings.TopLeftCornerMultiplier,
+                v => action.StabilitySettings.TopLeftCornerMultiplier = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD,
+                nameof(StabilityTopLeftCornerMultiplier));
+        }
+
+        public bool StabilityEdgeStartGateEnabled
+        {
+            get => action.StabilitySettings.EdgeStartGateEnabled;
+            set => SetStabilityValue(value,
+                () => action.StabilitySettings.EdgeStartGateEnabled,
+                v => action.StabilitySettings.EdgeStartGateEnabled = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_START_GATE,
+                nameof(StabilityEdgeStartGateEnabled));
+        }
+
+        public double StabilityEdgeStartThreshold
+        {
+            get => action.StabilitySettings.EdgeStartThreshold;
+            set => SetStabilityValue(Math.Clamp(value, 0.0, 300.0),
+                () => action.StabilitySettings.EdgeStartThreshold,
+                v => action.StabilitySettings.EdgeStartThreshold = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_START_GATE,
+                nameof(StabilityEdgeStartThreshold));
+        }
+
+        public bool StabilityEdgeLockEnabled
+        {
+            get => action.StabilitySettings.EdgeLockEnabled;
+            set => SetStabilityValue(value,
+                () => action.StabilitySettings.EdgeLockEnabled,
+                v => action.StabilitySettings.EdgeLockEnabled = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD,
+                nameof(StabilityEdgeLockEnabled));
+        }
+
+        public bool StabilityStationaryHoldEnabled
+        {
+            get => action.StabilitySettings.StationaryHoldEnabled;
+            set => SetStabilityValue(value,
+                () => action.StabilitySettings.StationaryHoldEnabled,
+                v => action.StabilitySettings.StationaryHoldEnabled = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY,
+                nameof(StabilityStationaryHoldEnabled));
+        }
+
+        public double StabilityStationaryDetectionMs
+        {
+            get => action.StabilitySettings.StationaryDetectionMs;
+            set => SetStabilityValue(Math.Clamp(value, 0.0, 200.0),
+                () => action.StabilitySettings.StationaryDetectionMs,
+                v => action.StabilitySettings.StationaryDetectionMs = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY,
+                nameof(StabilityStationaryDetectionMs));
+        }
+
+        public double StabilityStationaryNoiseMultiplier
+        {
+            get => action.StabilitySettings.StationaryNoiseMultiplier;
+            set => SetStabilityValue(Math.Clamp(value, 1.0, 4.0),
+                () => action.StabilitySettings.StationaryNoiseMultiplier,
+                v => action.StabilitySettings.StationaryNoiseMultiplier = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY,
+                nameof(StabilityStationaryNoiseMultiplier));
+        }
+
+        public double StabilityStationaryBreakoutThreshold
+        {
+            get => action.StabilitySettings.StationaryBreakoutThreshold;
+            set => SetStabilityValue(Math.Clamp(value, 0.0, 200.0),
+                () => action.StabilitySettings.StationaryBreakoutThreshold,
+                v => action.StabilitySettings.StationaryBreakoutThreshold = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY,
+                nameof(StabilityStationaryBreakoutThreshold));
+        }
+
+        public bool StabilityDeltaClampEnabled
+        {
+            get => action.StabilitySettings.DeltaClampEnabled;
+            set => SetStabilityValue(value,
+                () => action.StabilitySettings.DeltaClampEnabled,
+                v => action.StabilitySettings.DeltaClampEnabled = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_DELTA_CLAMP,
+                nameof(StabilityDeltaClampEnabled));
+        }
+
+        public double StabilityMaxDeltaPerFrame
+        {
+            get => action.StabilitySettings.MaxDeltaPerFrame;
+            set => SetStabilityValue(Math.Clamp(value, 10.0, 500.0),
+                () => action.StabilitySettings.MaxDeltaPerFrame,
+                v => action.StabilitySettings.MaxDeltaPerFrame = v,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_DELTA_CLAMP,
+                nameof(StabilityMaxDeltaPerFrame));
+        }
+
         private SmoothPresetChoices smoothPresetChoice = SmoothPresetChoices.None;
         public SmoothPresetChoices SmoothPresetChoice
         {
@@ -914,6 +1141,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             SmoothingEnabledChanged += TouchpadMousePropViewModel_SmoothingEnabledChanged;
             SmoothingMinCutoffChanged += TouchpadMousePropViewModel_SmoothingMinCutoffChanged;
             SmoothingBetaChanged += TouchpadMousePropViewModel_SmoothingBetaChanged;
+            StabilityModeChanged += TouchpadMousePropViewModel_StabilityModeChanged;
             ActionPropertyChanged += SetProfileDirty;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
 
@@ -1036,6 +1264,104 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             });
 
             HighlightSmoothingFilterChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadMousePropViewModel_StabilityModeChanged(object sender, EventArgs e)
+        {
+            MarkStabilityProperty(TouchpadMouse.PropertyKeyStrings.STABILITY_MODE);
+            if (action.StabilitySettings.Mode == TouchpadStabilityMode.Custom)
+            {
+                MarkAllStabilityValueProperties();
+            }
+        }
+
+        private void SetStabilityValue<T>(T value, Func<T> getter,
+            Action<T> setter, string propertyKey, string propertyName)
+        {
+            if (EqualityComparer<T>.Default.Equals(getter(), value)) return;
+            setter(value);
+
+            TouchpadStabilityMode previousMode = action.StabilitySettings.Mode;
+            if (action.StabilitySettings.TryMatchPreset(out TouchpadStabilityMode matchedMode))
+            {
+                action.StabilitySettings.Mode = matchedMode;
+            }
+            else
+            {
+                action.StabilitySettings.Mode = TouchpadStabilityMode.Custom;
+                action.StabilitySettings.CaptureCustomPreset();
+            }
+
+            if (previousMode != action.StabilitySettings.Mode)
+            {
+                MarkStabilityProperty(TouchpadMouse.PropertyKeyStrings.STABILITY_MODE);
+            }
+
+            MarkStabilityProperty(propertyKey);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            RaiseStabilityPropertyChanges();
+            ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void MarkStabilityProperty(string propertyKey)
+        {
+            if (!action.ChangedProperties.Contains(propertyKey))
+            {
+                action.ChangedProperties.Add(propertyKey);
+            }
+
+            ExecuteInMapperThread(() =>
+            {
+                action.RaiseNotifyPropertyChange(mapper, propertyKey);
+            });
+        }
+
+        private void MarkAllStabilityValueProperties()
+        {
+            foreach (string key in new[]
+            {
+                TouchpadMouse.PropertyKeyStrings.STABILITY_TOUCH_SETTLE,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_NOISE,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_START_GATE,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY,
+                TouchpadMouse.PropertyKeyStrings.STABILITY_DELTA_CLAMP,
+            })
+            {
+                MarkStabilityProperty(key);
+            }
+        }
+
+        private void RaiseStabilityPropertyChanges()
+        {
+            string[] propertyNames =
+            {
+                nameof(StabilityMode),
+                nameof(StabilityAdvancedExpanded),
+                nameof(StabilityTouchSettleMs),
+                nameof(StabilityBaseNoiseFloor),
+                nameof(StabilityHysteresisExitMultiplier),
+                nameof(StabilityFastPassthroughThreshold),
+                nameof(StabilityEdgeGuardEnabled),
+                nameof(StabilityLeftEdgePercent),
+                nameof(StabilityTopEdgePercent),
+                nameof(StabilityTopLeftCornerMultiplier),
+                nameof(StabilityEdgeStartGateEnabled),
+                nameof(StabilityEdgeStartThreshold),
+                nameof(StabilityEdgeLockEnabled),
+                nameof(StabilityStationaryHoldEnabled),
+                nameof(StabilityStationaryDetectionMs),
+                nameof(StabilityStationaryNoiseMultiplier),
+                nameof(StabilityStationaryBreakoutThreshold),
+                nameof(StabilityDeltaClampEnabled),
+                nameof(StabilityMaxDeltaPerFrame),
+            };
+
+            foreach (string propertyName in propertyNames)
+            {
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         private void TouchpadMousePropViewModel_SmoothingBetaChanged(object sender, EventArgs e)

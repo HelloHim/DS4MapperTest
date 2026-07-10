@@ -1985,6 +1985,354 @@ namespace DS4MapperTest
                 touchMouseAct.ChangedProperties.Contains(
                     TouchpadMouse.PropertyKeyStrings.POWER_CURVE_EXPONENT);
 
+            // Stability filter settings. One shared event carries the
+            // property group key so the serializer can mark ChangedProperties
+            // on deserialization. StabilityMode is declared first so a saved
+            // preset is applied before any custom values override it
+            public event EventHandler<string> StabilityGroupChanged;
+
+            private bool ShouldSerializeStabilityGroup(string key) =>
+                touchMouseAct.ChangedProperties.Contains(key);
+
+            public TouchpadStabilityMode StabilityMode
+            {
+                get => touchMouseAct.StabilitySettings.Mode;
+                set
+                {
+                    touchMouseAct.StabilitySettings.ApplyPreset(value);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_MODE);
+                }
+            }
+            public bool ShouldSerializeStabilityMode() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_MODE);
+
+            public double StabilityTouchSettleMs
+            {
+                get => touchMouseAct.StabilitySettings.TouchSettleMs;
+                set
+                {
+                    touchMouseAct.StabilitySettings.TouchSettleMs =
+                        Math.Clamp(value, 0.0, 30.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_TOUCH_SETTLE);
+                }
+            }
+            public bool ShouldSerializeStabilityTouchSettleMs() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_TOUCH_SETTLE);
+
+            public double StabilityBaseNoiseFloor
+            {
+                get => touchMouseAct.StabilitySettings.BaseNoiseFloor;
+                set
+                {
+                    touchMouseAct.StabilitySettings.BaseNoiseFloor =
+                        Math.Clamp(value, 0.0, 100.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_NOISE);
+                }
+            }
+            public bool ShouldSerializeStabilityBaseNoiseFloor() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_NOISE);
+
+            public double StabilityHysteresisExitMultiplier
+            {
+                get => touchMouseAct.StabilitySettings.HysteresisExitMultiplier;
+                set
+                {
+                    touchMouseAct.StabilitySettings.HysteresisExitMultiplier =
+                        Math.Clamp(value, 1.0, 3.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_NOISE);
+                }
+            }
+            public bool ShouldSerializeStabilityHysteresisExitMultiplier() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_NOISE);
+
+            public double StabilityFastPassthroughThreshold
+            {
+                get => touchMouseAct.StabilitySettings.FastPassthroughThreshold;
+                set
+                {
+                    touchMouseAct.StabilitySettings.FastPassthroughThreshold =
+                        Math.Clamp(value, 0.0, 200.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_NOISE);
+                }
+            }
+            public bool ShouldSerializeStabilityFastPassthroughThreshold() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_NOISE);
+
+            public bool StabilityEdgeGuardEnabled
+            {
+                get => touchMouseAct.StabilitySettings.EdgeGuardEnabled;
+                set
+                {
+                    touchMouseAct.StabilitySettings.EdgeGuardEnabled = value;
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeGuardEnabled() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityLeftEdgePercent
+            {
+                get => touchMouseAct.StabilitySettings.LeftEdgePercent;
+                set
+                {
+                    touchMouseAct.StabilitySettings.LeftEdgePercent =
+                        Math.Clamp(value, 0.0, 30.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityLeftEdgePercent() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityRightEdgePercent
+            {
+                get => touchMouseAct.StabilitySettings.RightEdgePercent;
+                set
+                {
+                    touchMouseAct.StabilitySettings.RightEdgePercent =
+                        Math.Clamp(value, 0.0, 30.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityRightEdgePercent() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityTopEdgePercent
+            {
+                get => touchMouseAct.StabilitySettings.TopEdgePercent;
+                set
+                {
+                    touchMouseAct.StabilitySettings.TopEdgePercent =
+                        Math.Clamp(value, 0.0, 30.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityTopEdgePercent() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityBottomEdgePercent
+            {
+                get => touchMouseAct.StabilitySettings.BottomEdgePercent;
+                set
+                {
+                    touchMouseAct.StabilitySettings.BottomEdgePercent =
+                        Math.Clamp(value, 0.0, 30.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityBottomEdgePercent() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityEdgeJitterMultiplier
+            {
+                get => touchMouseAct.StabilitySettings.EdgeJitterMultiplier;
+                set
+                {
+                    touchMouseAct.StabilitySettings.EdgeJitterMultiplier =
+                        Math.Clamp(value, 1.0, 5.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeJitterMultiplier() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityCornerJitterMultiplier
+            {
+                get => touchMouseAct.StabilitySettings.CornerJitterMultiplier;
+                set
+                {
+                    touchMouseAct.StabilitySettings.CornerJitterMultiplier =
+                        Math.Clamp(value, 1.0, 5.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityCornerJitterMultiplier() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityTopLeftCornerMultiplier
+            {
+                get => touchMouseAct.StabilitySettings.TopLeftCornerMultiplier;
+                set
+                {
+                    touchMouseAct.StabilitySettings.TopLeftCornerMultiplier =
+                        Math.Clamp(value, 1.0, 6.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityTopLeftCornerMultiplier() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityEdgeHysteresisPercent
+            {
+                get => touchMouseAct.StabilitySettings.EdgeHysteresisPercent;
+                set
+                {
+                    touchMouseAct.StabilitySettings.EdgeHysteresisPercent =
+                        Math.Clamp(value, 0.0, 10.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeHysteresisPercent() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public bool StabilityEdgeLockEnabled
+            {
+                get => touchMouseAct.StabilitySettings.EdgeLockEnabled;
+                set
+                {
+                    touchMouseAct.StabilitySettings.EdgeLockEnabled = value;
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeLockEnabled() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public bool StabilityEdgeStartGateEnabled
+            {
+                get => touchMouseAct.StabilitySettings.EdgeStartGateEnabled;
+                set
+                {
+                    touchMouseAct.StabilitySettings.EdgeStartGateEnabled = value;
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_START_GATE);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeStartGateEnabled() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_START_GATE);
+
+            public double StabilityEdgeStartThreshold
+            {
+                get => touchMouseAct.StabilitySettings.EdgeStartThreshold;
+                set
+                {
+                    touchMouseAct.StabilitySettings.EdgeStartThreshold =
+                        Math.Clamp(value, 0.0, 300.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_START_GATE);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeStartThreshold() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_EDGE_START_GATE);
+
+            public bool StabilityStationaryHoldEnabled
+            {
+                get => touchMouseAct.StabilitySettings.StationaryHoldEnabled;
+                set
+                {
+                    touchMouseAct.StabilitySettings.StationaryHoldEnabled = value;
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY);
+                }
+            }
+            public bool ShouldSerializeStabilityStationaryHoldEnabled() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY);
+
+            public double StabilityStationaryDetectionMs
+            {
+                get => touchMouseAct.StabilitySettings.StationaryDetectionMs;
+                set
+                {
+                    touchMouseAct.StabilitySettings.StationaryDetectionMs =
+                        Math.Clamp(value, 0.0, 200.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY);
+                }
+            }
+            public bool ShouldSerializeStabilityStationaryDetectionMs() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY);
+
+            public double StabilityStationaryNoiseMultiplier
+            {
+                get => touchMouseAct.StabilitySettings.StationaryNoiseMultiplier;
+                set
+                {
+                    touchMouseAct.StabilitySettings.StationaryNoiseMultiplier =
+                        Math.Clamp(value, 1.0, 4.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY);
+                }
+            }
+            public bool ShouldSerializeStabilityStationaryNoiseMultiplier() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY);
+
+            public double StabilityStationaryBreakoutThreshold
+            {
+                get => touchMouseAct.StabilitySettings.StationaryBreakoutThreshold;
+                set
+                {
+                    touchMouseAct.StabilitySettings.StationaryBreakoutThreshold =
+                        Math.Clamp(value, 0.0, 200.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY);
+                }
+            }
+            public bool ShouldSerializeStabilityStationaryBreakoutThreshold() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_STATIONARY);
+
+            public bool StabilityDeltaClampEnabled
+            {
+                get => touchMouseAct.StabilitySettings.DeltaClampEnabled;
+                set
+                {
+                    touchMouseAct.StabilitySettings.DeltaClampEnabled = value;
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_DELTA_CLAMP);
+                }
+            }
+            public bool ShouldSerializeStabilityDeltaClampEnabled() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_DELTA_CLAMP);
+
+            public double StabilityMaxDeltaPerFrame
+            {
+                get => touchMouseAct.StabilitySettings.MaxDeltaPerFrame;
+                set
+                {
+                    touchMouseAct.StabilitySettings.MaxDeltaPerFrame =
+                        Math.Clamp(value, 10.0, 500.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouse.PropertyKeyStrings.STABILITY_DELTA_CLAMP);
+                }
+            }
+            public bool ShouldSerializeStabilityMaxDeltaPerFrame() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouse.PropertyKeyStrings.STABILITY_DELTA_CLAMP);
+
             public TouchpadMouseSettings(TouchpadMouse action)
             {
                 touchMouseAct = action;
@@ -2032,6 +2380,12 @@ namespace DS4MapperTest
             settings.NaturalVHalfChanged += Settings_NaturalVHalfChanged;
             settings.PowerVRefChanged += Settings_PowerVRefChanged;
             settings.PowerExponentChanged += Settings_PowerExponentChanged;
+            settings.StabilityGroupChanged += Settings_StabilityGroupChanged;
+        }
+
+        private void Settings_StabilityGroupChanged(object sender, string propertyGroup)
+        {
+            touchMouseAction.ChangedProperties.Add(propertyGroup);
         }
 
         private void Settings_AccelCurveChanged(object sender, EventArgs e) =>
@@ -2390,6 +2744,350 @@ namespace DS4MapperTest
                 return touchMouseJoyAction.ChangedProperties.Contains(TouchpadMouseJoystick.PropertyKeyStrings.SMOOTHING_FILTER);
             }
 
+            public event EventHandler<string> StabilityGroupChanged;
+
+            private bool ShouldSerializeStabilityGroup(string key) =>
+                touchMouseJoyAction.ChangedProperties.Contains(key);
+
+            public TouchpadStabilityMode StabilityMode
+            {
+                get => touchMouseJoyAction.StabilitySettings.Mode;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.ApplyPreset(value);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_MODE);
+                }
+            }
+            public bool ShouldSerializeStabilityMode() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_MODE);
+
+            public double StabilityTouchSettleMs
+            {
+                get => touchMouseJoyAction.StabilitySettings.TouchSettleMs;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.TouchSettleMs =
+                        Math.Clamp(value, 0.0, 30.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_TOUCH_SETTLE);
+                }
+            }
+            public bool ShouldSerializeStabilityTouchSettleMs() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_TOUCH_SETTLE);
+
+            public double StabilityBaseNoiseFloor
+            {
+                get => touchMouseJoyAction.StabilitySettings.BaseNoiseFloor;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.BaseNoiseFloor =
+                        Math.Clamp(value, 0.0, 100.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_NOISE);
+                }
+            }
+            public bool ShouldSerializeStabilityBaseNoiseFloor() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_NOISE);
+
+            public double StabilityHysteresisExitMultiplier
+            {
+                get => touchMouseJoyAction.StabilitySettings.HysteresisExitMultiplier;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.HysteresisExitMultiplier =
+                        Math.Clamp(value, 1.0, 3.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_NOISE);
+                }
+            }
+            public bool ShouldSerializeStabilityHysteresisExitMultiplier() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_NOISE);
+
+            public double StabilityFastPassthroughThreshold
+            {
+                get => touchMouseJoyAction.StabilitySettings.FastPassthroughThreshold;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.FastPassthroughThreshold =
+                        Math.Clamp(value, 0.0, 200.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_NOISE);
+                }
+            }
+            public bool ShouldSerializeStabilityFastPassthroughThreshold() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_NOISE);
+
+            public bool StabilityEdgeGuardEnabled
+            {
+                get => touchMouseJoyAction.StabilitySettings.EdgeGuardEnabled;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.EdgeGuardEnabled = value;
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeGuardEnabled() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityLeftEdgePercent
+            {
+                get => touchMouseJoyAction.StabilitySettings.LeftEdgePercent;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.LeftEdgePercent =
+                        Math.Clamp(value, 0.0, 30.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityLeftEdgePercent() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityRightEdgePercent
+            {
+                get => touchMouseJoyAction.StabilitySettings.RightEdgePercent;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.RightEdgePercent =
+                        Math.Clamp(value, 0.0, 30.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityRightEdgePercent() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityTopEdgePercent
+            {
+                get => touchMouseJoyAction.StabilitySettings.TopEdgePercent;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.TopEdgePercent =
+                        Math.Clamp(value, 0.0, 30.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityTopEdgePercent() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityBottomEdgePercent
+            {
+                get => touchMouseJoyAction.StabilitySettings.BottomEdgePercent;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.BottomEdgePercent =
+                        Math.Clamp(value, 0.0, 30.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityBottomEdgePercent() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityEdgeJitterMultiplier
+            {
+                get => touchMouseJoyAction.StabilitySettings.EdgeJitterMultiplier;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.EdgeJitterMultiplier =
+                        Math.Clamp(value, 1.0, 5.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeJitterMultiplier() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityCornerJitterMultiplier
+            {
+                get => touchMouseJoyAction.StabilitySettings.CornerJitterMultiplier;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.CornerJitterMultiplier =
+                        Math.Clamp(value, 1.0, 5.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityCornerJitterMultiplier() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityTopLeftCornerMultiplier
+            {
+                get => touchMouseJoyAction.StabilitySettings.TopLeftCornerMultiplier;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.TopLeftCornerMultiplier =
+                        Math.Clamp(value, 1.0, 6.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityTopLeftCornerMultiplier() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public double StabilityEdgeHysteresisPercent
+            {
+                get => touchMouseJoyAction.StabilitySettings.EdgeHysteresisPercent;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.EdgeHysteresisPercent =
+                        Math.Clamp(value, 0.0, 10.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeHysteresisPercent() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public bool StabilityEdgeLockEnabled
+            {
+                get => touchMouseJoyAction.StabilitySettings.EdgeLockEnabled;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.EdgeLockEnabled = value;
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeLockEnabled() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_GUARD);
+
+            public bool StabilityEdgeStartGateEnabled
+            {
+                get => touchMouseJoyAction.StabilitySettings.EdgeStartGateEnabled;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.EdgeStartGateEnabled = value;
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_START_GATE);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeStartGateEnabled() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_START_GATE);
+
+            public double StabilityEdgeStartThreshold
+            {
+                get => touchMouseJoyAction.StabilitySettings.EdgeStartThreshold;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.EdgeStartThreshold =
+                        Math.Clamp(value, 0.0, 300.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_START_GATE);
+                }
+            }
+            public bool ShouldSerializeStabilityEdgeStartThreshold() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_EDGE_START_GATE);
+
+            public bool StabilityStationaryHoldEnabled
+            {
+                get => touchMouseJoyAction.StabilitySettings.StationaryHoldEnabled;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.StationaryHoldEnabled = value;
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_STATIONARY);
+                }
+            }
+            public bool ShouldSerializeStabilityStationaryHoldEnabled() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_STATIONARY);
+
+            public double StabilityStationaryDetectionMs
+            {
+                get => touchMouseJoyAction.StabilitySettings.StationaryDetectionMs;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.StationaryDetectionMs =
+                        Math.Clamp(value, 0.0, 200.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_STATIONARY);
+                }
+            }
+            public bool ShouldSerializeStabilityStationaryDetectionMs() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_STATIONARY);
+
+            public double StabilityStationaryNoiseMultiplier
+            {
+                get => touchMouseJoyAction.StabilitySettings.StationaryNoiseMultiplier;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.StationaryNoiseMultiplier =
+                        Math.Clamp(value, 1.0, 4.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_STATIONARY);
+                }
+            }
+            public bool ShouldSerializeStabilityStationaryNoiseMultiplier() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_STATIONARY);
+
+            public double StabilityStationaryBreakoutThreshold
+            {
+                get => touchMouseJoyAction.StabilitySettings.StationaryBreakoutThreshold;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.StationaryBreakoutThreshold =
+                        Math.Clamp(value, 0.0, 200.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_STATIONARY);
+                }
+            }
+            public bool ShouldSerializeStabilityStationaryBreakoutThreshold() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_STATIONARY);
+
+            public bool StabilityDeltaClampEnabled
+            {
+                get => touchMouseJoyAction.StabilitySettings.DeltaClampEnabled;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.DeltaClampEnabled = value;
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_DELTA_CLAMP);
+                }
+            }
+            public bool ShouldSerializeStabilityDeltaClampEnabled() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_DELTA_CLAMP);
+
+            public double StabilityMaxDeltaPerFrame
+            {
+                get => touchMouseJoyAction.StabilitySettings.MaxDeltaPerFrame;
+                set
+                {
+                    touchMouseJoyAction.StabilitySettings.MaxDeltaPerFrame =
+                        Math.Clamp(value, 10.0, 500.0);
+                    StabilityGroupChanged?.Invoke(this,
+                        TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_DELTA_CLAMP);
+                }
+            }
+            public bool ShouldSerializeStabilityMaxDeltaPerFrame() =>
+                ShouldSerializeStabilityGroup(
+                    TouchpadMouseJoystick.PropertyKeyStrings.STABILITY_DELTA_CLAMP);
+
             public TouchpadMouseJoystickSettings(TouchpadMouseJoystick action)
             {
                 touchMouseJoyAction = action;
@@ -2432,6 +3130,12 @@ namespace DS4MapperTest
             settings.SmoothingEnabledChanged += Settings_SmoothingEnabledChanged;
             settings.SmoothingMinCutoffChanged += Settings_SmoothingMinCutoffChanged;
             settings.SmoothingBetaChanged += Settings_SmoothingBetaChanged;
+            settings.StabilityGroupChanged += Settings_StabilityGroupChanged;
+        }
+
+        private void Settings_StabilityGroupChanged(object sender, string propertyGroup)
+        {
+            touchMouseJoyAction.ChangedProperties.Add(propertyGroup);
         }
 
         private void Settings_JitterCompensationChanged(object sender, EventArgs e)

@@ -30,6 +30,13 @@ namespace DS4MapperTest.TouchpadActions
             public const string VERTICAL_SCALE = "VerticalScale";
             public const string SMOOTHING_ENABLED = "SmoothingEnabled";
             public const string SMOOTHING_FILTER = "SmoothingFilter";
+            public const string STABILITY_MODE = "StabilityMode";
+            public const string STABILITY_TOUCH_SETTLE = "StabilityTouchSettle";
+            public const string STABILITY_NOISE = "StabilityNoise";
+            public const string STABILITY_EDGE_GUARD = "StabilityEdgeGuard";
+            public const string STABILITY_EDGE_START_GATE = "StabilityEdgeStartGate";
+            public const string STABILITY_STATIONARY = "StabilityStationary";
+            public const string STABILITY_DELTA_CLAMP = "StabilityDeltaClamp";
             //public const string MAX_OUTPUT = "MaxOutput";
             //public const string MAX_OUTPUT_ENABLED = "MaxOutputEnabled";
             //public const string SQUARE_STICK_ENABLED = "SquareStickEnabled";
@@ -54,6 +61,13 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.JITTER_COMPENSATION,
             PropertyKeyStrings.SMOOTHING_ENABLED,
             PropertyKeyStrings.SMOOTHING_FILTER,
+            PropertyKeyStrings.STABILITY_MODE,
+            PropertyKeyStrings.STABILITY_TOUCH_SETTLE,
+            PropertyKeyStrings.STABILITY_NOISE,
+            PropertyKeyStrings.STABILITY_EDGE_GUARD,
+            PropertyKeyStrings.STABILITY_EDGE_START_GATE,
+            PropertyKeyStrings.STABILITY_STATIONARY,
+            PropertyKeyStrings.STABILITY_DELTA_CLAMP,
             //PropertyKeyStrings.MAX_OUTPUT_ENABLED,
             //PropertyKeyStrings.MAX_OUTPUT,
             //PropertyKeyStrings.SQUARE_STICK_ENABLED,
@@ -219,6 +233,12 @@ namespace DS4MapperTest.TouchpadActions
 
         private bool useParentSmoothingFilter;
 
+        private TouchpadStabilitySettings stabilitySettings =
+            new TouchpadStabilitySettings();
+        public TouchpadStabilitySettings StabilitySettings => stabilitySettings;
+
+        private TouchpadStabilityFilter stabilityFilter;
+
         public TouchpadMouseJoystick()
         {
             actionTypeName = ACTION_TYPE_NAME;
@@ -226,6 +246,7 @@ namespace DS4MapperTest.TouchpadActions
                 DEFAULT_OUTPUT_STICK);
 
             trackData = new TrackballVelData();
+            stabilityFilter = new TouchpadStabilityFilter(stabilitySettings);
             trackData.trackballAccel = TRACKBALL_RADIUS * TRACKBALL_INIT_FRICTION / TRACKBALL_INERTIA;
 
             mStickParams = new TouchpadMouseJoystickParams()
@@ -272,6 +293,21 @@ namespace DS4MapperTest.TouchpadActions
                     touchpadDefinition, out axisXVal, out axisYVal);
             }
 
+            if (stabilityFilter.Enabled)
+            {
+                ref TouchEventFrame previousFrame =
+                    ref mapper.GetPreviousTouchEventFrame(touchpadDefinition.touchCode);
+
+                if (touchFrame.Touch && !previousFrame.Touch)
+                {
+                    stabilityFilter.OnTouchStart(ref touchFrame, touchpadDefinition);
+                }
+                else if (!touchFrame.Touch && previousFrame.Touch)
+                {
+                    stabilityFilter.OnTouchEnd();
+                }
+            }
+
             if (mStickParams.trackballEnabled)
             {
                 TrackballMouseJoystickProcess(mapper, ref touchFrame);
@@ -284,7 +320,7 @@ namespace DS4MapperTest.TouchpadActions
                 if (previousTouchFrame.Touch)
                 {
                     // Process normal mouse
-                    ProcessTouchMouseJoystick(ref touchFrame, ref previousTouchFrame);
+                    ProcessTouchMouseJoystick(mapper, ref touchFrame, ref previousTouchFrame);
                 }
             }
 
@@ -370,6 +406,7 @@ namespace DS4MapperTest.TouchpadActions
             mapper.GamepadFromStickInput(outputAction, 0.0, 0.0);
 
             PurgeTrackballData();
+            stabilityFilter.Reset();
             mStickParams.smoothingFilterSettings.ResetFilters();
             active = activeEvent = false;
         }
@@ -399,6 +436,7 @@ namespace DS4MapperTest.TouchpadActions
 
             active = activeEvent = false;
             previousDX = previousDY = 0;
+            stabilityFilter.Reset();
         }
 
         private void PurgeTrackballData()
@@ -444,7 +482,7 @@ namespace DS4MapperTest.TouchpadActions
                 // Process normal mouse
                 //RightTouchMouse(ref current, ref previous);
                 //Trace.WriteLine("NORMAL");
-                ProcessTouchMouseJoystick(ref touchFrame, ref previousTouchFrame);
+                ProcessTouchMouseJoystick(mapper, ref touchFrame, ref previousTouchFrame);
 
             }
             else if (!touchFrame.Touch && previousTouchFrame.Touch)
@@ -489,13 +527,22 @@ namespace DS4MapperTest.TouchpadActions
             }
         }
 
-        private void ProcessTouchMouseJoystick(ref TouchEventFrame touchFrame, ref TouchEventFrame previousFrame)
+        private void ProcessTouchMouseJoystick(Mapper mapper, ref TouchEventFrame touchFrame, ref TouchEventFrame previousFrame)
         {
             int dx, dy;
             if (!touchFrame.passDelta)
             {
-                dx = touchFrame.X - previousFrame.X;
-                dy = -(touchFrame.Y - previousFrame.Y);
+                if (stabilityFilter.Enabled)
+                {
+                    stabilityFilter.Filter(ref touchFrame, ref previousFrame,
+                        touchpadDefinition, out dx, out int dyPad);
+                    dy = -dyPad;
+                }
+                else
+                {
+                    dx = touchFrame.X - previousFrame.X;
+                    dy = -(touchFrame.Y - previousFrame.Y);
+                }
             }
             else
             {
@@ -919,11 +966,25 @@ namespace DS4MapperTest.TouchpadActions
                             mStickParams.smoothingFilterSettings = tempMouseJoyAction.mStickParams.smoothingFilterSettings;
                             useParentSmoothingFilter = true;
                             break;
+                        case PropertyKeyStrings.STABILITY_MODE:
+                        case PropertyKeyStrings.STABILITY_TOUCH_SETTLE:
+                        case PropertyKeyStrings.STABILITY_NOISE:
+                        case PropertyKeyStrings.STABILITY_EDGE_GUARD:
+                        case PropertyKeyStrings.STABILITY_EDGE_START_GATE:
+                        case PropertyKeyStrings.STABILITY_STATIONARY:
+                        case PropertyKeyStrings.STABILITY_DELTA_CLAMP:
+                            CopyStabilityGroupFromParent(tempMouseJoyAction, parentPropType);
+                            break;
                         default:
                             break;
                     }
                 }
             }
+        }
+
+        private void CopyStabilityGroupFromParent(TouchpadMouseJoystick parent, string propertyName)
+        {
+            stabilitySettings.CopyGroupFrom(parent.stabilitySettings, propertyName);
         }
 
         private void TempMouseJoyAction_NotifyPropertyChanged(object sender, NotifyPropertyChangeArgs e)
@@ -1007,6 +1068,16 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.SMOOTHING_FILTER:
                     mStickParams.smoothingFilterSettings = tempMouseJoyAction.mStickParams.smoothingFilterSettings;
                     useParentSmoothingFilter = true;
+                    break;
+                case PropertyKeyStrings.STABILITY_MODE:
+                case PropertyKeyStrings.STABILITY_TOUCH_SETTLE:
+                case PropertyKeyStrings.STABILITY_NOISE:
+                case PropertyKeyStrings.STABILITY_EDGE_GUARD:
+                case PropertyKeyStrings.STABILITY_EDGE_START_GATE:
+                case PropertyKeyStrings.STABILITY_STATIONARY:
+                case PropertyKeyStrings.STABILITY_DELTA_CLAMP:
+                    CopyStabilityGroupFromParent(tempMouseJoyAction, propertyName);
+                    stabilityFilter.Reset();
                     break;
                 default:
                     break;
