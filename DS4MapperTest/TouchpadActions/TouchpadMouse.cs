@@ -37,6 +37,13 @@ namespace DS4MapperTest.TouchpadActions
             public const string POWER_CURVE_VREF = "PowerCurveVRef";
             public const string POWER_CURVE_EXPONENT = "PowerCurveExponent";
             public const string NATURAL_CURVE_VHALF = "NaturalCurveVHalf";
+            public const string STABILITY_MODE = "StabilityMode";
+            public const string STABILITY_TOUCH_SETTLE = "StabilityTouchSettle";
+            public const string STABILITY_NOISE = "StabilityNoise";
+            public const string STABILITY_EDGE_GUARD = "StabilityEdgeGuard";
+            public const string STABILITY_EDGE_START_GATE = "StabilityEdgeStartGate";
+            public const string STABILITY_STATIONARY = "StabilityStationary";
+            public const string STABILITY_DELTA_CLAMP = "StabilityDeltaClamp";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -62,6 +69,13 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.POWER_CURVE_VREF,
             PropertyKeyStrings.POWER_CURVE_EXPONENT,
             PropertyKeyStrings.NATURAL_CURVE_VHALF,
+            PropertyKeyStrings.STABILITY_MODE,
+            PropertyKeyStrings.STABILITY_TOUCH_SETTLE,
+            PropertyKeyStrings.STABILITY_NOISE,
+            PropertyKeyStrings.STABILITY_EDGE_GUARD,
+            PropertyKeyStrings.STABILITY_EDGE_START_GATE,
+            PropertyKeyStrings.STABILITY_STATIONARY,
+            PropertyKeyStrings.STABILITY_DELTA_CLAMP,
         };
 
         public const string ACTION_TYPE_NAME = "TouchMouseAction";
@@ -270,10 +284,19 @@ namespace DS4MapperTest.TouchpadActions
 
         private bool useParentSmoothingFilter;
 
+        // Settings follow profile/layer inheritance. The filter instance
+        // holds runtime state and is private to this action
+        private TouchpadStabilitySettings stabilitySettings =
+            new TouchpadStabilitySettings();
+        public TouchpadStabilitySettings StabilitySettings => stabilitySettings;
+
+        private TouchpadStabilityFilter stabilityFilter;
+
         public TouchpadMouse()
         {
             actionTypeName = ACTION_TYPE_NAME;
             trackData = new TrackballVelData();
+            stabilityFilter = new TouchpadStabilityFilter(stabilitySettings);
             smoothingFilterSettings.Init();
             smoothingEnabled = DEFAULT_SMOOTHING_ENABLED;
             //trackData.trackballAccel = TRACKBALL_RADIUS * TRACKBALL_JOY_FRICTION / TRACKBALL_INERTIA;
@@ -292,6 +315,21 @@ namespace DS4MapperTest.TouchpadActions
                 // Need a better way to tell mapper to not reset remainders
                 mapper.MouseEventFired = true;
                 return;
+            }
+
+            if (stabilityFilter.Enabled)
+            {
+                ref TouchEventFrame previousFrame =
+                    ref mapper.GetPreviousTouchEventFrame(touchpadDefinition.touchCode);
+
+                if (touchFrame.Touch && !previousFrame.Touch)
+                {
+                    stabilityFilter.OnTouchStart(ref touchFrame, touchpadDefinition);
+                }
+                else if (!touchFrame.Touch && previousFrame.Touch)
+                {
+                    stabilityFilter.OnTouchEnd();
+                }
             }
 
             if (trackballEnabled)
@@ -390,6 +428,7 @@ namespace DS4MapperTest.TouchpadActions
             xMotion = yMotion = 0.0;
 
             PurgeTrackballData();
+            stabilityFilter.Reset();
             smoothingFilterSettings.filterX.Reset();
             smoothingFilterSettings.filterY.Reset();
 
@@ -419,6 +458,9 @@ namespace DS4MapperTest.TouchpadActions
                 smoothingFilterSettings.filterX.Reset();
                 smoothingFilterSettings.filterY.Reset();
             }
+
+            // Runtime filter state is never shared between actions
+            stabilityFilter.Reset();
         }
 
         private void PurgeTrackballData()
@@ -516,8 +558,21 @@ namespace DS4MapperTest.TouchpadActions
         private void ProcessTouchMouse(Mapper mapper, ref TouchEventFrame touchFrame,
             ref TouchEventFrame previousFrame)
         {
-            int dx = touchFrame.X - previousFrame.X;
-            int dy = -(touchFrame.Y - previousFrame.Y);
+            int dx;
+            int dy;
+            if (stabilityFilter.Enabled)
+            {
+                // Filter raw coordinates before the deltas reach the
+                // trackball buffer and the output pipeline
+                stabilityFilter.Filter(ref touchFrame, ref previousFrame,
+                    touchpadDefinition, out dx, out int dyPad);
+                dy = -dyPad;
+            }
+            else
+            {
+                dx = touchFrame.X - previousFrame.X;
+                dy = -(touchFrame.Y - previousFrame.Y);
+            }
             //int rawDeltaX = dx, rawDeltaY = dy;
 
             //Console.WriteLine("DELTA X: {0} Y: {1}", dx, dy);
@@ -841,11 +896,25 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.NATURAL_CURVE_VHALF:
                             NaturalVHalf = tempMouseAction.NaturalVHalf;
                             break;
+                        case PropertyKeyStrings.STABILITY_MODE:
+                        case PropertyKeyStrings.STABILITY_TOUCH_SETTLE:
+                        case PropertyKeyStrings.STABILITY_NOISE:
+                        case PropertyKeyStrings.STABILITY_EDGE_GUARD:
+                        case PropertyKeyStrings.STABILITY_EDGE_START_GATE:
+                        case PropertyKeyStrings.STABILITY_STATIONARY:
+                        case PropertyKeyStrings.STABILITY_DELTA_CLAMP:
+                            CopyStabilityGroupFromParent(tempMouseAction, parentPropType);
+                            break;
                         default:
                             break;
                     }
                 }
             }
+        }
+
+        private void CopyStabilityGroupFromParent(TouchpadMouse parent, string propertyName)
+        {
+            stabilitySettings.CopyGroupFrom(parent.stabilitySettings, propertyName);
         }
 
         private void TempMouseAction_NotifyPropertyChanged(object sender, NotifyPropertyChangeArgs e)
@@ -960,6 +1029,16 @@ namespace DS4MapperTest.TouchpadActions
                     break;
                 case PropertyKeyStrings.NATURAL_CURVE_VHALF:
                     NaturalVHalf = tempMouseAction.NaturalVHalf;
+                    break;
+                case PropertyKeyStrings.STABILITY_MODE:
+                case PropertyKeyStrings.STABILITY_TOUCH_SETTLE:
+                case PropertyKeyStrings.STABILITY_NOISE:
+                case PropertyKeyStrings.STABILITY_EDGE_GUARD:
+                case PropertyKeyStrings.STABILITY_EDGE_START_GATE:
+                case PropertyKeyStrings.STABILITY_STATIONARY:
+                case PropertyKeyStrings.STABILITY_DELTA_CLAMP:
+                    CopyStabilityGroupFromParent(tempMouseAction, propertyName);
+                    stabilityFilter.Reset();
                     break;
                 default:
                     break;
