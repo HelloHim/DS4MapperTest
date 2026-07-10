@@ -113,7 +113,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                     {
                         _syncingAccelSens = true;
                         SyncTrackpadMinimumsFromBase();
-                        RepairZeroAccelerationMaximums();
                     }
                     finally
                     {
@@ -1071,12 +1070,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             }
 
             PopulateModel();
-            this.action.MinAccelXSens = this.action.SwipesPer360;
-            this.action.MinAccelYSens = VerticalRws;
-            if (this.action.AccelCurve != GyroMouseAccelCurveChoice.None)
-            {
-                RepairZeroAccelerationMaximums();
-            }
             _prevAccelCurve = this.action.AccelCurve;
 
             copyTestRWCComm = new BasicActionCommand((parameter) =>
@@ -1572,31 +1565,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 TouchpadMouse.PropertyKeyStrings.MIN_ACCEL_Y_SENS);
             PropertyChanged?.Invoke(this,
                 new PropertyChangedEventArgs(nameof(MinAccelYSens)));
-        }
-
-        private void RepairZeroAccelerationMaximums()
-        {
-            if (action.MaxAccelXSens <= 0.0)
-            {
-                action.MaxAccelXSens = Math.Max(
-                    TouchpadMouse.DEFAULT_MAX_ACCEL_SENS,
-                    action.MinAccelXSens);
-                MarkAccelerationProperty(
-                    TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_X_SENS);
-                PropertyChanged?.Invoke(this,
-                    new PropertyChangedEventArgs(nameof(MaxAccelXSens)));
-            }
-
-            if (action.MaxAccelYSens <= 0.0)
-            {
-                action.MaxAccelYSens = Math.Max(
-                    TouchpadMouse.DEFAULT_MAX_ACCEL_SENS,
-                    action.MinAccelYSens);
-                MarkAccelerationProperty(
-                    TouchpadMouse.PropertyKeyStrings.MAX_ACCEL_Y_SENS);
-                PropertyChanged?.Invoke(this,
-                    new PropertyChangedEventArgs(nameof(MaxAccelYSens)));
-            }
         }
 
         private void TouchpadMousePropViewModel_TrackballFrictionChanged(object sender, EventArgs e)
