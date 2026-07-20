@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using System.Threading;
 using DS4MapperTest;
@@ -8,6 +9,7 @@ using DS4MapperTest.SteamControllerLibrary;
 using DS4MapperTest.StickActions;
 using DS4MapperTest.ViewModels.StickActionPropViewModels;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DS4MapperUnitTests
 {
@@ -65,8 +67,21 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(150, brake.BrakeDurationMs);
         }
 
-        private string BuildProfileJson(string padMode = "EightWay")
+        [TestMethod]
+        public void ArmingThreshold_DefaultEqualsPreviousInternalValue()
         {
+            StickReleaseBrake brake = new StickReleaseBrake();
+
+            Assert.AreEqual(0.70, brake.ArmingThreshold);
+        }
+
+        private string BuildProfileJson(string padMode = "EightWay", double? brakeArmingThreshold = null)
+        {
+            string thresholdLine = brakeArmingThreshold.HasValue
+                ? $@",
+                ""BrakeArmingThreshold"": {brakeArmingThreshold.Value.ToString("0.##", CultureInfo.InvariantCulture)}"
+                : string.Empty;
+
             return @"{
   ""Name"": ""ReleaseBrakeTest"",
   ""Description"": ""ReleaseBrakeTest"",
@@ -103,7 +118,7 @@ namespace DS4MapperUnitTests
                 ""DiagonalRange"": 45,
                 ""BrakeEnabled"": true,
                 ""BrakeDurationMs"": 40,
-                ""BrakeMinimumHoldMs"": 80
+                ""BrakeMinimumHoldMs"": 80__BRAKE_ARMING_THRESHOLD__
               }
             }
           ]
@@ -120,10 +135,13 @@ namespace DS4MapperUnitTests
       ]
     }
   ]
-}".Replace(@"""PadMode"": ""EightWay""", $@"""PadMode"": ""{padMode}""");
+}"
+                .Replace("__BRAKE_ARMING_THRESHOLD__", thresholdLine)
+                .Replace(@"""PadMode"": ""EightWay""", $@"""PadMode"": ""{padMode}""");
         }
 
-        private (TestMapper mapper, StickPadAction padAction) LoadMapper(string padMode = "EightWay")
+        private (TestMapper mapper, StickPadAction padAction) LoadMapper(string padMode = "EightWay",
+            double? brakeArmingThreshold = null)
         {
             eventInputMapping = new SendInputMapping();
             ProfileSerializer.EventInputMapper = eventInputMapping;
@@ -135,7 +153,7 @@ namespace DS4MapperUnitTests
             tempProfile.ActionSets.Clear();
 
             ProfileSerializer profileSerializer = new ProfileSerializer(tempProfile);
-            JsonConvert.PopulateObject(BuildProfileJson(padMode), profileSerializer);
+            JsonConvert.PopulateObject(BuildProfileJson(padMode, brakeArmingThreshold), profileSerializer);
             profileSerializer.PopulateProfile();
             tempProfile.ResetAliases();
 
@@ -181,6 +199,11 @@ namespace DS4MapperUnitTests
             for (int i = 0; i < ticks; i++) Report(mapper, DIAG, DIAG, dt);
         }
 
+        private static void HoldShallowUp(TestMapper mapper, double fraction, int ticks, double dt = DT)
+        {
+            for (int i = 0; i < ticks; i++) Report(mapper, 0, (int)(FULL * fraction), dt);
+        }
+
         private static bool KeyDown(uint vk) => TestMapper.KeyReferenceCountDict.ContainsKey(vk);
 
         [TestMethod]
@@ -214,6 +237,109 @@ namespace DS4MapperUnitTests
                 $"Expected Braking in {padMode} mode.");
             Assert.IsFalse(KeyDown(VK_W), $"Original Up key must be released in {padMode} mode.");
             Assert.IsTrue(KeyDown(VK_S), $"Opposite Down key must be pressed in {padMode} mode.");
+        }
+
+        [TestMethod]
+        public void MovementBelowConfiguredArmingThreshold_DoesNotArm()
+        {
+            var (mapper, padAction) = LoadMapper();
+            padAction.ReleaseBrake.ArmingThreshold = 0.75;
+
+            Neutral(mapper);
+            HoldShallowUp(mapper, 0.50, 20);
+
+            Assert.IsTrue(KeyDown(VK_W), "The digital direction should be active through normal D-Pad logic.");
+            Assert.AreEqual(StickReleaseBrake.BrakeState.Idle, padAction.ReleaseBrake.State);
+
+            Report(mapper, 0, 0);
+
+            Assert.AreNotEqual(StickReleaseBrake.BrakeState.Braking, padAction.ReleaseBrake.State);
+            Assert.IsFalse(KeyDown(VK_S), "A below-threshold movement must not arm and brake on release.");
+        }
+
+        [TestMethod]
+        public void MovementReachingConfiguredArmingThreshold_Arms()
+        {
+            var (mapper, padAction) = LoadMapper();
+            padAction.ReleaseBrake.ArmingThreshold = 0.50;
+
+            Neutral(mapper);
+            HoldShallowUp(mapper, 0.60, 20);
+
+            Assert.AreEqual(StickReleaseBrake.BrakeState.Armed, padAction.ReleaseBrake.State);
+        }
+
+        [TestMethod]
+        public void ZeroArmingThreshold_ValidDigitalDirectionArmsWithShallowDeflection()
+        {
+            var (mapper, padAction) = LoadMapper();
+            padAction.ReleaseBrake.ArmingThreshold = 0.0;
+
+            Neutral(mapper);
+            HoldShallowUp(mapper, 0.35, 1);
+
+            Assert.IsTrue(KeyDown(VK_W), "Normal D-Pad logic must have activated Up.");
+            Assert.AreEqual(StickReleaseBrake.BrakeState.Armed, padAction.ReleaseBrake.State);
+        }
+
+        [TestMethod]
+        public void ZeroArmingThreshold_CentreJitterWithoutDigitalDirectionDoesNotArm()
+        {
+            var (mapper, padAction) = LoadMapper();
+            padAction.ReleaseBrake.ArmingThreshold = 0.0;
+
+            Neutral(mapper);
+            Report(mapper, 100, -100);
+            Report(mapper, -120, 80);
+
+            Assert.AreEqual(StickReleaseBrake.BrakeState.Idle, padAction.ReleaseBrake.State);
+            Assert.IsFalse(KeyDown(VK_W));
+            Assert.IsFalse(KeyDown(VK_A));
+            Assert.IsFalse(KeyDown(VK_S));
+            Assert.IsFalse(KeyDown(VK_D));
+        }
+
+        [TestMethod]
+        public void MinimumHoldTime_StillAppliesAfterZeroThresholdArming()
+        {
+            var (mapper, padAction) = LoadMapper();
+            padAction.ReleaseBrake.ArmingThreshold = 0.0;
+
+            Neutral(mapper);
+            HoldShallowUp(mapper, 0.35, 4);
+            Assert.AreEqual(StickReleaseBrake.BrakeState.Armed, padAction.ReleaseBrake.State);
+
+            Report(mapper, 0, 0);
+
+            Assert.IsFalse(KeyDown(VK_S), "The brake must still wait for MinimumHoldMs after arming.");
+        }
+
+        [TestMethod]
+        public void ChangingArmingThreshold_DoesNotChangeBrakeDuration()
+        {
+            StickReleaseBrake brake = new StickReleaseBrake();
+            brake.BrakeDurationMs = 123;
+
+            brake.ArmingThreshold = 0.25;
+
+            Assert.AreEqual(123, brake.BrakeDurationMs);
+        }
+
+        [TestMethod]
+        [DataRow("Standard")]
+        [DataRow("EightWay")]
+        [DataRow("FourWayCardinal")]
+        [DataRow("FourWayDiagonal")]
+        public void AllDPadModes_UseConfiguredZeroArmingThreshold(string padMode)
+        {
+            var (mapper, padAction) = LoadMapper(padMode);
+            padAction.ReleaseBrake.ArmingThreshold = 0.0;
+
+            Neutral(mapper);
+            HoldShallowUp(mapper, 0.35, 1);
+
+            Assert.AreEqual(StickReleaseBrake.BrakeState.Armed, padAction.ReleaseBrake.State,
+                $"{padMode} should use the configured arming threshold.");
         }
 
         [TestMethod]
@@ -589,6 +715,57 @@ namespace DS4MapperUnitTests
 
             Assert.AreEqual(StickReleaseBrake.BrakeState.Suppressed, padAction.ReleaseBrake.State);
             Assert.IsFalse(KeyDown(VK_S), "Invalid report dt must not keep the brake-owned key held indefinitely.");
+        }
+
+        [TestMethod]
+        public void ArmingThreshold_ProfileSaveLoadInheritanceAndReset()
+        {
+            var (_, loadedAction) = LoadMapper(brakeArmingThreshold: 0.25);
+            Assert.AreEqual(0.25, loadedAction.ReleaseBrake.ArmingThreshold);
+            Assert.IsTrue(loadedAction.ChangedProperties.Contains(
+                StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD));
+
+            StickPadAction actionToSave = new StickPadAction();
+            actionToSave.Id = 7;
+            actionToSave.ReleaseBrake.ArmingThreshold = 0.35;
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            string json = JsonConvert.SerializeObject(new StickPadActionSerializer(null, actionToSave));
+            JObject parsed = JObject.Parse(json);
+            Assert.AreEqual(0.35, parsed["Settings"]?["BrakeArmingThreshold"]?.Value<double>());
+
+            StickPadAction parent = new StickPadAction();
+            parent.ReleaseBrake.ArmingThreshold = 0.25;
+            StickPadAction child = new StickPadAction();
+            child.SoftCopyFromParent(parent);
+            Assert.AreEqual(0.25, child.ReleaseBrake.ArmingThreshold);
+
+            parent.ReleaseBrake.ArmingThreshold = 0.45;
+            parent.RaiseNotifyPropertyChange(null, StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            Assert.AreEqual(0.45, child.ReleaseBrake.ArmingThreshold);
+
+            child.ReleaseBrake.ArmingThreshold = 0.20;
+            child.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            parent.ReleaseBrake.ArmingThreshold = 0.60;
+            parent.RaiseNotifyPropertyChange(null, StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            Assert.AreEqual(0.20, child.ReleaseBrake.ArmingThreshold);
+
+            child.ReleaseBrake.ArmingThreshold = StickReleaseBrake.DEFAULT_ARMING_THRESHOLD;
+            Assert.AreEqual(StickReleaseBrake.DEFAULT_ARMING_THRESHOLD, child.ReleaseBrake.ArmingThreshold);
+        }
+
+        [TestMethod]
+        public void ProfileWithoutArmingThreshold_UsesPreviousDefaultBehaviour()
+        {
+            var (mapper, padAction) = LoadMapper();
+
+            Assert.AreEqual(StickReleaseBrake.DEFAULT_ARMING_THRESHOLD, padAction.ReleaseBrake.ArmingThreshold);
+
+            Neutral(mapper);
+            HoldShallowUp(mapper, 0.50, 20);
+            Assert.AreEqual(StickReleaseBrake.BrakeState.Idle, padAction.ReleaseBrake.State);
+
+            Report(mapper, 0, 0);
+            Assert.IsFalse(KeyDown(VK_S), "Missing property must preserve the previous 70% arming gate.");
         }
     }
 }

@@ -45,6 +45,12 @@ namespace DS4MapperTest.ActionUtil
                         result = temp;
                         break;
                     }
+                case ChordedPressFunc chordedFunc:
+                    {
+                        ChordedPressFunc temp = new ChordedPressFunc(chordedFunc);
+                        result = temp;
+                        break;
+                    }
                 default: break;
             }
 

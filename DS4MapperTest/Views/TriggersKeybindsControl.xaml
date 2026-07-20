@@ -112,6 +112,10 @@
                                                           Tag="Distance"
                                                           IsEnabled="{Binding PlacementTarget.DataContext.CanAddDistancePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                           Click="AddExtraBindingMenuItem_Click"/>
+                                                <MenuItem Header="Chorded Press"
+                                                          Tag="Chorded"
+                                                          IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          Click="AddExtraBindingMenuItem_Click"/>
                                                 <MenuItem Header="Start Press"
                                                           Tag="Start"
                                                           IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
@@ -271,6 +275,20 @@
                                                                                   Width="108"
                                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
                                                                                   Value="{Binding DistanceValue, UpdateSourceTrigger=PropertyChanged}"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding SupportsChordOptions, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="Chord Trigger" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <ComboBox ItemsSource="{Binding ChordTriggerItems}"
+                                                                          SelectedValue="{Binding ChordTrigger, UpdateSourceTrigger=PropertyChanged}"
+                                                                          SelectedValuePath="Code"
+                                                                          DisplayMemberPath="DisplayName"
+                                                                          MaxDropDownHeight="240"
+                                                                          Width="160"
+                                                                          Style="{StaticResource JsmccComboBoxStyle}"/>
                                                             </StackPanel>
                                                         </Border>
 

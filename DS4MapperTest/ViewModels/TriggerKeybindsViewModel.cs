@@ -77,11 +77,13 @@ namespace DS4MapperTest.ViewModels
         public bool HasHoldPress => HasFunc<HoldPressFunc>();
         public bool HasDoublePress => HasFunc<DoublePressFunc>();
         public bool HasDistancePress => HasFunc<DistanceFunc>();
+        public bool HasChordedPress => HasFunc<ChordedPressFunc>();
         public bool HasStartPress => HasFunc<StartPressFunc>();
         public bool HasReleasePress => HasFunc<ReleaseFunc>();
         public bool CanAddHoldPress => IsButtonMode && !HasHoldPress;
         public bool CanAddDoublePress => IsButtonMode && !HasDoublePress;
         public bool CanAddDistancePress => IsButtonMode && !HasDistancePress;
+        public bool CanAddChordedPress => IsButtonMode && !HasChordedPress;
         public bool CanAddStartPress => IsButtonMode && !HasStartPress;
         public bool CanAddReleasePress => IsButtonMode && !HasReleasePress;
 
@@ -395,6 +397,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Hold => buttonAction.ActionFuncs.OfType<HoldPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Double => buttonAction.ActionFuncs.OfType<DoublePressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Distance => buttonAction.ActionFuncs.OfType<DistanceFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.Chorded => buttonAction.ActionFuncs.OfType<ChordedPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Start => buttonAction.ActionFuncs.OfType<StartPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Release => buttonAction.ActionFuncs.OfType<ReleaseFunc>().FirstOrDefault(),
                 _ => null,
@@ -441,6 +444,9 @@ namespace DS4MapperTest.ViewModels
                             break;
                         case DistanceFunc:
                             functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Distance, func));
+                            break;
+                        case ChordedPressFunc:
+                            functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Chorded, func));
                             break;
                         case StartPressFunc:
                             functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Start, func));
@@ -550,6 +556,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Hold => HasHoldPress,
                 FaceBindingFuncKind.Double => HasDoublePress,
                 FaceBindingFuncKind.Distance => HasDistancePress,
+                FaceBindingFuncKind.Chorded => HasChordedPress,
                 FaceBindingFuncKind.Start => HasStartPress,
                 FaceBindingFuncKind.Release => HasReleasePress,
                 _ => false,
@@ -575,6 +582,7 @@ namespace DS4MapperTest.ViewModels
                     DurationMs = DoublePressFunc.DEFAULT_TAP_WINDOW_MS,
                 }, emptyOutput),
                 FaceBindingFuncKind.Distance => CreateOutputFunc(new DistanceFunc(), emptyOutput),
+                FaceBindingFuncKind.Chorded => CreateOutputFunc(new ChordedPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
                 _ => null,
@@ -630,11 +638,13 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(HasHoldPress));
             OnPropertyChanged(nameof(HasDoublePress));
             OnPropertyChanged(nameof(HasDistancePress));
+            OnPropertyChanged(nameof(HasChordedPress));
             OnPropertyChanged(nameof(HasStartPress));
             OnPropertyChanged(nameof(HasReleasePress));
             OnPropertyChanged(nameof(CanAddHoldPress));
             OnPropertyChanged(nameof(CanAddDoublePress));
             OnPropertyChanged(nameof(CanAddDistancePress));
+            OnPropertyChanged(nameof(CanAddChordedPress));
             OnPropertyChanged(nameof(CanAddStartPress));
             OnPropertyChanged(nameof(CanAddReleasePress));
         }
@@ -769,6 +779,7 @@ namespace DS4MapperTest.ViewModels
         public bool SupportsTapWindow => func is DoublePressFunc;
         public bool SupportsReleaseOptions => func is ReleaseFunc;
         public bool SupportsDistanceOptions => func is DistanceFunc;
+        public bool SupportsChordOptions => func is ChordedPressFunc;
 
         public string DisplayName => Kind switch
         {
@@ -776,6 +787,7 @@ namespace DS4MapperTest.ViewModels
             FaceBindingFuncKind.Hold => "Hold Press",
             FaceBindingFuncKind.Double => "Double Press",
             FaceBindingFuncKind.Distance => "Distance",
+            FaceBindingFuncKind.Chorded => "Chorded Press",
             FaceBindingFuncKind.Start => "Start Press",
             FaceBindingFuncKind.Release => "Release Press",
             _ => "Binding",
@@ -1013,6 +1025,28 @@ namespace DS4MapperTest.ViewModels
                     MarkButtonChanged();
                 });
                 OnPropertyChanged(nameof(DistanceValue));
+            }
+        }
+
+        public List<ActionTriggerItem> ChordTriggerItems =>
+            ChordedPressFuncUi.BuildTriggerItems(owner.Owner.DeviceMapper);
+
+        public JoypadActionCodes ChordTrigger
+        {
+            get => func is ChordedPressFunc chordedPress ? chordedPress.TriggerButton : JoypadActionCodes.Empty;
+            set
+            {
+                TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
+                if ((owner.FindButtonFunc(Kind) ?? func) is not ChordedPressFunc chordedPress ||
+                    chordedPress.TriggerButton == value) return;
+
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    triggerAction?.EventButton.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                    chordedPress.TriggerButton = value;
+                    MarkButtonChanged();
+                });
+                OnPropertyChanged(nameof(ChordTrigger));
             }
         }
 

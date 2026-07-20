@@ -16,6 +16,7 @@
                 <ComboBoxItem>Start Press</ComboBoxItem>
                 <ComboBoxItem>Release Press</ComboBoxItem>
                 <ComboBoxItem>Distance</ComboBoxItem>
+                <ComboBoxItem>Chorded Press</ComboBoxItem>
             </ComboBox>
         </StackPanel>
     </DockPanel>

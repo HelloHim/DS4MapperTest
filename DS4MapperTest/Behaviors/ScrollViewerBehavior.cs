@@ -111,7 +111,7 @@ namespace DS4MapperTest.Behaviors
                 return;
             }
 
-            ScrollViewer scrollViewer = FindScrollViewer(e.OriginalSource as DependencyObject)
+            ScrollViewer scrollViewer = FindVisualAncestor<ScrollViewer>(e.OriginalSource as DependencyObject)
                 ?? FindVisualChild<ScrollViewer>(sender as DependencyObject);
             if (scrollViewer == null || scrollViewer.ScrollableHeight <= 0)
             {
@@ -170,6 +170,19 @@ namespace DS4MapperTest.Behaviors
                 if (current is ScrollViewer scrollViewer)
                 {
                     return scrollViewer;
+                }
+            }
+
+            return null;
+        }
+
+        private static T FindVisualAncestor<T>(DependencyObject start) where T : DependencyObject
+        {
+            for (DependencyObject current = start; current != null; current = VisualTreeHelper.GetParent(current))
+            {
+                if (current is T match)
+                {
+                    return match;
                 }
             }
 

@@ -21,6 +21,13 @@ namespace DS4MapperTest.ActionUtil
             onChorded = true;
         }
 
+        public ChordedPressFunc(ChordedPressFunc secondFunc)
+        {
+            onChorded = true;
+            secondFunc.CopyTo(this);
+            triggerButton = secondFunc.triggerButton;
+        }
+
         public override void Prepare(Mapper mapper, bool state,
             ActionFuncStateData stateData)
         {

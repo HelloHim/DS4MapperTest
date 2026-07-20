@@ -5647,6 +5647,21 @@ namespace DS4MapperTest
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
             }
 
+            public double BrakeArmingThreshold
+            {
+                get => padAction.ReleaseBrake.ArmingThreshold;
+                set
+                {
+                    padAction.ReleaseBrake.ArmingThreshold = value;
+                    BrakeArmingThresholdChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeArmingThresholdChanged;
+            public bool ShouldSerializeBrakeArmingThreshold()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            }
+
             public StickPadActionSettings(StickPadAction padAction)
             {
                 this.padAction = padAction;
@@ -5760,6 +5775,7 @@ namespace DS4MapperTest
             settings.BrakeEnabledChanged += Settings_BrakeEnabledChanged;
             settings.BrakeDurationMsChanged += Settings_BrakeDurationMsChanged;
             settings.BrakeMinimumHoldMsChanged += Settings_BrakeMinimumHoldMsChanged;
+            settings.BrakeArmingThresholdChanged += Settings_BrakeArmingThresholdChanged;
         }
 
         private void Settings_BrakeEnabledChanged(object sender, EventArgs e)
@@ -5775,6 +5791,11 @@ namespace DS4MapperTest
         private void Settings_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
         {
             stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+        }
+
+        private void Settings_BrakeArmingThresholdChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
         }
 
         private void Settings_DeadZoneTypeChanged(object sender, EventArgs e)
