@@ -82,8 +82,18 @@ namespace DS4MapperTest.Views
             DataContext = buttonActionEditVM;
         }
 
-        private void CameraTurnBtn_Click(object sender, RoutedEventArgs e)
+        private void OutputTypeTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (!ReferenceEquals(e.OriginalSource, sender))
+            {
+                return;
+            }
+
+            if (buttonActionEditVM == null || flickTurnBindTab?.IsSelected != true)
+            {
+                return;
+            }
+
             DataContext = null;
 
             buttonActionEditVM.AssignCameraTurn();
