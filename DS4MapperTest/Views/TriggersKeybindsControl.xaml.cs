@@ -49,14 +49,6 @@ namespace DS4MapperTest.Views
             triggerItem.AddExtraBinding(kind.Value);
         }
 
-        private void EditBinding_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button { Tag: TriggerButtonFuncItem item } button)
-            {
-                OpenOutputEditor(item, button);
-            }
-        }
-
         private void RemoveBinding_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button { Tag: TriggerButtonFuncItem item })
@@ -81,18 +73,6 @@ namespace DS4MapperTest.Views
                 OpenTriggerPullOutputEditor(item, item.PrepareSoftPullEdit(),
                     $"{item.DisplayName} - Soft Pull", button);
             }
-        }
-
-        private void OpenOutputEditor(TriggerButtonFuncItem item, DependencyObject source)
-        {
-            EditTriggerButtonBindingContext editContext = item.Owner.PrepareEdit(item);
-            if (editContext == null) return;
-
-            ContentControl host = InlineBindingEditorService.FindInlineHost(source);
-            InlineBindingEditorService.Open(host,
-                new EditFaceBindingContext(editContext.Mapper, editContext.Action, editContext.Func),
-                $"{item.Owner.DisplayName} - {item.DisplayName}",
-                item.Owner.RefreshAfterEdit);
         }
 
         private void OpenTriggerPullOutputEditor(TriggerKeybindItem ownerItem,

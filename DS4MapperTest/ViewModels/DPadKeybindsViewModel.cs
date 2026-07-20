@@ -412,7 +412,7 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
-    public class DPadDirectionFuncItem : INotifyPropertyChanged
+    public class DPadDirectionFuncItem : INotifyPropertyChanged, IQuickBindTarget
     {
         private readonly DPadDirectionBindingItem owner;
 
@@ -719,6 +719,14 @@ namespace DS4MapperTest.ViewModels
             this.owner = owner;
             Kind = kind;
         }
+
+        // IQuickBindTarget
+        Mapper IQuickBindTarget.Mapper => owner.ProfileVm.DeviceMapper;
+        string IQuickBindTarget.RowLabel => owner.DisplayName;
+        string IQuickBindTarget.SlotLabel => DisplayName;
+        bool IQuickBindTarget.IsComplexBinding => !QuickBindActionApplier.IsSimpleFunc(Func);
+        EditFaceBindingContext IQuickBindTarget.GetEditContext() => owner.PrepareEdit(this);
+        void IQuickBindTarget.NotifyBindingChanged() => owner.RefreshAfterEdit();
 
         private static ActionFunc FindFunc(ButtonAction action, FaceBindingFuncKind kind)
         {

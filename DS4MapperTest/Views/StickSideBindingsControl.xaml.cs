@@ -46,31 +46,12 @@ namespace DS4MapperTest.Views
             buttonItem.AddExtraBinding(kind.Value);
         }
 
-        private void ClickEditBinding_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button { Tag: FaceButtonFuncItem item } button)
-            {
-                OpenOutputEditor(item, button);
-            }
-        }
-
         private void ClickRemoveBinding_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button { Tag: FaceButtonFuncItem item })
             {
                 item.Owner.RemoveBinding(item);
             }
-        }
-
-        private void OpenOutputEditor(FaceButtonFuncItem item, DependencyObject source)
-        {
-            EditFaceBindingContext editContext = item.Owner.PrepareEdit(item);
-            if (editContext == null) return;
-
-            ContentControl host = InlineBindingEditorService.FindInlineHost(source);
-            InlineBindingEditorService.Open(host, editContext,
-                $"{item.Owner.DisplayName} - {item.DisplayName}",
-                item.Owner.RefreshAfterEdit);
         }
 
         private void ExtraAddExtraBindingButton_Click(object sender, RoutedEventArgs e)
@@ -108,31 +89,12 @@ namespace DS4MapperTest.Views
             bindingItem.AddExtraBinding(kind.Value);
         }
 
-        private void ExtraEditBinding_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button { Tag: StickExtraFuncItem item } button)
-            {
-                OpenOutputEditor(item, button);
-            }
-        }
-
         private void ExtraRemoveBinding_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button { Tag: StickExtraFuncItem item })
             {
                 item.Owner.RemoveBinding(item);
             }
-        }
-
-        private void OpenOutputEditor(StickExtraFuncItem item, DependencyObject source)
-        {
-            EditFaceBindingContext editContext = item.Owner.PrepareEdit(item);
-            if (editContext == null) return;
-
-            ContentControl host = InlineBindingEditorService.FindInlineHost(source);
-            InlineBindingEditorService.Open(host, editContext,
-                $"{item.Owner.DisplayName} - {item.DisplayName}",
-                item.Owner.RefreshAfterEdit);
         }
     }
 }

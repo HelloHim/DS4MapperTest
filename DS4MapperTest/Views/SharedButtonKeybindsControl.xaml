@@ -118,24 +118,14 @@
                                                                Margin="0,3,0,0"/>
                                                 </StackPanel>
 
-                                                <Button Grid.Row="0"
-                                                        Grid.Column="1"
-                                                        Content="{Binding DisplayBind}"
-                                                        Tag="{Binding}"
-                                                        Click="EditBinding_Click"
-                                                        Style="{StaticResource JsmccOutputButtonStyle}"
-                                                        ToolTip="Edit binding output"/>
+                                                <views:QuickBindControl Grid.Row="0"
+                                                                        Grid.Column="1"/>
 
                                                 <StackPanel Grid.Row="0"
                                                             Grid.Column="2"
                                                             Orientation="Horizontal"
                                                             HorizontalAlignment="Right"
                                                             Margin="10,0,0,0">
-                                                    <Button Content="Edit"
-                                                            Tag="{Binding}"
-                                                            Click="EditBinding_Click"
-                                                            Style="{StaticResource JsmccButtonStyle}"
-                                                            MinWidth="58"/>
                                                     <Button Content="Remove"
                                                             Tag="{Binding}"
                                                             Click="RemoveBinding_Click"

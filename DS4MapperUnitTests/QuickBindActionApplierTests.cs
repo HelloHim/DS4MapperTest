@@ -1,0 +1,215 @@
+using System;
+using System.Linq;
+using DS4MapperTest;
+using DS4MapperTest.ActionUtil;
+using DS4MapperTest.ButtonActions;
+using DS4MapperTest.MapperUtil;
+using DS4MapperTest.ViewModels;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace DS4MapperUnitTests
+{
+    // Minimal reader that lets Mapper.ProcessMappingChangeAction run its
+    // action immediately, without a real input thread. HaltReportingRunAction
+    // waits on readWaitEv before invoking the action, so it must already be
+    // signalled.
+    internal class NoOpDeviceReader : DeviceReaderBase
+    {
+        public NoOpDeviceReader()
+        {
+            ReadWaitEv.Set();
+        }
+
+        public override void StartUpdate() { }
+        public override void StopUpdate() { }
+        public override void WriteRumbleReport() { }
+    }
+
+    internal class QuickBindTestMapper : TestMapper
+    {
+        private readonly DeviceReaderBase reader = new NoOpDeviceReader();
+        public override DeviceReaderBase BaseReader => reader;
+    }
+
+    // ProfileSerializer.EventInputMapper is normally wired up by the app's
+    // backend manager at startup; QuickBindActionApplier.ApplyKeyboard reads
+    // it to translate a VirtualKeys value into the active output backend's
+    // native event code, so tests need a stand-in.
+    internal class IdentityVirtualKBMMapping : VirtualKBMMapping
+    {
+        public override void PopulateConstants() { }
+        public override void PopulateMappings() { }
+        public override uint GetRealEventKey(uint winVkKey) => winVkKey;
+    }
+
+    [TestClass]
+    public class QuickBindActionApplierTests
+    {
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            ProfileSerializer.EventInputMapper = new IdentityVirtualKBMMapping();
+        }
+
+        private static EditFaceBindingContext MakeContext(out ActionFunc func)
+        {
+            Mapper mapper = new QuickBindTestMapper();
+            ButtonAction action = new ButtonAction();
+            func = new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            action.ActionFuncs.Add(func);
+
+            return new EditFaceBindingContext(mapper, action, func);
+        }
+
+        [TestMethod]
+        public void IsSimpleFunc_NullFunc_IsSimple()
+        {
+            Assert.IsTrue(QuickBindActionApplier.IsSimpleFunc(null));
+        }
+
+        [TestMethod]
+        public void IsSimpleFunc_UnboundFunc_IsSimple()
+        {
+            ActionFunc func = new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            Assert.IsTrue(QuickBindActionApplier.IsSimpleFunc(func));
+        }
+
+        [TestMethod]
+        public void IsSimpleFunc_SingleKeyboardOutput_IsSimple()
+        {
+            ActionFunc func = new NormalPressFunc(
+                new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.A));
+            Assert.IsTrue(QuickBindActionApplier.IsSimpleFunc(func));
+        }
+
+        [TestMethod]
+        public void IsSimpleFunc_SingleMouseButtonOutput_IsSimple()
+        {
+            ActionFunc func = new NormalPressFunc(
+                new OutputActionData(OutputActionData.ActionType.MouseButton, MouseButtonCodes.MOUSE_LEFT_BUTTON));
+            Assert.IsTrue(QuickBindActionApplier.IsSimpleFunc(func));
+        }
+
+        [TestMethod]
+        public void IsSimpleFunc_SingleMouseWheelOutput_IsSimple()
+        {
+            ActionFunc func = new NormalPressFunc(
+                new OutputActionData(OutputActionData.ActionType.MouseWheel, (int)MouseWheelCodes.WheelUp));
+            Assert.IsTrue(QuickBindActionApplier.IsSimpleFunc(func));
+        }
+
+        [TestMethod]
+        public void IsSimpleFunc_SingleGamepadOutput_IsComplex()
+        {
+            ActionFunc func = new NormalPressFunc(
+                new OutputActionData(OutputActionData.ActionType.GamepadControl, JoypadActionCodes.X360_A));
+            Assert.IsFalse(QuickBindActionApplier.IsSimpleFunc(func));
+        }
+
+        [TestMethod]
+        public void IsSimpleFunc_MultipleOutputs_IsComplex()
+        {
+            ActionFunc func = new NormalPressFunc(new[]
+            {
+                new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.A),
+                new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.B),
+            });
+            Assert.IsFalse(QuickBindActionApplier.IsSimpleFunc(func));
+        }
+
+        [TestMethod]
+        public void ApplyKeyboard_UnboundSlot_BecomesKeyboardAction()
+        {
+            EditFaceBindingContext ctx = MakeContext(out ActionFunc func);
+
+            QuickBindActionApplier.ApplyKeyboard(ctx, VirtualKeys.E, "E");
+
+            Assert.AreEqual(1, func.OutputActions.Count);
+            OutputActionData data = func.OutputActions[0];
+            Assert.AreEqual(OutputActionData.ActionType.Keyboard, data.OutputType);
+            Assert.AreEqual((int)VirtualKeys.E, data.OutputCode);
+            Assert.AreEqual("E", data.OutputCodeStr);
+        }
+
+        [TestMethod]
+        public void ApplyKeyboard_MarksActionFunctionsChanged()
+        {
+            EditFaceBindingContext ctx = MakeContext(out _);
+
+            QuickBindActionApplier.ApplyKeyboard(ctx, VirtualKeys.Space, "Space");
+
+            Assert.IsTrue(ctx.Action.ChangedProperties.Contains(ButtonAction.PropertyKeyStrings.FUNCTIONS));
+        }
+
+        [TestMethod]
+        public void ApplyMouseButton_UnboundSlot_BecomesMouseButtonAction()
+        {
+            EditFaceBindingContext ctx = MakeContext(out ActionFunc func);
+
+            QuickBindActionApplier.ApplyMouseButton(ctx, MouseButtonCodes.MOUSE_RIGHT_BUTTON, "RightButton");
+
+            OutputActionData data = func.OutputActions.Single();
+            Assert.AreEqual(OutputActionData.ActionType.MouseButton, data.OutputType);
+            Assert.AreEqual(MouseButtonCodes.MOUSE_RIGHT_BUTTON, data.OutputCode);
+            Assert.AreEqual("RightButton", data.OutputCodeStr);
+        }
+
+        [TestMethod]
+        public void ApplyMouseWheel_UnboundSlot_BecomesMouseWheelAction()
+        {
+            EditFaceBindingContext ctx = MakeContext(out ActionFunc func);
+
+            QuickBindActionApplier.ApplyMouseWheel(ctx, MouseWheelCodes.WheelDown, "WheelDown");
+
+            OutputActionData data = func.OutputActions.Single();
+            Assert.AreEqual(OutputActionData.ActionType.MouseWheel, data.OutputType);
+            Assert.AreEqual((int)MouseWheelCodes.WheelDown, data.OutputCode);
+        }
+
+        [TestMethod]
+        public void ApplyUnbound_ClearsToEmpty()
+        {
+            EditFaceBindingContext ctx = MakeContext(out ActionFunc func);
+            QuickBindActionApplier.ApplyKeyboard(ctx, VirtualKeys.A, "A");
+
+            QuickBindActionApplier.ApplyUnbound(ctx);
+
+            OutputActionData data = func.OutputActions.Single();
+            Assert.AreEqual(OutputActionData.ActionType.Empty, data.OutputType);
+        }
+
+        [TestMethod]
+        public void ApplyKeyboard_ReplacingComplexFunc_CollapsesToSingleSlot()
+        {
+            EditFaceBindingContext ctx = MakeContext(out ActionFunc func);
+            func.OutputActions.Clear();
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.A));
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.B));
+            Assert.IsFalse(QuickBindActionApplier.IsSimpleFunc(func));
+
+            QuickBindActionApplier.ApplyKeyboard(ctx, VirtualKeys.C, "C");
+
+            OutputActionData data = func.OutputActions.Single();
+            Assert.AreEqual((int)VirtualKeys.C, data.OutputCode);
+        }
+
+        [TestMethod]
+        public void ApplyKeyboard_ReplacingNormalPress_LeavesOtherFuncsOnActionUntouched()
+        {
+            Mapper mapper = new QuickBindTestMapper();
+            ButtonAction action = new ButtonAction();
+            NormalPressFunc normalFunc = new NormalPressFunc(
+                new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.W));
+            ReleaseFunc releaseFunc = new ReleaseFunc();
+            releaseFunc.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.S));
+            action.ActionFuncs.Add(normalFunc);
+            action.ActionFuncs.Add(releaseFunc);
+
+            EditFaceBindingContext ctx = new EditFaceBindingContext(mapper, action, normalFunc);
+            QuickBindActionApplier.ApplyKeyboard(ctx, VirtualKeys.E, "E");
+
+            Assert.AreEqual((int)VirtualKeys.E, normalFunc.OutputActions.Single().OutputCode);
+            Assert.AreEqual((int)VirtualKeys.S, releaseFunc.OutputActions.Single().OutputCode);
+        }
+    }
+}
