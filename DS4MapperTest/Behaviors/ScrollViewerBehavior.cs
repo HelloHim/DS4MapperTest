@@ -1,7 +1,10 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Controls.Primitives;
+using System.Windows.Threading;
 
 namespace DS4MapperTest.Behaviors
 {
@@ -26,6 +29,19 @@ namespace DS4MapperTest.Behaviors
         public static void SetBubbleWheelToParent(DependencyObject obj, bool value) =>
             obj.SetValue(BubbleWheelToParentProperty, value);
 
+        public static readonly DependencyProperty ScrollComboBoxDropDownOnWheelProperty =
+            DependencyProperty.RegisterAttached(
+                "ScrollComboBoxDropDownOnWheel",
+                typeof(bool),
+                typeof(ScrollViewerBehavior),
+                new PropertyMetadata(false, OnScrollComboBoxDropDownOnWheelChanged));
+
+        public static bool GetScrollComboBoxDropDownOnWheel(DependencyObject obj) =>
+            (bool)obj.GetValue(ScrollComboBoxDropDownOnWheelProperty);
+
+        public static void SetScrollComboBoxDropDownOnWheel(DependencyObject obj, bool value) =>
+            obj.SetValue(ScrollComboBoxDropDownOnWheelProperty, value);
+
         private static void OnBubbleWheelToParentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is not ScrollViewer scrollViewer)
@@ -38,6 +54,80 @@ namespace DS4MapperTest.Behaviors
             {
                 scrollViewer.PreviewMouseWheel += ScrollViewer_PreviewMouseWheel;
             }
+        }
+
+        private static void OnScrollComboBoxDropDownOnWheelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not ComboBox comboBox)
+            {
+                return;
+            }
+
+            comboBox.DropDownOpened -= ComboBox_DropDownOpened;
+            comboBox.DropDownClosed -= ComboBox_DropDownClosed;
+            if ((bool)e.NewValue)
+            {
+                comboBox.DropDownOpened += ComboBox_DropDownOpened;
+                comboBox.DropDownClosed += ComboBox_DropDownClosed;
+            }
+        }
+
+        private static void ComboBox_DropDownOpened(object sender, EventArgs e)
+        {
+            if (sender is not ComboBox comboBox)
+            {
+                return;
+            }
+
+            comboBox.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                Popup popup = FindVisualChild<Popup>(comboBox);
+                if (popup?.Child is UIElement popupChild)
+                {
+                    popupChild.PreviewMouseWheel -= ComboBoxDropDown_PreviewMouseWheel;
+                    popupChild.PreviewMouseWheel += ComboBoxDropDown_PreviewMouseWheel;
+                }
+            }), DispatcherPriority.Loaded);
+        }
+
+        private static void ComboBox_DropDownClosed(object sender, EventArgs e)
+        {
+            if (sender is not ComboBox comboBox)
+            {
+                return;
+            }
+
+            Popup popup = FindVisualChild<Popup>(comboBox);
+            if (popup?.Child is UIElement popupChild)
+            {
+                popupChild.PreviewMouseWheel -= ComboBoxDropDown_PreviewMouseWheel;
+            }
+        }
+
+        private static void ComboBoxDropDown_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Handled)
+            {
+                return;
+            }
+
+            ScrollViewer scrollViewer = FindScrollViewer(e.OriginalSource as DependencyObject)
+                ?? FindVisualChild<ScrollViewer>(sender as DependencyObject);
+            if (scrollViewer == null || scrollViewer.ScrollableHeight <= 0)
+            {
+                return;
+            }
+
+            if (e.Delta > 0)
+            {
+                scrollViewer.LineUp();
+            }
+            else
+            {
+                scrollViewer.LineDown();
+            }
+
+            e.Handled = true;
         }
 
         private static void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -71,6 +161,60 @@ namespace DS4MapperTest.Behaviors
                 };
                 parent.RaiseEvent(forwarded);
             }
+        }
+
+        private static ScrollViewer FindScrollViewer(DependencyObject start)
+        {
+            for (DependencyObject current = start; current != null; current = GetParent(current))
+            {
+                if (current is ScrollViewer scrollViewer)
+                {
+                    return scrollViewer;
+                }
+            }
+
+            return null;
+        }
+
+        private static DependencyObject GetParent(DependencyObject current)
+        {
+            if (current is FrameworkElement element && element.Parent != null)
+            {
+                return element.Parent;
+            }
+
+            if (current is FrameworkContentElement contentElement && contentElement.Parent != null)
+            {
+                return contentElement.Parent;
+            }
+
+            return VisualTreeHelper.GetParent(current);
+        }
+
+        private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null)
+            {
+                return null;
+            }
+
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T match)
+                {
+                    return match;
+                }
+
+                T descendant = FindVisualChild<T>(child);
+                if (descendant != null)
+                {
+                    return descendant;
+                }
+            }
+
+            return null;
         }
     }
 }
