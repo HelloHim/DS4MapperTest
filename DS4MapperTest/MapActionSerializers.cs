@@ -999,58 +999,6 @@ namespace DS4MapperTest
             }
             public event EventHandler DeadZoneChanged;
 
-            [JsonConverter(typeof(SafeStringEnumConverter),
-                TriggerStyle.SimpleThreshold)]
-            public TriggerStyle TriggerStyle
-            {
-                get => _action.TriggerStyle;
-                set
-                {
-                    _action.TriggerStyle = value;
-                    TriggerStyleChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-            public event EventHandler TriggerStyleChanged;
-            public bool ShouldSerializeTriggerStyle()
-            {
-                return _action.ChangedProperties.Contains(
-                    TriggerButtonAction.PropertyKeyStrings.TRIGGER_STYLE);
-            }
-
-            [JsonConverter(typeof(SafeStringEnumConverter),
-                HipFirePreset.Balanced)]
-            public HipFirePreset HipFirePreset
-            {
-                get => _action.HipFirePreset;
-                set
-                {
-                    _action.HipFirePreset = value;
-                    HipFirePresetChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-            public event EventHandler HipFirePresetChanged;
-            public bool ShouldSerializeHipFirePreset()
-            {
-                return _action.ChangedProperties.Contains(
-                    TriggerButtonAction.PropertyKeyStrings.HIP_FIRE_PRESET);
-            }
-
-            public int HipFireWindowMs
-            {
-                get => _action.HipFireWindowMs;
-                set
-                {
-                    _action.HipFireWindowMs = value;
-                    HipFireWindowMsChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-            public event EventHandler HipFireWindowMsChanged;
-            public bool ShouldSerializeHipFireWindowMs()
-            {
-                return _action.ChangedProperties.Contains(
-                    TriggerButtonAction.PropertyKeyStrings.HIP_FIRE_WINDOW_MS);
-            }
-
             public TriggerButtonActionSettings(TriggerButtonAction action)
             {
                 _action = action;
@@ -1089,27 +1037,6 @@ namespace DS4MapperTest
             NameChanged += TriggerButtonActionSerializer_NameChanged;
             ActionFuncSerializersChanged += TriggerButtonActionSerializer_ActionFuncSerializersChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
-            settings.TriggerStyleChanged += Settings_TriggerStyleChanged;
-            settings.HipFirePresetChanged += Settings_HipFirePresetChanged;
-            settings.HipFireWindowMsChanged += Settings_HipFireWindowMsChanged;
-        }
-
-        private void Settings_HipFireWindowMsChanged(object sender, EventArgs e)
-        {
-            trigBtnAction.ChangedProperties.Add(
-                TriggerButtonAction.PropertyKeyStrings.HIP_FIRE_WINDOW_MS);
-        }
-
-        private void Settings_HipFirePresetChanged(object sender, EventArgs e)
-        {
-            trigBtnAction.ChangedProperties.Add(
-                TriggerButtonAction.PropertyKeyStrings.HIP_FIRE_PRESET);
-        }
-
-        private void Settings_TriggerStyleChanged(object sender, EventArgs e)
-        {
-            trigBtnAction.ChangedProperties.Add(
-                TriggerButtonAction.PropertyKeyStrings.TRIGGER_STYLE);
         }
 
         private void TriggerButtonActionSerializer_ActionFuncSerializersChanged(object sender, EventArgs e)
