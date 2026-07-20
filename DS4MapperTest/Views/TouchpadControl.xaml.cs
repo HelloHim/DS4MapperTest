@@ -321,31 +321,12 @@ namespace DS4MapperTest.Views
             buttonItem.AddExtraBinding(kind.Value);
         }
 
-        private void TouchpadClickEditBinding_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button { Tag: FaceButtonFuncItem item } button)
-            {
-                OpenTouchpadClickOutputEditor(item, button);
-            }
-        }
-
         private void TouchpadClickRemoveBinding_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button { Tag: FaceButtonFuncItem item })
             {
                 item.Owner.RemoveBinding(item);
             }
-        }
-
-        private void OpenTouchpadClickOutputEditor(FaceButtonFuncItem item, DependencyObject source)
-        {
-            EditFaceBindingContext editContext = item.Owner.PrepareEdit(item);
-            if (editContext == null) return;
-
-            ContentControl host = InlineBindingEditorService.FindInlineHost(source);
-            InlineBindingEditorService.Open(host, editContext,
-                $"{item.Owner.DisplayName} - {item.DisplayName}",
-                item.Owner.RefreshAfterEdit);
         }
 
         private TextBlock CreateMessage(string message)

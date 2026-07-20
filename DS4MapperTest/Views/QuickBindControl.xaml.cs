@@ -123,6 +123,7 @@ namespace DS4MapperTest.Views
             AdvancedButton.IsEnabled = false;
 
             Keyboard.Focus(BindButton);
+            Mouse.Capture(this);
         }
 
         private void EndListening()
