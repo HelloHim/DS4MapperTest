@@ -9,6 +9,14 @@
              d:DesignWidth="860">
     <StackPanel>
         <views:SharedButtonKeybindsControl
+            SectionTitle="Touchpad"
+            Description="Touchpad touch and click inputs exposed by the current controller."
+            EmptyText="No touchpad touch or click bindings were found for the current controller."
+            CardSubtitle="Touchpad input"
+            ItemsSource="{Binding TouchpadButtonBindings}"/>
+
+        <views:SharedButtonKeybindsControl
+            Margin="0,18,0,0"
             SectionTitle="Extra"
             Description="Special controller inputs that do not fit the other categories. Regular Press maps to Normal Press."
             EmptyText="No extra button bindings were found for the current controller."

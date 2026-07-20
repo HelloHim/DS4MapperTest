@@ -173,6 +173,13 @@ namespace DS4MapperTest.ViewModels
             new ObservableCollection<FaceButtonBindingItem>();
         public ObservableCollection<FaceButtonBindingItem> ExtraButtonBindings => extraButtonBindings;
 
+        private ObservableCollection<FaceButtonBindingItem> touchpadButtonBindings =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> TouchpadButtonBindings => touchpadButtonBindings;
+
+        private Dictionary<string, FaceButtonBindingItem> touchpadButtonBindingItems =
+            new Dictionary<string, FaceButtonBindingItem>(StringComparer.OrdinalIgnoreCase);
+
         private StickSideViewModel leftStickKeybinds;
         public StickSideViewModel LeftStickKeybinds => leftStickKeybinds ??= new StickSideViewModel(this, "LS");
 
@@ -777,6 +784,8 @@ namespace DS4MapperTest.ViewModels
             centerButtonBindings.Clear();
             paddleButtonBindings.Clear();
             extraButtonBindings.Clear();
+            touchpadButtonBindings.Clear();
+            touchpadButtonBindingItems.Clear();
             triggerKeybinds.Clear();
             touchpadBindings.Clear();
             touchpadMouseMovementBindings.Clear();
@@ -804,6 +813,8 @@ namespace DS4MapperTest.ViewModels
             centerButtonBindings.Clear();
             paddleButtonBindings.Clear();
             extraButtonBindings.Clear();
+            touchpadButtonBindings.Clear();
+            touchpadButtonBindingItems.Clear();
             triggerKeybinds.Clear();
             touchpadBindings.Clear();
             touchpadMouseMovementBindings.Clear();
@@ -838,6 +849,8 @@ namespace DS4MapperTest.ViewModels
         {
             int tempBtnInd = 0;
             claimedButtonBindings.Clear();
+            touchpadButtonBindings.Clear();
+            touchpadButtonBindingItems.Clear();
 
             foreach(InputBindingMeta meta in
                 mapper.BindingList.Where((item) => item.controlType == InputBindingMeta.InputControlType.Button))
@@ -944,6 +957,7 @@ namespace DS4MapperTest.ViewModels
             PopulateTriggerKeybinds();
             PopulateDPadKeybinds();
             PopulateStickClickBindings();
+            PopulateTouchpadButtonBindings();
             PopulateExtraButtonBindings();
             PopulateStickKeybinds();
             PopulateTouchpadGroups();
@@ -1024,15 +1038,6 @@ namespace DS4MapperTest.ViewModels
                 new string[] { "RightGripSense" },
                 "Right Grip Sense",
                 "Grip sensor");
-            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
-                new string[] { "LeftPadTouch" },
-                "Left Pad Touch",
-                "Touchpad touch sensor");
-            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
-                new string[] { "RightPadTouch" },
-                "Right Pad Touch",
-                "Touchpad touch sensor");
-
             // Fallback: surface any backend button binding no named section
             // claimed. Follows mapper BindingList order so the list is stable
             foreach (BindingItemsTest item in buttonBindings)
@@ -1048,6 +1053,30 @@ namespace DS4MapperTest.ViewModels
                     : item.BindingName;
                 extraButtonBindings.Add(new FaceButtonBindingItem(this, item, label));
             }
+        }
+
+        private void PopulateTouchpadButtonBindings()
+        {
+            AddTouchpadButtonBinding(
+                new string[] { "LeftPadTouch", "LeftTouchpadTouch" },
+                "Left Touch",
+                "Touchpad touch sensor");
+            AddTouchpadButtonBinding(
+                new string[] { "RightPadTouch", "RightTouchpadTouch" },
+                "Right Touch",
+                "Touchpad touch sensor");
+            AddTouchpadButtonBinding(
+                new string[] { "TouchClick" },
+                "Main Click",
+                "Physical full-pad click");
+            AddTouchpadButtonBinding(
+                new string[] { "LeftPadClick", "LeftTouchpadClick" },
+                "Left Click",
+                "Physical left-pad click");
+            AddTouchpadButtonBinding(
+                new string[] { "RightPadClick", "RightTouchpadClick" },
+                "Right Click",
+                "Physical right-pad click");
         }
 
         private void PopulateStickKeybinds()
@@ -1173,10 +1202,6 @@ namespace DS4MapperTest.ViewModels
                 new string[] { "Select" },
                 "Select",
                 "Center/select button");
-            AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
-                new string[] { "TouchClick" },
-                "DS4/DS Touch Click",
-                "DualShock/DualSense touchpad click");
         }
 
         private void PopulatePaddleButtonBindings()
@@ -1258,13 +1283,50 @@ namespace DS4MapperTest.ViewModels
             {
                 if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
                 {
-                    claimedButtonBindings.Add(buttonBindings[index].BindingName);
-                    return new FaceButtonBindingItem(this, buttonBindings[index],
-                        "Touchpad Click", "Physical pad click");
+                    return AddTouchpadButtonBinding(buttonBindings[index],
+                        touchpadItem.BindingName == "RightTouchpad" || touchpadItem.BindingName == "TouchpadRight"
+                            ? "Right Click"
+                            : "Left Click",
+                        "Physical pad click");
                 }
             }
 
             return null;
+        }
+
+        private FaceButtonBindingItem AddTouchpadButtonBinding(string[] aliases,
+            string displayName, string subtitle)
+        {
+            foreach (string alias in aliases)
+            {
+                if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
+                {
+                    return AddTouchpadButtonBinding(buttonBindings[index], displayName, subtitle);
+                }
+            }
+
+            return null;
+        }
+
+        private FaceButtonBindingItem AddTouchpadButtonBinding(BindingItemsTest item,
+            string displayName, string subtitle)
+        {
+            if (item == null)
+            {
+                return null;
+            }
+
+            claimedButtonBindings.Add(item.BindingName);
+            if (touchpadButtonBindingItems.TryGetValue(item.BindingName, out FaceButtonBindingItem existing))
+            {
+                return existing;
+            }
+
+            FaceButtonBindingItem bindingItem =
+                new FaceButtonBindingItem(this, item, displayName, subtitle);
+            touchpadButtonBindingItems.Add(item.BindingName, bindingItem);
+            touchpadButtonBindings.Add(bindingItem);
+            return bindingItem;
         }
 
         private void PopulateTriggerKeybinds()
