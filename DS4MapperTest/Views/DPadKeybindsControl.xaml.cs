@@ -47,31 +47,12 @@ namespace DS4MapperTest.Views
             directionItem.AddExtraBinding(kind.Value);
         }
 
-        private void EditBinding_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button { Tag: DPadDirectionFuncItem item } button)
-            {
-                OpenOutputEditor(item, button);
-            }
-        }
-
         private void RemoveBinding_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button { Tag: DPadDirectionFuncItem item })
             {
                 item.Owner.RemoveBinding(item);
             }
-        }
-
-        private void OpenOutputEditor(DPadDirectionFuncItem item, DependencyObject source)
-        {
-            EditFaceBindingContext editContext = item.Owner.PrepareEdit(item);
-            if (editContext == null) return;
-
-            ContentControl host = InlineBindingEditorService.FindInlineHost(source);
-            InlineBindingEditorService.Open(host, editContext,
-                $"{item.Owner.DisplayName} - {item.DisplayName}",
-                item.Owner.RefreshAfterEdit);
         }
     }
 }

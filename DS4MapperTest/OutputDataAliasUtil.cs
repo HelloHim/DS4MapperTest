@@ -100,6 +100,17 @@ namespace DS4MapperTest
                 [VirtualKeys.F10] = "F10",
                 [VirtualKeys.F11] = "F11",
                 [VirtualKeys.F12] = "F12",
+
+                [VirtualKeys.Numpad0] = "Numpad0",
+                [VirtualKeys.Numpad1] = "Numpad1",
+                [VirtualKeys.Numpad2] = "Numpad2",
+                [VirtualKeys.Numpad3] = "Numpad3",
+                [VirtualKeys.Numpad4] = "Numpad4",
+                [VirtualKeys.Numpad5] = "Numpad5",
+                [VirtualKeys.Numpad6] = "Numpad6",
+                [VirtualKeys.Numpad7] = "Numpad7",
+                [VirtualKeys.Numpad8] = "Numpad8",
+                [VirtualKeys.Numpad9] = "Numpad9",
         };
 
         public static Dictionary<VirtualKeys, string> KeyboardStringAliasDict => keyboardStringAliasDict;
@@ -370,6 +381,36 @@ namespace DS4MapperTest
                     break;
                 case VirtualKeys.RightWindows:
                     result = "RWin";
+                    break;
+                case VirtualKeys.Numpad0:
+                    result = "Num 0";
+                    break;
+                case VirtualKeys.Numpad1:
+                    result = "Num 1";
+                    break;
+                case VirtualKeys.Numpad2:
+                    result = "Num 2";
+                    break;
+                case VirtualKeys.Numpad3:
+                    result = "Num 3";
+                    break;
+                case VirtualKeys.Numpad4:
+                    result = "Num 4";
+                    break;
+                case VirtualKeys.Numpad5:
+                    result = "Num 5";
+                    break;
+                case VirtualKeys.Numpad6:
+                    result = "Num 6";
+                    break;
+                case VirtualKeys.Numpad7:
+                    result = "Num 7";
+                    break;
+                case VirtualKeys.Numpad8:
+                    result = "Num 8";
+                    break;
+                case VirtualKeys.Numpad9:
+                    result = "Num 9";
                     break;
                 default: break;
             }

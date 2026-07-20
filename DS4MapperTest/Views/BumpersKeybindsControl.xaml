@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:views="clr-namespace:DS4MapperTest.Views"
              mc:Ignorable="d"
              d:DesignHeight="520"
              d:DesignWidth="860">
@@ -109,24 +110,14 @@
                                                                Margin="0,3,0,0"/>
                                                 </StackPanel>
 
-                                                <Button Grid.Row="0"
-                                                        Grid.Column="1"
-                                                        Content="{Binding DisplayBind}"
-                                                        Tag="{Binding}"
-                                                        Click="EditBinding_Click"
-                                                        Style="{StaticResource JsmccOutputButtonStyle}"
-                                                        ToolTip="Edit binding output"/>
+                                                <views:QuickBindControl Grid.Row="0"
+                                                                        Grid.Column="1"/>
 
                                                 <StackPanel Grid.Row="0"
                                                             Grid.Column="2"
                                                             Orientation="Horizontal"
                                                             HorizontalAlignment="Right"
                                                             Margin="10,0,0,0">
-                                                    <Button Content="Edit"
-                                                            Tag="{Binding}"
-                                                            Click="EditBinding_Click"
-                                                            Style="{StaticResource JsmccButtonStyle}"
-                                                            MinWidth="58"/>
                                                     <Button Content="Remove"
                                                             Tag="{Binding}"
                                                             Click="RemoveBinding_Click"

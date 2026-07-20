@@ -637,7 +637,7 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
-    public class TriggerButtonFuncItem : INotifyPropertyChanged
+    public class TriggerButtonFuncItem : INotifyPropertyChanged, IQuickBindTarget
     {
         private readonly TriggerKeybindItem owner;
         private readonly ActionFunc func;
@@ -910,6 +910,18 @@ namespace DS4MapperTest.ViewModels
             Kind = kind;
             this.func = func;
         }
+
+        // IQuickBindTarget
+        Mapper IQuickBindTarget.Mapper => owner.Owner.DeviceMapper;
+        string IQuickBindTarget.RowLabel => owner.DisplayName;
+        string IQuickBindTarget.SlotLabel => DisplayName;
+        bool IQuickBindTarget.IsComplexBinding => !QuickBindActionApplier.IsSimpleFunc(func);
+        EditFaceBindingContext IQuickBindTarget.GetEditContext()
+        {
+            EditTriggerButtonBindingContext ctx = owner.PrepareEdit(this);
+            return ctx == null ? null : new EditFaceBindingContext(ctx.Mapper, ctx.Action, ctx.Func);
+        }
+        void IQuickBindTarget.NotifyBindingChanged() => owner.RefreshAfterEdit();
 
         private void MarkButtonChanged()
         {

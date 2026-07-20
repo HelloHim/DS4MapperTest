@@ -250,7 +250,7 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
-    public class FaceButtonFuncItem : INotifyPropertyChanged
+    public class FaceButtonFuncItem : INotifyPropertyChanged, IQuickBindTarget
     {
         private readonly FaceButtonBindingItem owner;
         private readonly ActionFunc func;
@@ -507,6 +507,14 @@ namespace DS4MapperTest.ViewModels
             Kind = kind;
             this.func = func;
         }
+
+        // IQuickBindTarget
+        Mapper IQuickBindTarget.Mapper => owner.Owner.DeviceMapper;
+        string IQuickBindTarget.RowLabel => owner.DisplayName;
+        string IQuickBindTarget.SlotLabel => DisplayName;
+        bool IQuickBindTarget.IsComplexBinding => !QuickBindActionApplier.IsSimpleFunc(func);
+        EditFaceBindingContext IQuickBindTarget.GetEditContext() => owner.PrepareEdit(this);
+        void IQuickBindTarget.NotifyBindingChanged() => owner.RefreshAfterEdit();
 
         public void Refresh()
         {

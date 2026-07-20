@@ -1,0 +1,74 @@
+<UserControl x:Class="DS4MapperTest.Views.QuickBindControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             Focusable="False"
+             d:DesignWidth="240"
+             d:DesignHeight="34">
+    <StackPanel Orientation="Horizontal">
+        <Button x:Name="BindButton"
+                Content="{Binding DisplayBind}"
+                Click="BindButton_Click"
+                Style="{StaticResource JsmccOutputButtonStyle}"
+                ToolTip="Click, then press a key or mouse button"
+                AutomationProperties.Name="Current binding, click to set"/>
+
+        <Button x:Name="ClearButton"
+                Content="&#x2715;"
+                Click="ClearButton_Click"
+                Style="{StaticResource JsmccButtonStyle}"
+                MinWidth="34"
+                Padding="6,7"
+                Margin="6,0,0,0"
+                ToolTip="Clear binding"
+                AutomationProperties.Name="Clear binding"/>
+
+        <Button x:Name="AdvancedButton"
+                Content="&#x2699;"
+                Click="AdvancedButton_Click"
+                Style="{StaticResource JsmccButtonStyle}"
+                MinWidth="34"
+                Padding="6,7"
+                Margin="6,0,0,0"
+                ToolTip="Advanced binding options"
+                AutomationProperties.Name="Advanced binding options"/>
+
+        <Popup x:Name="ConfirmPopup"
+               PlacementTarget="{Binding ElementName=BindButton}"
+               Placement="Bottom"
+               StaysOpen="True"
+               AllowsTransparency="True"
+               Closed="ConfirmPopup_Closed">
+            <Border Style="{StaticResource JsmccPanelBorder}" MaxWidth="260">
+                <StackPanel>
+                    <TextBlock x:Name="ConfirmText"
+                               Style="{StaticResource JsmccBodyText}"
+                               TextWrapping="Wrap"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <Button Content="Cancel"
+                                Click="ConfirmCancel_Click"
+                                Style="{StaticResource JsmccButtonStyle}"
+                                MinWidth="0"
+                                Padding="10,6"
+                                Margin="0,0,6,0"/>
+                        <Button x:Name="ConfirmAdvancedButton"
+                                Content="Open Advanced Editor"
+                                Click="ConfirmAdvanced_Click"
+                                Style="{StaticResource JsmccButtonStyle}"
+                                MinWidth="0"
+                                Padding="10,6"
+                                Margin="0,0,6,0"/>
+                        <Button x:Name="ConfirmActionButton"
+                                Content="Replace"
+                                Click="ConfirmAction_Click"
+                                Style="{StaticResource JsmccDangerButtonStyle}"
+                                MinWidth="0"
+                                Padding="10,6"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Popup>
+    </StackPanel>
+</UserControl>
