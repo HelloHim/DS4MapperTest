@@ -43,6 +43,7 @@ namespace DS4MapperUnitTests
         public override DeviceReaderBase BaseReader => throw new NotImplementedException();
 
         public static Dictionary<uint, int> KeyReferenceCountDict => keyReferenceCountDict;
+        public static Dictionary<int, int> MouseButtonReferenceCountDict => mouseButtonReferenceCountDict;
 
         private const short STICK_MAX = 30000;
         private const short STICK_MIN = -30000;
@@ -477,6 +478,7 @@ namespace DS4MapperUnitTests
 
                 //ProcessSyncEvents();
 
+                SyncMouseButtons();
                 SyncKeyboard();
 
                 ProcessActionSetLayerChecks();
