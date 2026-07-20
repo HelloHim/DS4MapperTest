@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DS4MapperTest.Views.FaceKeybindsControl"
+<UserControl x:Class="DS4MapperTest.Views.FaceKeybindsControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -160,7 +160,7 @@
                                                                               Increment="10"
                                                                               Width="108"
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                              Value="{Binding TurboDurationMs, UpdateSourceTrigger=LostFocus}"
+                                                                              Value="{Binding TurboDurationMs, UpdateSourceTrigger=PropertyChanged}"
                                                                               ValueFormat="0 ms"/>
                                                         </StackPanel>
                                                     </Border>
@@ -180,7 +180,7 @@
                                                                               Increment="10"
                                                                               Width="108"
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                              Value="{Binding FireDelayMs, UpdateSourceTrigger=LostFocus}"
+                                                                              Value="{Binding FireDelayMs, UpdateSourceTrigger=PropertyChanged}"
                                                                               ValueFormat="0 ms"/>
                                                         </StackPanel>
                                                     </Border>
@@ -200,7 +200,7 @@
                                                                               Increment="10"
                                                                               Width="108"
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                              Value="{Binding HoldMs, UpdateSourceTrigger=LostFocus}"
+                                                                              Value="{Binding HoldMs, UpdateSourceTrigger=PropertyChanged}"
                                                                               ValueFormat="0 ms"/>
                                                         </StackPanel>
                                                     </Border>
@@ -220,7 +220,7 @@
                                                                               Increment="10"
                                                                               Width="108"
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                              Value="{Binding TapWindowMs, UpdateSourceTrigger=LostFocus}"
+                                                                              Value="{Binding TapWindowMs, UpdateSourceTrigger=PropertyChanged}"
                                                                               ValueFormat="0 ms"/>
                                                         </StackPanel>
                                                     </Border>
@@ -255,7 +255,7 @@
                                                                               Increment="0.1"
                                                                               Width="108"
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                              Value="{Binding DistanceValue, UpdateSourceTrigger=LostFocus}"/>
+                                                                              Value="{Binding DistanceValue, UpdateSourceTrigger=PropertyChanged}"/>
                                                         </StackPanel>
                                                     </Border>
 
@@ -268,7 +268,7 @@
                                                             Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock Text="Min Duration" Style="{StaticResource FaceControlLabel}"/>
-                                                            <TextBox Text="{Binding ReleaseDurationMs, UpdateSourceTrigger=LostFocus}"
+                                                            <TextBox Text="{Binding ReleaseDurationMs, UpdateSourceTrigger=PropertyChanged}"
                                                                      Width="72"
                                                                      Style="{StaticResource JsmccTextBoxStyle}"/>
                                                             <TextBlock Text="ms"
@@ -287,7 +287,7 @@
                                                             Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock Text="End Delay" Style="{StaticResource FaceControlLabel}"/>
-                                                            <TextBox Text="{Binding ReleaseDelayMs, UpdateSourceTrigger=LostFocus}"
+                                                            <TextBox Text="{Binding ReleaseDelayMs, UpdateSourceTrigger=PropertyChanged}"
                                                                      Width="72"
                                                                      Style="{StaticResource JsmccTextBoxStyle}"/>
                                                             <TextBlock Text="ms"

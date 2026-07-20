@@ -340,7 +340,7 @@ namespace DS4MapperTest.ButtonActions
                                     OutputActionData action = activeActionsEnumerator.Current;
                                     if (action.activatedEvent)
                                     {
-                                        mapper.RunEventFromButton(action, status);
+                                        mapper.RunEventFromButton(action, false);
                                         action.Release();
                                         //if (action.checkTick) action.Release();
                                     }
