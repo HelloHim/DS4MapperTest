@@ -64,7 +64,8 @@
             </WrapPanel>
         </Border>
 
-        <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
+        <TabControl Style="{StaticResource JsmccPillTabControlStyle}"
+                    SelectionChanged="OutputTypeTabControl_SelectionChanged">
             <TabItem Header="Gamepad">
                 <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
                     <TextBlock Text="Output" Style="{StaticResource EditorFieldLabel}"/>
@@ -169,6 +170,44 @@
                 </StackPanel>
             </TabItem>
 
+            <TabItem x:Name="flickTurnBindTab"
+                     Header="Flick Turn Bind">
+                <StackPanel Margin="0,10,0,0">
+                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            Padding="8"
+                            Margin="0"
+                            Visibility="{Binding ShowCameraTurnOptions, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <WrapPanel>
+                                <TextBlock Text="Angle" Style="{StaticResource EditorFieldLabel}"/>
+                                <hc:NumericUpDown Minimum="-180.0"
+                                                  Maximum="180.0"
+                                                  DecimalPlaces="1"
+                                                  Increment="1.0"
+                                                  Value="{Binding CameraTurnAngle, FallbackValue='180.0'}"
+                                                  Width="100"
+                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Margin="0,0,8,4"/>
+                                <TextBlock Text="Duration" Style="{StaticResource EditorFieldLabel}"/>
+                                <hc:NumericUpDown Minimum="1.0"
+                                                  Maximum="10000.0"
+                                                  DecimalPlaces="0"
+                                                  Increment="10.0"
+                                                  Value="{Binding CameraTurnDurationMs, FallbackValue='100.0'}"
+                                                  ValueFormat="0 ms"
+                                                  Width="118"
+                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Margin="0,0,8,4"/>
+                            </WrapPanel>
+                            <shared:CalibrationModeControl Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </TabItem>
+
             <TabItem Header="Layer Ops">
                 <WrapPanel Margin="0,10,0,0">
                     <TextBlock Text="Operation" Style="{StaticResource EditorFieldLabel}"/>
@@ -216,49 +255,6 @@
                         <ComboBoxItem>Released</ComboBoxItem>
                     </ComboBox>
                 </WrapPanel>
-            </TabItem>
-
-            <TabItem Header="Advanced">
-                <StackPanel Margin="0,10,0,0">
-                    <Button x:Name="cameraTurnBtn"
-                            Content="Flick Turn Bind"
-                            Click="CameraTurnBtn_Click"
-                            Style="{StaticResource JsmccButtonStyle}"
-                            HorizontalAlignment="Left"
-                            MinWidth="128"/>
-                    <Border Background="{DynamicResource JsmccBgInputBrush}"
-                            BorderBrush="{DynamicResource JsmccBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="5"
-                            Padding="8"
-                            Margin="0,8,0,0"
-                            Visibility="{Binding ShowCameraTurnOptions, Mode=OneWay, Converter={StaticResource BoolToVis}}">
-                        <StackPanel>
-                            <WrapPanel>
-                                <TextBlock Text="Angle" Style="{StaticResource EditorFieldLabel}"/>
-                                <hc:NumericUpDown Minimum="-180.0"
-                                                  Maximum="180.0"
-                                                  DecimalPlaces="1"
-                                                  Increment="1.0"
-                                                  Value="{Binding CameraTurnAngle, FallbackValue='180.0'}"
-                                                  Width="100"
-                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                  Margin="0,0,8,4"/>
-                                <TextBlock Text="Duration" Style="{StaticResource EditorFieldLabel}"/>
-                                <hc:NumericUpDown Minimum="1.0"
-                                                  Maximum="10000.0"
-                                                  DecimalPlaces="0"
-                                                  Increment="10.0"
-                                                  Value="{Binding CameraTurnDurationMs, FallbackValue='100.0'}"
-                                                  ValueFormat="0 ms"
-                                                  Width="118"
-                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                  Margin="0,0,8,4"/>
-                            </WrapPanel>
-                            <shared:CalibrationModeControl Margin="0,8,0,0"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
             </TabItem>
         </TabControl>
     </DockPanel>
