@@ -15,9 +15,6 @@ namespace DS4MapperTest.TriggerActions
             public const string NAME = "Name";
             public const string DEAD_ZONE = "DeadZone";
             public const string OUTPUT_BINDING = "OutputBinding";
-            public const string TRIGGER_STYLE = "TriggerStyle";
-            public const string HIP_FIRE_PRESET = "HipFirePreset";
-            public const string HIP_FIRE_WINDOW_MS = "HipFireWindowMs";
             //public const string MAX_ZONE = "MaxZone";
             //public const string ANTIDEAD_ZONE = "AntiDeadZone";
         }
@@ -27,9 +24,6 @@ namespace DS4MapperTest.TriggerActions
             PropertyKeyStrings.NAME,
             PropertyKeyStrings.DEAD_ZONE,
             PropertyKeyStrings.OUTPUT_BINDING,
-            PropertyKeyStrings.TRIGGER_STYLE,
-            PropertyKeyStrings.HIP_FIRE_PRESET,
-            PropertyKeyStrings.HIP_FIRE_WINDOW_MS,
             //PropertyKeyStrings.MAX_ZONE,
             //PropertyKeyStrings.ANTIDEAD_ZONE,
         };
@@ -53,28 +47,6 @@ namespace DS4MapperTest.TriggerActions
 
         private double axisNorm = 0.0;
         private AxisDeadZone deadZone;
-        private TriggerPullStateMachine pullState = new TriggerPullStateMachine();
-        private TriggerStyle triggerStyle = TriggerStyle.SimpleThreshold;
-        private HipFirePreset hipFirePreset = HipFirePreset.Balanced;
-        private int hipFireWindowMs = 150;
-
-        public TriggerStyle TriggerStyle
-        {
-            get => triggerStyle;
-            set => triggerStyle = value;
-        }
-
-        public HipFirePreset HipFirePreset
-        {
-            get => hipFirePreset;
-            set => hipFirePreset = value;
-        }
-
-        public int HipFireWindowMs
-        {
-            get => hipFireWindowMs;
-            set => hipFireWindowMs = Math.Clamp(value, 0, 1000);
-        }
 
         public AxisDeadZone DeadZone
         {
@@ -104,12 +76,6 @@ namespace DS4MapperTest.TriggerActions
             //    axisNorm = 0.0;
             //}
 
-            double fullThreshold = GetFullPullThreshold();
-            TriggerPullStateMachine.Result pullResult = pullState.Update(
-                triggerStyle, axisNorm, fullThreshold, hipFireWindowMs);
-
-            eventButton.AllowPressFunctions = pullResult.SoftAllowed;
-            eventButton.AllowDistanceFunctions = pullResult.FullAllowed;
             eventButton.PrepareAnalog(mapper, axisNorm, 1.0);
 
             inputStatus = axisNorm > 0.0;
@@ -128,7 +94,6 @@ namespace DS4MapperTest.TriggerActions
         public override void Release(Mapper mapper, bool resetState = true, bool ignoreReleaseActions = false)
         {
             eventButton.Release(mapper, ignoreReleaseActions);
-            pullState.Reset();
 
             axisNorm = 0.0;
             inputStatus = false;
@@ -143,7 +108,6 @@ namespace DS4MapperTest.TriggerActions
                 eventButton.Event(mapper);
             }
 
-            pullState.Reset();
             axisNorm = 0.0;
             inputStatus = false;
             active = activeEvent = false;
@@ -178,15 +142,6 @@ namespace DS4MapperTest.TriggerActions
                         case PropertyKeyStrings.OUTPUT_BINDING:
                             useParentEventButton = true;
                             eventButton = tempBtnAction.EventButton;
-                            break;
-                        case PropertyKeyStrings.TRIGGER_STYLE:
-                            triggerStyle = tempBtnAction.triggerStyle;
-                            break;
-                        case PropertyKeyStrings.HIP_FIRE_PRESET:
-                            hipFirePreset = tempBtnAction.hipFirePreset;
-                            break;
-                        case PropertyKeyStrings.HIP_FIRE_WINDOW_MS:
-                            hipFireWindowMs = tempBtnAction.hipFireWindowMs;
                             break;
                         default:
                             break;
@@ -224,42 +179,12 @@ namespace DS4MapperTest.TriggerActions
                     deadZone.DeadZone = tempBtnAction.deadZone.DeadZone;
                     break;
                 case PropertyKeyStrings.OUTPUT_BINDING:
-                    if (active)
-                    {
-                        Release(mapper, ignoreReleaseActions: true);
-                    }
-
                     useParentEventButton = true;
                     eventButton = tempBtnAction.EventButton;
-                    break;
-                case PropertyKeyStrings.TRIGGER_STYLE:
-                    Release(mapper, ignoreReleaseActions: true);
-                    triggerStyle = tempBtnAction.triggerStyle;
-                    break;
-                case PropertyKeyStrings.HIP_FIRE_PRESET:
-                    hipFirePreset = tempBtnAction.hipFirePreset;
-                    break;
-                case PropertyKeyStrings.HIP_FIRE_WINDOW_MS:
-                    Release(mapper, ignoreReleaseActions: true);
-                    hipFireWindowMs = tempBtnAction.hipFireWindowMs;
                     break;
                 default:
                     break;
             }
-        }
-
-        private double GetFullPullThreshold()
-        {
-            double result = 2.0;
-            foreach (ActionUtil.ActionFunc func in eventButton.ActionFuncs)
-            {
-                if (func.onDistance)
-                {
-                    result = Math.Min(result, func.distance);
-                }
-            }
-
-            return result;
         }
     }
 }

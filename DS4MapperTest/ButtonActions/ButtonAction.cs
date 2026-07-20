@@ -31,8 +31,6 @@ namespace DS4MapperTest.ButtonActions
         protected ButtonAction parentButtonAct;
         protected bool useParentActions;
         public bool UseParentActions => useParentActions;
-        public bool AllowPressFunctions { get; set; } = true;
-        public bool AllowDistanceFunctions { get; set; } = true;
         // Hold reference to usable PrivateStateData instance
         private PrivateStateData privateState;
 
@@ -222,13 +220,6 @@ namespace DS4MapperTest.ButtonActions
                     foreach (ActionFunc func in actionFuncCandidates)
                     {
                         //ActionFunc func = funcEnumerator.Current;
-                        if ((!AllowDistanceFunctions && func.onDistance) ||
-                            (!AllowPressFunctions && !func.onDistance && !func.onRelease))
-                        {
-                            i++;
-                            continue;
-                        }
-
                         func.Prepare(mapper, true, stateData);
                         if (func.onRelease)
                         {
@@ -301,11 +292,6 @@ namespace DS4MapperTest.ButtonActions
                     //}
 
                     // Change DistanceFunc action states before other ActionFunc instances
-                    if (!AllowDistanceFunctions)
-                    {
-                        ReleaseActiveDistanceFunctions(mapper);
-                    }
-
                     if (distanceFuns.Count > 0)
                     {
                         foreach (ActionFunc func in distanceFuns)
@@ -382,11 +368,6 @@ namespace DS4MapperTest.ButtonActions
 
                     i = 0;
                     removed = false;
-                    if (!AllowPressFunctions)
-                    {
-                        ReleaseActivePressFunctions(mapper);
-                    }
-
                     foreach (ActionFunc func in activeFuns)
                     {
                         //func.Prepare(mapper, true, stateData);
@@ -1019,70 +1000,6 @@ namespace DS4MapperTest.ButtonActions
             //{
             //    stateData.Reset(true);
             //}
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReleaseActivePressFunctions(Mapper mapper)
-        {
-            if (activeFuns.Count == 0)
-            {
-                return;
-            }
-
-            OutputActionDataEnumerator activeActionsEnumerator;
-            foreach (ActionFunc func in activeFuns)
-            {
-                activeActionsEnumerator =
-                    new OutputActionDataEnumerator(func.OutputActions);
-                activeActionsEnumerator.MoveToEnd();
-                while (activeActionsEnumerator.MovePrevious())
-                {
-                    OutputActionData action = activeActionsEnumerator.Current;
-                    if (action.activatedEvent)
-                    {
-                        mapper.RunEventFromButton(action, false);
-                    }
-
-                    action.firstRun = true;
-                    action.Release();
-                }
-
-                func.Release(mapper);
-            }
-
-            activeFuns.Clear();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReleaseActiveDistanceFunctions(Mapper mapper)
-        {
-            if (distanceFuns.Count == 0)
-            {
-                return;
-            }
-
-            OutputActionDataEnumerator activeActionsEnumerator;
-            foreach (ActionFunc func in distanceFuns)
-            {
-                activeActionsEnumerator =
-                    new OutputActionDataEnumerator(func.OutputActions);
-                activeActionsEnumerator.MoveToEnd();
-                while (activeActionsEnumerator.MovePrevious())
-                {
-                    OutputActionData action = activeActionsEnumerator.Current;
-                    if (action.activatedEvent)
-                    {
-                        mapper.RunEventFromButton(action, false);
-                    }
-
-                    action.firstRun = true;
-                    action.Release();
-                }
-
-                func.Release(mapper);
-            }
-
-            distanceFuns.Clear();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -69,7 +69,6 @@ namespace DS4MapperTest.Views.TriggerActionPropControls
             //DataContext = null;
             //DataContext = trigBtnActVM;
             btnEditOpenTest.GetBindingExpression(Button.ContentProperty).UpdateTarget();
-            btnEditOpenFull.GetBindingExpression(Button.ContentProperty).UpdateTarget();
         }
 
         private void TrigActionSelVM_SelectedIndexChanged(object sender, EventArgs e)
