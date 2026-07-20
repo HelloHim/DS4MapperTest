@@ -41,6 +41,10 @@ namespace DS4MapperTest.StickActions
             public const string USE_OUTER_RING = "UseOuterRing";
             public const string OUTER_RING_DEAD_ZONE = "OuterRingDeadZone";
             public const string USE_AS_OUTER_RING = "UseAsOuterRing";
+
+            public const string BRAKE_ENABLED = "BrakeEnabled";
+            public const string BRAKE_DURATION_MS = "BrakeDurationMs";
+            public const string BRAKE_MIN_HOLD_MS = "BrakeMinimumHoldMs";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -64,6 +68,9 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.USE_AS_OUTER_RING,
             PropertyKeyStrings.ROTATION,
             PropertyKeyStrings.DIAGONAL_RANGE,
+            PropertyKeyStrings.BRAKE_ENABLED,
+            PropertyKeyStrings.BRAKE_DURATION_MS,
+            PropertyKeyStrings.BRAKE_MIN_HOLD_MS,
         };
 
         public enum DPadMode : uint
@@ -146,6 +153,9 @@ namespace DS4MapperTest.StickActions
         public bool UseAsOuterRing { get => outerRing; set => outerRing = value; }
         public bool UseRingButton { get => useRingButton; set => useRingButton = value; }
         public double OuterRingDeadZone { get => outerRingDeadZone; set => outerRingDeadZone = value; }
+
+        private StickReleaseBrake releaseBrake = new StickReleaseBrake();
+        public StickReleaseBrake ReleaseBrake { get => releaseBrake; }
 
         public StickDeadZone DeadMod { get => deadMod; }
         //public OutputActionData[] EventCodes { get => eventCodes; }
@@ -300,6 +310,13 @@ namespace DS4MapperTest.StickActions
                 currentDir = DpadDirections.Centered;
 
             }
+
+            // Digital Release Brake sees the active D-Pad zone every tick (including the
+            // ticks where the stick has already left the dead zone but is still physically
+            // in motion) and may mask components out of currentDir while a pulse is
+            // suppressing the stick's own returning direction. DetermineDirection already
+            // applies the selected D-Pad sub-mode and hysteresis/diagonal range logic.
+            currentDir = releaseBrake.Prepare(mapper, axisXDir, axisYDir, maxDirX, maxDirY, currentDir);
 
             //if (currentDir != previousDir)
             {
@@ -850,6 +867,8 @@ namespace DS4MapperTest.StickActions
             //    }
             //}
 
+            releaseBrake.Event(mapper, eventCodes4);
+
             prevXNorm = xNorm; prevYNorm = yNorm;
             previousDir = currentDir;
             bool ringBtnActive = usedRingButton != null && usedRingButton.active;
@@ -861,6 +880,8 @@ namespace DS4MapperTest.StickActions
 
         public override void Release(Mapper mapper, bool resetState = true, bool ignoreReleaseActions = false)
         {
+            releaseBrake.Cleanup(mapper, eventCodes4);
+
             if (active || tmpActiveBtns.Count > 0)
             {
                 if (useRingButton && usedRingButton != null)
@@ -957,6 +978,8 @@ namespace DS4MapperTest.StickActions
         public override void SoftRelease(Mapper mapper, MapAction checkAction,
             bool resetState = true)
         {
+            releaseBrake.Cleanup(mapper, eventCodes4);
+
             if (active || tmpActiveBtns.Count > 0)
             {
                 StickPadAction checkStickAction = checkAction as StickPadAction;
@@ -1547,6 +1570,15 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.DEAD_ZONE_TYPE:
                             deadMod.DeadZoneType = tempPadAction.deadMod.DeadZoneType;
                             break;
+                        case PropertyKeyStrings.BRAKE_ENABLED:
+                            releaseBrake.Enabled = tempPadAction.releaseBrake.Enabled;
+                            break;
+                        case PropertyKeyStrings.BRAKE_DURATION_MS:
+                            releaseBrake.BrakeDurationMs = tempPadAction.releaseBrake.BrakeDurationMs;
+                            break;
+                        case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
+                            releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
+                            break;
                         default:
                             break;
                     }
@@ -1683,6 +1715,15 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.DEAD_ZONE_TYPE:
                     deadMod.DeadZoneType = tempPadAction.deadMod.DeadZoneType;
+                    break;
+                case PropertyKeyStrings.BRAKE_ENABLED:
+                    releaseBrake.Enabled = tempPadAction.releaseBrake.Enabled;
+                    break;
+                case PropertyKeyStrings.BRAKE_DURATION_MS:
+                    releaseBrake.BrakeDurationMs = tempPadAction.releaseBrake.BrakeDurationMs;
+                    break;
+                case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
+                    releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
                     break;
                 default:
                     break;
