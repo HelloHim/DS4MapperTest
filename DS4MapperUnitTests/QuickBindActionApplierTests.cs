@@ -6,6 +6,7 @@ using DS4MapperTest.ButtonActions;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace DS4MapperUnitTests
 {
@@ -115,6 +116,97 @@ namespace DS4MapperUnitTests
                 new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.B),
             });
             Assert.IsFalse(QuickBindActionApplier.IsSimpleFunc(func));
+        }
+
+        [TestMethod]
+        public void IsSimpleFunc_ChordedPressWithSingleKeyboardOutput_IsSimple()
+        {
+            ChordedPressFunc func = new ChordedPressFunc
+            {
+                TriggerButton = JoypadActionCodes.BtnNorth,
+            };
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.A));
+
+            Assert.IsTrue(QuickBindActionApplier.IsSimpleFunc(func));
+        }
+
+        [TestMethod]
+        public void ApplyKeyboard_ChordedPress_PreservesChordTrigger()
+        {
+            Mapper mapper = new QuickBindTestMapper();
+            ButtonAction action = new ButtonAction();
+            ChordedPressFunc func = new ChordedPressFunc
+            {
+                TriggerButton = JoypadActionCodes.BtnEast,
+            };
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.A));
+            action.ActionFuncs.Add(func);
+
+            QuickBindActionApplier.ApplyKeyboard(
+                new EditFaceBindingContext(mapper, action, func), VirtualKeys.B, "B");
+
+            Assert.AreEqual(JoypadActionCodes.BtnEast, func.TriggerButton);
+            Assert.AreEqual((int)VirtualKeys.B, func.OutputActions.Single().OutputCode);
+        }
+
+        [TestMethod]
+        public void ButtonFuncSelector_ChordedPress_UsesChordedIndex()
+        {
+            ButtonActionFuncSelectViewModel vm = new ButtonActionFuncSelectViewModel(new ChordedPressFunc());
+
+            Assert.AreEqual(6, vm.SelectedIndex);
+        }
+
+        [TestMethod]
+        public void FuncBindingControl_ChangeToChordedPress_CreatesChordedFunc()
+        {
+            Mapper mapper = new QuickBindTestMapper();
+            ButtonAction action = new ButtonAction();
+            action.ActionFuncs.Add(new NormalPressFunc(
+                new OutputActionData(OutputActionData.ActionType.Empty, 0)));
+            FuncBindingControlViewModel vm = new FuncBindingControlViewModel(mapper, action, null);
+
+            vm.ChangeFunc(0, 6);
+
+            Assert.IsInstanceOfType(action.ActionFuncs[0], typeof(ChordedPressFunc));
+            Assert.AreEqual(1, action.ActionFuncs[0].OutputActions.Count);
+            Assert.AreEqual(OutputActionData.ActionType.Empty, action.ActionFuncs[0].OutputActions[0].OutputType);
+        }
+
+        [TestMethod]
+        public void CopyFunc_ChordedPress_PreservesTriggerAndOutput()
+        {
+            ChordedPressFunc source = new ChordedPressFunc
+            {
+                TriggerButton = JoypadActionCodes.BtnNorth,
+            };
+            source.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.X));
+
+            ChordedPressFunc copy = ActionFuncCopyFactory.CopyFunc(source) as ChordedPressFunc;
+
+            Assert.IsNotNull(copy);
+            Assert.AreNotSame(source, copy);
+            Assert.AreEqual(JoypadActionCodes.BtnNorth, copy.TriggerButton);
+            Assert.AreEqual((int)VirtualKeys.X, copy.OutputActions.Single().OutputCode);
+        }
+
+        [TestMethod]
+        public void ChordedPressSerializer_RoundTripsTrigger()
+        {
+            ChordedPressFunc source = new ChordedPressFunc
+            {
+                TriggerButton = JoypadActionCodes.BtnSouth,
+            };
+            source.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.C));
+            ChordedPressFuncSerializer serializer = new ChordedPressFuncSerializer(source);
+
+            string json = JsonConvert.SerializeObject(serializer);
+            ChordedPressFuncSerializer loaded = JsonConvert.DeserializeObject<ChordedPressFuncSerializer>(json);
+            loaded.PopulateFunc();
+
+            Assert.IsTrue(json.Contains("\"Trigger\":\"BtnSouth\""));
+            Assert.AreEqual(JoypadActionCodes.BtnSouth, loaded.ChorededPressFunc.TriggerButton);
+            Assert.AreEqual((int)VirtualKeys.C, loaded.ChorededPressFunc.OutputActions.Single().OutputCode);
         }
 
         [TestMethod]

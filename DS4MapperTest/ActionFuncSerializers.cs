@@ -523,7 +523,7 @@ namespace DS4MapperTest
         {
             private ChordedPressFunc chordedPressFunc;
 
-            [JsonIgnore]
+            [JsonConverter(typeof(StringEnumConverter))]
             public JoypadActionCodes Trigger
             {
                 get => chordedPressFunc.TriggerButton;

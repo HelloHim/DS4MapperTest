@@ -35,7 +35,7 @@ namespace DS4MapperTest.StickActions
         // Internal tunables. Kept out of the UI per spec until real trace tuning
         // demonstrates a need to expose them.
         private const double SMOOTHING_TAU_SECONDS = 0.010;
-        private const double ARM_THRESHOLD = 0.70;
+        public const double DEFAULT_ARMING_THRESHOLD = 0.70;
         private const double RESET_THRESHOLD = 0.20;
         private const double MINIMUM_RADIAL_DROP = 0.08;
         // Starting point derived from the spec's own worked example (a ~60-100ms spring
@@ -87,6 +87,19 @@ namespace DS4MapperTest.StickActions
         {
             get => minimumHoldMs;
             set => minimumHoldMs = Math.Clamp(value, 0, 300);
+        }
+
+        private double armingThreshold = DEFAULT_ARMING_THRESHOLD;
+        public double ArmingThreshold
+        {
+            get => armingThreshold;
+            set
+            {
+                double clamped = Math.Clamp(value, 0.0, 1.0);
+                if (Math.Abs(armingThreshold - clamped) < double.Epsilon) return;
+                armingThreshold = clamped;
+                ForceReleaseAndReset();
+            }
         }
 
         private BrakeState state = BrakeState.Unprimed;
@@ -181,7 +194,8 @@ namespace DS4MapperTest.StickActions
                     break;
 
                 case BrakeState.Idle:
-                    if (rFiltered >= ARM_THRESHOLD && rawCurrentDir != StickPadAction.DpadDirections.Centered)
+                    if (rawCurrentDir != StickPadAction.DpadDirections.Centered &&
+                        (armingThreshold <= 0.0 || rFiltered >= armingThreshold))
                     {
                         state = BrakeState.Armed;
                         peakRadius = rFiltered;

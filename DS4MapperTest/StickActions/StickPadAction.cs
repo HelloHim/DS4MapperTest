@@ -45,6 +45,7 @@ namespace DS4MapperTest.StickActions
             public const string BRAKE_ENABLED = "BrakeEnabled";
             public const string BRAKE_DURATION_MS = "BrakeDurationMs";
             public const string BRAKE_MIN_HOLD_MS = "BrakeMinimumHoldMs";
+            public const string BRAKE_ARMING_THRESHOLD = "BrakeArmingThreshold";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -71,6 +72,7 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.BRAKE_ENABLED,
             PropertyKeyStrings.BRAKE_DURATION_MS,
             PropertyKeyStrings.BRAKE_MIN_HOLD_MS,
+            PropertyKeyStrings.BRAKE_ARMING_THRESHOLD,
         };
 
         public enum DPadMode : uint
@@ -231,6 +233,10 @@ namespace DS4MapperTest.StickActions
                 }
 
                 useParentRingButton = true;
+                releaseBrake.Enabled = parentAction.releaseBrake.Enabled;
+                releaseBrake.BrakeDurationMs = parentAction.releaseBrake.BrakeDurationMs;
+                releaseBrake.MinimumHoldMs = parentAction.releaseBrake.MinimumHoldMs;
+                releaseBrake.ArmingThreshold = parentAction.releaseBrake.ArmingThreshold;
                 //usedFuncList = usedEventButtonsList;
             }
         }
@@ -1579,6 +1585,9 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
                             releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
                             break;
+                        case PropertyKeyStrings.BRAKE_ARMING_THRESHOLD:
+                            releaseBrake.ArmingThreshold = tempPadAction.releaseBrake.ArmingThreshold;
+                            break;
                         default:
                             break;
                     }
@@ -1724,6 +1733,9 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
                     releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
+                    break;
+                case PropertyKeyStrings.BRAKE_ARMING_THRESHOLD:
+                    releaseBrake.ArmingThreshold = tempPadAction.releaseBrake.ArmingThreshold;
                     break;
                 default:
                     break;

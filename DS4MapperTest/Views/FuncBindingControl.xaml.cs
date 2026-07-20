@@ -175,6 +175,16 @@ namespace DS4MapperTest.Views
                     }
 
                     break;
+                case ChordedPressFunc chordedFunc:
+                    {
+                        ChordedPressFuncPropControl propControl = new ChordedPressFuncPropControl();
+                        propControl.PostInit(funcBindVM.Mapper, funcBindVM.Action, chordedFunc);
+                        propControl.RequestBindingEditor += PropControl_RequestBindingEditor;
+                        propControl.RequestChangeFuncType += PropControl_RequestChangeFuncType;
+                        funcBindVM.DisplayPropControl = propControl;
+                    }
+
+                    break;
                 default:
                     break;
             }

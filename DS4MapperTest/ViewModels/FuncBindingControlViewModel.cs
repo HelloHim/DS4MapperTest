@@ -188,6 +188,10 @@ namespace DS4MapperTest.ViewModels
                     result = new DistanceFunc();
                     result.OutputActions.Add(tempData);
                     break;
+                case 6:
+                    result = new ChordedPressFunc();
+                    result.OutputActions.Add(tempData);
+                    break;
                 default:
                     break;
             }
@@ -358,6 +362,9 @@ namespace DS4MapperTest.ViewModels
                         break;
                     case DistanceFunc:
                         result = "Distance";
+                        break;
+                    case ChordedPressFunc:
+                        result = "ChordedPress";
                         break;
                     default:
                         break;

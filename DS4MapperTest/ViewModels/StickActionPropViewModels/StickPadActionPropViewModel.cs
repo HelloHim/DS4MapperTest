@@ -295,6 +295,21 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler BrakeMinimumHoldMsChanged;
 
+        public int BrakeArmingThresholdPercent
+        {
+            get => (int)Math.Round(action.ReleaseBrake.ArmingThreshold * 100.0);
+            set
+            {
+                int clamped = Math.Clamp(value, 0, 100);
+                double threshold = clamped / 100.0;
+                if (Math.Abs(action.ReleaseBrake.ArmingThreshold - threshold) < double.Epsilon) return;
+                action.ReleaseBrake.ArmingThreshold = threshold;
+                BrakeArmingThresholdPercentChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeArmingThresholdPercentChanged;
+
         public bool HighlightBrakeEnabled
         {
             get => action.ParentAction == null ||
@@ -315,6 +330,13 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
         }
         public event EventHandler HighlightBrakeMinimumHoldMsChanged;
+
+        public bool HighlightBrakeArmingThreshold
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+        }
+        public event EventHandler HighlightBrakeArmingThresholdChanged;
 
         public event EventHandler ActionPropertyChanged;
         public event EventHandler<StickMapAction> ActionChanged;
@@ -361,6 +383,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             BrakeEnabledChanged += StickPadActionPropViewModel_BrakeEnabledChanged;
             BrakeDurationMsChanged += StickPadActionPropViewModel_BrakeDurationMsChanged;
             BrakeMinimumHoldMsChanged += StickPadActionPropViewModel_BrakeMinimumHoldMsChanged;
+            BrakeArmingThresholdPercentChanged += StickPadActionPropViewModel_BrakeArmingThresholdPercentChanged;
         }
 
         private void StickPadActionPropViewModel_BrakeEnabledChanged(object sender, EventArgs e)
@@ -394,6 +417,17 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
             HighlightBrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickPadActionPropViewModel_BrakeArmingThresholdPercentChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD))
+            {
+                action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            HighlightBrakeArmingThresholdChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickPadActionPropViewModel_ActionPresetChoiceChanged(object sender, EventArgs e)
