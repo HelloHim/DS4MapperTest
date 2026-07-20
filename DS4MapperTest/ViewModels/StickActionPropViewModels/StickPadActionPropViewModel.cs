@@ -251,6 +251,71 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler HighlightRotationChanged;
 
+        // This VM is only used while Stick Mode is DPad, and the brake is available for
+        // every D-Pad sub-mode.
+        public bool ShowReleaseBrakeSection => true;
+        public event EventHandler ShowReleaseBrakeSectionChanged;
+
+        public bool BrakeEnabled
+        {
+            get => action.ReleaseBrake.Enabled;
+            set
+            {
+                if (action.ReleaseBrake.Enabled == value) return;
+                action.ReleaseBrake.Enabled = value;
+                BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeEnabledChanged;
+
+        public int BrakeDurationMs
+        {
+            get => action.ReleaseBrake.BrakeDurationMs;
+            set
+            {
+                if (action.ReleaseBrake.BrakeDurationMs == value) return;
+                action.ReleaseBrake.BrakeDurationMs = value;
+                BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeDurationMsChanged;
+
+        public int BrakeMinimumHoldMs
+        {
+            get => action.ReleaseBrake.MinimumHoldMs;
+            set
+            {
+                if (action.ReleaseBrake.MinimumHoldMs == value) return;
+                action.ReleaseBrake.MinimumHoldMs = value;
+                BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeMinimumHoldMsChanged;
+
+        public bool HighlightBrakeEnabled
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_ENABLED);
+        }
+        public event EventHandler HighlightBrakeEnabledChanged;
+
+        public bool HighlightBrakeDurationMs
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+        }
+        public event EventHandler HighlightBrakeDurationMsChanged;
+
+        public bool HighlightBrakeMinimumHoldMs
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+        }
+        public event EventHandler HighlightBrakeMinimumHoldMsChanged;
+
         public event EventHandler ActionPropertyChanged;
         public event EventHandler<StickMapAction> ActionChanged;
 
@@ -293,6 +358,42 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             ActionPresetChoiceChanged += StickPadActionPropViewModel_ActionPresetChoiceChanged;
             SelectedPadModeIndexChanged += ChangeStickPadMode;
             SelectedPadModeIndexChanged += StickPadActionPropViewModel_SelectedPadModeIndexChanged;
+            BrakeEnabledChanged += StickPadActionPropViewModel_BrakeEnabledChanged;
+            BrakeDurationMsChanged += StickPadActionPropViewModel_BrakeDurationMsChanged;
+            BrakeMinimumHoldMsChanged += StickPadActionPropViewModel_BrakeMinimumHoldMsChanged;
+        }
+
+        private void StickPadActionPropViewModel_BrakeEnabledChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_ENABLED))
+            {
+                action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_ENABLED);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.BRAKE_ENABLED);
+            HighlightBrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickPadActionPropViewModel_BrakeDurationMsChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_DURATION_MS))
+            {
+                action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+            HighlightBrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickPadActionPropViewModel_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS))
+            {
+                action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+            HighlightBrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickPadActionPropViewModel_ActionPresetChoiceChanged(object sender, EventArgs e)

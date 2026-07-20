@@ -5602,6 +5602,51 @@ namespace DS4MapperTest
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.DIAGONAL_RANGE);
             }
 
+            public bool BrakeEnabled
+            {
+                get => padAction.ReleaseBrake.Enabled;
+                set
+                {
+                    padAction.ReleaseBrake.Enabled = value;
+                    BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeEnabledChanged;
+            public bool ShouldSerializeBrakeEnabled()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_ENABLED);
+            }
+
+            public int BrakeDurationMs
+            {
+                get => padAction.ReleaseBrake.BrakeDurationMs;
+                set
+                {
+                    padAction.ReleaseBrake.BrakeDurationMs = value;
+                    BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeDurationMsChanged;
+            public bool ShouldSerializeBrakeDurationMs()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+            }
+
+            public int BrakeMinimumHoldMs
+            {
+                get => padAction.ReleaseBrake.MinimumHoldMs;
+                set
+                {
+                    padAction.ReleaseBrake.MinimumHoldMs = value;
+                    BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeMinimumHoldMsChanged;
+            public bool ShouldSerializeBrakeMinimumHoldMs()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+            }
+
             public StickPadActionSettings(StickPadAction padAction)
             {
                 this.padAction = padAction;
@@ -5712,6 +5757,24 @@ namespace DS4MapperTest
             settings.UseAsOuterRingChanged += Settings_UseAsOuterRingChanged;
             settings.RotationChanged += Settings_RotationChanged;
             settings.DiagonalRangeChanged += Settings_DiagonalRangeChanged;
+            settings.BrakeEnabledChanged += Settings_BrakeEnabledChanged;
+            settings.BrakeDurationMsChanged += Settings_BrakeDurationMsChanged;
+            settings.BrakeMinimumHoldMsChanged += Settings_BrakeMinimumHoldMsChanged;
+        }
+
+        private void Settings_BrakeEnabledChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_ENABLED);
+        }
+
+        private void Settings_BrakeDurationMsChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+        }
+
+        private void Settings_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
         }
 
         private void Settings_DeadZoneTypeChanged(object sender, EventArgs e)
