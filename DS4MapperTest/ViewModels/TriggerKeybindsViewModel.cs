@@ -50,6 +50,22 @@ namespace DS4MapperTest.ViewModels
                 new EnumChoiceSelection<MapAction.HapticsIntensity>("Heavy", MapAction.HapticsIntensity.Heavy),
                 new EnumChoiceSelection<MapAction.HapticsIntensity>("Full", MapAction.HapticsIntensity.Full),
             };
+        private readonly List<EnumChoiceSelection<TriggerStyle>> triggerStyleItems =
+            new List<EnumChoiceSelection<TriggerStyle>>
+            {
+                new EnumChoiceSelection<TriggerStyle>("Simple Threshold", TriggerStyle.SimpleThreshold),
+                new EnumChoiceSelection<TriggerStyle>("Full Pull Only", TriggerStyle.FullPullOnly),
+                new EnumChoiceSelection<TriggerStyle>("Hip Fire", TriggerStyle.HipFire),
+                new EnumChoiceSelection<TriggerStyle>("Hip Fire Exclusive", TriggerStyle.HipFireExclusive),
+            };
+        private readonly List<EnumChoiceSelection<HipFirePreset>> hipFirePresetItems =
+            new List<EnumChoiceSelection<HipFirePreset>>
+            {
+                new EnumChoiceSelection<HipFirePreset>("Fast", HipFirePreset.Fast),
+                new EnumChoiceSelection<HipFirePreset>("Balanced", HipFirePreset.Balanced),
+                new EnumChoiceSelection<HipFirePreset>("Relaxed", HipFirePreset.Relaxed),
+                new EnumChoiceSelection<HipFirePreset>("Custom", HipFirePreset.Custom),
+            };
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -60,6 +76,8 @@ namespace DS4MapperTest.ViewModels
         public List<EnumChoiceSelection<TriggerBindingMode>> ModeItems => modeItems;
         public List<OutputTriggerItem> OutputTriggerItems => outputTriggerItems;
         public List<EnumChoiceSelection<MapAction.HapticsIntensity>> HapticsIntensityItems => hapticsIntensityItems;
+        public List<EnumChoiceSelection<TriggerStyle>> TriggerStyleItems => triggerStyleItems;
+        public List<EnumChoiceSelection<HipFirePreset>> HipFirePresetItems => hipFirePresetItems;
 
         public TriggerMapAction MappedAction => mappedAction;
         public TriggerButtonAction ButtonAction => mappedAction as TriggerButtonAction;
@@ -80,6 +98,98 @@ namespace DS4MapperTest.ViewModels
         public bool CanAddDistancePress => IsButtonMode && !HasDistancePress;
         public bool CanAddStartPress => IsButtonMode && !HasStartPress;
         public bool CanAddReleasePress => IsButtonMode && !HasReleasePress;
+        public bool ShowHipFireTiming => ButtonAction?.TriggerStyle == TriggerStyle.HipFire ||
+            ButtonAction?.TriggerStyle == TriggerStyle.HipFireExclusive;
+        public bool SoftPullEnabled => ButtonAction?.TriggerStyle != TriggerStyle.FullPullOnly;
+
+        public TriggerStyle TriggerStyleChoice
+        {
+            get => ButtonAction?.TriggerStyle ?? TriggerStyle.SimpleThreshold;
+            set
+            {
+                if (ButtonAction == null || ButtonAction.TriggerStyle == value) return;
+                TriggerButtonAction action = EnsureEditableAction() as TriggerButtonAction;
+                owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    action.Release(owner.DeviceMapper, ignoreReleaseActions: true);
+                    action.TriggerStyle = value;
+                    MarkChanged(action, TriggerButtonAction.PropertyKeyStrings.TRIGGER_STYLE);
+                });
+                OnPropertyChanged(nameof(TriggerStyleChoice));
+                OnPropertyChanged(nameof(ShowHipFireTiming));
+                OnPropertyChanged(nameof(SoftPullEnabled));
+                OnPropertyChanged(nameof(TriggerStyleDescription));
+                RefreshFunctions();
+            }
+        }
+
+        public HipFirePreset HipFirePresetChoice
+        {
+            get => ButtonAction?.HipFirePreset ?? HipFirePreset.Balanced;
+            set
+            {
+                if (ButtonAction == null || ButtonAction.HipFirePreset == value) return;
+                TriggerButtonAction action = EnsureEditableAction() as TriggerButtonAction;
+                owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    action.HipFirePreset = value;
+                    switch (value)
+                    {
+                        case HipFirePreset.Fast:
+                            action.HipFireWindowMs = 75;
+                            break;
+                        case HipFirePreset.Balanced:
+                            action.HipFireWindowMs = 150;
+                            break;
+                        case HipFirePreset.Relaxed:
+                            action.HipFireWindowMs = 250;
+                            break;
+                    }
+
+                    MarkChanged(action, TriggerButtonAction.PropertyKeyStrings.HIP_FIRE_PRESET);
+                    MarkChanged(action, TriggerButtonAction.PropertyKeyStrings.HIP_FIRE_WINDOW_MS);
+                });
+                OnPropertyChanged(nameof(HipFirePresetChoice));
+                OnPropertyChanged(nameof(HipFireWindowMs));
+            }
+        }
+
+        public int HipFireWindowMs
+        {
+            get => ButtonAction?.HipFireWindowMs ?? 150;
+            set
+            {
+                if (ButtonAction == null) return;
+                TriggerButtonAction action = EnsureEditableAction() as TriggerButtonAction;
+                owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    action.HipFireWindowMs = Math.Clamp(value, 0, 1000);
+                    if (action.HipFireWindowMs != 75 &&
+                        action.HipFireWindowMs != 150 &&
+                        action.HipFireWindowMs != 250)
+                    {
+                        action.HipFirePreset = HipFirePreset.Custom;
+                        MarkChanged(action, TriggerButtonAction.PropertyKeyStrings.HIP_FIRE_PRESET);
+                    }
+
+                    MarkChanged(action, TriggerButtonAction.PropertyKeyStrings.HIP_FIRE_WINDOW_MS);
+                });
+                OnPropertyChanged(nameof(HipFireWindowMs));
+                OnPropertyChanged(nameof(HipFirePresetChoice));
+            }
+        }
+
+        public string TriggerStyleDescription => TriggerStyleChoice switch
+        {
+            TriggerStyle.FullPullOnly =>
+                "Ignores Soft Pull and activates only Full Pull.",
+            TriggerStyle.HipFire =>
+                "Quick full pulls skip Soft Pull. Slower pulls activate Soft Pull, then Full Pull.",
+            TriggerStyle.HipFireExclusive =>
+                "Each pull activates either Soft Pull or Full Pull, never both. Release the trigger before choosing again.",
+            _ =>
+                "Soft Pull activates first. Full Pull activates after its threshold. Both can remain active.",
+        };
 
         public TriggerBindingMode CurrentMode
         {
@@ -602,6 +712,12 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(IsNoActionMode));
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(ButtonDeadZone));
+            OnPropertyChanged(nameof(TriggerStyleChoice));
+            OnPropertyChanged(nameof(HipFirePresetChoice));
+            OnPropertyChanged(nameof(HipFireWindowMs));
+            OnPropertyChanged(nameof(ShowHipFireTiming));
+            OnPropertyChanged(nameof(SoftPullEnabled));
+            OnPropertyChanged(nameof(TriggerStyleDescription));
             OnPropertyChanged(nameof(DualDeadZone));
             OnPropertyChanged(nameof(DualAntiDeadZone));
             OnPropertyChanged(nameof(DualMaxZone));
@@ -648,6 +764,7 @@ namespace DS4MapperTest.ViewModels
         public FaceBindingFuncKind Kind { get; }
         public ActionFunc Func => func;
         public bool IsExtraBinding => Kind != FaceBindingFuncKind.Regular && func != null;
+        public bool IsEnabled => Kind != FaceBindingFuncKind.Regular || owner.SoftPullEnabled;
         public bool CanRemove => IsExtraBinding;
         public bool IsTurboEnabled => SupportsTurbo && TurboEnabled;
         public bool SupportsToggle => func is NormalPressFunc || func is HoldPressFunc || func is DoublePressFunc || func is StartPressFunc || func is ReleaseFunc;
@@ -660,14 +777,16 @@ namespace DS4MapperTest.ViewModels
 
         public string DisplayName => Kind switch
         {
-            FaceBindingFuncKind.Regular => "Regular Press",
+            FaceBindingFuncKind.Regular => "Soft Pull",
             FaceBindingFuncKind.Hold => "Hold Press",
             FaceBindingFuncKind.Double => "Double Press",
-            FaceBindingFuncKind.Distance => "Distance",
+            FaceBindingFuncKind.Distance => "Full Pull",
             FaceBindingFuncKind.Start => "Start Press",
             FaceBindingFuncKind.Release => "Release Press",
             _ => "Binding",
         };
+
+        public string DistanceLabel => "Full Pull Threshold";
 
         public string DisplayBind
         {
