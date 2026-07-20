@@ -28,6 +28,8 @@ namespace DS4MapperTest.ActionUtil
         public DistanceFunc(IEnumerable<OutputActionData> outputActions,
             double distance=0.0)
         {
+            onDistance = true;
+
             this.outputActions.AddRange(outputActions);
             outputActionEnumerator =
                 new OutputActionDataEnumerator(this.outputActions);
@@ -37,6 +39,8 @@ namespace DS4MapperTest.ActionUtil
 
         public DistanceFunc(DistanceFunc secondFunc)
         {
+            onDistance = true;
+
             secondFunc.CopyTo(this);
             distance = secondFunc.distance;
         }
@@ -44,54 +48,27 @@ namespace DS4MapperTest.ActionUtil
         public override void Prepare(Mapper mapper, bool state,
             ActionFuncStateData stateData)
         {
-            if (inputStatus != state)
-            {
-                distanceOutputActive = stateData.axisNormValue >= distance;
-                activeEvent = true;
+            bool oldOutputActive = outputActive;
+            bool stateChanged = inputStatus != state;
+            inputStatus = state;
 
-                if (distanceOutputActive)
-                {
-                    active = true;
-                    distanceOutputActive = active;
-                    finished = false;
-                }
-                else
-                {
-                    active = false;
-                    distanceOutputActive = active;
-                    finished = true;
-                }
-
-                outputActive = active;
-            }
+            UpdateDistanceState(stateData);
+            activeEvent = stateChanged || oldOutputActive != outputActive;
         }
 
         public override void Event(Mapper mapper, ActionFuncStateData stateData)
         {
-            if (inputStatus)
-            {
-                distanceOutputActive = stateData.axisNormValue >= distance;
-                if (distanceOutputActive)
-                {
-                    active = true;
-                    distanceOutputActive = active;
-                    finished = false;
-                }
-                else
-                {
-                    active = false;
-                    distanceOutputActive = active;
-                    finished = true;
-                }
-
-                outputActive = active;
-            }
-            else
-            {
-                outputActive = false;
-            }
-
+            UpdateDistanceState(stateData);
             activeEvent = false;
+        }
+
+        private void UpdateDistanceState(ActionFuncStateData stateData)
+        {
+            distanceOutputActive = inputStatus &&
+                stateData.axisNormValue >= distance;
+            active = distanceOutputActive;
+            outputActive = active;
+            finished = !active;
         }
 
         public override void Release(Mapper mapper)
