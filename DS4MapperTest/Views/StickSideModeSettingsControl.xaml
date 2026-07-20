@@ -295,15 +295,13 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Brake Duration" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBlock Grid.Column="0" Text="Opposite Tap Length" Style="{StaticResource JsmccLabelText}"/>
                         <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                           Value="{Binding BrakeDurationMs, UpdateSourceTrigger=LostFocus}"/>
                         <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                     </Grid>
                 </Border>
-
-                <TextBlock Text="Advanced" Style="{StaticResource JsmccLabelText}" FontWeight="Bold" Margin="0,6,0,2"/>
 
                 <Border Style="{StaticResource ModeRowBorder}">
                     <Grid>
@@ -312,7 +310,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Minimum Hold Time" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBlock Grid.Column="0" Text="Required Hold Time Before Tap" Style="{StaticResource JsmccLabelText}"/>
                         <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="300" DecimalPlaces="0" Increment="1"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                           Value="{Binding BrakeMinimumHoldMs, UpdateSourceTrigger=LostFocus}"/>
