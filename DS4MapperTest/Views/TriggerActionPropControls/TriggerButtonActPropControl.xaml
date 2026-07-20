@@ -7,6 +7,9 @@
              xmlns:local1="clr-namespace:DS4MapperTest.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
     <DockPanel Margin="8">
         <StackPanel DockPanel.Dock="Top">
             <local1:TriggerActionSelectControl x:Name="triggerSelectControl" />
@@ -27,12 +30,50 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <Label Content="Action Button" />
-                <Button x:Name="btnEditOpenTest" Content="{Binding ActionBindName, Mode=OneTime, FallbackValue='Test Bind'}" Click="btnEditOpenTest_Click" Margin="8,0,0,0" MinWidth="60" />
+                <Label Content="Trigger Style" />
+                <ComboBox ItemsSource="{Binding TriggerStyleItems}" DisplayMemberPath="DisplayName"
+                          SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerStyleChoice}"
+                          MinWidth="180" Margin="8,0,0,0"
+                          ToolTip="{Binding TriggerStyleDescription}">
+                    <ComboBox.Style>
+                        <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HighlightTriggerStyle}" Value="False">
+                                    <Setter Property="Opacity" Value="0.7" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ComboBox.Style>
+                </ComboBox>
+            </StackPanel>
+
+            <TextBlock Text="{Binding TriggerStyleDescription}" Margin="4,4,0,0" Opacity="0.75"
+                       TextWrapping="Wrap" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0" IsEnabled="{Binding SoftPullEnabled}">
+                <Label Content="Soft Pull" />
+                <Button x:Name="btnEditOpenTest" Content="{Binding SoftPullBindName, Mode=OneWay, FallbackValue='Unbound'}" Click="btnEditOpenTest_Click" Margin="8,0,0,0" MinWidth="90" />
+                <TextBlock Text="Not used in this style" Margin="8,3,0,0" Opacity="0.75">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SoftPullEnabled}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <Label Content="Full Pull" />
+                <Button x:Name="btnEditOpenFull" Content="{Binding FullPullBindName, Mode=OneWay, FallbackValue='Unbound'}" Click="btnEditOpenTest_Click" Margin="8,0,0,0" MinWidth="90" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal"  Margin="0,8,0,0">
-                <Label Content="Dead Zone" />
+                <Label Content="Trigger Deadzone" />
                 <TextBox Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
                     <TextBox.Style>
                         <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
@@ -44,6 +85,41 @@
                         </Style>
                     </TextBox.Style>
                 </TextBox>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding ShowHipFireTiming, Converter={StaticResource BoolToVis}}">
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Hip Fire Timing" />
+                    <ComboBox ItemsSource="{Binding HipFirePresetItems}" DisplayMemberPath="DisplayName"
+                              SelectedValuePath="ChoiceValue" SelectedValue="{Binding HipFirePresetChoice}"
+                              MinWidth="120" Margin="8,0,0,0">
+                        <ComboBox.Style>
+                            <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightHipFirePreset}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ComboBox.Style>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Soft Pull Skip Window" />
+                    <TextBox Text="{Binding HipFireWindowMs, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightHipFireWindowMs}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                    <Label Content="ms" />
+                </StackPanel>
             </StackPanel>
 
         </StackPanel>

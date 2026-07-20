@@ -87,7 +87,54 @@
                                                 <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
                                                 <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                                                          Width="160"
-                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                                 Style="{StaticResource JsmccTextBoxStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Trigger Style" Style="{StaticResource TriggerControlLabel}"/>
+                                                <ComboBox ItemsSource="{Binding TriggerStyleItems}"
+                                                          DisplayMemberPath="DisplayName"
+                                                          SelectedValuePath="ChoiceValue"
+                                                          SelectedValue="{Binding TriggerStyleChoice}"
+                                                          Width="180"
+                                                          ToolTip="{Binding TriggerStyleDescription}"
+                                                          Style="{StaticResource JsmccComboBoxStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </Border>
+
+                                <TextBlock Text="{Binding TriggerStyleDescription}"
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="2,0,0,8"/>
+
+                                <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                        Visibility="{Binding ShowHipFireTiming, Converter={StaticResource BoolToVis}}">
+                                    <WrapPanel>
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Hip Fire Timing" Style="{StaticResource TriggerControlLabel}"/>
+                                                <ComboBox ItemsSource="{Binding HipFirePresetItems}"
+                                                          DisplayMemberPath="DisplayName"
+                                                          SelectedValuePath="ChoiceValue"
+                                                          SelectedValue="{Binding HipFirePresetChoice}"
+                                                          Width="132"
+                                                          Style="{StaticResource JsmccComboBoxStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Soft Pull Skip Window" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0"
+                                                                  Maximum="1000"
+                                                                  DecimalPlaces="0"
+                                                                  Increment="5"
+                                                                  Width="108"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding HipFireWindowMs, UpdateSourceTrigger=PropertyChanged}"
+                                                                  ValueFormat="0 ms"/>
                                             </StackPanel>
                                         </Border>
                                     </WrapPanel>
@@ -108,7 +155,7 @@
                                                           Tag="Double"
                                                           IsEnabled="{Binding PlacementTarget.DataContext.CanAddDoublePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                           Click="AddExtraBindingMenuItem_Click"/>
-                                                <MenuItem Header="Distance"
+                                                <MenuItem Header="Full Pull"
                                                           Tag="Distance"
                                                           IsEnabled="{Binding PlacementTarget.DataContext.CanAddDistancePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                           Click="AddExtraBindingMenuItem_Click"/>
@@ -128,7 +175,8 @@
                                 <ItemsControl ItemsSource="{Binding FunctionItems}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                            <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                                    IsEnabled="{Binding IsEnabled}">
                                                 <Grid>
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="Auto"/>
@@ -263,7 +311,7 @@
                                                         <Border Style="{StaticResource TriggerChipBorder}"
                                                                 Visibility="{Binding SupportsDistanceOptions, Converter={StaticResource BoolToVis}}">
                                                             <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="Distance" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <TextBlock Text="{Binding DistanceLabel}" Style="{StaticResource TriggerControlLabel}"/>
                                                                 <hc:NumericUpDown Minimum="0.0"
                                                                                   Maximum="1.0"
                                                                                   DecimalPlaces="1"
