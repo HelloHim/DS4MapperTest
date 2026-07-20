@@ -386,20 +386,14 @@
                                             <Border Style="{StaticResource TriggerChipBorder}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="Full Pull" Style="{StaticResource TriggerControlLabel}"/>
-                                                    <Button Content="{Binding FullPullDisplayBind}"
-                                                            Tag="{Binding}"
-                                                            Click="EditFullPull_Click"
-                                                            Style="{StaticResource JsmccOutputButtonStyle}"/>
+                                                    <views:QuickBindControl DataContext="{Binding FullPullBindItem}"/>
                                                 </StackPanel>
                                             </Border>
 
                                             <Border Style="{StaticResource TriggerChipBorder}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="Soft Pull" Style="{StaticResource TriggerControlLabel}"/>
-                                                    <Button Content="{Binding SoftPullDisplayBind}"
-                                                            Tag="{Binding}"
-                                                            Click="EditSoftPull_Click"
-                                                            Style="{StaticResource JsmccOutputButtonStyle}"/>
+                                                    <views:QuickBindControl DataContext="{Binding SoftPullBindItem}"/>
                                                 </StackPanel>
                                             </Border>
 

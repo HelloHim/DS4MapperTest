@@ -26,6 +26,8 @@ namespace DS4MapperTest.ViewModels
         private TriggerMapAction mappedAction;
         private readonly ObservableCollection<TriggerButtonFuncItem> functionItems =
             new ObservableCollection<TriggerButtonFuncItem>();
+        private readonly TriggerDualStageBindItem fullPullBindItem;
+        private readonly TriggerDualStageBindItem softPullBindItem;
         private readonly List<EnumChoiceSelection<TriggerBindingMode>> modeItems =
             new List<EnumChoiceSelection<TriggerBindingMode>>
             {
@@ -60,6 +62,8 @@ namespace DS4MapperTest.ViewModels
         public List<EnumChoiceSelection<TriggerBindingMode>> ModeItems => modeItems;
         public List<OutputTriggerItem> OutputTriggerItems => outputTriggerItems;
         public List<EnumChoiceSelection<MapAction.HapticsIntensity>> HapticsIntensityItems => hapticsIntensityItems;
+        public TriggerDualStageBindItem FullPullBindItem => fullPullBindItem;
+        public TriggerDualStageBindItem SoftPullBindItem => softPullBindItem;
 
         public TriggerMapAction MappedAction => mappedAction;
         public TriggerButtonAction ButtonAction => mappedAction as TriggerButtonAction;
@@ -275,6 +279,8 @@ namespace DS4MapperTest.ViewModels
             BindingName = sourceItem.BindingName;
             DisplayName = displayName;
             mappedAction = sourceItem.MappedAction;
+            fullPullBindItem = new TriggerDualStageBindItem(this, true);
+            softPullBindItem = new TriggerDualStageBindItem(this, false);
             RefreshFunctions();
         }
 
@@ -611,6 +617,8 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(HapticsChoice));
             OnPropertyChanged(nameof(FullPullDisplayBind));
             OnPropertyChanged(nameof(SoftPullDisplayBind));
+            fullPullBindItem.Refresh();
+            softPullBindItem.Refresh();
             OnPropertyChanged(nameof(OutputTrigger));
             OnPropertyChanged(nameof(TranslateDeadZone));
             OnPropertyChanged(nameof(TranslateAntiDeadZone));
@@ -629,6 +637,110 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(CanAddDistancePress));
             OnPropertyChanged(nameof(CanAddStartPress));
             OnPropertyChanged(nameof(CanAddReleasePress));
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class TriggerDualStageBindItem : INotifyPropertyChanged, IQuickBindTarget
+    {
+        private readonly TriggerKeybindItem owner;
+        private readonly bool fullPull;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public TriggerDualStageBindItem(TriggerKeybindItem owner, bool fullPull)
+        {
+            this.owner = owner;
+            this.fullPull = fullPull;
+        }
+
+        public string DisplayBind
+        {
+            get
+            {
+                AxisDirButton action = StageAction;
+                string result = action?.DescribeActions(owner.Owner.DeviceMapper);
+                return string.IsNullOrWhiteSpace(result) ? "Unbound" : result;
+            }
+        }
+
+        private AxisDirButton StageAction => fullPull
+            ? owner.DualStageAction?.FullPullActButton
+            : owner.DualStageAction?.SoftPullActButton;
+
+        private string PropertyName => fullPull
+            ? TriggerDualStageAction.PropertyKeyStrings.FULLPULL_BUTTON
+            : TriggerDualStageAction.PropertyKeyStrings.SOFTPULL_BUTTON;
+
+        // IQuickBindTarget
+        Mapper IQuickBindTarget.Mapper => owner.Owner.DeviceMapper;
+        string IQuickBindTarget.RowLabel => owner.DisplayName;
+        string IQuickBindTarget.SlotLabel => fullPull ? "Full Pull" : "Soft Pull";
+        bool IQuickBindTarget.IsComplexBinding =>
+            !QuickBindActionApplier.IsSimpleFunc(FindNormalPressFunc(StageAction));
+
+        EditFaceBindingContext IQuickBindTarget.GetEditContext()
+        {
+            TriggerButtonEditContext ctx = fullPull
+                ? owner.PrepareFullPullEdit()
+                : owner.PrepareSoftPullEdit();
+            if (ctx?.Action == null) return null;
+
+            ActionFunc func = EnsureNormalPressFunc(ctx.Action);
+            MarkStageChanged(ctx.Action);
+            return new EditFaceBindingContext(owner.Owner.DeviceMapper, ctx.Action, func);
+        }
+
+        void IQuickBindTarget.NotifyBindingChanged()
+        {
+            MarkStageChanged(StageAction);
+            owner.RefreshAfterEdit();
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+            OnPropertyChanged(nameof(DisplayBind));
+        }
+
+        private ActionFunc EnsureNormalPressFunc(AxisDirButton action)
+        {
+            ActionFunc func = FindNormalPressFunc(action);
+            if (func != null) return func;
+
+            func = new NormalPressFunc(
+                new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                action.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                action.ActionFuncs.Insert(0, func);
+                FaceButtonBindingItem.MarkFunctionsChanged(action);
+            });
+
+            return func;
+        }
+
+        private static ActionFunc FindNormalPressFunc(AxisDirButton action)
+        {
+            return action?.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault();
+        }
+
+        private void MarkStageChanged(ButtonAction action)
+        {
+            if (owner.DualStageAction == null) return;
+
+            if (!owner.DualStageAction.ChangedProperties.Contains(PropertyName))
+            {
+                owner.DualStageAction.ChangedProperties.Add(PropertyName);
+            }
+
+            owner.DualStageAction.RaiseNotifyPropertyChange(
+                owner.Owner.DeviceMapper, PropertyName);
+            FaceButtonBindingItem.MarkFunctionsChanged(action);
         }
 
         private void OnPropertyChanged(string propertyName)
