@@ -284,6 +284,7 @@
         <Setter Property="MinHeight" Value="34"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="ItemContainerStyle" Value="{DynamicResource JsmccComboBoxItemStyle}"/>
+        <Setter Property="behaviors:ScrollViewerBehavior.ScrollComboBoxDropDownOnWheel" Value="True"/>
     </Style>
 
     <Style TargetType="ComboBox" BasedOn="{StaticResource JsmccComboBoxStyle}"/>
