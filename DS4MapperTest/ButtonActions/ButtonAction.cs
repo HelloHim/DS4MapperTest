@@ -718,10 +718,8 @@ namespace DS4MapperTest.ButtonActions
 
                                     //mapper.PendingReleaseActions.Add(action);
                                     action.firstRun = true;
-                                    //if (action.checkTick) action.Release();
-                                    //else if (action.breakSequence) break;
                                     bool currentBreakSequence = action.breakSequence;
-                                    if (action.OutputType != OutputActionData.ActionType.Keyboard)
+                                    if (action.checkTick)
                                     {
                                         action.Release();
                                     }
