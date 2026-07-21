@@ -497,7 +497,7 @@
                                            Margin="0,0,0,12"/>
 
                                 <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
-                                    <TabItem Header="Bindings">
+                                    <TabItem Header="Stick Keybinds">
                                         <views:SticksBindingsControl/>
                                     </TabItem>
                                     <TabItem Header="Modes &amp; Settings">
