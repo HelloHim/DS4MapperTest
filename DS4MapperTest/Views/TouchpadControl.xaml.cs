@@ -74,6 +74,7 @@ namespace DS4MapperTest.Views
             host.Content = section switch
             {
                 "Bindings" => CreateBindingContent(host, item),
+                "ModeSettings" => CreateSectionContent(host, item, section),
                 "MouseMovement" => CreateSectionContent(host, item, section),
                 "SensitivityCalibration" => CreateSectionContent(host, item, section),
                 "FilteringStabilisation" => CreateSectionContent(host, item, section),
@@ -105,6 +106,7 @@ namespace DS4MapperTest.Views
             bool hasSettings = section switch
             {
                 "MouseMovement" => item.IsMouseMovementAction,
+                "ModeSettings" => item.IsModeSettingsAction,
                 "SensitivityCalibration" => item.IsSensitivityCalibrationAction,
                 "FilteringStabilisation" => item.IsFilteringStabilisationAction,
                 "ZonesGestures" => item.IsZoneGestureAction,
@@ -141,6 +143,9 @@ namespace DS4MapperTest.Views
             {
                 case "MouseMovement":
                     parsedSection = TouchpadSettingsSection.MouseMovement;
+                    return true;
+                case "ModeSettings":
+                    parsedSection = TouchpadSettingsSection.ModeSettings;
                     return true;
                 case "SensitivityCalibration":
                     parsedSection = TouchpadSettingsSection.SensitivityCalibration;
@@ -352,6 +357,7 @@ namespace DS4MapperTest.Views
             return section switch
             {
                 "MouseMovement" => $"{item.DisplayName} is currently set to Unbound. Choose a movement mode in Mode to configure movement settings.",
+                "ModeSettings" => $"{item.DisplayName} is currently set to Unbound. Choose D-Pad Zones in Mode to configure touchpad mode settings.",
                 "SensitivityCalibration" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure sensitivity and calibration settings.",
                 "FilteringStabilisation" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure filtering and stabilisation settings.",
                 "ZonesGestures" => $"{item.DisplayName} is currently set to Unbound. Choose a zone or gesture-capable mode in Mode to configure gesture settings.",
@@ -366,6 +372,7 @@ namespace DS4MapperTest.Views
             return section switch
             {
                 "MouseMovement" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no movement settings.",
+                "ModeSettings" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no dedicated mode settings.",
                 "SensitivityCalibration" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no sensitivity and calibration settings.",
                 "FilteringStabilisation" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no filtering and stabilisation settings.",
                 "ZonesGestures" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no zone or gesture settings.",
