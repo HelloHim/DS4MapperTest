@@ -8,7 +8,7 @@
     <Color x:Key="JsmccBg2Color">#FFFFFF</Color>
     <Color x:Key="JsmccBgButtonHoverColor">#E8EDF6</Color>
     <Color x:Key="JsmccBgPrimaryColor">#E0E7F3</Color>
-    <Color x:Key="JsmccBgInputColor">#FFFFFF</Color>
+    <Color x:Key="JsmccBgInputColor">#EAEDF4</Color>
     <Color x:Key="JsmccTextStrongColor">#0F1116</Color>
     <Color x:Key="JsmccTextMidColor">#3A4050</Color>
     <Color x:Key="JsmccTextMutedColor">#606778</Color>
