@@ -180,7 +180,7 @@
                                                                               Increment="10"
                                                                               Width="108"
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                              Value="{Binding TurboDurationMs, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                              Value="{Binding TurboDurationMs, UpdateSourceTrigger=LostFocus}"/>
                                                                               <TextBlock Text="ms"
                                                                                          Style="{StaticResource JsmccMutedText}"
                                                                                          Margin="6,0,0,0"
@@ -203,7 +203,7 @@
                                                                               Increment="10"
                                                                               Width="108"
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                              Value="{Binding FireDelayMs, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                              Value="{Binding FireDelayMs, UpdateSourceTrigger=LostFocus}"/>
                                                                               <TextBlock Text="ms"
                                                                                          Style="{StaticResource JsmccMutedText}"
                                                                                          Margin="6,0,0,0"
@@ -226,7 +226,7 @@
                                                                               Increment="10"
                                                                               Width="108"
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                              Value="{Binding HoldMs, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                              Value="{Binding HoldMs, UpdateSourceTrigger=LostFocus}"/>
                                                                               <TextBlock Text="ms"
                                                                                          Style="{StaticResource JsmccMutedText}"
                                                                                          Margin="6,0,0,0"
@@ -249,7 +249,7 @@
                                                                               Increment="10"
                                                                               Width="108"
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                              Value="{Binding TapWindowMs, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                              Value="{Binding TapWindowMs, UpdateSourceTrigger=LostFocus}"/>
                                                                               <TextBlock Text="ms"
                                                                                          Style="{StaticResource JsmccMutedText}"
                                                                                          Margin="6,0,0,0"
