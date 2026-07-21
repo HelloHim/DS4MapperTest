@@ -15,7 +15,8 @@
             <StackPanel x:Name="ExtraFieldsPanel">
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Action Name" />
-                    <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="200" Margin="8,0,0,0" />
+                    <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="340" Margin="8,0,0,0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Hidden" />
                 </StackPanel>
             </StackPanel>
 
