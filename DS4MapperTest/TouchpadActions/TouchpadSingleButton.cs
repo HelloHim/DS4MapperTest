@@ -199,11 +199,13 @@ namespace DS4MapperTest.TouchpadActions
                             break;
                         case PropertyKeyStrings.FUNCTIONS:
                             useParentActions = true;
-                            usedEventButton = tempButtonAct.usedEventButton;
+                            usedEventButton = tempButtonAct.usedEventButton != null ?
+                                (ButtonAction)tempButtonAct.usedEventButton.DuplicateAction() : null;
                             break;
                         case PropertyKeyStrings.FUNCTIONS_CLICK:
                             useParentClickActions = true;
-                            clickEventButton = tempButtonAct.clickEventButton;
+                            clickEventButton = tempButtonAct.clickEventButton != null ?
+                                (ButtonAction)tempButtonAct.clickEventButton.DuplicateAction() : null;
                             break;
                         case PropertyKeyStrings.DEAD_ZONE:
                             deadMod.DeadZone = tempButtonAct.deadMod.DeadZone;
@@ -242,11 +244,13 @@ namespace DS4MapperTest.TouchpadActions
                     break;
                 case PropertyKeyStrings.FUNCTIONS:
                     useParentActions = true;
-                    usedEventButton = tempButtonAct.usedEventButton;
+                    usedEventButton = tempButtonAct.usedEventButton != null ?
+                        (ButtonAction)tempButtonAct.usedEventButton.DuplicateAction() : null;
                     break;
                 case PropertyKeyStrings.FUNCTIONS_CLICK:
                     useParentClickActions = true;
-                    clickEventButton = tempButtonAct.clickEventButton;
+                    clickEventButton = tempButtonAct.clickEventButton != null ?
+                        (ButtonAction)tempButtonAct.clickEventButton.DuplicateAction() : null;
                     break;
                 case PropertyKeyStrings.DEAD_ZONE:
                     deadMod.DeadZone = tempButtonAct.deadMod.DeadZone;

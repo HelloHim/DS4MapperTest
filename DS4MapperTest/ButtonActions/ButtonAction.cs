@@ -90,7 +90,10 @@ namespace DS4MapperTest.ButtonActions
                 this.CopyBaseProps(parentAction);
                 //parentAction.CopyBaseProps(this);
 
-                actionFuncs.AddRange(parentAction.actionFuncs);
+                foreach (ActionFunc func in parentAction.actionFuncs)
+                {
+                    actionFuncs.Add(ActionFuncCopyFactory.CopyFunc(func));
+                }
                 parentAction.hasLayeredAction = true;
                 mappingId = parentAction.mappingId;
 
@@ -1299,6 +1302,7 @@ namespace DS4MapperTest.ButtonActions
                 this.parentButtonAct = parentBtnAction;
                 privateState = parentBtnAction.privateState;
                 parentBtnAction.hasLayeredAction = true;
+                mappingId = parentBtnAction.mappingId;
 
                 parentBtnAction.NotifyPropertyChanged += ParentBtnAction_NotifyPropertyChanged;
 
@@ -1316,7 +1320,10 @@ namespace DS4MapperTest.ButtonActions
                             break;
                         case PropertyKeyStrings.FUNCTIONS:
                             actionFuncs.Clear();
-                            actionFuncs.AddRange(parentBtnAction.actionFuncs);
+                            foreach (ActionFunc func in parentBtnAction.actionFuncs)
+                            {
+                                actionFuncs.Add(ActionFuncCopyFactory.CopyFunc(func));
+                            }
                             useParentActions = true;
                             break;
                         default:
@@ -1365,7 +1372,10 @@ namespace DS4MapperTest.ButtonActions
                             break;
                         case PropertyKeyStrings.FUNCTIONS:
                             actionFuncs.Clear();
-                            actionFuncs.AddRange(parentBtnAction.actionFuncs);
+                            foreach (ActionFunc func in parentBtnAction.actionFuncs)
+                            {
+                                actionFuncs.Add(ActionFuncCopyFactory.CopyFunc(func));
+                            }
                             useParentActions = true;
                             break;
                         default:
@@ -1463,7 +1473,10 @@ namespace DS4MapperTest.ButtonActions
                     }
 
                     actionFuncs.Clear();
-                    actionFuncs.AddRange(parentButtonAct.actionFuncs);
+                    foreach (ActionFunc func in parentButtonAct.actionFuncs)
+                    {
+                        actionFuncs.Add(ActionFuncCopyFactory.CopyFunc(func));
+                    }
                     useParentActions = true;
                     break;
                 default:

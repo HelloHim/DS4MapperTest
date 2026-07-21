@@ -141,7 +141,8 @@ namespace DS4MapperTest.ViewModels
             if (item == null || item.Kind == FaceBindingFuncKind.Regular || item.Func == null) return;
 
             ButtonAction buttonAction = owner.EnsureEditableFaceButtonAction(this);
-            int index = buttonAction.ActionFuncs.IndexOf(item.Func);
+            ActionFunc func = item.ResolveCurrentFunc(buttonAction);
+            int index = buttonAction.ActionFuncs.IndexOf(func);
             if (index < 0) return;
 
             owner.DeviceMapper.ProcessMappingChangeAction(() =>
@@ -159,7 +160,7 @@ namespace DS4MapperTest.ViewModels
             if (item == null) return null;
 
             ButtonAction buttonAction = owner.EnsureEditableFaceButtonAction(this);
-            ActionFunc func = item.Func;
+            ActionFunc func = item.ResolveCurrentFunc(buttonAction);
 
             if (func == null)
             {
@@ -172,10 +173,9 @@ namespace DS4MapperTest.ViewModels
                 });
 
                 RefreshFunctions();
-                item = functionItems.FirstOrDefault(temp => temp.Kind == item.Kind);
             }
 
-            return new EditFaceBindingContext(owner.DeviceMapper, buttonAction, item?.Func ?? func);
+            return new EditFaceBindingContext(owner.DeviceMapper, buttonAction, func);
         }
 
         public void RefreshAfterEdit()
@@ -304,19 +304,53 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        // Locates the func matching this item's kind inside `buttonAction` (which may just
+        // have been cloned into the current layer by EnsureEditableFaceButtonAction). The
+        // `func` field captured at construction may be a stale, still-shared-with-default-layer
+        // instance once a clone happens, so callers must never mutate `func` directly.
+        internal ActionFunc ResolveCurrentFunc(ButtonAction buttonAction)
+        {
+            if (buttonAction == null) return func;
+
+            ActionFunc resolved = Kind switch
+            {
+                FaceBindingFuncKind.Regular => buttonAction.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.Hold => buttonAction.ActionFuncs.OfType<HoldPressFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.Double => buttonAction.ActionFuncs.OfType<DoublePressFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.Distance => buttonAction.ActionFuncs.OfType<DistanceFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.Chorded => buttonAction.ActionFuncs.OfType<ChordedPressFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.Start => buttonAction.ActionFuncs.OfType<StartPressFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.Release => buttonAction.ActionFuncs.OfType<ReleaseFunc>().FirstOrDefault(),
+                _ => null,
+            };
+
+            return resolved ?? func;
+        }
+
+        // Ensures the owning button binding is editable in the current layer (cloning it in on
+        // first edit) and resolves this item's func within that (possibly new) action, so edits
+        // never land on a shared default-layer object.
+        private (ButtonAction buttonAction, ActionFunc target) BeginEdit()
+        {
+            ButtonAction buttonAction = owner.Owner.EnsureEditableFaceButtonAction(owner);
+            ActionFunc target = ResolveCurrentFunc(buttonAction);
+            return (buttonAction, target);
+        }
+
         public bool ToggleEnabled
         {
             get => func?.toggleEnabled ?? false;
             set
             {
                 if (func == null || func.toggleEnabled == value) return;
+                var (buttonAction, target) = BeginEdit();
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    func.toggleEnabled = value;
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    target.toggleEnabled = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(ToggleEnabled));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -334,10 +368,11 @@ namespace DS4MapperTest.ViewModels
             set
             {
                 if (!SupportsTurbo || TurboEnabled == value) return;
+                var (buttonAction, target) = BeginEdit();
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    switch (func)
+                    switch (target)
                     {
                         case NormalPressFunc normalPress:
                             normalPress.TurboEnabled = value;
@@ -346,10 +381,9 @@ namespace DS4MapperTest.ViewModels
                             holdPress.TurboEnabled = value;
                             break;
                     }
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(TurboEnabled));
-                OnPropertyChanged(nameof(IsTurboEnabled));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -367,10 +401,11 @@ namespace DS4MapperTest.ViewModels
             set
             {
                 if (!SupportsTurbo) return;
+                var (buttonAction, target) = BeginEdit();
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    switch (func)
+                    switch (target)
                     {
                         case NormalPressFunc normalPress:
                             normalPress.TurboDurationMs = value;
@@ -379,9 +414,9 @@ namespace DS4MapperTest.ViewModels
                             holdPress.TurboDurationMs = value;
                             break;
                     }
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(TurboDurationMs));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -390,14 +425,16 @@ namespace DS4MapperTest.ViewModels
             get => func is NormalPressFunc normalPress ? normalPress.FireDelayMs : 0;
             set
             {
-                if (func is not NormalPressFunc normalPress) return;
+                if (func is not NormalPressFunc) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not NormalPressFunc targetFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    normalPress.FireDelayMs = value;
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    targetFunc.FireDelayMs = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(FireDelayMs));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -406,14 +443,16 @@ namespace DS4MapperTest.ViewModels
             get => func is HoldPressFunc holdPress ? holdPress.DurationMs : 0;
             set
             {
-                if (func is not HoldPressFunc holdPress) return;
+                if (func is not HoldPressFunc) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not HoldPressFunc targetFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    holdPress.DurationMs = value;
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    targetFunc.DurationMs = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(HoldMs));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -422,14 +461,16 @@ namespace DS4MapperTest.ViewModels
             get => func is DoublePressFunc doublePress ? doublePress.DurationMs : 0;
             set
             {
-                if (func is not DoublePressFunc doublePress) return;
+                if (func is not DoublePressFunc) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not DoublePressFunc targetFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    doublePress.DurationMs = value;
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    targetFunc.DurationMs = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(TapWindowMs));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -438,14 +479,16 @@ namespace DS4MapperTest.ViewModels
             get => func is ReleaseFunc releaseFunc ? releaseFunc.DurationMs.ToString() : "0";
             set
             {
-                if (func is not ReleaseFunc releaseFunc || !int.TryParse(value, out int temp)) return;
+                if (func is not ReleaseFunc || !int.TryParse(value, out int temp)) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not ReleaseFunc targetFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    releaseFunc.DurationMs = temp;
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    targetFunc.DurationMs = temp;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(ReleaseDurationMs));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -454,14 +497,16 @@ namespace DS4MapperTest.ViewModels
             get => func is ReleaseFunc releaseFunc ? releaseFunc.DelayDurationMs.ToString() : "0";
             set
             {
-                if (func is not ReleaseFunc releaseFunc || !int.TryParse(value, out int temp)) return;
+                if (func is not ReleaseFunc || !int.TryParse(value, out int temp)) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not ReleaseFunc targetFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    releaseFunc.DelayDurationMs = temp;
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    targetFunc.DelayDurationMs = temp;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(ReleaseDelayMs));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -470,14 +515,16 @@ namespace DS4MapperTest.ViewModels
             get => func is ReleaseFunc releaseFunc && releaseFunc.interruptable;
             set
             {
-                if (func is not ReleaseFunc releaseFunc || releaseFunc.interruptable == value) return;
+                if (func is not ReleaseFunc releaseFuncGuard || releaseFuncGuard.interruptable == value) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not ReleaseFunc targetFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    releaseFunc.interruptable = value;
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    targetFunc.interruptable = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(ReleaseInterruptable));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -486,14 +533,16 @@ namespace DS4MapperTest.ViewModels
             get => func is DistanceFunc distanceFunc ? distanceFunc.Name : "";
             set
             {
-                if (func is not DistanceFunc distanceFunc) return;
+                if (func is not DistanceFunc) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not DistanceFunc targetFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    distanceFunc.Name = value;
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    targetFunc.Name = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(DistanceName));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -502,14 +551,16 @@ namespace DS4MapperTest.ViewModels
             get => func is DistanceFunc distanceFunc ? distanceFunc.distance : 0.0;
             set
             {
-                if (func is not DistanceFunc distanceFunc) return;
+                if (func is not DistanceFunc) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not DistanceFunc targetFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    distanceFunc.distance = Math.Clamp(value, 0.0, 1.0);
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    targetFunc.distance = Math.Clamp(value, 0.0, 1.0);
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(DistanceValue));
+                owner.RefreshAfterEdit();
             }
         }
 
@@ -521,14 +572,16 @@ namespace DS4MapperTest.ViewModels
             get => func is ChordedPressFunc chordedPress ? chordedPress.TriggerButton : JoypadActionCodes.Empty;
             set
             {
-                if (func is not ChordedPressFunc chordedPress || chordedPress.TriggerButton == value) return;
+                if (func is not ChordedPressFunc chordedPressGuard || chordedPressGuard.TriggerButton == value) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not ChordedPressFunc targetFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    chordedPress.TriggerButton = value;
-                    FaceButtonBindingItem.MarkFunctionsChanged(owner.MappedAction as ButtonAction);
+                    targetFunc.TriggerButton = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                OnPropertyChanged(nameof(ChordTrigger));
+                owner.RefreshAfterEdit();
             }
         }
 

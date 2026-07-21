@@ -622,7 +622,8 @@ namespace DS4MapperTest.TouchpadActions
                             break;
 
                         case PropertyKeyStrings.OUTER_RING_BUTTON:
-                            ringButton = tempStickAction.ringButton;
+                            ringButton = tempStickAction.ringButton != null ?
+                                (AxisDirButton)tempStickAction.ringButton.DuplicateAction() : null;
                             useParentRingButton = true;
                             break;
                         case PropertyKeyStrings.USE_OUTER_RING:
@@ -642,7 +643,9 @@ namespace DS4MapperTest.TouchpadActions
                             smoothing = tempStickAction.smoothing;
                             break;
                         case PropertyKeyStrings.SMOOTHING_FILTER:
-                            smoothingFilterSettings = tempStickAction.smoothingFilterSettings;
+                            smoothingFilterSettings.minCutOff = tempStickAction.smoothingFilterSettings.minCutOff;
+                            smoothingFilterSettings.beta = tempStickAction.smoothingFilterSettings.beta;
+                            smoothingFilterSettings.UpdateSmoothingFilters();
                             useParentSmoothingFilter = true;
                             break;
                         default:
@@ -724,7 +727,8 @@ namespace DS4MapperTest.TouchpadActions
                     break;
 
                 case PropertyKeyStrings.OUTER_RING_BUTTON:
-                    ringButton = tempStickAction.ringButton;
+                    ringButton = tempStickAction.ringButton != null ?
+                        (AxisDirButton)tempStickAction.ringButton.DuplicateAction() : null;
                     useParentRingButton = true;
                     break;
                 case PropertyKeyStrings.USE_OUTER_RING:
@@ -744,7 +748,9 @@ namespace DS4MapperTest.TouchpadActions
                     smoothing = tempStickAction.smoothing;
                     break;
                 case PropertyKeyStrings.SMOOTHING_FILTER:
-                    smoothingFilterSettings = tempStickAction.smoothingFilterSettings;
+                    smoothingFilterSettings.minCutOff = tempStickAction.smoothingFilterSettings.minCutOff;
+                    smoothingFilterSettings.beta = tempStickAction.smoothingFilterSettings.beta;
+                    smoothingFilterSettings.UpdateSmoothingFilters();
                     useParentSmoothingFilter = true;
                     break;
                 default:

@@ -863,7 +863,9 @@ namespace DS4MapperTest.TouchpadActions
                             smoothingEnabled = tempMouseAction.smoothingEnabled;
                             break;
                         case PropertyKeyStrings.SMOOTHING_FILTER:
-                            smoothingFilterSettings = tempMouseAction.smoothingFilterSettings;
+                            smoothingFilterSettings.minCutOff = tempMouseAction.smoothingFilterSettings.minCutOff;
+                            smoothingFilterSettings.beta = tempMouseAction.smoothingFilterSettings.beta;
+                            smoothingFilterSettings.UpdateSmoothingFilters();
                             useParentSmoothingFilter = true;
                             break;
                         case PropertyKeyStrings.ACCEL_CURVE:
@@ -997,7 +999,9 @@ namespace DS4MapperTest.TouchpadActions
                     smoothingEnabled = tempMouseAction.smoothingEnabled;
                     break;
                 case PropertyKeyStrings.SMOOTHING_FILTER:
-                    smoothingFilterSettings = tempMouseAction.smoothingFilterSettings;
+                    smoothingFilterSettings.minCutOff = tempMouseAction.smoothingFilterSettings.minCutOff;
+                    smoothingFilterSettings.beta = tempMouseAction.smoothingFilterSettings.beta;
+                    smoothingFilterSettings.UpdateSmoothingFilters();
                     useParentSmoothingFilter = true;
                     break;
                 case PropertyKeyStrings.ACCEL_CURVE:

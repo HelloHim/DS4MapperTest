@@ -339,11 +339,13 @@ namespace DS4MapperTest.TriggerActions
                             deadMod.AntiDeadZone = tempDualTrigAction.deadMod.AntiDeadZone;
                             break;
                         case PropertyKeyStrings.SOFTPULL_BUTTON:
-                            softPullActButton = tempDualTrigAction.softPullActButton;
+                            softPullActButton = tempDualTrigAction.softPullActButton != null ?
+                                (AxisDirButton)tempDualTrigAction.softPullActButton.DuplicateAction() : null;
                             useParentSoftPullBtn = true;
                             break;
                         case PropertyKeyStrings.FULLPULL_BUTTON:
-                            fullPullActButton = tempDualTrigAction.fullPullActButton;
+                            fullPullActButton = tempDualTrigAction.fullPullActButton != null ?
+                                (AxisDirButton)tempDualTrigAction.fullPullActButton.DuplicateAction() : null;
                             useParentFullPullBtn = true;
                             break;
                         case PropertyKeyStrings.DUALSTAGE_MODE:
@@ -636,11 +638,13 @@ namespace DS4MapperTest.TriggerActions
                     deadMod.AntiDeadZone = tempDualTrigAction.deadMod.AntiDeadZone;
                     break;
                 case PropertyKeyStrings.SOFTPULL_BUTTON:
-                    softPullActButton = tempDualTrigAction.softPullActButton;
+                    softPullActButton = tempDualTrigAction.softPullActButton != null ?
+                        (AxisDirButton)tempDualTrigAction.softPullActButton.DuplicateAction() : null;
                     useParentSoftPullBtn = true;
                     break;
                 case PropertyKeyStrings.FULLPULL_BUTTON:
-                    fullPullActButton = tempDualTrigAction.fullPullActButton;
+                    fullPullActButton = tempDualTrigAction.fullPullActButton != null ?
+                        (AxisDirButton)tempDualTrigAction.fullPullActButton.DuplicateAction() : null;
                     useParentFullPullBtn = true;
                     break;
                 case PropertyKeyStrings.DUALSTAGE_MODE:

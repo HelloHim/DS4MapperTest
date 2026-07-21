@@ -596,7 +596,9 @@ namespace DS4MapperTest.GyroActions
                             //updateSmoothing = true;
                             break;
                         case PropertyKeyStrings.SMOOTHING_FILTER:
-                            mStickParams.smoothingFilterSettings = tempGyroStickAction.mStickParams.smoothingFilterSettings;
+                            mStickParams.smoothingFilterSettings.minCutOff = tempGyroStickAction.mStickParams.smoothingFilterSettings.minCutOff;
+                            mStickParams.smoothingFilterSettings.beta = tempGyroStickAction.mStickParams.smoothingFilterSettings.beta;
+                            mStickParams.smoothingFilterSettings.UpdateSmoothingFilters();
                             useParentSmoothingFilter = true;
                             break;
                         //case PropertyKeyStrings.SMOOTHING_MINCUTOFF:
@@ -702,7 +704,9 @@ namespace DS4MapperTest.GyroActions
                     //updateSmoothing = true;
                     break;
                 case PropertyKeyStrings.SMOOTHING_FILTER:
-                    mStickParams.smoothingFilterSettings = tempGyroStickAction.mStickParams.smoothingFilterSettings;
+                    mStickParams.smoothingFilterSettings.minCutOff = tempGyroStickAction.mStickParams.smoothingFilterSettings.minCutOff;
+                    mStickParams.smoothingFilterSettings.beta = tempGyroStickAction.mStickParams.smoothingFilterSettings.beta;
+                    mStickParams.smoothingFilterSettings.UpdateSmoothingFilters();
                     useParentSmoothingFilter = true;
                     break;
                 //case PropertyKeyStrings.SMOOTHING_MINCUTOFF:

@@ -851,7 +851,9 @@ namespace DS4MapperTest.GyroActions
                             mouseParams.smoothing = tempMouseAction.mouseParams.smoothing;
                             break;
                         case PropertyKeyStrings.SMOOTHING_FILTER:
-                            mouseParams.smoothingFilterSettings = tempMouseAction.mouseParams.smoothingFilterSettings;
+                            mouseParams.smoothingFilterSettings.minCutOff = tempMouseAction.mouseParams.smoothingFilterSettings.minCutOff;
+                            mouseParams.smoothingFilterSettings.beta = tempMouseAction.mouseParams.smoothingFilterSettings.beta;
+                            mouseParams.smoothingFilterSettings.UpdateSmoothingFilters();
                             useParentSmoothingFilter = true;
                             break;
                         case PropertyKeyStrings.MULTIPLIER_COMPENSATION:
@@ -999,7 +1001,9 @@ namespace DS4MapperTest.GyroActions
                     //updateSmoothing = true;
                     break;
                 case PropertyKeyStrings.SMOOTHING_FILTER:
-                    mouseParams.smoothingFilterSettings = tempMouseAction.mouseParams.smoothingFilterSettings;
+                    mouseParams.smoothingFilterSettings.minCutOff = tempMouseAction.mouseParams.smoothingFilterSettings.minCutOff;
+                    mouseParams.smoothingFilterSettings.beta = tempMouseAction.mouseParams.smoothingFilterSettings.beta;
+                    mouseParams.smoothingFilterSettings.UpdateSmoothingFilters();
                     useParentSmoothingFilter = true;
                     break;
                 case PropertyKeyStrings.MULTIPLIER_COMPENSATION:

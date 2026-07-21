@@ -821,7 +821,8 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.PAD_DIR_UP:
                             {
                                 int tempDir = (int)DpadDirections.Up;
-                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -829,7 +830,8 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.PAD_DIR_DOWN:
                             {
                                 int tempDir = (int)DpadDirections.Down;
-                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -837,7 +839,8 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.PAD_DIR_LEFT:
                             {
                                 int tempDir = (int)DpadDirections.Left;
-                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -845,7 +848,8 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.PAD_DIR_RIGHT:
                             {
                                 int tempDir = (int)DpadDirections.Right;
-                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -853,7 +857,8 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.PAD_DIR_UPLEFT:
                             {
                                 int tempDir = (int)DpadDirections.UpLeft;
-                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -861,7 +866,8 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.PAD_DIR_UPRIGHT:
                             {
                                 int tempDir = (int)DpadDirections.UpRight;
-                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -869,7 +875,8 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.PAD_DIR_DOWNLEFT:
                             {
                                 int tempDir = (int)DpadDirections.DownLeft;
-                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -877,7 +884,8 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.PAD_DIR_DOWNRIGHT:
                             {
                                 int tempDir = (int)DpadDirections.DownRight;
-                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -929,7 +937,8 @@ namespace DS4MapperTest.GyroActions
                 case PropertyKeyStrings.PAD_DIR_UP:
                     {
                         int tempDir = (int)DpadDirections.Up;
-                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -937,7 +946,8 @@ namespace DS4MapperTest.GyroActions
                 case PropertyKeyStrings.PAD_DIR_DOWN:
                     {
                         int tempDir = (int)DpadDirections.Down;
-                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -945,7 +955,8 @@ namespace DS4MapperTest.GyroActions
                 case PropertyKeyStrings.PAD_DIR_LEFT:
                     {
                         int tempDir = (int)DpadDirections.Left;
-                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -953,7 +964,8 @@ namespace DS4MapperTest.GyroActions
                 case PropertyKeyStrings.PAD_DIR_RIGHT:
                     {
                         int tempDir = (int)DpadDirections.Right;
-                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -961,7 +973,8 @@ namespace DS4MapperTest.GyroActions
                 case PropertyKeyStrings.PAD_DIR_UPLEFT:
                     {
                         int tempDir = (int)DpadDirections.UpLeft;
-                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -969,7 +982,8 @@ namespace DS4MapperTest.GyroActions
                 case PropertyKeyStrings.PAD_DIR_UPRIGHT:
                     {
                         int tempDir = (int)DpadDirections.UpRight;
-                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -977,7 +991,8 @@ namespace DS4MapperTest.GyroActions
                 case PropertyKeyStrings.PAD_DIR_DOWNLEFT:
                     {
                         int tempDir = (int)DpadDirections.DownLeft;
-                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -985,7 +1000,8 @@ namespace DS4MapperTest.GyroActions
                 case PropertyKeyStrings.PAD_DIR_DOWNRIGHT:
                     {
                         int tempDir = (int)DpadDirections.DownRight;
-                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempGyroPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempGyroPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
