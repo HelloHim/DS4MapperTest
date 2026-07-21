@@ -33,6 +33,11 @@ namespace DS4MapperTest.StickActions
             public const string SPEED_ACTIVE_PERCENT = "AnalogEmulationActivePercent";
             public const string SPEED_PULSE_TIME_MS = "AnalogEmulationPulseTimeMs";
             public const string FULL_SPEED_THRESHOLD_PERCENT = "FullSpeedThresholdPercent";
+
+            public const string BRAKE_ENABLED = "BrakeEnabled";
+            public const string BRAKE_DURATION_MS = "BrakeDurationMs";
+            public const string BRAKE_MIN_HOLD_MS = "BrakeMinimumHoldMs";
+            public const string BRAKE_ARMING_THRESHOLD = "BrakeArmingThreshold";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -50,6 +55,10 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.SPEED_ACTIVE_PERCENT,
             PropertyKeyStrings.SPEED_PULSE_TIME_MS,
             PropertyKeyStrings.FULL_SPEED_THRESHOLD_PERCENT,
+            PropertyKeyStrings.BRAKE_ENABLED,
+            PropertyKeyStrings.BRAKE_DURATION_MS,
+            PropertyKeyStrings.BRAKE_MIN_HOLD_MS,
+            PropertyKeyStrings.BRAKE_ARMING_THRESHOLD,
         };
         public HashSet<string> FullPropertySet => fullPropertySet;
 
@@ -74,9 +83,17 @@ namespace DS4MapperTest.StickActions
         private StickDeadZone deadMod;
         public StickDeadZone DeadMod => deadMod;
 
+        // Shared with StickPadAction's Digital Release Brake. A 13-slot adapter array keyed by
+        // StickPadAction.DpadDirections lets the same StickReleaseBrake implementation pulse
+        // this action's four AxisDirButtons; only the four cardinal indices are ever populated
+        // since Analog Emulation has no dedicated diagonal buttons.
+        private StickReleaseBrake releaseBrake = new StickReleaseBrake();
+        public StickReleaseBrake ReleaseBrake => releaseBrake;
+        private AxisDirButton[] brakeSlotButtons = new AxisDirButton[13];
+
         private double xNorm, yNorm;
 
-        private AnalogEmulationMath.ResolutionMode directionMode = AnalogEmulationMath.ResolutionMode.Sixteen;
+        private AnalogEmulationMath.ResolutionMode directionMode = AnalogEmulationMath.ResolutionMode.Continuous;
         public AnalogEmulationMath.ResolutionMode DirectionMode
         {
             get => directionMode;
@@ -182,6 +199,11 @@ namespace DS4MapperTest.StickActions
                 speedActivePercent = parentAction.speedActivePercent;
                 speedPulseTimeMs = parentAction.speedPulseTimeMs;
                 fullSpeedThresholdPercent = parentAction.fullSpeedThresholdPercent;
+
+                releaseBrake.Enabled = parentAction.releaseBrake.Enabled;
+                releaseBrake.BrakeDurationMs = parentAction.releaseBrake.BrakeDurationMs;
+                releaseBrake.MinimumHoldMs = parentAction.releaseBrake.MinimumHoldMs;
+                releaseBrake.ArmingThreshold = parentAction.releaseBrake.ArmingThreshold;
             }
             else
             {
@@ -219,6 +241,26 @@ namespace DS4MapperTest.StickActions
                 case AnalogEmulationMath.Direction.Right: return (int)DirSlot.Right;
                 default: return -1;
             }
+        }
+
+        private static StickPadAction.DpadDirections ToDpadBit(AnalogEmulationMath.Direction dir)
+        {
+            switch (dir)
+            {
+                case AnalogEmulationMath.Direction.Up: return StickPadAction.DpadDirections.Up;
+                case AnalogEmulationMath.Direction.Down: return StickPadAction.DpadDirections.Down;
+                case AnalogEmulationMath.Direction.Left: return StickPadAction.DpadDirections.Left;
+                case AnalogEmulationMath.Direction.Right: return StickPadAction.DpadDirections.Right;
+                default: return StickPadAction.DpadDirections.Centered;
+            }
+        }
+
+        private void RefreshBrakeSlotButtons()
+        {
+            brakeSlotButtons[(int)StickPadAction.DpadDirections.Up] = dirButtons[(int)DirSlot.Up];
+            brakeSlotButtons[(int)StickPadAction.DpadDirections.Down] = dirButtons[(int)DirSlot.Down];
+            brakeSlotButtons[(int)StickPadAction.DpadDirections.Left] = dirButtons[(int)DirSlot.Left];
+            brakeSlotButtons[(int)StickPadAction.DpadDirections.Right] = dirButtons[(int)DirSlot.Right];
         }
 
         public override void Prepare(Mapper mapper, int axisXVal, int axisYVal, bool alterState = true)
@@ -289,13 +331,31 @@ namespace DS4MapperTest.StickActions
 
             wasInSafeZone = inSafeZone;
 
+            // Digital Release Brake: derive an independent raw 8-way digital bucket purely for
+            // spring snap-back detection, kept separate from the selected Direction Resolution's
+            // blend rounding so the brake behaves consistently regardless of mode. Only whichever
+            // cardinal bit(s) the brake actually removes from that bucket this tick are then
+            // masked out of the smooth primary/secondary emission below.
+            RefreshBrakeSlotButtons();
+            AnalogEmulationMath.ComputeDirectionBlend(xNorm, yNorm, AnalogEmulationMath.ResolutionMode.EightWay,
+                out AnalogEmulationMath.Direction rawPrimary, out AnalogEmulationMath.Direction rawSecondary, out double rawBlend);
+            StickPadAction.DpadDirections rawDpadDir = ToDpadBit(rawPrimary);
+            if (rawBlend >= 1.0) rawDpadDir |= ToDpadBit(rawSecondary);
+
+            StickPadAction.DpadDirections effectiveDpadDir =
+                releaseBrake.Prepare(mapper, axisXDir, axisYDir, maxDirX, maxDirY, rawDpadDir);
+            StickPadAction.DpadDirections suppressedThisTick = rawDpadDir & ~effectiveDpadDir;
+
+            bool primarySuppressed = (suppressedThisTick & ToDpadBit(currentPrimary)) != 0;
+            bool secondarySuppressed = (suppressedThisTick & ToDpadBit(currentSecondary)) != 0;
+
             for (int i = 0; i < slotOn.Length; i++) slotOn[i] = false;
 
             int primaryIdx = SlotIndex(currentPrimary);
-            if (primaryIdx >= 0) slotOn[primaryIdx] = currentSpeedGateOn;
+            if (primaryIdx >= 0 && !primarySuppressed) slotOn[primaryIdx] = currentSpeedGateOn;
 
             int secondaryIdx = SlotIndex(currentSecondary);
-            if (secondaryIdx >= 0) slotOn[secondaryIdx] = currentSpeedGateOn && currentDirectionGateOn;
+            if (secondaryIdx >= 0 && !secondarySuppressed) slotOn[secondaryIdx] = currentSpeedGateOn && currentDirectionGateOn;
 
             active = true;
             activeEvent = true;
@@ -317,12 +377,17 @@ namespace DS4MapperTest.StickActions
                 if (btn.active) anyActive = true;
             }
 
+            releaseBrake.Event(mapper, brakeSlotButtons);
+
             active = anyActive;
             activeEvent = false;
         }
 
         public override void Release(Mapper mapper, bool resetState = true, bool ignoreReleaseActions = false)
         {
+            RefreshBrakeSlotButtons();
+            releaseBrake.Cleanup(mapper, brakeSlotButtons);
+
             for (int i = 0; i < dirButtons.Length; i++)
             {
                 AxisDirButton btn = dirButtons[i];
@@ -344,6 +409,9 @@ namespace DS4MapperTest.StickActions
         public override void SoftRelease(Mapper mapper, MapAction checkAction, bool resetState = true)
         {
             StickAnalogEmulationAction checkAnalog = checkAction as StickAnalogEmulationAction;
+
+            RefreshBrakeSlotButtons();
+            releaseBrake.Cleanup(mapper, brakeSlotButtons);
 
             for (int i = 0; i < dirButtons.Length; i++)
             {
@@ -473,6 +541,18 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.FULL_SPEED_THRESHOLD_PERCENT:
                     fullSpeedThresholdPercent = tempAction.fullSpeedThresholdPercent;
+                    break;
+                case PropertyKeyStrings.BRAKE_ENABLED:
+                    releaseBrake.Enabled = tempAction.releaseBrake.Enabled;
+                    break;
+                case PropertyKeyStrings.BRAKE_DURATION_MS:
+                    releaseBrake.BrakeDurationMs = tempAction.releaseBrake.BrakeDurationMs;
+                    break;
+                case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
+                    releaseBrake.MinimumHoldMs = tempAction.releaseBrake.MinimumHoldMs;
+                    break;
+                case PropertyKeyStrings.BRAKE_ARMING_THRESHOLD:
+                    releaseBrake.ArmingThreshold = tempAction.releaseBrake.ArmingThreshold;
                     break;
                 default:
                     break;

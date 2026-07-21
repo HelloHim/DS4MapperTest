@@ -7,6 +7,35 @@ namespace DS4MapperUnitTests
     {
         private const double TOL = 0.0001;
 
+        // --- 8-direction (D-Pad Mode) mapping ---------------------------------------
+
+        [TestMethod]
+        public void EightWay_Cardinals_HoldSingleDirectionNoPulse()
+        {
+            AssertBlend(0.0, AnalogEmulationMath.ResolutionMode.EightWay, 0.0);
+            AssertBlend(90.0, AnalogEmulationMath.ResolutionMode.EightWay, 0.0);
+            AssertBlend(180.0, AnalogEmulationMath.ResolutionMode.EightWay, 0.0);
+            AssertBlend(270.0, AnalogEmulationMath.ResolutionMode.EightWay, 0.0);
+        }
+
+        [TestMethod]
+        public void EightWay_Diagonals_HoldBothDirectionsContinuously()
+        {
+            AssertBlend(45.0, AnalogEmulationMath.ResolutionMode.EightWay, 1.0);
+            AssertBlend(135.0, AnalogEmulationMath.ResolutionMode.EightWay, 1.0);
+            AssertBlend(225.0, AnalogEmulationMath.ResolutionMode.EightWay, 1.0);
+            AssertBlend(315.0, AnalogEmulationMath.ResolutionMode.EightWay, 1.0);
+        }
+
+        [TestMethod]
+        public void EightWay_IntermediateAngles_SnapToNearestCardinalOrDiagonal_NeverPulses()
+        {
+            // Between North and North-east (0-45): closer to North snaps to 0%, closer to
+            // North-east snaps to 100%. Never an intermediate blend, unlike 16/32/Continuous.
+            AssertBlend(20.0, AnalogEmulationMath.ResolutionMode.EightWay, 0.0);
+            AssertBlend(30.0, AnalogEmulationMath.ResolutionMode.EightWay, 1.0);
+        }
+
         // --- 16-direction mapping ------------------------------------------------
 
         [TestMethod]

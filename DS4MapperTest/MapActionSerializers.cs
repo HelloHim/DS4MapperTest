@@ -6156,6 +6156,66 @@ namespace DS4MapperTest
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.FULL_SPEED_THRESHOLD_PERCENT);
             }
 
+            public bool BrakeEnabled
+            {
+                get => analogAction.ReleaseBrake.Enabled;
+                set
+                {
+                    analogAction.ReleaseBrake.Enabled = value;
+                    BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeEnabledChanged;
+            public bool ShouldSerializeBrakeEnabled()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ENABLED);
+            }
+
+            public int BrakeDurationMs
+            {
+                get => analogAction.ReleaseBrake.BrakeDurationMs;
+                set
+                {
+                    analogAction.ReleaseBrake.BrakeDurationMs = value;
+                    BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeDurationMsChanged;
+            public bool ShouldSerializeBrakeDurationMs()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+            }
+
+            public int BrakeMinimumHoldMs
+            {
+                get => analogAction.ReleaseBrake.MinimumHoldMs;
+                set
+                {
+                    analogAction.ReleaseBrake.MinimumHoldMs = value;
+                    BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeMinimumHoldMsChanged;
+            public bool ShouldSerializeBrakeMinimumHoldMs()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+            }
+
+            public double BrakeArmingThreshold
+            {
+                get => analogAction.ReleaseBrake.ArmingThreshold;
+                set
+                {
+                    analogAction.ReleaseBrake.ArmingThreshold = value;
+                    BrakeArmingThresholdChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeArmingThresholdChanged;
+            public bool ShouldSerializeBrakeArmingThreshold()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            }
+
             public AnalogEmulationSettings(StickAnalogEmulationAction analogAction)
             {
                 this.analogAction = analogAction;
@@ -6206,6 +6266,30 @@ namespace DS4MapperTest
             settings.AnalogEmulationActivePercentChanged += Settings_AnalogEmulationActivePercentChanged;
             settings.AnalogEmulationPulseTimeMsChanged += Settings_AnalogEmulationPulseTimeMsChanged;
             settings.FullSpeedThresholdPercentChanged += Settings_FullSpeedThresholdPercentChanged;
+            settings.BrakeEnabledChanged += Settings_BrakeEnabledChanged;
+            settings.BrakeDurationMsChanged += Settings_BrakeDurationMsChanged;
+            settings.BrakeMinimumHoldMsChanged += Settings_BrakeMinimumHoldMsChanged;
+            settings.BrakeArmingThresholdChanged += Settings_BrakeArmingThresholdChanged;
+        }
+
+        private void Settings_BrakeEnabledChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ENABLED);
+        }
+
+        private void Settings_BrakeDurationMsChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+        }
+
+        private void Settings_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+        }
+
+        private void Settings_BrakeArmingThresholdChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
         }
 
         private void AnalogEmulationActionSerializer_NameChanged(object sender, EventArgs e)

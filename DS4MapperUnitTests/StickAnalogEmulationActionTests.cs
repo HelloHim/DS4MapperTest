@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using DS4MapperTest;
+using DS4MapperTest.ActionUtil;
+using DS4MapperTest.ButtonActions;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.SteamControllerLibrary;
 using DS4MapperTest.StickActions;
+using DS4MapperTest.ViewModels;
 using Newtonsoft.Json;
 
 namespace DS4MapperUnitTests
@@ -54,12 +57,23 @@ namespace DS4MapperUnitTests
         {
             StickAnalogEmulationAction action = new StickAnalogEmulationAction();
 
-            Assert.AreEqual(AnalogEmulationMath.ResolutionMode.Sixteen, action.DirectionMode);
+            Assert.AreEqual(AnalogEmulationMath.ResolutionMode.Continuous, action.DirectionMode);
             Assert.AreEqual(30, action.DirectionPulseTimeMs);
             Assert.IsFalse(action.SpeedEmulationEnabled);
             Assert.AreEqual(15, action.SpeedActivePercent);
             Assert.AreEqual(30, action.SpeedPulseTimeMs);
             Assert.AreEqual(80, action.FullSpeedThresholdPercent);
+        }
+
+        [TestMethod]
+        public void Defaults_ReleaseBrake_MatchesLoosenedDefaults()
+        {
+            StickAnalogEmulationAction action = new StickAnalogEmulationAction();
+
+            Assert.IsFalse(action.ReleaseBrake.Enabled);
+            Assert.AreEqual(100, action.ReleaseBrake.BrakeDurationMs);
+            Assert.AreEqual(0, action.ReleaseBrake.MinimumHoldMs);
+            Assert.AreEqual(0.0, action.ReleaseBrake.ArmingThreshold);
         }
 
         [TestMethod]
@@ -327,6 +341,79 @@ namespace DS4MapperUnitTests
             Assert.IsFalse(KeyDown(VK_D), "Release must drop any currently-held direction output.");
         }
 
+        // --- Digital Release Brake (shared with StickPadAction) ------------------
+
+        [TestMethod]
+        public void ReleaseBrake_FastCardinalRelease_FiresOppositeDirection()
+        {
+            var (mapper, action) = LoadMapper(directionMode: "EightWay");
+            action.ReleaseBrake.Enabled = true;
+            action.ReleaseBrake.BrakeDurationMs = 40;
+            action.ReleaseBrake.MinimumHoldMs = 0;
+            action.ReleaseBrake.ArmingThreshold = 0.0;
+
+            Neutral(mapper);
+            for (int i = 0; i < 20; i++) HoldAngle(mapper, 0.0); // hold Up (North) at full deflection
+            Report(mapper, 0, 0); // sudden release to centre
+
+            Assert.AreEqual(StickReleaseBrake.BrakeState.Braking, action.ReleaseBrake.State);
+            Assert.IsFalse(KeyDown(VK_W), "Original Up key must be released.");
+            Assert.IsTrue(KeyDown(VK_S), "Opposite Down key must pulse due to the release brake.");
+        }
+
+        [TestMethod]
+        public void ReleaseBrake_Disabled_NeverArms()
+        {
+            var (mapper, action) = LoadMapper(directionMode: "EightWay");
+            Assert.IsFalse(action.ReleaseBrake.Enabled, "Precondition: brake off by default.");
+
+            Neutral(mapper);
+            for (int i = 0; i < 20; i++) HoldAngle(mapper, 0.0);
+            Report(mapper, 0, 0);
+
+            Assert.AreEqual(StickReleaseBrake.BrakeState.Unprimed, action.ReleaseBrake.State);
+            Assert.IsFalse(KeyDown(VK_S), "No opposite pulse should occur while the brake is disabled.");
+        }
+
+        // --- Default keybinds (WASD) for modes sharing Up/Down/Left/Right --------
+
+        [TestMethod]
+        public void PrepareNewAction_DPadAndAnalogEmulation_DefaultToWasd()
+        {
+            var (mapper, _) = LoadMapper();
+            typeof(Mapper).GetField("eventInputMapping", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(mapper, eventInputMapping);
+            StickBindEditViewModel editVM = new StickBindEditViewModel(mapper, new StickNoAction());
+
+            StickPadAction dpad = editVM.PrepareNewAction(2) as StickPadAction;
+            Assert.IsNotNull(dpad);
+            AssertBoundToKey(dpad.EventCodes4[(int)StickPadAction.DpadDirections.Up], VirtualKeys.W);
+            AssertBoundToKey(dpad.EventCodes4[(int)StickPadAction.DpadDirections.Down], VirtualKeys.S);
+            AssertBoundToKey(dpad.EventCodes4[(int)StickPadAction.DpadDirections.Left], VirtualKeys.A);
+            AssertBoundToKey(dpad.EventCodes4[(int)StickPadAction.DpadDirections.Right], VirtualKeys.D);
+
+            StickAnalogEmulationAction analog = editVM.PrepareNewAction(7) as StickAnalogEmulationAction;
+            Assert.IsNotNull(analog);
+            AssertBoundToKey(analog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Up], VirtualKeys.W);
+            AssertBoundToKey(analog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Down], VirtualKeys.S);
+            AssertBoundToKey(analog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Left], VirtualKeys.A);
+            AssertBoundToKey(analog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Right], VirtualKeys.D);
+        }
+
+        private static void AssertBoundToKey(AxisDirButton button, VirtualKeys expectedKey)
+        {
+            Assert.IsNotNull(button);
+            NormalPressFunc pressFunc = null;
+            foreach (ActionFunc func in button.ActionFuncs)
+            {
+                if (func is NormalPressFunc normalPress) { pressFunc = normalPress; break; }
+            }
+
+            Assert.IsNotNull(pressFunc, "Expected a NormalPressFunc default binding.");
+            Assert.AreEqual(1, pressFunc.OutputActions.Count);
+            Assert.AreEqual((int)expectedKey, pressFunc.OutputActions[0].OutputCode);
+        }
+
         // --- Persistence ---------------------------------------------------------
 
         [TestMethod]
@@ -334,7 +421,7 @@ namespace DS4MapperUnitTests
         {
             var (mapper, action) = LoadMapper(omitSettings: true);
 
-            Assert.AreEqual(AnalogEmulationMath.ResolutionMode.Sixteen, action.DirectionMode);
+            Assert.AreEqual(AnalogEmulationMath.ResolutionMode.Continuous, action.DirectionMode);
             Assert.AreEqual(30, action.DirectionPulseTimeMs);
             Assert.IsFalse(action.SpeedEmulationEnabled);
             Assert.AreEqual(15, action.SpeedActivePercent);

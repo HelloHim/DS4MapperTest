@@ -31,6 +31,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         private List<EnumChoiceSelection<AnalogEmulationMath.ResolutionMode>> directionResolutionItems =
             new List<EnumChoiceSelection<AnalogEmulationMath.ResolutionMode>>()
             {
+                new EnumChoiceSelection<AnalogEmulationMath.ResolutionMode>("8 Directions (D-Pad Mode)", AnalogEmulationMath.ResolutionMode.EightWay),
                 new EnumChoiceSelection<AnalogEmulationMath.ResolutionMode>("16 Directions", AnalogEmulationMath.ResolutionMode.Sixteen),
                 new EnumChoiceSelection<AnalogEmulationMath.ResolutionMode>("32 Directions", AnalogEmulationMath.ResolutionMode.ThirtyTwo),
                 new EnumChoiceSelection<AnalogEmulationMath.ResolutionMode>("Continuous Direction", AnalogEmulationMath.ResolutionMode.Continuous),
@@ -115,6 +116,69 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler FullSpeedThresholdPercentChanged;
 
+        public bool BrakeEnabled
+        {
+            get => action.ReleaseBrake.Enabled;
+            set
+            {
+                if (action.ReleaseBrake.Enabled == value) return;
+                action.ReleaseBrake.Enabled = value;
+                BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeEnabledChanged;
+
+        public int BrakeDurationMs
+        {
+            get => action.ReleaseBrake.BrakeDurationMs;
+            set
+            {
+                if (action.ReleaseBrake.BrakeDurationMs == value) return;
+                action.ReleaseBrake.BrakeDurationMs = value;
+                BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeDurationMsChanged;
+
+        public int BrakeMinimumHoldMs
+        {
+            get => action.ReleaseBrake.MinimumHoldMs;
+            set
+            {
+                if (action.ReleaseBrake.MinimumHoldMs == value) return;
+                action.ReleaseBrake.MinimumHoldMs = value;
+                BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeMinimumHoldMsChanged;
+
+        public int BrakeArmingThresholdPercent
+        {
+            get => (int)Math.Round(action.ReleaseBrake.ArmingThreshold * 100.0);
+            set
+            {
+                int clamped = Math.Clamp(value, 0, 100);
+                double threshold = clamped / 100.0;
+                if (Math.Abs(action.ReleaseBrake.ArmingThreshold - threshold) < double.Epsilon) return;
+                action.ReleaseBrake.ArmingThreshold = threshold;
+                BrakeArmingThresholdPercentChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeArmingThresholdPercentChanged;
+
+        public bool HighlightBrakeEnabled =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ENABLED);
+        public bool HighlightBrakeDurationMs =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+        public bool HighlightBrakeMinimumHoldMs =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+        public bool HighlightBrakeArmingThreshold =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+
         public string ActionUpBtnDisplayBind => action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Up]?.DescribeActions(mapper);
         public string ActionDownBtnDisplayBind => action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Down]?.DescribeActions(mapper);
         public string ActionLeftBtnDisplayBind => action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Left]?.DescribeActions(mapper);
@@ -171,6 +235,34 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             AnalogEmulationActivePercentChanged += StickAnalogEmulationPropViewModel_AnalogEmulationActivePercentChanged;
             AnalogEmulationPulseTimeMsChanged += StickAnalogEmulationPropViewModel_AnalogEmulationPulseTimeMsChanged;
             FullSpeedThresholdPercentChanged += StickAnalogEmulationPropViewModel_FullSpeedThresholdPercentChanged;
+            BrakeEnabledChanged += StickAnalogEmulationPropViewModel_BrakeEnabledChanged;
+            BrakeDurationMsChanged += StickAnalogEmulationPropViewModel_BrakeDurationMsChanged;
+            BrakeMinimumHoldMsChanged += StickAnalogEmulationPropViewModel_BrakeMinimumHoldMsChanged;
+            BrakeArmingThresholdPercentChanged += StickAnalogEmulationPropViewModel_BrakeArmingThresholdPercentChanged;
+        }
+
+        private void StickAnalogEmulationPropViewModel_BrakeEnabledChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ENABLED);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ENABLED);
+        }
+
+        private void StickAnalogEmulationPropViewModel_BrakeDurationMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+        }
+
+        private void StickAnalogEmulationPropViewModel_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+        }
+
+        private void StickAnalogEmulationPropViewModel_BrakeArmingThresholdPercentChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
         }
 
         private void StickAnalogEmulationPropViewModel_NameChanged(object sender, EventArgs e)

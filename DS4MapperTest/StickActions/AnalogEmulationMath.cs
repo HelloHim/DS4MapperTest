@@ -11,6 +11,7 @@ namespace DS4MapperTest.StickActions
     {
         public enum ResolutionMode
         {
+            EightWay,
             Sixteen,
             ThirtyTwo,
             Continuous,
@@ -85,6 +86,11 @@ namespace DS4MapperTest.StickActions
 
             switch (mode)
             {
+                case ResolutionMode.EightWay:
+                    // Plain 8-way D-Pad bucketing: snap to the nearest cardinal (0%) or
+                    // diagonal (100%), never an intermediate pulse.
+                    secondaryBlend = Math.Round(rawBlend, MidpointRounding.AwayFromZero);
+                    break;
                 case ResolutionMode.Sixteen:
                     secondaryBlend = Math.Round(rawBlend * 2.0, MidpointRounding.AwayFromZero) / 2.0;
                     break;
