@@ -37,6 +37,9 @@ namespace DS4MapperTest
                 case "StickFlickStickAction":
                     serializer = new StickFlickStickActionSerializer(layer, action);
                     break;
+                case "StickAnalogEmulationAction":
+                    serializer = new AnalogEmulationActionSerializer(layer, action);
+                    break;
                 case "StickNoAction":
                     serializer = new StickNoActionSerializer(layer, action);
                     break;

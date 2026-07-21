@@ -6027,6 +6027,325 @@ namespace DS4MapperTest
         }
     }
 
+    public class AnalogEmulationActionSerializer : MapActionSerializer
+    {
+        public class AnalogEmulationSettings
+        {
+            private StickAnalogEmulationAction analogAction;
+
+            public double DeadZone
+            {
+                get => analogAction.DeadMod.DeadZone;
+                set
+                {
+                    analogAction.DeadMod.DeadZone = Math.Clamp(value, 0.0, 1.0);
+                    DeadZoneChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DeadZoneChanged;
+            public bool ShouldSerializeDeadZone()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE);
+            }
+
+            public double MaxZone
+            {
+                get => analogAction.DeadMod.MaxZone;
+                set
+                {
+                    analogAction.DeadMod.MaxZone = Math.Clamp(value, 0.0, 1.0);
+                    MaxZoneChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MaxZoneChanged;
+            public bool ShouldSerializeMaxZone()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.MAX_ZONE);
+            }
+
+            public string DirectionMode
+            {
+                get => analogAction.DirectionMode.ToString();
+                set
+                {
+                    if (Enum.TryParse(value, out AnalogEmulationMath.ResolutionMode temp))
+                    {
+                        analogAction.DirectionMode = temp;
+                        DirectionModeChanged?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+            }
+            public event EventHandler DirectionModeChanged;
+            public bool ShouldSerializeDirectionMode()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DIRECTION_MODE);
+            }
+
+            public int DirectionPulseTimeMs
+            {
+                get => analogAction.DirectionPulseTimeMs;
+                set
+                {
+                    analogAction.DirectionPulseTimeMs = value;
+                    DirectionPulseTimeMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DirectionPulseTimeMsChanged;
+            public bool ShouldSerializeDirectionPulseTimeMs()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DIRECTION_PULSE_TIME_MS);
+            }
+
+            public bool AnalogSpeedEmulationEnabled
+            {
+                get => analogAction.SpeedEmulationEnabled;
+                set
+                {
+                    analogAction.SpeedEmulationEnabled = value;
+                    AnalogSpeedEmulationEnabledChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler AnalogSpeedEmulationEnabledChanged;
+            public bool ShouldSerializeAnalogSpeedEmulationEnabled()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.SPEED_ENABLED);
+            }
+
+            public int AnalogEmulationActivePercent
+            {
+                get => analogAction.SpeedActivePercent;
+                set
+                {
+                    analogAction.SpeedActivePercent = value;
+                    AnalogEmulationActivePercentChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler AnalogEmulationActivePercentChanged;
+            public bool ShouldSerializeAnalogEmulationActivePercent()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.SPEED_ACTIVE_PERCENT);
+            }
+
+            public int AnalogEmulationPulseTimeMs
+            {
+                get => analogAction.SpeedPulseTimeMs;
+                set
+                {
+                    analogAction.SpeedPulseTimeMs = value;
+                    AnalogEmulationPulseTimeMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler AnalogEmulationPulseTimeMsChanged;
+            public bool ShouldSerializeAnalogEmulationPulseTimeMs()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.SPEED_PULSE_TIME_MS);
+            }
+
+            public int FullSpeedThresholdPercent
+            {
+                get => analogAction.FullSpeedThresholdPercent;
+                set
+                {
+                    analogAction.FullSpeedThresholdPercent = value;
+                    FullSpeedThresholdPercentChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler FullSpeedThresholdPercentChanged;
+            public bool ShouldSerializeFullSpeedThresholdPercent()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.FULL_SPEED_THRESHOLD_PERCENT);
+            }
+
+            public AnalogEmulationSettings(StickAnalogEmulationAction analogAction)
+            {
+                this.analogAction = analogAction;
+            }
+        }
+
+        private static readonly string[] SlotNames = { "Up", "Down", "Left", "Right" };
+
+        private StickAnalogEmulationAction analogAct = new StickAnalogEmulationAction();
+
+        private Dictionary<string, StickPadActionSerializer.StickPadDirBinding> dictDirBindings =
+            new Dictionary<string, StickPadActionSerializer.StickPadDirBinding>();
+
+        [JsonProperty("Bindings", Required = Required.Always)]
+        public Dictionary<string, StickPadActionSerializer.StickPadDirBinding> DictDirBindings
+        {
+            get => dictDirBindings;
+            set => dictDirBindings = value;
+        }
+        public bool ShouldSerializeDictDirBindings()
+        {
+            return dictDirBindings.Count > 0;
+        }
+
+        private AnalogEmulationSettings settings;
+        public AnalogEmulationSettings Settings
+        {
+            get => settings;
+            set => settings = value;
+        }
+        public bool ShouldSerializeSettings()
+        {
+            return analogAct.ChangedProperties.Count > 0;
+        }
+
+        // Deserialize
+        public AnalogEmulationActionSerializer() : base()
+        {
+            mapAction = analogAct;
+            settings = new AnalogEmulationSettings(analogAct);
+
+            NameChanged += AnalogEmulationActionSerializer_NameChanged;
+            settings.DeadZoneChanged += Settings_DeadZoneChanged;
+            settings.MaxZoneChanged += Settings_MaxZoneChanged;
+            settings.DirectionModeChanged += Settings_DirectionModeChanged;
+            settings.DirectionPulseTimeMsChanged += Settings_DirectionPulseTimeMsChanged;
+            settings.AnalogSpeedEmulationEnabledChanged += Settings_AnalogSpeedEmulationEnabledChanged;
+            settings.AnalogEmulationActivePercentChanged += Settings_AnalogEmulationActivePercentChanged;
+            settings.AnalogEmulationPulseTimeMsChanged += Settings_AnalogEmulationPulseTimeMsChanged;
+            settings.FullSpeedThresholdPercentChanged += Settings_FullSpeedThresholdPercentChanged;
+        }
+
+        private void AnalogEmulationActionSerializer_NameChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.NAME);
+        }
+
+        private void Settings_DeadZoneChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_MaxZoneChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.MAX_ZONE);
+        }
+
+        private void Settings_DirectionModeChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIRECTION_MODE);
+        }
+
+        private void Settings_DirectionPulseTimeMsChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIRECTION_PULSE_TIME_MS);
+        }
+
+        private void Settings_AnalogSpeedEmulationEnabledChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.SPEED_ENABLED);
+        }
+
+        private void Settings_AnalogEmulationActivePercentChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.SPEED_ACTIVE_PERCENT);
+        }
+
+        private void Settings_AnalogEmulationPulseTimeMsChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.SPEED_PULSE_TIME_MS);
+        }
+
+        private void Settings_FullSpeedThresholdPercentChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.FULL_SPEED_THRESHOLD_PERCENT);
+        }
+
+        // Pre-serialize
+        public AnalogEmulationActionSerializer(ActionLayer tempLayer, MapAction action) :
+            base(tempLayer, action)
+        {
+            if (action is StickAnalogEmulationAction temp)
+            {
+                analogAct = temp;
+                mapAction = analogAct;
+                settings = new AnalogEmulationSettings(analogAct);
+                PopulateFuncs();
+            }
+        }
+
+        // Pre-serialize
+        private void PopulateFuncs()
+        {
+            List<ActionFuncSerializer> tempFuncs = new List<ActionFuncSerializer>();
+
+            for (int i = 0; i < SlotNames.Length; i++)
+            {
+                AxisDirButton dirButton = analogAct.DirButtons[i];
+                if (dirButton == null) continue;
+
+                tempFuncs.Clear();
+                foreach (ActionFunc tempFunc in dirButton.ActionFuncs)
+                {
+                    ActionFuncSerializer tempSerializer =
+                        ActionFuncSerializerFactory.CreateSerializer(tempFunc);
+                    if (tempSerializer != null)
+                    {
+                        tempFuncs.Add(tempSerializer);
+                    }
+                }
+
+                dictDirBindings.Add(SlotNames[i],
+                    new StickPadActionSerializer.StickPadDirBinding()
+                    {
+                        ActionDirName = dirButton.Name,
+                        ActionFuncSerializers = new List<ActionFuncSerializer>(tempFuncs),
+                    });
+            }
+        }
+
+        // Post-deserialize
+        public override void PopulateMap()
+        {
+            foreach (AxisDirButton dirButton in analogAct.DirButtons)
+            {
+                dirButton?.ActionFuncs.Clear();
+            }
+
+            foreach (KeyValuePair<string, StickPadActionSerializer.StickPadDirBinding> tempKeyPair in dictDirBindings)
+            {
+                int idx = Array.IndexOf(SlotNames, tempKeyPair.Key);
+                if (idx < 0) continue;
+
+                AxisDirButton tempDirButton = analogAct.DirButtons[idx];
+                if (tempDirButton == null) continue;
+
+                tempDirButton.Name = tempKeyPair.Value.ActionDirName;
+
+                foreach (ActionFuncSerializer serializer in tempKeyPair.Value.ActionFuncSerializers)
+                {
+                    serializer.PopulateFunc();
+                    tempDirButton.ActionFuncs.Add(serializer.ActionFunc);
+                }
+
+                FlagBtnChangedDirection(idx, analogAct);
+            }
+        }
+
+        public void FlagBtnChangedDirection(int idx, StickAnalogEmulationAction action)
+        {
+            switch ((StickAnalogEmulationAction.DirSlot)idx)
+            {
+                case StickAnalogEmulationAction.DirSlot.Up:
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_UP);
+                    break;
+                case StickAnalogEmulationAction.DirSlot.Down:
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_DOWN);
+                    break;
+                case StickAnalogEmulationAction.DirSlot.Left:
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_LEFT);
+                    break;
+                case StickAnalogEmulationAction.DirSlot.Right:
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_RIGHT);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     public class StickMouseSerializer : MapActionSerializer
     {
         public class StickMouseSettings
@@ -8987,6 +9306,11 @@ namespace DS4MapperTest
                         StickFlickStickActionSerializer flickInstance = new StickFlickStickActionSerializer();
                         JsonConvert.PopulateObject(j.ToString(), flickInstance);
                         resultInstance = flickInstance;
+                        break;
+                    case "StickAnalogEmulationAction":
+                        AnalogEmulationActionSerializer analogEmuInstance = new AnalogEmulationActionSerializer();
+                        JsonConvert.PopulateObject(j.ToString(), analogEmuInstance);
+                        resultInstance = analogEmuInstance;
                         break;
                     case "StickNoAction":
                         StickNoActionSerializer stickNoActinstance = new StickNoActionSerializer();

@@ -34,6 +34,7 @@ namespace DS4MapperTest.ViewModels
             new StickModeItem("Circular", 4),
             new StickModeItem("Absolute Mouse", 5),
             new StickModeItem("Flick Stick", 6),
+            new StickModeItem("Analog Emulation", 7),
         };
 
         // The original Steam Controller registers its single stick as "Stick";
@@ -155,6 +156,7 @@ namespace DS4MapperTest.ViewModels
                 StickCircular => 4,
                 StickAbsMouse => 5,
                 StickFlickStick => 6,
+                StickAnalogEmulationAction => 7,
                 _ => 0,
             };
         }
@@ -195,6 +197,7 @@ namespace DS4MapperTest.ViewModels
                 StickCircular => new StickCircularPropViewModel(owner.DeviceMapper, action),
                 StickAbsMouse => new StickAbsMousePropViewModel(owner.DeviceMapper, action),
                 StickFlickStick => new StickFlickStickPropViewModel(owner.DeviceMapper, action),
+                StickAnalogEmulationAction => new StickAnalogEmulationPropViewModel(owner.DeviceMapper, action),
                 _ => (object)new StickNoActionPropViewModel(),
             };
 
@@ -249,6 +252,12 @@ namespace DS4MapperTest.ViewModels
                 case StickAbsMouse:
                     extraBindings.Add(new StickExtraBindingItem(this, "Ring", "Ring / Outer Ring"));
                     break;
+                case StickAnalogEmulationAction:
+                    extraBindings.Add(new StickExtraBindingItem(this, "Up", "Up"));
+                    extraBindings.Add(new StickExtraBindingItem(this, "Down", "Down"));
+                    extraBindings.Add(new StickExtraBindingItem(this, "Left", "Left"));
+                    extraBindings.Add(new StickExtraBindingItem(this, "Right", "Right"));
+                    break;
                 default:
                     break;
             }
@@ -264,6 +273,7 @@ namespace DS4MapperTest.ViewModels
                 StickCircular circ when slotKey == "CW" => circ.ClockWiseBtn,
                 StickCircular circ when slotKey == "CCW" => circ.CounterClockwiseBtn,
                 StickAbsMouse abs when slotKey == "Ring" => abs.RingButton,
+                StickAnalogEmulationAction analog when TryAnalogDirIndex(slotKey, out int aidx) => analog.DirButtons[aidx],
                 _ => null,
             };
         }
@@ -280,6 +290,8 @@ namespace DS4MapperTest.ViewModels
                     return EnsureCircularButton(circ, false);
                 case StickAbsMouse abs when slotKey == "Ring":
                     return EnsureAbsMouseRingButton(abs);
+                case StickAnalogEmulationAction analog when TryAnalogDirIndex(slotKey, out int aidx):
+                    return EnsureAnalogDirButton(analog, aidx);
                 default:
                     return null;
             }
@@ -366,6 +378,53 @@ namespace DS4MapperTest.ViewModels
             StickAbsMousePropViewModel propVm = settingsViewModel as StickAbsMousePropViewModel;
             propVm?.UpdateRingButton(existing, newButton);
             return newButton;
+        }
+
+        private ButtonAction EnsureAnalogDirButton(StickAnalogEmulationAction analog, int idx)
+        {
+            AxisDirButton existing = analog.DirButtons[idx];
+            bool usingParent = analog.UsingParentActionButton[idx];
+            if (!usingParent && HasNormalPressFunc(existing)) return existing;
+
+            AxisDirButton newButton = new AxisDirButton();
+            if (existing != null)
+            {
+                newButton.CopyBaseProps(existing);
+                newButton.CopyAction(existing);
+            }
+            EnsureRegularPressFunc(newButton);
+
+            StickAnalogEmulationPropViewModel propVm = settingsViewModel as StickAnalogEmulationPropViewModel;
+            Action<ButtonAction, ButtonAction> updater = GetAnalogUpdater(propVm, idx);
+            updater?.Invoke(existing, newButton);
+            return newButton;
+        }
+
+        private static Action<ButtonAction, ButtonAction> GetAnalogUpdater(StickAnalogEmulationPropViewModel propVm, int idx)
+        {
+            if (propVm == null) return null;
+            return (StickAnalogEmulationAction.DirSlot)idx switch
+            {
+                StickAnalogEmulationAction.DirSlot.Up => propVm.UpdateUpDirAction,
+                StickAnalogEmulationAction.DirSlot.Down => propVm.UpdateDownDirAction,
+                StickAnalogEmulationAction.DirSlot.Left => propVm.UpdateLeftDirAction,
+                StickAnalogEmulationAction.DirSlot.Right => propVm.UpdateRightDirAction,
+                _ => null,
+            };
+        }
+
+        private static bool TryAnalogDirIndex(string slotKey, out int index)
+        {
+            index = slotKey switch
+            {
+                "Up" => (int)StickAnalogEmulationAction.DirSlot.Up,
+                "Down" => (int)StickAnalogEmulationAction.DirSlot.Down,
+                "Left" => (int)StickAnalogEmulationAction.DirSlot.Left,
+                "Right" => (int)StickAnalogEmulationAction.DirSlot.Right,
+                _ => -1,
+            };
+
+            return index >= 0;
         }
 
         private static bool TryDirIndex(string slotKey, out int index)

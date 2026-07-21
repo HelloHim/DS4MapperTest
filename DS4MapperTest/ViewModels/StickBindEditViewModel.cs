@@ -116,6 +116,13 @@ namespace DS4MapperTest.ViewModels
                     }
 
                     break;
+                case 7:
+                    {
+                        StickAnalogEmulationAction tempAction = new StickAnalogEmulationAction();
+                        result = tempAction;
+                    }
+
+                    break;
                 default:
                     break;
             }
