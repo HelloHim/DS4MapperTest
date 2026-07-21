@@ -236,6 +236,7 @@ namespace DS4MapperTest.ViewModels
             {
                 selectedLayerOpsIndex = value;
                 SelectedLayerOpsIndexChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedLayerOpsIndex)));
             }
         }
         public event EventHandler SelectedLayerOpsIndexChanged;
@@ -248,6 +249,7 @@ namespace DS4MapperTest.ViewModels
             {
                 selectedLayerChoiceIndex = value;
                 SelectedLayerChoiceIndexChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedLayerChoiceIndex)));
             }
         }
         public event EventHandler SelectedLayerChoiceIndexChanged;
@@ -260,6 +262,7 @@ namespace DS4MapperTest.ViewModels
             {
                 showAvailableLayers = value;
                 ShowAvailableLayersChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowAvailableLayers)));
             }
         }
         public event EventHandler ShowAvailableLayersChanged;
@@ -273,6 +276,7 @@ namespace DS4MapperTest.ViewModels
                 if (showLayerChangeConditions == value) return;
                 showLayerChangeConditions = value;
                 ShowLayerChangeConditionsChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowLayerChangeConditions)));
             }
         }
         public event EventHandler ShowLayerChangeConditionsChanged;
@@ -285,6 +289,7 @@ namespace DS4MapperTest.ViewModels
             {
                 selectedLayerChangeConditionIndex = value;
                 SelectedLayerChangeConditionIndexChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedLayerChangeConditionIndex)));
             }
         }
         public event EventHandler SelectedLayerChangeConditionIndexChanged;
