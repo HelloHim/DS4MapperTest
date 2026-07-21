@@ -2,6 +2,7 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
 {
     public enum TouchpadSettingsSection
     {
+        ModeSettings,
         MouseMovement,
         SensitivityCalibration,
         FilteringStabilisation,

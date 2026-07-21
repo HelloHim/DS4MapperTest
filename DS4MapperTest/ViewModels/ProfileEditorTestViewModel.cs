@@ -2373,14 +2373,14 @@ namespace DS4MapperTest.ViewModels
                 {
                     TouchpadNoAction => "No touchpad output is assigned.",
                     TouchpadSingleButton => "Button binding settings are available below.",
-                    TouchpadMouse => "Movement is in Mouse & Movement. Sensitivity and calibration are in Sensitivity & Calibration. Deadzone, smoothing, and trackball settings are in Mode Settings. Action name is in Mode.",
-                    TouchpadAbsAction => "Movement is in Mouse & Movement. Deadzone, outer ring, and release settings are in Mode Settings. Action name is in Mode.",
-                    TouchpadMouseJoystick => "Movement is in Mouse & Movement. Output curve is in Sensitivity & Calibration. Deadzone, smoothing, and trackball settings are in Mode Settings. Action name is in Mode.",
-                    TouchpadStickAction => "Movement is in Mouse & Movement. Output curve and vertical scale are in Sensitivity & Calibration. Deadzone, smoothing, and outer ring settings are in Mode Settings. Action name is in Mode.",
-                    TouchpadActionPad => "Zone and outer ring settings are available in Mode Settings.",
-                    TouchpadDirectionalSwipe => "Gesture bindings, deadzone, and delay are in Mode Settings. Action name is in Mode.",
-                    TouchpadCircular => "Scroll settings are available in Mode Settings. Action name is in Mode.",
-                    TouchpadFlickStick => "Movement is in Mouse & Movement. Calibration is in Sensitivity & Calibration. Flick threshold is in Mode Settings. Action name is in Mode.",
+                    TouchpadMouse => "Movement is in Mouse & Movement. Sensitivity and calibration are in Sensitivity & Calibration. Deadzone, smoothing, and trackball settings are in the later settings tabs. Action name is in Mode.",
+                    TouchpadAbsAction => "Movement is in Mouse & Movement. Deadzone, outer ring, and release settings are in the later settings tabs. Action name is in Mode.",
+                    TouchpadMouseJoystick => "Movement is in Mouse & Movement. Output curve is in Sensitivity & Calibration. Deadzone, smoothing, and trackball settings are in the later settings tabs. Action name is in Mode.",
+                    TouchpadStickAction => "Movement is in Mouse & Movement. Output curve and vertical scale are in Sensitivity & Calibration. Deadzone, smoothing, and outer ring settings are in the later settings tabs. Action name is in Mode.",
+                    TouchpadActionPad => "D-Pad mode and direction binds are in Mode Settings. Deadzone and diagonal range are in Zones & Gestures.",
+                    TouchpadDirectionalSwipe => "Gesture bindings, deadzone, and delay are in Zones & Gestures. Action name is in Mode.",
+                    TouchpadCircular => "Scroll settings are available in Trackball & Scroll. Action name is in Mode.",
+                    TouchpadFlickStick => "Movement is in Mouse & Movement. Calibration is in Sensitivity & Calibration. Flick threshold is in Zones & Gestures. Action name is in Mode.",
                     _ => "This touchpad mode uses DS4MapperTest's existing settings.",
                 };
             }
@@ -2408,6 +2408,9 @@ namespace DS4MapperTest.ViewModels
         public bool IsZoneGestureAction =>
             mappedAction is TouchpadActionPad ||
             mappedAction is TouchpadDirectionalSwipe;
+
+        public bool IsModeSettingsAction =>
+            mappedAction is TouchpadActionPad;
 
         public bool IsTrackballScrollAction =>
             mappedAction is TouchpadMouse ||
@@ -2470,6 +2473,7 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(IsSensitivityCalibrationAction));
             OnPropertyChanged(nameof(IsFilteringStabilisationAction));
             OnPropertyChanged(nameof(IsZoneGestureAction));
+            OnPropertyChanged(nameof(IsModeSettingsAction));
             OnPropertyChanged(nameof(IsTrackballScrollAction));
             OnPropertyChanged(nameof(IsAdvancedAction));
             OnPropertyChanged(nameof(IsExtraAction));

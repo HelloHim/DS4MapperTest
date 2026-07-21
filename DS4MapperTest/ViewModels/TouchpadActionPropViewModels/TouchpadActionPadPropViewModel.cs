@@ -4,9 +4,11 @@ using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
 using DS4MapperTest.StickModifiers;
 using DS4MapperTest.TouchpadActions;
+using DS4MapperTest.ViewModels;
 using DS4MapperTest.ViewModels.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -305,6 +307,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler ActionPresetChoiceChanged;
 
+        private List<TouchpadDirectionBindItem> cardinalDirectionItems;
+        public List<TouchpadDirectionBindItem> CardinalDirectionItems => cardinalDirectionItems;
+
+        private List<TouchpadDirectionBindItem> diagonalDirectionItems;
+        public List<TouchpadDirectionBindItem> DiagonalDirectionItems => diagonalDirectionItems;
+
         public bool HighlightName
         {
             get => action.ParentAction == null ||
@@ -429,6 +437,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             }
 
             PrepareModel();
+            PrepareDirectionItems();
 
             NameChanged += TouchpadActionPadPropViewModel_NameChanged;
             DeadZoneChanged += TouchpadActionPadPropViewModel_DeadZoneChanged;
@@ -619,6 +628,113 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             {
                 selectedPadModeIndex = index;
             }
+        }
+
+        private void PrepareDirectionItems()
+        {
+            cardinalDirectionItems = new List<TouchpadDirectionBindItem>()
+            {
+                new TouchpadDirectionBindItem(this, TouchpadActionPad.DpadDirections.Up, "Up", "Cardinal zone"),
+                new TouchpadDirectionBindItem(this, TouchpadActionPad.DpadDirections.Down, "Down", "Cardinal zone"),
+                new TouchpadDirectionBindItem(this, TouchpadActionPad.DpadDirections.Left, "Left", "Cardinal zone"),
+                new TouchpadDirectionBindItem(this, TouchpadActionPad.DpadDirections.Right, "Right", "Cardinal zone"),
+            };
+
+            diagonalDirectionItems = new List<TouchpadDirectionBindItem>()
+            {
+                new TouchpadDirectionBindItem(this, TouchpadActionPad.DpadDirections.UpLeft, "Up Left", "Diagonal zone"),
+                new TouchpadDirectionBindItem(this, TouchpadActionPad.DpadDirections.UpRight, "Up Right", "Diagonal zone"),
+                new TouchpadDirectionBindItem(this, TouchpadActionPad.DpadDirections.DownLeft, "Down Left", "Diagonal zone"),
+                new TouchpadDirectionBindItem(this, TouchpadActionPad.DpadDirections.DownRight, "Down Right", "Diagonal zone"),
+            };
+        }
+
+        internal ButtonAction GetDirectionAction(TouchpadActionPad.DpadDirections direction)
+        {
+            return action.EventCodes4[(int)direction];
+        }
+
+        internal void EnsureEditableAction()
+        {
+            if (!usingRealAction)
+            {
+                ReplaceExistingLayerAction(this, EventArgs.Empty);
+            }
+        }
+
+        internal ButtonAction EnsureEditableDirectionAction(TouchpadActionPad.DpadDirections direction)
+        {
+            EnsureEditableAction();
+
+            ButtonAction dirAction = action.EventCodes4[(int)direction];
+            if (dirAction == null)
+            {
+                dirAction = new AxisDirButton(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                action.EventCodes4[(int)direction] = dirAction;
+            }
+
+            MarkDirectionChanged(direction, dirAction);
+            return dirAction;
+        }
+
+        internal void MarkDirectionChanged(TouchpadActionPad.DpadDirections direction, ButtonAction dirAction)
+        {
+            string propertyName = GetDirectionPropertyName(direction);
+            if (!action.ChangedProperties.Contains(propertyName))
+            {
+                action.ChangedProperties.Add(propertyName);
+            }
+
+            action.UseParentActionButton[(int)direction] = false;
+            action.RaiseNotifyPropertyChange(mapper, propertyName);
+            FaceButtonBindingItem.MarkFunctionsChanged(dirAction);
+        }
+
+        internal EditFaceBindingContext PrepareDirectionEdit(TouchpadDirectionBindItem item)
+        {
+            ButtonAction dirAction = EnsureEditableDirectionAction(item.Direction);
+            ActionFunc func = dirAction.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault();
+            if (func == null)
+            {
+                func = new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                mapper.ProcessMappingChangeAction(() =>
+                {
+                    dirAction.Release(mapper, ignoreReleaseActions: true);
+                    dirAction.ActionFuncs.Insert(0, func);
+                    MarkDirectionChanged(item.Direction, dirAction);
+                });
+            }
+
+            return new EditFaceBindingContext(mapper, dirAction, func);
+        }
+
+        internal void RefreshDirectionBindings()
+        {
+            foreach (TouchpadDirectionBindItem item in cardinalDirectionItems)
+            {
+                item.Refresh();
+            }
+
+            foreach (TouchpadDirectionBindItem item in diagonalDirectionItems)
+            {
+                item.Refresh();
+            }
+        }
+
+        private static string GetDirectionPropertyName(TouchpadActionPad.DpadDirections direction)
+        {
+            return direction switch
+            {
+                TouchpadActionPad.DpadDirections.Up => TouchpadActionPad.PropertyKeyStrings.PAD_DIR_UP,
+                TouchpadActionPad.DpadDirections.Down => TouchpadActionPad.PropertyKeyStrings.PAD_DIR_DOWN,
+                TouchpadActionPad.DpadDirections.Left => TouchpadActionPad.PropertyKeyStrings.PAD_DIR_LEFT,
+                TouchpadActionPad.DpadDirections.Right => TouchpadActionPad.PropertyKeyStrings.PAD_DIR_RIGHT,
+                TouchpadActionPad.DpadDirections.UpLeft => TouchpadActionPad.PropertyKeyStrings.PAD_DIR_UPLEFT,
+                TouchpadActionPad.DpadDirections.UpRight => TouchpadActionPad.PropertyKeyStrings.PAD_DIR_UPRIGHT,
+                TouchpadActionPad.DpadDirections.DownLeft => TouchpadActionPad.PropertyKeyStrings.PAD_DIR_DOWNLEFT,
+                TouchpadActionPad.DpadDirections.DownRight => TouchpadActionPad.PropertyKeyStrings.PAD_DIR_DOWNRIGHT,
+                _ => TouchpadActionPad.PropertyKeyStrings.PAD_DIR_UP,
+            };
         }
 
         public void UpdateUpDirAction(ButtonAction oldAction, ButtonAction newAction)
@@ -928,6 +1044,60 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             ActionDownBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
             ActionLeftBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
             ActionRightBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
+            RefreshDirectionBindings();
+        }
+    }
+
+    public class TouchpadDirectionBindItem : INotifyPropertyChanged, IQuickBindTarget
+    {
+        private readonly TouchpadActionPadPropViewModel owner;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public TouchpadActionPad.DpadDirections Direction { get; }
+        public string DisplayName { get; }
+        public string Subtitle { get; }
+
+        public string DisplayBind
+        {
+            get
+            {
+                ButtonAction action = owner.GetDirectionAction(Direction);
+                string result = action?.DescribeActions(((IQuickBindTarget)this).Mapper);
+                return string.IsNullOrWhiteSpace(result) ? "Unbound" : result;
+            }
+        }
+
+        public TouchpadDirectionBindItem(TouchpadActionPadPropViewModel owner,
+            TouchpadActionPad.DpadDirections direction, string displayName, string subtitle)
+        {
+            this.owner = owner;
+            Direction = direction;
+            DisplayName = displayName;
+            Subtitle = subtitle;
+        }
+
+        Mapper IQuickBindTarget.Mapper => owner.Napper;
+        string IQuickBindTarget.RowLabel => DisplayName;
+        string IQuickBindTarget.SlotLabel => "Regular Press";
+        bool IQuickBindTarget.IsComplexBinding =>
+            !QuickBindActionApplier.IsSimpleFunc(
+                owner.GetDirectionAction(Direction)?.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault());
+
+        EditFaceBindingContext IQuickBindTarget.GetEditContext()
+        {
+            return owner.PrepareDirectionEdit(this);
+        }
+
+        void IQuickBindTarget.NotifyBindingChanged()
+        {
+            owner.MarkDirectionChanged(Direction, owner.GetDirectionAction(Direction));
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayBind)));
         }
     }
 
