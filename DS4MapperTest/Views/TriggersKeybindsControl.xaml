@@ -1,4 +1,4 @@
-<UserControl x:Class="DS4MapperTest.Views.TriggersKeybindsControl"
+﻿<UserControl x:Class="DS4MapperTest.Views.TriggersKeybindsControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -204,8 +204,11 @@
                                                                                   Increment="10"
                                                                                   Width="108"
                                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                                  Value="{Binding TurboDurationMs, UpdateSourceTrigger=PropertyChanged}"
-                                                                                  ValueFormat="0 ms"/>
+                                                                                  Value="{Binding TurboDurationMs, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                                  <TextBlock Text="ms"
+                                                                                             Style="{StaticResource JsmccMutedText}"
+                                                                                             Margin="6,0,0,0"
+                                                                                             VerticalAlignment="Center"/>
                                                             </StackPanel>
                                                         </Border>
 
@@ -219,8 +222,11 @@
                                                                                   Increment="10"
                                                                                   Width="108"
                                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                                  Value="{Binding FireDelayMs, UpdateSourceTrigger=PropertyChanged}"
-                                                                                  ValueFormat="0 ms"/>
+                                                                                  Value="{Binding FireDelayMs, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                                  <TextBlock Text="ms"
+                                                                                             Style="{StaticResource JsmccMutedText}"
+                                                                                             Margin="6,0,0,0"
+                                                                                             VerticalAlignment="Center"/>
                                                             </StackPanel>
                                                         </Border>
 
@@ -234,8 +240,11 @@
                                                                                   Increment="10"
                                                                                   Width="108"
                                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                                  Value="{Binding HoldMs, UpdateSourceTrigger=PropertyChanged}"
-                                                                                  ValueFormat="0 ms"/>
+                                                                                  Value="{Binding HoldMs, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                                  <TextBlock Text="ms"
+                                                                                             Style="{StaticResource JsmccMutedText}"
+                                                                                             Margin="6,0,0,0"
+                                                                                             VerticalAlignment="Center"/>
                                                             </StackPanel>
                                                         </Border>
 
@@ -249,8 +258,11 @@
                                                                                   Increment="10"
                                                                                   Width="108"
                                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                                  Value="{Binding TapWindowMs, UpdateSourceTrigger=PropertyChanged}"
-                                                                                  ValueFormat="0 ms"/>
+                                                                                  Value="{Binding TapWindowMs, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                                  <TextBlock Text="ms"
+                                                                                             Style="{StaticResource JsmccMutedText}"
+                                                                                             Margin="6,0,0,0"
+                                                                                             VerticalAlignment="Center"/>
                                                             </StackPanel>
                                                         </Border>
 
@@ -454,8 +466,11 @@
                                                     <hc:NumericUpDown Minimum="0" Maximum="10000" DecimalPlaces="0"
                                                                       Increment="10" Width="108"
                                                                       Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                      Value="{Binding HipFireDelay, UpdateSourceTrigger=PropertyChanged}"
-                                                                      ValueFormat="0 ms"/>
+                                                                      Value="{Binding HipFireDelay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    <TextBlock Text="ms"
+                                                               Style="{StaticResource JsmccMutedText}"
+                                                               Margin="6,0,0,0"
+                                                               VerticalAlignment="Center"/>
                                                 </StackPanel>
                                             </Border>
 

@@ -121,9 +121,12 @@
                                           DecimalPlaces="1"
                                           Increment="10"
                                           Value="{Binding TickTime,FallbackValue='100.0'}"
-                                          ValueFormat="0 ms"
                                           Width="118"
-                                          Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                          Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Margin="0,0,8,4"/>
+                        <TextBlock Text="ms"
+                                   Style="{StaticResource JsmccMutedText}"
+                                   VerticalAlignment="Center"/>
                     </WrapPanel>
                 </StackPanel>
             </TabItem>
@@ -197,10 +200,13 @@
                                                   DecimalPlaces="0"
                                                   Increment="10.0"
                                                   Value="{Binding CameraTurnDurationMs, FallbackValue='100.0'}"
-                                                  ValueFormat="0 ms"
                                                   Width="118"
                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
                                                   Margin="0,0,8,4"/>
+                                <TextBlock Text="ms"
+                                           Style="{StaticResource JsmccMutedText}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,4"/>
                             </WrapPanel>
                             <shared:CalibrationModeControl Margin="0,8,0,0"/>
                         </StackPanel>
