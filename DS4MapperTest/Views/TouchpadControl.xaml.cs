@@ -351,12 +351,12 @@ namespace DS4MapperTest.Views
         {
             return section switch
             {
-                "MouseMovement" => $"{item.DisplayName} is currently set to Unbound. Choose a movement mode in Bindings to configure movement settings.",
-                "SensitivityCalibration" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Bindings to configure sensitivity and calibration settings.",
-                "FilteringStabilisation" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Bindings to configure filtering and stabilisation settings.",
-                "ZonesGestures" => $"{item.DisplayName} is currently set to Unbound. Choose a zone or gesture-capable mode in Bindings to configure gesture settings.",
-                "TrackballScroll" => $"{item.DisplayName} is currently set to Unbound. Choose a trackball or scroll mode in Bindings to configure these settings.",
-                "Advanced" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Bindings to configure advanced settings.",
+                "MouseMovement" => $"{item.DisplayName} is currently set to Unbound. Choose a movement mode in Mode to configure movement settings.",
+                "SensitivityCalibration" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure sensitivity and calibration settings.",
+                "FilteringStabilisation" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure filtering and stabilisation settings.",
+                "ZonesGestures" => $"{item.DisplayName} is currently set to Unbound. Choose a zone or gesture-capable mode in Mode to configure gesture settings.",
+                "TrackballScroll" => $"{item.DisplayName} is currently set to Unbound. Choose a trackball or scroll mode in Mode to configure these settings.",
+                "Advanced" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure advanced settings.",
                 _ => $"{item.DisplayName} is currently set to Unbound.",
             };
         }

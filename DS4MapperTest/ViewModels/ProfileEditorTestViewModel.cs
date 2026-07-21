@@ -2373,14 +2373,14 @@ namespace DS4MapperTest.ViewModels
                 {
                     TouchpadNoAction => "No touchpad output is assigned.",
                     TouchpadSingleButton => "Button binding settings are available below.",
-                    TouchpadMouse => "Movement is in Mouse & Movement. Sensitivity and calibration are in Sensitivity & Calibration. Deadzone and smoothing are in Filters. Trackball settings are in Trackball & Scroll. Action name is in Extra.",
-                    TouchpadAbsAction => "Movement is in Mouse & Movement. Deadzone settings are in Filters. Outer ring and release settings are in Advanced. Action name is in Extra.",
-                    TouchpadMouseJoystick => "Movement is in Mouse & Movement. Output curve is in Sensitivity & Calibration. Deadzone and smoothing are in Filters. Trackball settings are in Trackball & Scroll. Action name is in Extra.",
-                    TouchpadStickAction => "Movement is in Mouse & Movement. Output curve and vertical scale are in Sensitivity & Calibration. Deadzone and smoothing are in Filters. Outer ring settings are in Advanced. Action name is in Extra.",
-                    TouchpadActionPad => "Zone settings are available in Zones & Gestures. Outer ring settings are available in Advanced.",
-                    TouchpadDirectionalSwipe => "Gesture bindings are in Zones & Gestures. Deadzone and delay are in Filters. Action name is in Extra.",
-                    TouchpadCircular => "Scroll settings are available in Trackball & Scroll. Action name is in Extra.",
-                    TouchpadFlickStick => "Movement is in Mouse & Movement. Calibration is in Sensitivity & Calibration. Flick threshold is in Filters. Action name is in Extra.",
+                    TouchpadMouse => "Movement is in Mouse & Movement. Sensitivity and calibration are in Sensitivity & Calibration. Deadzone, smoothing, and trackball settings are in Mode Settings. Action name is in Mode.",
+                    TouchpadAbsAction => "Movement is in Mouse & Movement. Deadzone, outer ring, and release settings are in Mode Settings. Action name is in Mode.",
+                    TouchpadMouseJoystick => "Movement is in Mouse & Movement. Output curve is in Sensitivity & Calibration. Deadzone, smoothing, and trackball settings are in Mode Settings. Action name is in Mode.",
+                    TouchpadStickAction => "Movement is in Mouse & Movement. Output curve and vertical scale are in Sensitivity & Calibration. Deadzone, smoothing, and outer ring settings are in Mode Settings. Action name is in Mode.",
+                    TouchpadActionPad => "Zone and outer ring settings are available in Mode Settings.",
+                    TouchpadDirectionalSwipe => "Gesture bindings, deadzone, and delay are in Mode Settings. Action name is in Mode.",
+                    TouchpadCircular => "Scroll settings are available in Mode Settings. Action name is in Mode.",
+                    TouchpadFlickStick => "Movement is in Mouse & Movement. Calibration is in Sensitivity & Calibration. Flick threshold is in Mode Settings. Action name is in Mode.",
                     _ => "This touchpad mode uses DS4MapperTest's existing settings.",
                 };
             }
@@ -2423,6 +2423,19 @@ namespace DS4MapperTest.ViewModels
 
         public bool IsUnbound => mappedAction is TouchpadNoAction;
 
+        public bool HasAdvancedTouchpadSettings =>
+            IsFilteringStabilisationAction ||
+            IsZoneGestureAction ||
+            IsTrackballScrollAction ||
+            IsAdvancedAction;
+
+        public bool ShowAdvancedTouchpadSettingsEmptyMessage => !HasAdvancedTouchpadSettings;
+
+        public string AdvancedTouchpadSettingsEmptyMessage =>
+            IsUnbound
+                ? $"{DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure advanced settings."
+                : $"{DisplayName} is set to {ActionDisplayName}. This mode has no filtering, zone, trackball, or advanced settings.";
+
         private Mapper mapper;
         public Mapper Mapper
         {
@@ -2461,6 +2474,9 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(IsAdvancedAction));
             OnPropertyChanged(nameof(IsExtraAction));
             OnPropertyChanged(nameof(IsUnbound));
+            OnPropertyChanged(nameof(HasAdvancedTouchpadSettings));
+            OnPropertyChanged(nameof(ShowAdvancedTouchpadSettingsEmptyMessage));
+            OnPropertyChanged(nameof(AdvancedTouchpadSettingsEmptyMessage));
         }
 
         private static int GetActionIndex(TouchpadMapAction action)
