@@ -56,7 +56,7 @@
             <StackPanel x:Name="FilteringFieldsPanel">
             <StackPanel Orientation="Horizontal">
                 <Label Content="Dead Zone X" />
-                <hc:NumericUpDown ValueFormat="0 unit" Value="{Binding DeadZoneX, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
+                <hc:NumericUpDown Value="{Binding DeadZoneX, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
                     <hc:NumericUpDown.Style>
                         <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                             <Style.Triggers>
@@ -71,7 +71,7 @@
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Dead Zone Y" />
-                <hc:NumericUpDown ValueFormat="0 unit" Value="{Binding DeadZoneY, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
+                <hc:NumericUpDown Value="{Binding DeadZoneY, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
                     <hc:NumericUpDown.Style>
                         <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                             <Style.Triggers>
@@ -87,7 +87,7 @@
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Delay Time" />
                 <hc:NumericUpDown Minimum="0.0" Maximum="1000.0" DecimalPlaces="0" Increment="10"
-                                  Value="{Binding DelayTime,FallbackValue='1.0'}" ValueFormat="0 ms" Margin="8,0,0,0">
+                                  Value="{Binding DelayTime,FallbackValue='1.0'}" Margin="8,0,0,0">
                     <hc:NumericUpDown.Style>
                         <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                             <Style.Triggers>
@@ -98,6 +98,7 @@
                         </Style>
                     </hc:NumericUpDown.Style>
                 </hc:NumericUpDown>
+                <TextBlock Text="ms" VerticalAlignment="Center" Margin="6,0,0,0" />
             </StackPanel>
             </StackPanel>
 
