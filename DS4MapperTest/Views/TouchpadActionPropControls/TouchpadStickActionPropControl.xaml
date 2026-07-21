@@ -8,12 +8,12 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <DockPanel>
-        <ScrollViewer DockPanel.Dock="Top">
+        <ScrollViewer DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
             <StackPanel>
             <StackPanel x:Name="ExtraFieldsPanel">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="Action Name" />
-                    <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="340" Margin="8,0,0,0"
+                    <TextBox Text="{Binding Name,UpdateSourceTrigger=LostFocus}" Width="180" Margin="8,0,0,0"
                              ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                         <TextBox.Style>
                             <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
