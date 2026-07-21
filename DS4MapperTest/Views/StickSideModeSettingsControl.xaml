@@ -574,6 +574,130 @@
                            Margin="0,4,0,0"/>
             </StackPanel>
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type propvm:StickAnalogEmulationPropViewModel}">
+            <StackPanel>
+                <TextBlock Text="Direction" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,8"/>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Direction Resolution" Style="{StaticResource JsmccLabelText}"/>
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding DirectionResolutionItems}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="ChoiceValue"
+                                  SelectedValue="{Binding DirectionResolution}"
+                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                  HorizontalAlignment="Left"
+                                  MinWidth="180"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Direction Pulse Time" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="1" Maximum="1000" DecimalPlaces="0" Increment="1"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding DirectionPulseTimeMs, UpdateSourceTrigger=LostFocus}"/>
+                        <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <TextBlock Text="Length of one complete secondary-direction-key pulse cycle."
+                           Style="{StaticResource JsmccMutedText}"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,4"/>
+
+                <TextBlock Text="Speed" Style="{StaticResource JsmccCardTitle}" Margin="0,14,0,8"/>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Analog Speed Emulation" Style="{StaticResource JsmccLabelText}"/>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding AnalogSpeedEmulationEnabled}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <StackPanel Visibility="{Binding AnalogSpeedEmulationEnabled, Converter={StaticResource BoolToVis}}">
+                    <Border Style="{StaticResource ModeRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Analog Emulation Active %" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="0" Increment="1"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding AnalogEmulationActivePercent, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Text="Lowest non-zero percentage of each speed pulse cycle spent moving."
+                               Style="{StaticResource JsmccMutedText}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,4"/>
+
+                    <Border Style="{StaticResource ModeRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Analog Emulation Pulse Time" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="1" Maximum="1000" DecimalPlaces="0" Increment="1"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding AnalogEmulationPulseTimeMs, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Text="Length of one complete movement and neutral pulse cycle."
+                               Style="{StaticResource JsmccMutedText}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,4"/>
+
+                    <Border Style="{StaticResource ModeRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Full-Speed Threshold" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="1" Maximum="100" DecimalPlaces="0" Increment="1"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding FullSpeedThresholdPercent, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Text="Stick distance at which speed pulsing stops and movement remains fully active."
+                               Style="{StaticResource JsmccMutedText}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,4"/>
+                </StackPanel>
+
+                <TextBlock Text="Direction bindings are configured on the Stick Keybinds page."
+                           Style="{StaticResource JsmccMutedText}"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+        </DataTemplate>
     </UserControl.Resources>
 
     <StackPanel>
