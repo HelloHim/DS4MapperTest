@@ -222,7 +222,7 @@ namespace DS4MapperTest.ViewModels
         }
         public event EventHandler DisplayControlChanged;
 
-        //public event EventHandler ActionPropertyChanged;
+        public event EventHandler ActionPropertyChanged;
 
         private bool usingRealAction = false;
         public bool UsingRealAction
@@ -250,12 +250,42 @@ namespace DS4MapperTest.ViewModels
                 //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.EditLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
+                tempAction.MappingId = action.MappingId;
 
                 this.action = tempAction;
                 usingRealAction = false;
 
-                //ActionPropertyChanged += ReplaceExistingLayerAction;
+                ActionPropertyChanged += ReplaceExistingLayerAction;
+            }
+        }
+
+        // Notify that the current binding's functions were edited (add/remove/change
+        // a func). Commits the still-inherited clone into the current layer on first edit,
+        // matching the pattern used by the Gyro/Stick/Touchpad property view models.
+        public void NotifyActionEdited()
+        {
+            ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ReplaceExistingLayerAction(object sender, EventArgs e)
+        {
+            if (!usingRealAction)
+            {
+                mapper.ProcessMappingChangeAction(() =>
+                {
+                    action.ChangedProperties.Add(ButtonAction.PropertyKeyStrings.FUNCTIONS);
+                    mapper.EditLayer.AddButtonMapAction(action);
+                    if (mapper.EditActionSet.UsingCompositeLayer)
+                    {
+                        mapper.EditActionSet.RecompileCompositeLayer(mapper);
+                    }
+                    else
+                    {
+                        mapper.EditLayer.SyncActions();
+                    }
+                });
+
+                usingRealAction = true;
             }
         }
     }

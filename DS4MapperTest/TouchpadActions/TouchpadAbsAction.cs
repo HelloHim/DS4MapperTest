@@ -396,7 +396,8 @@ namespace DS4MapperTest.TouchpadActions
                             antiRadius = tempAbsAction.antiRadius;
                             break;
                         case PropertyKeyStrings.OUTER_RING_BUTTON:
-                            ringButton = tempAbsAction.ringButton;
+                            ringButton = tempAbsAction.ringButton != null ?
+                                (AxisDirButton)tempAbsAction.ringButton.DuplicateAction() : null;
                             useParentRingButton = true;
                             break;
                         case PropertyKeyStrings.USE_OUTER_RING:
@@ -468,7 +469,8 @@ namespace DS4MapperTest.TouchpadActions
                     antiRadius = tempAbsAction.antiRadius;
                     break;
                 case PropertyKeyStrings.OUTER_RING_BUTTON:
-                    ringButton = tempAbsAction.ringButton;
+                    ringButton = tempAbsAction.ringButton != null ?
+                        (AxisDirButton)tempAbsAction.ringButton.DuplicateAction() : null;
                     useParentRingButton = true;
                     break;
                 case PropertyKeyStrings.USE_OUTER_RING:

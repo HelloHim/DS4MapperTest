@@ -141,7 +141,8 @@ namespace DS4MapperTest.TriggerActions
                             break;
                         case PropertyKeyStrings.OUTPUT_BINDING:
                             useParentEventButton = true;
-                            eventButton = tempBtnAction.EventButton;
+                            eventButton = tempBtnAction.EventButton != null ?
+                                (AxisDirButton)tempBtnAction.EventButton.DuplicateAction() : null;
                             break;
                         default:
                             break;
@@ -180,7 +181,8 @@ namespace DS4MapperTest.TriggerActions
                     break;
                 case PropertyKeyStrings.OUTPUT_BINDING:
                     useParentEventButton = true;
-                    eventButton = tempBtnAction.EventButton;
+                    eventButton = tempBtnAction.EventButton != null ?
+                        (AxisDirButton)tempBtnAction.EventButton.DuplicateAction() : null;
                     break;
                 default:
                     break;

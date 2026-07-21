@@ -75,12 +75,13 @@ namespace DS4MapperTest
                     btnFuncEditVM.UsingRealAction = btnActionEditVM.UsingRealAction;
                     bindControl = null;
                     bindControl = new FuncBindingControl();
-                    bindControl.PostInit(btnFuncEditVM.Mapper, btnFuncEditVM.Action);
+                    bindControl.PostInit(btnFuncEditVM.Mapper, btnActionEditVM.Action);
                     bindControl.RequestBindingEditor += TempControl_RequestBindingEditor;
                     bindControl.PreActionSwitch += BindControl_PreActionSwitch;
                     bindControl.ActionChanged += BindControl_ActionChanged;
                     bindControl.RequestClose += BindControl_RequestClose;
                     bindControl.FuncBindVM.IsRealAction = btnActionEditVM.Action.ParentAction == null;
+                    bindControl.FuncBindVM.ActionMutated += (s, args) => btnActionEditVM.NotifyActionEdited();
                     btnActionEditVM.DisplayControl = bindControl;
 
                     innerViewControl.DataContext = btnActionEditVM;

@@ -69,6 +69,11 @@ namespace DS4MapperTest.ViewModels
         }
         public event EventHandler IsNotRealActionChanged;
 
+        // Raised whenever a function bind is added, removed or changed, so the
+        // owning view model can commit an inherited (not-yet-owned) action into
+        // the current layer on first edit.
+        public event EventHandler ActionMutated;
+
         public FuncBindingControlViewModel(Mapper mapper, ButtonAction action, UserControl currentPropControl)
         {
             this.mapper = mapper;
@@ -98,10 +103,13 @@ namespace DS4MapperTest.ViewModels
             NormalPressFunc tempFunc =
                 new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
 
+            ActionMutated?.Invoke(this, EventArgs.Empty);
+
             mapper.ProcessMappingChangeAction(() =>
             {
                 action.Release(mapper, ignoreReleaseActions: true);
                 action.ActionFuncs.Add(tempFunc);
+                action.ChangedProperties.Add(ButtonAction.PropertyKeyStrings.FUNCTIONS);
             });
 
             int tempInd = thing.Count;
@@ -125,12 +133,15 @@ namespace DS4MapperTest.ViewModels
                 return;
             }
 
+            ActionMutated?.Invoke(this, EventArgs.Empty);
+
             thing.RemoveAt(ind);
             int removeInd = ind;
             mapper.ProcessMappingChangeAction(() =>
             {
                 action.Release(mapper, ignoreReleaseActions: true);
                 action.ActionFuncs.RemoveAt(removeInd);
+                action.ChangedProperties.Add(ButtonAction.PropertyKeyStrings.FUNCTIONS);
             });
 
             int tempInd = ind;
@@ -155,11 +166,14 @@ namespace DS4MapperTest.ViewModels
             item.Func = func;
             item.RaiseDisplayNameChanged();
 
+            ActionMutated?.Invoke(this, EventArgs.Empty);
+
             mapper.ProcessMappingChangeAction(() =>
             {
                 action.Release(mapper, ignoreReleaseActions: true);
                 action.ActionFuncs.RemoveAt(ind);
                 action.ActionFuncs.Insert(ind, func);
+                action.ChangedProperties.Add(ButtonAction.PropertyKeyStrings.FUNCTIONS);
             });
         }
 

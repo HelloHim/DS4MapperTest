@@ -222,12 +222,15 @@ namespace DS4MapperTest.StickActions
                 mappingId = parentAction.mappingId;
                 useParentActions = true;
 
-                // Grab references to parentAction AxisDirButton instances
+                // Clone parentAction AxisDirButton instances so this layer owns
+                // independent copies instead of aliasing the parent's objects
                 int tempDir = (int)DpadDirections.Centered;
                 foreach (AxisDirButton tempAction in parentAction.eventCodes4)
                 {
-                    usedEventButtonsList[tempDir] = tempAction;
-                    eventCodes4[tempDir] = tempAction;
+                    AxisDirButton clonedAction = tempAction != null ?
+                        (AxisDirButton)tempAction.DuplicateAction() : null;
+                    usedEventButtonsList[tempDir] = clonedAction;
+                    eventCodes4[tempDir] = clonedAction;
                     useParentDataDraft2[tempDir] = true;
                     tempDir++;
                 }
@@ -1493,7 +1496,8 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.PAD_DIR_UP:
                             {
                                 int tempDir = (int)DpadDirections.Up;
-                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1501,7 +1505,8 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.PAD_DIR_DOWN:
                             {
                                 int tempDir = (int)DpadDirections.Down;
-                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1509,7 +1514,8 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.PAD_DIR_LEFT:
                             {
                                 int tempDir = (int)DpadDirections.Left;
-                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1517,7 +1523,8 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.PAD_DIR_RIGHT:
                             {
                                 int tempDir = (int)DpadDirections.Right;
-                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1525,7 +1532,8 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.PAD_DIR_UPLEFT:
                             {
                                 int tempDir = (int)DpadDirections.UpLeft;
-                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1533,7 +1541,8 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.PAD_DIR_UPRIGHT:
                             {
                                 int tempDir = (int)DpadDirections.UpRight;
-                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1541,7 +1550,8 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.PAD_DIR_DOWNLEFT:
                             {
                                 int tempDir = (int)DpadDirections.DownLeft;
-                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1549,13 +1559,15 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.PAD_DIR_DOWNRIGHT:
                             {
                                 int tempDir = (int)DpadDirections.DownRight;
-                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                                eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                                    (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
                             break;
                         case PropertyKeyStrings.OUTER_RING_BUTTON:
-                            ringButton = tempPadAction.ringButton;
+                            ringButton = tempPadAction.ringButton != null ?
+                                (AxisDirButton)tempPadAction.ringButton.DuplicateAction() : null;
                             useParentRingButton = true;
                             break;
                         case PropertyKeyStrings.USE_OUTER_RING:
@@ -1642,7 +1654,8 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.PAD_DIR_UP:
                     {
                         int tempDir = (int)DpadDirections.Up;
-                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1650,7 +1663,8 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.PAD_DIR_DOWN:
                     {
                         int tempDir = (int)DpadDirections.Down;
-                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1658,7 +1672,8 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.PAD_DIR_LEFT:
                     {
                         int tempDir = (int)DpadDirections.Left;
-                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1666,7 +1681,8 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.PAD_DIR_RIGHT:
                     {
                         int tempDir = (int)DpadDirections.Right;
-                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1674,7 +1690,8 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.PAD_DIR_UPLEFT:
                     {
                         int tempDir = (int)DpadDirections.UpLeft;
-                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1682,7 +1699,8 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.PAD_DIR_UPRIGHT:
                     {
                         int tempDir = (int)DpadDirections.UpRight;
-                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1690,7 +1708,8 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.PAD_DIR_DOWNLEFT:
                     {
                         int tempDir = (int)DpadDirections.DownLeft;
-                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1698,13 +1717,15 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.PAD_DIR_DOWNRIGHT:
                     {
                         int tempDir = (int)DpadDirections.DownRight;
-                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir];
+                        eventCodes4[tempDir] = tempPadAction.eventCodes4[tempDir] != null ?
+                            (AxisDirButton)tempPadAction.eventCodes4[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
                     break;
                 case PropertyKeyStrings.OUTER_RING_BUTTON:
-                    ringButton = tempPadAction.ringButton;
+                    ringButton = tempPadAction.ringButton != null ?
+                        (AxisDirButton)tempPadAction.ringButton.DuplicateAction() : null;
                     useParentRingButton = true;
                     break;
                 case PropertyKeyStrings.USE_OUTER_RING:

@@ -1130,7 +1130,8 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.PAD_DIR_UP:
                             {
                                 int tempDir = (int)DpadDirections.Up;
-                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                                    (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1138,7 +1139,8 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.PAD_DIR_DOWN:
                             {
                                 int tempDir = (int)DpadDirections.Down;
-                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                                    (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1146,7 +1148,8 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.PAD_DIR_LEFT:
                             {
                                 int tempDir = (int)DpadDirections.Left;
-                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                                    (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1154,7 +1157,8 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.PAD_DIR_RIGHT:
                             {
                                 int tempDir = (int)DpadDirections.Right;
-                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                                    (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1162,7 +1166,8 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.PAD_DIR_UPLEFT:
                             {
                                 int tempDir = (int)DpadDirections.UpLeft;
-                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                                    (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1170,7 +1175,8 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.PAD_DIR_UPRIGHT:
                             {
                                 int tempDir = (int)DpadDirections.UpRight;
-                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                                    (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1178,7 +1184,8 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.PAD_DIR_DOWNLEFT:
                             {
                                 int tempDir = (int)DpadDirections.DownLeft;
-                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                                    (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
@@ -1186,13 +1193,15 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.PAD_DIR_DOWNRIGHT:
                             {
                                 int tempDir = (int)DpadDirections.DownRight;
-                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                                usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                                    (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                                 useParentDataDraft2[tempDir] = true;
                             }
 
                             break;
                         case PropertyKeyStrings.OUTER_RING_BUTTON:
-                            ringButton = tempPadAction.ringButton;
+                            ringButton = tempPadAction.ringButton != null ?
+                                (AxisDirButton)tempPadAction.ringButton.DuplicateAction() : null;
                             useParentRingButton = true;
                             break;
                         case PropertyKeyStrings.USE_OUTER_RING:
@@ -1275,7 +1284,8 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.PAD_DIR_UP:
                     {
                         int tempDir = (int)DpadDirections.Up;
-                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                            (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1283,7 +1293,8 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.PAD_DIR_DOWN:
                     {
                         int tempDir = (int)DpadDirections.Down;
-                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                            (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1291,7 +1302,8 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.PAD_DIR_LEFT:
                     {
                         int tempDir = (int)DpadDirections.Left;
-                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                            (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1299,7 +1311,8 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.PAD_DIR_RIGHT:
                     {
                         int tempDir = (int)DpadDirections.Right;
-                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                            (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1307,7 +1320,8 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.PAD_DIR_UPLEFT:
                     {
                         int tempDir = (int)DpadDirections.UpLeft;
-                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                            (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1315,7 +1329,8 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.PAD_DIR_UPRIGHT:
                     {
                         int tempDir = (int)DpadDirections.UpRight;
-                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                            (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1323,7 +1338,8 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.PAD_DIR_DOWNLEFT:
                     {
                         int tempDir = (int)DpadDirections.DownLeft;
-                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                            (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
@@ -1331,13 +1347,15 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.PAD_DIR_DOWNRIGHT:
                     {
                         int tempDir = (int)DpadDirections.DownRight;
-                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir];
+                        usedEventButtonsList[tempDir] = tempPadAction.usedEventButtonsList[tempDir] != null ?
+                            (ButtonAction)tempPadAction.usedEventButtonsList[tempDir].DuplicateAction() : null;
                         useParentDataDraft2[tempDir] = true;
                     }
 
                     break;
                 case PropertyKeyStrings.OUTER_RING_BUTTON:
-                    ringButton = tempPadAction.ringButton;
+                    ringButton = tempPadAction.ringButton != null ?
+                        (AxisDirButton)tempPadAction.ringButton.DuplicateAction() : null;
                     useParentRingButton = true;
                     break;
                 case PropertyKeyStrings.USE_OUTER_RING:

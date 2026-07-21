@@ -493,32 +493,36 @@ namespace DS4MapperTest.TouchpadActions
                             break;
                         case PropertyKeyStrings.PAD_DIR_UP:
                             {
+                                ButtonAction tempParentBtn = tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisYDir.Up];
                                 usedEventsButtonsY[(int)SwipeAxisYDir.Up] =
-                                    tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisYDir.Up];
+                                    tempParentBtn != null ? (ButtonAction)tempParentBtn.DuplicateAction() : null;
                                 useParentDataY[(int)SwipeAxisYDir.Up] = true;
                             }
 
                             break;
                         case PropertyKeyStrings.PAD_DIR_DOWN:
                             {
+                                ButtonAction tempParentBtn = tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisYDir.Down];
                                 usedEventsButtonsY[(int)SwipeAxisYDir.Down] =
-                                    tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisYDir.Down];
+                                    tempParentBtn != null ? (ButtonAction)tempParentBtn.DuplicateAction() : null;
                                 useParentDataY[(int)SwipeAxisYDir.Down] = true;
                             }
 
                             break;
                         case PropertyKeyStrings.PAD_DIR_LEFT:
                             {
+                                ButtonAction tempParentBtn = tempSwipeAction.usedEventsButtonsX[(int)SwipeAxisXDir.Left];
                                 usedEventsButtonsX[(int)SwipeAxisXDir.Left] =
-                                    tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisXDir.Left];
+                                    tempParentBtn != null ? (ButtonAction)tempParentBtn.DuplicateAction() : null;
                                 useParentDataX[(int)SwipeAxisXDir.Left] = true;
                             }
 
                             break;
                         case PropertyKeyStrings.PAD_DIR_RIGHT:
                             {
+                                ButtonAction tempParentBtn = tempSwipeAction.usedEventsButtonsX[(int)SwipeAxisXDir.Right];
                                 usedEventsButtonsX[(int)SwipeAxisXDir.Right] =
-                                    tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisXDir.Right];
+                                    tempParentBtn != null ? (ButtonAction)tempParentBtn.DuplicateAction() : null;
                                 useParentDataX[(int)SwipeAxisXDir.Right] = true;
                             }
 
@@ -566,32 +570,36 @@ namespace DS4MapperTest.TouchpadActions
                     break;
                 case PropertyKeyStrings.PAD_DIR_UP:
                     {
+                        ButtonAction tempParentBtn = tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisYDir.Up];
                         usedEventsButtonsY[(int)SwipeAxisYDir.Up] =
-                            tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisYDir.Up];
+                            tempParentBtn != null ? (ButtonAction)tempParentBtn.DuplicateAction() : null;
                         useParentDataY[(int)SwipeAxisYDir.Up] = true;
                     }
 
                     break;
                 case PropertyKeyStrings.PAD_DIR_DOWN:
                     {
+                        ButtonAction tempParentBtn = tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisYDir.Down];
                         usedEventsButtonsY[(int)SwipeAxisYDir.Down] =
-                            tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisYDir.Down];
+                            tempParentBtn != null ? (ButtonAction)tempParentBtn.DuplicateAction() : null;
                         useParentDataY[(int)SwipeAxisYDir.Down] = true;
                     }
 
                     break;
                 case PropertyKeyStrings.PAD_DIR_LEFT:
                     {
+                        ButtonAction tempParentBtn = tempSwipeAction.usedEventsButtonsX[(int)SwipeAxisXDir.Left];
                         usedEventsButtonsX[(int)SwipeAxisXDir.Left] =
-                            tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisXDir.Left];
+                            tempParentBtn != null ? (ButtonAction)tempParentBtn.DuplicateAction() : null;
                         useParentDataX[(int)SwipeAxisXDir.Left] = true;
                     }
 
                     break;
                 case PropertyKeyStrings.PAD_DIR_RIGHT:
                     {
+                        ButtonAction tempParentBtn = tempSwipeAction.usedEventsButtonsX[(int)SwipeAxisXDir.Right];
                         usedEventsButtonsX[(int)SwipeAxisXDir.Right] =
-                            tempSwipeAction.usedEventsButtonsY[(int)SwipeAxisXDir.Right];
+                            tempParentBtn != null ? (ButtonAction)tempParentBtn.DuplicateAction() : null;
                         useParentDataX[(int)SwipeAxisXDir.Right] = true;
                     }
 

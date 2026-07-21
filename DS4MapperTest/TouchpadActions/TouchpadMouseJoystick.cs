@@ -963,7 +963,9 @@ namespace DS4MapperTest.TouchpadActions
                             mStickParams.smoothing = tempMouseJoyAction.mStickParams.smoothing;
                             break;
                         case PropertyKeyStrings.SMOOTHING_FILTER:
-                            mStickParams.smoothingFilterSettings = tempMouseJoyAction.mStickParams.smoothingFilterSettings;
+                            mStickParams.smoothingFilterSettings.minCutOff = tempMouseJoyAction.mStickParams.smoothingFilterSettings.minCutOff;
+                            mStickParams.smoothingFilterSettings.beta = tempMouseJoyAction.mStickParams.smoothingFilterSettings.beta;
+                            mStickParams.smoothingFilterSettings.UpdateSmoothingFilters();
                             useParentSmoothingFilter = true;
                             break;
                         case PropertyKeyStrings.STABILITY_MODE:
@@ -1066,7 +1068,9 @@ namespace DS4MapperTest.TouchpadActions
                     mStickParams.smoothing = tempMouseJoyAction.mStickParams.smoothing;
                     break;
                 case PropertyKeyStrings.SMOOTHING_FILTER:
-                    mStickParams.smoothingFilterSettings = tempMouseJoyAction.mStickParams.smoothingFilterSettings;
+                    mStickParams.smoothingFilterSettings.minCutOff = tempMouseJoyAction.mStickParams.smoothingFilterSettings.minCutOff;
+                    mStickParams.smoothingFilterSettings.beta = tempMouseJoyAction.mStickParams.smoothingFilterSettings.beta;
+                    mStickParams.smoothingFilterSettings.UpdateSmoothingFilters();
                     useParentSmoothingFilter = true;
                     break;
                 case PropertyKeyStrings.STABILITY_MODE:
