@@ -41,6 +41,10 @@ namespace DS4MapperTest.TouchpadActions
             public const string OUTER_RING_DEAD_ZONE = "OuterRingDeadZone";
             public const string USE_AS_OUTER_RING = "UseAsOuterRing";
             public const string OUTER_RING_FULL_RANGE = "OuterRingFullRange";
+
+            public const string BRAKE_ENABLED = "BrakeEnabled";
+            public const string BRAKE_DURATION_MS = "BrakeDurationMs";
+            public const string BRAKE_MIN_HOLD_MS = "BrakeMinimumHoldMs";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -68,6 +72,9 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.REQUIRES_CLICK,
             PropertyKeyStrings.DELAY_ENABLED,
             PropertyKeyStrings.DELAY_TIME,
+            PropertyKeyStrings.BRAKE_ENABLED,
+            PropertyKeyStrings.BRAKE_DURATION_MS,
+            PropertyKeyStrings.BRAKE_MIN_HOLD_MS,
         };
 
         public enum DPadMode : uint
@@ -201,6 +208,9 @@ namespace DS4MapperTest.TouchpadActions
 
         private Stopwatch delayStopWatch = new Stopwatch();
 
+        private TouchpadReleaseBrake releaseBrake = new TouchpadReleaseBrake();
+        public TouchpadReleaseBrake ReleaseBrake => releaseBrake;
+
         public TouchpadActionPad()
         {
             actionTypeName = ACTION_TYPE_NAME;
@@ -295,6 +305,8 @@ namespace DS4MapperTest.TouchpadActions
                 }
             }
 
+            currentDir = releaseBrake.Prepare(touchFrame, currentDir);
+
             active = true;
             activeEvent = true;
             inputStatus = currentDir != DpadDirections.Centered;
@@ -304,6 +316,8 @@ namespace DS4MapperTest.TouchpadActions
 
         public override void Event(Mapper mapper)
         {
+            releaseBrake.FlushPendingReleases(mapper, usedFuncList);
+
             int previousDirNum = (int)previousDir;
             //Console.WriteLine("DIRS: Previous: {0} Current: {1}", previousDir, currentDir);
 
@@ -848,11 +862,15 @@ namespace DS4MapperTest.TouchpadActions
 
             prevXNorm = xNorm; prevYNorm = yNorm;
             previousDir = currentDir;
+
+            releaseBrake.EmitPulse(mapper, usedFuncList);
+
             //bool ringBtnActive = usedRingButton != null && usedRingButton.active;
             //active = currentDir != DpadDirections.Centered || ringBtnActive ||
             //    tmpActiveBtns.Count > 0;
             active = currentDir != DpadDirections.Centered ||
-                tmpActiveBtns.Count > 0;
+                tmpActiveBtns.Count > 0 ||
+                releaseBrake.HasActivePulse;
             activeEvent = false;
         }
 
@@ -879,6 +897,8 @@ namespace DS4MapperTest.TouchpadActions
                 currentDir = DpadDirections.Centered;
                 previousDir = currentDir;
             }
+
+            releaseBrake.Cleanup(mapper, usedFuncList);
 
             inputStatus = false;
             if (delayStopWatch.IsRunning)
@@ -933,6 +953,8 @@ namespace DS4MapperTest.TouchpadActions
                 currentDir = DpadDirections.Centered;
                 previousDir = currentDir;
             }
+
+            releaseBrake.Cleanup(mapper, usedFuncList);
 
             if (!useParentDelay && delayStopWatch.IsRunning)
             {
@@ -1231,6 +1253,15 @@ namespace DS4MapperTest.TouchpadActions
                             }
 
                             break;
+                        case PropertyKeyStrings.BRAKE_ENABLED:
+                            releaseBrake.Enabled = tempPadAction.releaseBrake.Enabled;
+                            break;
+                        case PropertyKeyStrings.BRAKE_DURATION_MS:
+                            releaseBrake.BrakeDurationMs = tempPadAction.releaseBrake.BrakeDurationMs;
+                            break;
+                        case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
+                            releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
+                            break;
                         default:
                             break;
                     }
@@ -1384,6 +1415,15 @@ namespace DS4MapperTest.TouchpadActions
                         delayStopWatch = tempPadAction.delayStopWatch;
                     }
 
+                    break;
+                case PropertyKeyStrings.BRAKE_ENABLED:
+                    releaseBrake.Enabled = tempPadAction.releaseBrake.Enabled;
+                    break;
+                case PropertyKeyStrings.BRAKE_DURATION_MS:
+                    releaseBrake.BrakeDurationMs = tempPadAction.releaseBrake.BrakeDurationMs;
+                    break;
+                case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
+                    releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
                     break;
                 default:
                     break;
