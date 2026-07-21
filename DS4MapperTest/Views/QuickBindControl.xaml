@@ -12,6 +12,7 @@
                 Content="{Binding DisplayBind}"
                 Click="BindButton_Click"
                 Style="{StaticResource JsmccOutputButtonStyle}"
+                MaxWidth="Infinity"
                 ToolTip="Click, then press a key or mouse button"
                 AutomationProperties.Name="Current binding, click to set"/>
 

@@ -10,10 +10,12 @@ namespace DS4MapperTest.ActionUtil
 {
     public class HoldPressFunc : ActionFunc
     {
+        public const int DEFAULT_DURATION_MS = 450;
+
         private bool status;
         private bool inToggleState;
 
-        private int durationMs;
+        private int durationMs = DEFAULT_DURATION_MS;
         public int DurationMs { get => durationMs; set => durationMs = value; }
 
         private bool waited;
