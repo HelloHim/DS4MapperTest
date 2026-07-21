@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
 
 namespace DS4MapperTest.StickActions
@@ -79,14 +80,14 @@ namespace DS4MapperTest.StickActions
         public int BrakeDurationMs
         {
             get => brakeDurationMs;
-            set => brakeDurationMs = Math.Clamp(value, 10, 150);
+            set => brakeDurationMs = DigitalReleaseBrakePulse.ClampBrakeDurationMs(value);
         }
 
         private int minimumHoldMs = 0;
         public int MinimumHoldMs
         {
             get => minimumHoldMs;
-            set => minimumHoldMs = Math.Clamp(value, 0, 300);
+            set => minimumHoldMs = DigitalReleaseBrakePulse.ClampMinimumHoldMs(value);
         }
 
         private double armingThreshold = DEFAULT_ARMING_THRESHOLD;

@@ -1343,6 +1343,52 @@ namespace DS4MapperTest
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.OUTER_RING_FULL_RANGE);
             }
 
+            public bool BrakeEnabled
+            {
+                get => touchActionPadAction.ReleaseBrake.Enabled;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.Enabled = value;
+                    BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeEnabledChanged;
+            public bool ShouldSerializeBrakeEnabled()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED);
+            }
+
+            public int BrakeDurationMs
+            {
+                get => touchActionPadAction.ReleaseBrake.BrakeDurationMs;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.BrakeDurationMs = value;
+                    BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeDurationMsChanged;
+            public bool ShouldSerializeBrakeDurationMs()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS);
+            }
+
+            [JsonProperty("BrakeMinimumHoldMs")]
+            public int BrakeMinimumHoldMs
+            {
+                get => touchActionPadAction.ReleaseBrake.MinimumHoldMs;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.MinimumHoldMs = value;
+                    BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler BrakeMinimumHoldMsChanged;
+            public bool ShouldSerializeBrakeMinimumHoldMs()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+            }
+
             public TouchpadActionPadSettings(TouchpadActionPad action)
             {
                 touchActionPadAction = action;
@@ -1416,6 +1462,24 @@ namespace DS4MapperTest
             settings.UseAsOuterRingChanged += Settings_UseAsOuterRingChanged;
             settings.OuterRingDeadZoneChanged += Settings_OuterRingDeadZoneChanged;
             settings.OuterRingRangeChanged += Settings_OuterRingRangeChanged;
+            settings.BrakeEnabledChanged += Settings_BrakeEnabledChanged;
+            settings.BrakeDurationMsChanged += Settings_BrakeDurationMsChanged;
+            settings.BrakeMinimumHoldMsChanged += Settings_BrakeMinimumHoldMsChanged;
+        }
+
+        private void Settings_BrakeEnabledChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED);
+        }
+
+        private void Settings_BrakeDurationMsChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS);
+        }
+
+        private void Settings_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
         }
 
         private void Settings_RequiresClickChanged(object sender, EventArgs e)

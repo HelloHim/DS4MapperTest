@@ -123,6 +123,48 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler ShowCardinalPadChanged;
 
+        public bool ShowReleaseBrakeSection => true;
+        public event EventHandler ShowReleaseBrakeSectionChanged;
+
+        public bool BrakeEnabled
+        {
+            get => action.ReleaseBrake.Enabled;
+            set
+            {
+                if (action.ReleaseBrake.Enabled == value) return;
+                action.ReleaseBrake.Enabled = value;
+                BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeEnabledChanged;
+
+        public int BrakeDurationMs
+        {
+            get => action.ReleaseBrake.BrakeDurationMs;
+            set
+            {
+                if (action.ReleaseBrake.BrakeDurationMs == value) return;
+                action.ReleaseBrake.BrakeDurationMs = value;
+                BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeDurationMsChanged;
+
+        public int BrakeMinimumHoldMs
+        {
+            get => action.ReleaseBrake.MinimumHoldMs;
+            set
+            {
+                if (action.ReleaseBrake.MinimumHoldMs == value) return;
+                action.ReleaseBrake.MinimumHoldMs = value;
+                BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler BrakeMinimumHoldMsChanged;
+
         public string ActionUpBtnDisplayBind
         {
             get => action.EventCodes4[(int)TouchpadActionPad.DpadDirections.Up].DescribeActions(mapper);
@@ -333,6 +375,27 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler HighlightOuterRingRangeChoiceChanged;
 
+        public bool HighlightBrakeEnabled
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED);
+        }
+        public event EventHandler HighlightBrakeEnabledChanged;
+
+        public bool HighlightBrakeDurationMs
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS);
+        }
+        public event EventHandler HighlightBrakeDurationMsChanged;
+
+        public bool HighlightBrakeMinimumHoldMs
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+        }
+        public event EventHandler HighlightBrakeMinimumHoldMsChanged;
+
         public override event EventHandler ActionPropertyChanged;
 
         public TouchpadActionPadPropViewModel(Mapper mapper, TouchpadMapAction action)
@@ -379,6 +442,42 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             SelectedPadModeIndexChanged += TouchpadActionPadPropViewModel_SelectedPadModeIndexChanged;
             OuterRingRangeChoiceChanged += TouchpadActionPadPropViewModel_OuterRingRangeChoiceChanged;
             ActionPresetChoiceChanged += TouchpadActionPadPropViewModel_ActionPresetChoiceChanged;
+            BrakeEnabledChanged += TouchpadActionPadPropViewModel_BrakeEnabledChanged;
+            BrakeDurationMsChanged += TouchpadActionPadPropViewModel_BrakeDurationMsChanged;
+            BrakeMinimumHoldMsChanged += TouchpadActionPadPropViewModel_BrakeMinimumHoldMsChanged;
+        }
+
+        private void TouchpadActionPadPropViewModel_BrakeEnabledChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED))
+            {
+                action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED);
+            HighlightBrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadActionPadPropViewModel_BrakeDurationMsChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS))
+            {
+                action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS);
+            HighlightBrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadActionPadPropViewModel_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_MIN_HOLD_MS))
+            {
+                action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+            HighlightBrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadActionPadPropViewModel_DeadZoneTypeChanged(object sender, EventArgs e)
@@ -458,6 +557,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
             ShowCardinalPadChanged?.Invoke(this, EventArgs.Empty);
             ShowDiagonalPadChanged?.Invoke(this, EventArgs.Empty);
+            ShowReleaseBrakeSectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadActionPadPropViewModel_DeadZoneChanged(object sender, EventArgs e)
