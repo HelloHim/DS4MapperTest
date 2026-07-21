@@ -5,10 +5,10 @@ namespace DS4MapperTest.ActionUtil
 {
     public sealed class DigitalReleaseBrakePulse
     {
-        public const int DEFAULT_BRAKE_DURATION_MS = 40;
+        public const int DEFAULT_BRAKE_DURATION_MS = 100;
         public const int MIN_BRAKE_DURATION_MS = 10;
         public const int MAX_BRAKE_DURATION_MS = 150;
-        public const int DEFAULT_MINIMUM_HOLD_MS = 80;
+        public const int DEFAULT_MINIMUM_HOLD_MS = 0;
         public const int MIN_MINIMUM_HOLD_MS = 0;
         public const int MAX_MINIMUM_HOLD_MS = 300;
 
