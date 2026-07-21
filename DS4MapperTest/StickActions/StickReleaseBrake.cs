@@ -35,7 +35,7 @@ namespace DS4MapperTest.StickActions
         // Internal tunables. Kept out of the UI per spec until real trace tuning
         // demonstrates a need to expose them.
         private const double SMOOTHING_TAU_SECONDS = 0.010;
-        public const double DEFAULT_ARMING_THRESHOLD = 0.70;
+        public const double DEFAULT_ARMING_THRESHOLD = 0.0;
         private const double RESET_THRESHOLD = 0.20;
         private const double MINIMUM_RADIAL_DROP = 0.08;
         // Starting point derived from the spec's own worked example (a ~60-100ms spring
@@ -75,14 +75,14 @@ namespace DS4MapperTest.StickActions
             }
         }
 
-        private int brakeDurationMs = 40;
+        private int brakeDurationMs = 100;
         public int BrakeDurationMs
         {
             get => brakeDurationMs;
             set => brakeDurationMs = Math.Clamp(value, 10, 150);
         }
 
-        private int minimumHoldMs = 80;
+        private int minimumHoldMs = 0;
         public int MinimumHoldMs
         {
             get => minimumHoldMs;

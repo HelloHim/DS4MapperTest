@@ -68,11 +68,27 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void ArmingThreshold_DefaultEqualsPreviousInternalValue()
+        public void ArmingThreshold_DefaultIsZero()
         {
             StickReleaseBrake brake = new StickReleaseBrake();
 
-            Assert.AreEqual(0.70, brake.ArmingThreshold);
+            Assert.AreEqual(0.0, brake.ArmingThreshold);
+        }
+
+        [TestMethod]
+        public void BrakeDurationMs_DefaultIsOneHundredMilliseconds()
+        {
+            StickReleaseBrake brake = new StickReleaseBrake();
+
+            Assert.AreEqual(100, brake.BrakeDurationMs);
+        }
+
+        [TestMethod]
+        public void MinimumHoldMs_DefaultIsZero()
+        {
+            StickReleaseBrake brake = new StickReleaseBrake();
+
+            Assert.AreEqual(0, brake.MinimumHoldMs);
         }
 
         private string BuildProfileJson(string padMode = "EightWay", double? brakeArmingThreshold = null)
@@ -754,7 +770,7 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void ProfileWithoutArmingThreshold_UsesPreviousDefaultBehaviour()
+        public void ProfileWithoutArmingThreshold_UsesCurrentDefaultBehaviour()
         {
             var (mapper, padAction) = LoadMapper();
 
@@ -762,10 +778,8 @@ namespace DS4MapperUnitTests
 
             Neutral(mapper);
             HoldShallowUp(mapper, 0.50, 20);
-            Assert.AreEqual(StickReleaseBrake.BrakeState.Idle, padAction.ReleaseBrake.State);
-
-            Report(mapper, 0, 0);
-            Assert.IsFalse(KeyDown(VK_S), "Missing property must preserve the previous 70% arming gate.");
+            // With a 0% default arming threshold, any digital direction activation arms immediately.
+            Assert.AreEqual(StickReleaseBrake.BrakeState.Armed, padAction.ReleaseBrake.State);
         }
     }
 }
