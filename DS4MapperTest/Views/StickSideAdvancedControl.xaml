@@ -1,0 +1,126 @@
+<UserControl x:Class="DS4MapperTest.Views.StickSideAdvancedControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:propvm="clr-namespace:DS4MapperTest.ViewModels.StickActionPropViewModels"
+             xmlns:converters="clr-namespace:DS4MapperTest.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="420"
+             d:DesignWidth="860">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVis"/>
+
+        <Style x:Key="ModeRowBorder" TargetType="Border" BasedOn="{StaticResource JsmccSettingRowBorder}">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <DataTemplate DataType="{x:Type propvm:StickPadActionPropViewModel}">
+            <StackPanel>
+                <TextBlock Text="Digital Release Brake" Style="{StaticResource JsmccLabelText}" FontWeight="Bold" Margin="0,0,0,2"/>
+                <TextBlock Text="Briefly presses the opposite digital direction when the stick is released. Designed for games with movement momentum. Results vary by game."
+                           Style="{StaticResource JsmccMutedText}"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,4"/>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Enable Digital Release Brake" Style="{StaticResource JsmccLabelText}"/>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding BrakeEnabled}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Opposite Tap Length" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding BrakeDurationMs, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                        <TextBlock Text="Controls how long the opposite direction is pressed after release braking triggers."
+                                   Style="{StaticResource JsmccMutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="170,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Minimum Hold Time" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="300" DecimalPlaces="0" Increment="1"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding BrakeMinimumHoldMs, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                        <TextBlock Text="Controls how long a digital direction must stay active before release braking is eligible."
+                                   Style="{StaticResource JsmccMutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="170,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Required Stick Deflection" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="0" Increment="1"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding BrakeArmingThresholdPercent, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                        <TextBlock Text="Controls how far the stick must move before release braking is armed. Set to 0% to arm whenever a digital direction activates."
+                                   Style="{StaticResource JsmccMutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="170,4,0,0"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <StackPanel Margin="0,0,0,6">
+            <TextBlock Text="{Binding SideLabel}" Style="{StaticResource JsmccSectionTitle}"/>
+            <TextBlock Text="Mode-specific advanced options for this stick appear here when the selected stick mode has any."
+                       Style="{StaticResource JsmccBodyText}"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <Border Style="{StaticResource JsmccCardBorder}" Margin="0,0,0,18">
+            <StackPanel>
+                <ContentControl Content="{Binding SettingsViewModel}"
+                                Visibility="{Binding IsPadMode, Converter={StaticResource BoolToVis}}"/>
+
+                <TextBlock Text="{Binding AdvancedPlaceholderText}"
+                           Style="{StaticResource JsmccBodyText}"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding IsPadMode, Converter={StaticResource InvertBoolToVis}}"/>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>
