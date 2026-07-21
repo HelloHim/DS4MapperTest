@@ -503,6 +503,9 @@
                                     <TabItem Header="Modes &amp; Settings">
                                         <views:SticksModeSettingsControl/>
                                     </TabItem>
+                                    <TabItem Header="Advanced">
+                                        <views:SticksAdvancedControl/>
+                                    </TabItem>
                                 </TabControl>
                             </StackPanel>
                         </Border>

@@ -92,8 +92,21 @@ namespace DS4MapperTest.ViewModels
             {
                 settingsViewModel = value;
                 OnPropertyChanged(nameof(SettingsViewModel));
+                OnPropertyChanged(nameof(IsPadMode));
+                OnPropertyChanged(nameof(CurrentModeDisplayName));
+                OnPropertyChanged(nameof(AdvancedPlaceholderText));
             }
         }
+
+        public bool IsPadMode => settingsViewModel is StickPadActionPropViewModel;
+
+        public string CurrentModeDisplayName =>
+            selectedModeIndex >= 0 && selectedModeIndex < sharedModeItems.Count
+                ? sharedModeItems[selectedModeIndex].DisplayName
+                : sharedModeItems[0].DisplayName;
+
+        public string AdvancedPlaceholderText =>
+            $"{SideLabel} is set to {CurrentModeDisplayName}. This mode has no advanced settings.";
 
         public int SelectedModeIndex
         {
