@@ -30,11 +30,11 @@ namespace DS4MapperTest.ViewModels
             new StickModeItem("Unbound", 0),
             new StickModeItem("Stick", 1),
             new StickModeItem("DPad", 2),
+            new StickModeItem("Analog Emulation", 7),
             new StickModeItem("Mouse", 3),
+            new StickModeItem("Flick Stick", 6),
             new StickModeItem("Circular", 4),
             new StickModeItem("Absolute Mouse", 5),
-            new StickModeItem("Flick Stick", 6),
-            new StickModeItem("Analog Emulation", 7),
         };
 
         // The original Steam Controller registers its single stick as "Stick";
@@ -99,7 +99,8 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
-        public bool IsPadMode => settingsViewModel is StickPadActionPropViewModel;
+        public bool IsPadMode => settingsViewModel is StickPadActionPropViewModel ||
+            settingsViewModel is StickAnalogEmulationPropViewModel;
 
         public string CurrentModeDisplayName =>
             selectedModeIndex >= 0 && selectedModeIndex < sharedModeItems.Count
@@ -171,6 +172,7 @@ namespace DS4MapperTest.ViewModels
             if (newAction == null) return;
 
             newAction.CopyBaseMapProps(oldAction);
+            CarryOverSharedDigitalDirectionSettings(oldAction, newAction);
             editVM.MigrateActionId(newAction);
             editVM.SwitchAction(newAction);
 
@@ -178,6 +180,67 @@ namespace DS4MapperTest.ViewModels
 
             RebuildSettingsViewModel();
             RebuildExtraBindings();
+        }
+
+        // DPad and Analog Emulation both use the same four Up/Down/Left/Right bindings and
+        // the same Digital Release Brake settings. Switching between them shouldn't wipe
+        // those out just because the rest of the mode's settings differ.
+        private static void CarryOverSharedDigitalDirectionSettings(StickMapAction oldAction, StickMapAction newAction)
+        {
+            AxisDirButton[] oldDirs = null;
+            StickReleaseBrake oldBrake = null;
+
+            if (oldAction is StickPadAction oldPad)
+            {
+                oldDirs = new AxisDirButton[4]
+                {
+                    oldPad.EventCodes4[(int)StickPadAction.DpadDirections.Up],
+                    oldPad.EventCodes4[(int)StickPadAction.DpadDirections.Down],
+                    oldPad.EventCodes4[(int)StickPadAction.DpadDirections.Left],
+                    oldPad.EventCodes4[(int)StickPadAction.DpadDirections.Right],
+                };
+                oldBrake = oldPad.ReleaseBrake;
+            }
+            else if (oldAction is StickAnalogEmulationAction oldAnalog)
+            {
+                oldDirs = new AxisDirButton[4]
+                {
+                    oldAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Up],
+                    oldAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Down],
+                    oldAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Left],
+                    oldAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Right],
+                };
+                oldBrake = oldAnalog.ReleaseBrake;
+            }
+
+            if (oldDirs == null) return;
+
+            if (newAction is StickPadAction newPad)
+            {
+                newPad.EventCodes4[(int)StickPadAction.DpadDirections.Up] = oldDirs[0];
+                newPad.EventCodes4[(int)StickPadAction.DpadDirections.Down] = oldDirs[1];
+                newPad.EventCodes4[(int)StickPadAction.DpadDirections.Left] = oldDirs[2];
+                newPad.EventCodes4[(int)StickPadAction.DpadDirections.Right] = oldDirs[3];
+                CopyBrakeSettings(oldBrake, newPad.ReleaseBrake);
+            }
+            else if (newAction is StickAnalogEmulationAction newAnalog)
+            {
+                newAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Up] = oldDirs[0];
+                newAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Down] = oldDirs[1];
+                newAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Left] = oldDirs[2];
+                newAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Right] = oldDirs[3];
+                CopyBrakeSettings(oldBrake, newAnalog.ReleaseBrake);
+            }
+        }
+
+        private static void CopyBrakeSettings(StickReleaseBrake src, StickReleaseBrake dst)
+        {
+            if (src == null || dst == null) return;
+
+            dst.Enabled = src.Enabled;
+            dst.BrakeDurationMs = src.BrakeDurationMs;
+            dst.MinimumHoldMs = src.MinimumHoldMs;
+            dst.ArmingThreshold = src.ArmingThreshold;
         }
 
         private void RebuildSettingsViewModel()
