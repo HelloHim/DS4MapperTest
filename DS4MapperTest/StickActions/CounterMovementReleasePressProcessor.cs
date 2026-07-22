@@ -130,21 +130,22 @@ namespace DS4MapperTest.StickActions
             }
         }
 
-        private CounterMovementTapLengthPreset tapLengthPreset = CounterMovementTapLengthPreset.Custom;
+        // New actions default to the CS2 preset (the only tuned/named preset available).
+        private CounterMovementTapLengthPreset tapLengthPreset = CounterMovementTapLengthPreset.CS2;
         public CounterMovementTapLengthPreset TapLengthPreset
         {
             get => tapLengthPreset;
             set => tapLengthPreset = value;
         }
 
-        private int oppositeTapLengthMinimumMs = DEFAULT_TAP_LENGTH_MS;
+        private int oppositeTapLengthMinimumMs = CS2_TAP_LENGTH_MINIMUM_MS;
         public int OppositeTapLengthMinimumMs
         {
             get => oppositeTapLengthMinimumMs;
             set => oppositeTapLengthMinimumMs = DigitalReleaseBrakePulse.ClampBrakeDurationMs(value);
         }
 
-        private int oppositeTapLengthMaximumMs = DEFAULT_TAP_LENGTH_MS;
+        private int oppositeTapLengthMaximumMs = CS2_TAP_LENGTH_MAXIMUM_MS;
         public int OppositeTapLengthMaximumMs
         {
             get => oppositeTapLengthMaximumMs;
@@ -208,22 +209,24 @@ namespace DS4MapperTest.StickActions
         }
 
         /// <summary>
-        /// The numeric tap-length values are authoritative over the stored preset field: a
-        /// profile claiming CS2 whose values do not match 75/120 must display as Custom
-        /// rather than silently overwriting the loaded numeric values.
+        /// True whenever the current numeric tap-length values happen to equal the CS2
+        /// preset's values, regardless of how they got there (the preset dropdown, a direct
+        /// edit, migration, or a loaded profile).
         /// </summary>
         public bool MatchesCs2Values =>
             oppositeTapLengthMinimumMs == CS2_TAP_LENGTH_MINIMUM_MS &&
             oppositeTapLengthMaximumMs == CS2_TAP_LENGTH_MAXIMUM_MS;
 
         /// <summary>
-        /// Resolves the preset that should actually be displayed for the current numeric
-        /// values, reconciling a possibly-stale stored preset field per MatchesCs2Values.
+        /// The preset that should actually be displayed, derived purely from the current
+        /// numeric values rather than the stored preset field: this makes the relationship
+        /// bidirectional. Editing away from 75/120 shows Custom; editing back to exactly
+        /// 75/120 (by hand or via the dropdown) shows CS2 again. There are only two presets
+        /// and CS2 is entirely defined by its values, so there is never a meaningful
+        /// distinction between "custom values that happen to equal 75/120" and "CS2".
         /// </summary>
         public CounterMovementTapLengthPreset EffectiveTapLengthPreset =>
-            tapLengthPreset == CounterMovementTapLengthPreset.CS2 && !MatchesCs2Values
-                ? CounterMovementTapLengthPreset.Custom
-                : tapLengthPreset;
+            MatchesCs2Values ? CounterMovementTapLengthPreset.CS2 : CounterMovementTapLengthPreset.Custom;
 
         private CounterMovementReleasePressState state = CounterMovementReleasePressState.Unprimed;
         public CounterMovementReleasePressState State => state;

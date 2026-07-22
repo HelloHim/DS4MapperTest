@@ -486,7 +486,7 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(3, processor.OppositeTapStartDelayMinimumMs, "CS2 must not alter the start delay.");
             Assert.AreEqual(15, processor.OppositeTapStartDelayMaximumMs, "CS2 must not alter the start delay.");
             Assert.AreEqual(42, processor.MinimumHoldMs, "CS2 must not alter Minimum Hold Time.");
-            Assert.AreEqual(0.33, processor.ArmingThreshold, "CS2 must not alter Digital Arming Threshold.");
+            Assert.AreEqual(0.33, processor.ArmingThreshold, "CS2 must not alter the Required Stick Deflection threshold.");
         }
 
         [TestMethod]
@@ -733,8 +733,8 @@ namespace DS4MapperUnitTests
             StickPadAction padAction = tempProfile.ActionSets[0].ActionLayers[0].stickActionDict["Stick"] as StickPadAction;
 
             Assert.IsFalse(padAction.CounterMovementReleasePress.Enabled);
-            Assert.AreEqual(100, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(100, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(75, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(120, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
             Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
             Assert.AreEqual(20, padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
         }
