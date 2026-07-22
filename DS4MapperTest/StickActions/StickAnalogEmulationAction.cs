@@ -19,8 +19,10 @@ namespace DS4MapperTest.StickActions
         public class PropertyKeyStrings
         {
             public const string NAME = "Name";
+            public const string DEAD_ZONE_TYPE = "DeadZoneType";
             public const string DEAD_ZONE = "DeadZone";
             public const string MAX_ZONE = "MaxZone";
+            public const string ROTATION = "Rotation";
 
             public const string DIR_UP = "DirUp";
             public const string DIR_DOWN = "DirDown";
@@ -43,8 +45,10 @@ namespace DS4MapperTest.StickActions
         private HashSet<string> fullPropertySet = new HashSet<string>()
         {
             PropertyKeyStrings.NAME,
+            PropertyKeyStrings.DEAD_ZONE_TYPE,
             PropertyKeyStrings.DEAD_ZONE,
             PropertyKeyStrings.MAX_ZONE,
+            PropertyKeyStrings.ROTATION,
             PropertyKeyStrings.DIR_UP,
             PropertyKeyStrings.DIR_DOWN,
             PropertyKeyStrings.DIR_LEFT,
@@ -82,6 +86,14 @@ namespace DS4MapperTest.StickActions
 
         private StickDeadZone deadMod;
         public StickDeadZone DeadMod => deadMod;
+
+        // + = Clockwise. - = Counter-clockwise
+        private int rotation;
+        public int Rotation
+        {
+            get => rotation;
+            set => rotation = value;
+        }
 
         // Shared with StickPadAction's Digital Release Brake. A 13-slot adapter array keyed by
         // StickPadAction.DpadDirections lets the same StickReleaseBrake implementation pulse
@@ -193,6 +205,8 @@ namespace DS4MapperTest.StickActions
                     useParentDataDraft[i] = true;
                 }
 
+                rotation = parentAction.rotation;
+
                 directionMode = parentAction.directionMode;
                 directionPulseTimeMs = parentAction.directionPulseTimeMs;
                 speedEmulationEnabled = parentAction.speedEmulationEnabled;
@@ -266,6 +280,12 @@ namespace DS4MapperTest.StickActions
         public override void Prepare(Mapper mapper, int axisXVal, int axisYVal, bool alterState = true)
         {
             xNorm = 0.0; yNorm = 0.0;
+
+            if (rotation != 0)
+            {
+                StickMethods.RotatedCoordinates(rotation, axisXVal, axisYVal,
+                    stickDefinition, out axisXVal, out axisYVal);
+            }
 
             int axisXMid = stickDefinition.xAxis.mid, axisYMid = stickDefinition.yAxis.mid;
             int axisXDir = axisXVal - axisXMid, axisYDir = axisYVal - axisYMid;
@@ -506,11 +526,17 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.NAME:
                     name = tempAction.name;
                     break;
+                case PropertyKeyStrings.DEAD_ZONE_TYPE:
+                    deadMod.DeadZoneType = tempAction.deadMod.DeadZoneType;
+                    break;
                 case PropertyKeyStrings.DEAD_ZONE:
                     deadMod.DeadZone = tempAction.deadMod.DeadZone;
                     break;
                 case PropertyKeyStrings.MAX_ZONE:
                     deadMod.MaxZone = tempAction.deadMod.MaxZone;
+                    break;
+                case PropertyKeyStrings.ROTATION:
+                    rotation = tempAction.rotation;
                     break;
                 case PropertyKeyStrings.DIR_UP:
                     CopyDirButton((int)DirSlot.Up, tempAction);
