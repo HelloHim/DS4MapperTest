@@ -577,6 +577,59 @@
 
         <DataTemplate DataType="{x:Type propvm:StickAnalogEmulationPropViewModel}">
             <StackPanel>
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Dead Zone Type" Style="{StaticResource JsmccLabelText}"/>
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding DeadZoneModesChoices}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="ChoiceValue"
+                                  SelectedValue="{Binding DeadZoneType}"
+                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                  HorizontalAlignment="Left"
+                                  MinWidth="150"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBox Grid.Column="1" Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus}" Style="{StaticResource JsmccTextBoxStyle}" Width="80"/>
+                        <TextBlock Grid.Column="2" Text="Rotation" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="3" Minimum="-180" Maximum="180" DecimalPlaces="0" Increment="1"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding Rotation, UpdateSourceTrigger=LostFocus}"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Binding Preset" Style="{StaticResource JsmccLabelText}"/>
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding ActionPresetChoicesItems}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="ChoiceValue"
+                                  SelectedValue="{Binding ActionPresetChoice}"
+                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                  HorizontalAlignment="Left"
+                                  MinWidth="150"/>
+                    </Grid>
+                </Border>
+
                 <TextBlock Text="Direction" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,8"/>
 
                 <Border Style="{StaticResource ModeRowBorder}">

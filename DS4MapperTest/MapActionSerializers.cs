@@ -6112,6 +6112,40 @@ namespace DS4MapperTest
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE);
             }
 
+            //public StickDeadZone.DeadZoneTypes DeadZoneType
+            public string DeadZoneType
+            {
+                get => analogAction.DeadMod.DeadZoneType.ToString();
+                set
+                {
+                    if (Enum.TryParse(value, out StickDeadZone.DeadZoneTypes temp))
+                    {
+                        analogAction.DeadMod.DeadZoneType = temp;
+                        DeadZoneTypeChanged?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+            }
+            public event EventHandler DeadZoneTypeChanged;
+            public bool ShouldSerializeDeadZoneType()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_TYPE);
+            }
+
+            public int Rotation
+            {
+                get => analogAction.Rotation;
+                set
+                {
+                    analogAction.Rotation = value;
+                    RotationChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler RotationChanged;
+            public bool ShouldSerializeRotation()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.ROTATION);
+            }
+
             public double MaxZone
             {
                 get => analogAction.DeadMod.MaxZone;
@@ -6323,6 +6357,8 @@ namespace DS4MapperTest
 
             NameChanged += AnalogEmulationActionSerializer_NameChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
+            settings.DeadZoneTypeChanged += Settings_DeadZoneTypeChanged;
+            settings.RotationChanged += Settings_RotationChanged;
             settings.MaxZoneChanged += Settings_MaxZoneChanged;
             settings.DirectionModeChanged += Settings_DirectionModeChanged;
             settings.DirectionPulseTimeMsChanged += Settings_DirectionPulseTimeMsChanged;
@@ -6364,6 +6400,16 @@ namespace DS4MapperTest
         private void Settings_DeadZoneChanged(object sender, EventArgs e)
         {
             analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_DeadZoneTypeChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_TYPE);
+        }
+
+        private void Settings_RotationChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.ROTATION);
         }
 
         private void Settings_MaxZoneChanged(object sender, EventArgs e)

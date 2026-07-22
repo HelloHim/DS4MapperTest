@@ -2,13 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
+using DS4MapperTest.StickModifiers;
 using DS4MapperTest.ViewModels.Common;
 
 namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 {
     public class StickAnalogEmulationPropViewModel
     {
+        public enum ActionPresetChoices
+        {
+            None,
+            WASD,
+            Arrows,
+        }
+
         private Mapper mapper;
         public Mapper Mapper => mapper;
 
@@ -27,6 +36,75 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             }
         }
         public event EventHandler NameChanged;
+
+        private List<EnumChoiceSelection<StickDeadZone.DeadZoneTypes>> deadZoneModesChoices =
+            new List<EnumChoiceSelection<StickDeadZone.DeadZoneTypes>>()
+            {
+                new EnumChoiceSelection<StickDeadZone.DeadZoneTypes>("Radial", StickDeadZone.DeadZoneTypes.Radial),
+                new EnumChoiceSelection<StickDeadZone.DeadZoneTypes>("Bowtie", StickDeadZone.DeadZoneTypes.Bowtie),
+            };
+        public List<EnumChoiceSelection<StickDeadZone.DeadZoneTypes>> DeadZoneModesChoices => deadZoneModesChoices;
+
+        public StickDeadZone.DeadZoneTypes DeadZoneType
+        {
+            get => action.DeadMod.DeadZoneType;
+            set
+            {
+                action.DeadMod.DeadZoneType = value;
+                DeadZoneTypeChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler DeadZoneTypeChanged;
+
+        public string DeadZone
+        {
+            get => action.DeadMod.DeadZone.ToString();
+            set
+            {
+                if (double.TryParse(value, out double temp))
+                {
+                    action.DeadMod.DeadZone = Math.Clamp(temp, 0.0, 1.0);
+                    DeadZoneChanged?.Invoke(this, EventArgs.Empty);
+                    ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+        public event EventHandler DeadZoneChanged;
+
+        public int Rotation
+        {
+            get => action.Rotation;
+            set
+            {
+                if (action.Rotation == value) return;
+                action.Rotation = value;
+                RotationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler RotationChanged;
+
+        private List<EnumChoiceSelection<ActionPresetChoices>> actionPresetChoicesItems = new List<EnumChoiceSelection<ActionPresetChoices>>()
+        {
+            new EnumChoiceSelection<ActionPresetChoices>("", ActionPresetChoices.None),
+            new EnumChoiceSelection<ActionPresetChoices>("WASD", ActionPresetChoices.WASD),
+            new EnumChoiceSelection<ActionPresetChoices>("Arrows", ActionPresetChoices.Arrows),
+        };
+        public List<EnumChoiceSelection<ActionPresetChoices>> ActionPresetChoicesItems => actionPresetChoicesItems;
+
+        private ActionPresetChoices actionPresetChoice;
+        public ActionPresetChoices ActionPresetChoice
+        {
+            get => actionPresetChoice;
+            set
+            {
+                if (actionPresetChoice == value) return;
+                actionPresetChoice = value;
+                ActionPresetChoiceChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler ActionPresetChoiceChanged;
 
         private List<EnumChoiceSelection<AnalogEmulationMath.ResolutionMode>> directionResolutionItems =
             new List<EnumChoiceSelection<AnalogEmulationMath.ResolutionMode>>()
@@ -180,12 +258,22 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
 
         public string ActionUpBtnDisplayBind => action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Up]?.DescribeActions(mapper);
+        public event EventHandler ActionUpBtnDisplayBindChanged;
         public string ActionDownBtnDisplayBind => action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Down]?.DescribeActions(mapper);
+        public event EventHandler ActionDownBtnDisplayBindChanged;
         public string ActionLeftBtnDisplayBind => action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Left]?.DescribeActions(mapper);
+        public event EventHandler ActionLeftBtnDisplayBindChanged;
         public string ActionRightBtnDisplayBind => action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Right]?.DescribeActions(mapper);
+        public event EventHandler ActionRightBtnDisplayBindChanged;
 
         public bool HighlightName =>
             action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.NAME);
+        public bool HighlightDeadZoneType =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_TYPE);
+        public bool HighlightDeadZone =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE);
+        public bool HighlightRotation =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.ROTATION);
         public bool HighlightDirectionMode =>
             action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DIRECTION_MODE);
         public bool HighlightDirectionPulseTimeMs =>
@@ -229,6 +317,10 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             }
 
             NameChanged += StickAnalogEmulationPropViewModel_NameChanged;
+            DeadZoneTypeChanged += StickAnalogEmulationPropViewModel_DeadZoneTypeChanged;
+            DeadZoneChanged += StickAnalogEmulationPropViewModel_DeadZoneChanged;
+            RotationChanged += StickAnalogEmulationPropViewModel_RotationChanged;
+            ActionPresetChoiceChanged += StickAnalogEmulationPropViewModel_ActionPresetChoiceChanged;
             DirectionResolutionChanged += StickAnalogEmulationPropViewModel_DirectionResolutionChanged;
             DirectionPulseTimeMsChanged += StickAnalogEmulationPropViewModel_DirectionPulseTimeMsChanged;
             AnalogSpeedEmulationEnabledChanged += StickAnalogEmulationPropViewModel_AnalogSpeedEmulationEnabledChanged;
@@ -269,6 +361,29 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         {
             action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.NAME);
             action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.NAME);
+        }
+
+        private void StickAnalogEmulationPropViewModel_DeadZoneTypeChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_TYPE);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_TYPE);
+        }
+
+        private void StickAnalogEmulationPropViewModel_DeadZoneChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void StickAnalogEmulationPropViewModel_RotationChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.ROTATION);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.ROTATION);
+        }
+
+        private void StickAnalogEmulationPropViewModel_ActionPresetChoiceChanged(object sender, EventArgs e)
+        {
+            SwitchDefinedPreset();
         }
 
         private void StickAnalogEmulationPropViewModel_DirectionResolutionChanged(object sender, EventArgs e)
@@ -378,6 +493,130 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 action.UsingParentActionButton[(int)slot] = false;
                 action.RaiseNotifyPropertyChange(mapper, propertyKey);
             });
+        }
+
+        public void SwitchDefinedPreset()
+        {
+            // Do nothing on first (None) choice
+            if (actionPresetChoice == ActionPresetChoices.None) return;
+
+            if (!usingRealAction)
+            {
+                ReplaceExistingLayerAction(this, EventArgs.Empty);
+            }
+
+            ExecuteInMapperThread(() =>
+            {
+                // Find and release all currently active buttons
+                List<StickAnalogEmulationAction.DirSlot> tempList = new List<StickAnalogEmulationAction.DirSlot>()
+                {
+                    StickAnalogEmulationAction.DirSlot.Up, StickAnalogEmulationAction.DirSlot.Down,
+                    StickAnalogEmulationAction.DirSlot.Left, StickAnalogEmulationAction.DirSlot.Right,
+                };
+
+                foreach (StickAnalogEmulationAction.DirSlot slot in tempList)
+                {
+                    AxisDirButton oldAction = action.DirButtons[(int)slot];
+                    if (oldAction != null)
+                    {
+                        oldAction?.Release(mapper, ignoreReleaseActions: true);
+                    }
+                }
+
+                if (actionPresetChoice == ActionPresetChoices.WASD)
+                {
+                    OutputActionData tempData = new OutputActionData(OutputActionData.ActionType.Keyboard,
+                    (int)VirtualKeys.W,
+                    (int)mapper.EventInputMapping.GetRealEventKey((uint)VirtualKeys.W));
+                    tempData.OutputCodeStr = OutputDataAliasUtil.KeyboardStringAliasDict[VirtualKeys.W];
+                    AxisDirButton newAction = new AxisDirButton(tempData);
+                    action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Up] = newAction;
+
+                    tempData = new OutputActionData(OutputActionData.ActionType.Keyboard,
+                        (int)VirtualKeys.S,
+                        (int)mapper.EventInputMapping.GetRealEventKey((uint)VirtualKeys.S));
+                    tempData.OutputCodeStr = OutputDataAliasUtil.KeyboardStringAliasDict[VirtualKeys.S];
+                    newAction = new AxisDirButton(tempData);
+                    action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Down] = newAction;
+
+                    tempData = new OutputActionData(OutputActionData.ActionType.Keyboard,
+                        (int)VirtualKeys.A,
+                        (int)mapper.EventInputMapping.GetRealEventKey((uint)VirtualKeys.A));
+                    tempData.OutputCodeStr = OutputDataAliasUtil.KeyboardStringAliasDict[VirtualKeys.A];
+                    newAction = new AxisDirButton(tempData);
+                    action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Left] = newAction;
+
+                    tempData = new OutputActionData(OutputActionData.ActionType.Keyboard,
+                        (int)VirtualKeys.D,
+                        (int)mapper.EventInputMapping.GetRealEventKey((uint)VirtualKeys.D));
+                    tempData.OutputCodeStr = OutputDataAliasUtil.KeyboardStringAliasDict[VirtualKeys.D];
+                    newAction = new AxisDirButton(tempData);
+                    action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Right] = newAction;
+
+                    action.UsingParentActionButton[(int)StickAnalogEmulationAction.DirSlot.Up] = false;
+                    action.UsingParentActionButton[(int)StickAnalogEmulationAction.DirSlot.Down] = false;
+                    action.UsingParentActionButton[(int)StickAnalogEmulationAction.DirSlot.Left] = false;
+                    action.UsingParentActionButton[(int)StickAnalogEmulationAction.DirSlot.Right] = false;
+
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_UP);
+                    action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DIR_UP);
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_DOWN);
+                    action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DIR_DOWN);
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_LEFT);
+                    action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DIR_LEFT);
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_RIGHT);
+                    action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DIR_RIGHT);
+                }
+                else if (actionPresetChoice == ActionPresetChoices.Arrows)
+                {
+                    OutputActionData tempData = new OutputActionData(OutputActionData.ActionType.Keyboard,
+                    (int)VirtualKeys.Up,
+                    (int)mapper.EventInputMapping.GetRealEventKey((uint)VirtualKeys.Up));
+                    tempData.OutputCodeStr = OutputDataAliasUtil.KeyboardStringAliasDict[VirtualKeys.Up];
+                    AxisDirButton newAction = new AxisDirButton(tempData);
+                    action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Up] = newAction;
+
+                    tempData = new OutputActionData(OutputActionData.ActionType.Keyboard,
+                        (int)VirtualKeys.Down,
+                        (int)mapper.EventInputMapping.GetRealEventKey((uint)VirtualKeys.Down));
+                    tempData.OutputCodeStr = OutputDataAliasUtil.KeyboardStringAliasDict[VirtualKeys.Down];
+                    newAction = new AxisDirButton(tempData);
+                    action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Down] = newAction;
+
+                    tempData = new OutputActionData(OutputActionData.ActionType.Keyboard,
+                        (int)VirtualKeys.Left,
+                        (int)mapper.EventInputMapping.GetRealEventKey((uint)VirtualKeys.Left));
+                    tempData.OutputCodeStr = OutputDataAliasUtil.KeyboardStringAliasDict[VirtualKeys.Left];
+                    newAction = new AxisDirButton(tempData);
+                    action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Left] = newAction;
+
+                    tempData = new OutputActionData(OutputActionData.ActionType.Keyboard,
+                        (int)VirtualKeys.Right,
+                        (int)mapper.EventInputMapping.GetRealEventKey((uint)VirtualKeys.Right));
+                    tempData.OutputCodeStr = OutputDataAliasUtil.KeyboardStringAliasDict[VirtualKeys.Right];
+                    newAction = new AxisDirButton(tempData);
+                    action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Right] = newAction;
+
+                    action.UsingParentActionButton[(int)StickAnalogEmulationAction.DirSlot.Up] = false;
+                    action.UsingParentActionButton[(int)StickAnalogEmulationAction.DirSlot.Down] = false;
+                    action.UsingParentActionButton[(int)StickAnalogEmulationAction.DirSlot.Left] = false;
+                    action.UsingParentActionButton[(int)StickAnalogEmulationAction.DirSlot.Right] = false;
+
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_UP);
+                    action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DIR_UP);
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_DOWN);
+                    action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DIR_DOWN);
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_LEFT);
+                    action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DIR_LEFT);
+                    action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIR_RIGHT);
+                    action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DIR_RIGHT);
+                }
+            });
+
+            ActionUpBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
+            ActionDownBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
+            ActionLeftBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
+            ActionRightBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
         }
 
         protected void ExecuteInMapperThread(Action tempAction)

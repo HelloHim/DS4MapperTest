@@ -7,6 +7,7 @@ using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
+using DS4MapperTest.StickModifiers;
 using DS4MapperTest.ViewModels.StickActionPropViewModels;
 
 namespace DS4MapperTest.ViewModels
@@ -182,13 +183,16 @@ namespace DS4MapperTest.ViewModels
             RebuildExtraBindings();
         }
 
-        // DPad and Analog Emulation both use the same four Up/Down/Left/Right bindings and
-        // the same Digital Release Brake settings. Switching between them shouldn't wipe
-        // those out just because the rest of the mode's settings differ.
+        // DPad and Analog Emulation both use the same four Up/Down/Left/Right bindings, the
+        // same Digital Release Brake settings, and the same Dead Zone Type/Dead Zone/Rotation
+        // stick-shaping settings. Switching between them shouldn't wipe those out just because
+        // the rest of the mode's settings differ.
         private static void CarryOverSharedDigitalDirectionSettings(StickMapAction oldAction, StickMapAction newAction)
         {
             AxisDirButton[] oldDirs = null;
             StickReleaseBrake oldBrake = null;
+            StickDeadZone oldDeadMod = null;
+            int oldRotation = 0;
 
             if (oldAction is StickPadAction oldPad)
             {
@@ -200,6 +204,8 @@ namespace DS4MapperTest.ViewModels
                     oldPad.EventCodes4[(int)StickPadAction.DpadDirections.Right],
                 };
                 oldBrake = oldPad.ReleaseBrake;
+                oldDeadMod = oldPad.DeadMod;
+                oldRotation = oldPad.Rotation;
             }
             else if (oldAction is StickAnalogEmulationAction oldAnalog)
             {
@@ -211,6 +217,8 @@ namespace DS4MapperTest.ViewModels
                     oldAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Right],
                 };
                 oldBrake = oldAnalog.ReleaseBrake;
+                oldDeadMod = oldAnalog.DeadMod;
+                oldRotation = oldAnalog.Rotation;
             }
 
             if (oldDirs == null) return;
@@ -222,6 +230,7 @@ namespace DS4MapperTest.ViewModels
                 newPad.EventCodes4[(int)StickPadAction.DpadDirections.Left] = oldDirs[2];
                 newPad.EventCodes4[(int)StickPadAction.DpadDirections.Right] = oldDirs[3];
                 CopyBrakeSettings(oldBrake, newPad.ReleaseBrake);
+                CopyDeadZoneAndRotation(oldDeadMod, oldRotation, newPad.DeadMod, val => newPad.Rotation = val);
             }
             else if (newAction is StickAnalogEmulationAction newAnalog)
             {
@@ -230,6 +239,7 @@ namespace DS4MapperTest.ViewModels
                 newAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Left] = oldDirs[2];
                 newAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Right] = oldDirs[3];
                 CopyBrakeSettings(oldBrake, newAnalog.ReleaseBrake);
+                CopyDeadZoneAndRotation(oldDeadMod, oldRotation, newAnalog.DeadMod, val => newAnalog.Rotation = val);
             }
         }
 
@@ -241,6 +251,15 @@ namespace DS4MapperTest.ViewModels
             dst.BrakeDurationMs = src.BrakeDurationMs;
             dst.MinimumHoldMs = src.MinimumHoldMs;
             dst.ArmingThreshold = src.ArmingThreshold;
+        }
+
+        private static void CopyDeadZoneAndRotation(StickDeadZone src, int srcRotation, StickDeadZone dst, Action<int> setRotation)
+        {
+            if (src == null || dst == null) return;
+
+            dst.DeadZoneType = src.DeadZoneType;
+            dst.DeadZone = src.DeadZone;
+            setRotation(srcRotation);
         }
 
         private void RebuildSettingsViewModel()
