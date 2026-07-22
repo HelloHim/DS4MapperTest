@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:views="clr-namespace:DS4MapperTest.Views"
+        xmlns:converters="clr-namespace:DS4MapperTest.Converters"
         mc:Ignorable="d"
         Title="DS4Mapper"
         Height="720" Width="1100"
@@ -18,6 +19,7 @@
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVis"/>
 
         <Style x:Key="PlaceholderCardText" TargetType="TextBlock" BasedOn="{StaticResource JsmccMutedText}">
             <Setter Property="FontStyle" Value="Italic"/>
@@ -497,14 +499,40 @@
                                            Margin="0,0,0,12"/>
 
                                 <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
-                                    <TabItem Header="Stick Keybinds">
+                                    <TabItem Header="Click &amp; Touch Bindings">
                                         <views:SticksBindingsControl/>
                                     </TabItem>
-                                    <TabItem Header="Modes &amp; Settings">
-                                        <views:SticksModeSettingsControl/>
+                                    <TabItem Header="Left Stick Settings">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled"
+                                                      CanContentScroll="False">
+                                            <StackPanel DataContext="{Binding LeftStickKeybinds}" Margin="0,0,10,12">
+                                                <Border Style="{StaticResource JsmccCardBorder}"
+                                                        Visibility="{Binding HasBinding, Converter={StaticResource InvertBoolToVis}}">
+                                                    <TextBlock Text="No left stick binding available for this controller."
+                                                               Style="{StaticResource JsmccBodyText}"
+                                                               TextWrapping="Wrap"/>
+                                                </Border>
+                                                <views:StickSideModeSettingsControl Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
+                                                <views:StickSideAdvancedControl Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
+                                            </StackPanel>
+                                        </ScrollViewer>
                                     </TabItem>
-                                    <TabItem Header="Advanced">
-                                        <views:SticksAdvancedControl/>
+                                    <TabItem Header="Right Stick Settings">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled"
+                                                      CanContentScroll="False">
+                                            <StackPanel DataContext="{Binding RightStickKeybinds}" Margin="0,0,10,12">
+                                                <Border Style="{StaticResource JsmccCardBorder}"
+                                                        Visibility="{Binding HasBinding, Converter={StaticResource InvertBoolToVis}}">
+                                                    <TextBlock Text="No right stick binding available for this controller."
+                                                               Style="{StaticResource JsmccBodyText}"
+                                                               TextWrapping="Wrap"/>
+                                                </Border>
+                                                <views:StickSideModeSettingsControl Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
+                                                <views:StickSideAdvancedControl Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
+                                            </StackPanel>
+                                        </ScrollViewer>
                                     </TabItem>
                                 </TabControl>
                             </StackPanel>
