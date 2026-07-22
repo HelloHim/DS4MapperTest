@@ -201,6 +201,17 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             {
                 if (action.CounterMovementReleasePress.Enabled == value) return;
                 action.CounterMovementReleasePress.Enabled = value;
+
+                if (value)
+                {
+                    // Enabling always lands on the CS2 preset, so turning this on never
+                    // surfaces stale/legacy tap-length values as an unexpected "Custom".
+                    action.CounterMovementReleasePress.ApplyCs2Preset();
+                    TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                    OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                    OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+
                 CounterMovementReleasePressEnabledChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
