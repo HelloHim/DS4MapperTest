@@ -308,29 +308,8 @@ namespace DS4MapperTest.ViewModels
 
             switch (CurrentAction)
             {
-                case StickPadAction padAction:
-                    {
-                        // Mirror ShowCardinalPad/ShowDiagonalPad from
-                        // StickPadActionPropViewModel. Hidden slots keep their
-                        // saved bindings; only the cards are filtered
-                        bool showCardinal =
-                            padAction.CurrentMode == StickPadAction.DPadMode.Standard ||
-                            padAction.CurrentMode == StickPadAction.DPadMode.EightWay ||
-                            padAction.CurrentMode == StickPadAction.DPadMode.FourWayCardinal;
-                        bool showDiagonal =
-                            padAction.CurrentMode == StickPadAction.DPadMode.EightWay ||
-                            padAction.CurrentMode == StickPadAction.DPadMode.FourWayDiagonal;
-
-                        if (showCardinal) extraBindings.Add(new StickExtraBindingItem(this, "Up", "Up"));
-                        if (showDiagonal) extraBindings.Add(new StickExtraBindingItem(this, "UpRight", "Up-Right"));
-                        if (showCardinal) extraBindings.Add(new StickExtraBindingItem(this, "Right", "Right"));
-                        if (showDiagonal) extraBindings.Add(new StickExtraBindingItem(this, "DownRight", "Down-Right"));
-                        if (showCardinal) extraBindings.Add(new StickExtraBindingItem(this, "Down", "Down"));
-                        if (showDiagonal) extraBindings.Add(new StickExtraBindingItem(this, "DownLeft", "Down-Left"));
-                        if (showCardinal) extraBindings.Add(new StickExtraBindingItem(this, "Left", "Left"));
-                        if (showDiagonal) extraBindings.Add(new StickExtraBindingItem(this, "UpLeft", "Up-Left"));
-                        break;
-                    }
+                case StickPadAction:
+                    break;
                 case StickCircular:
                     extraBindings.Add(new StickExtraBindingItem(this, "CW", "Clockwise"));
                     extraBindings.Add(new StickExtraBindingItem(this, "CCW", "Counter-clockwise"));
@@ -339,10 +318,6 @@ namespace DS4MapperTest.ViewModels
                     extraBindings.Add(new StickExtraBindingItem(this, "Ring", "Ring / Outer Ring"));
                     break;
                 case StickAnalogEmulationAction:
-                    extraBindings.Add(new StickExtraBindingItem(this, "Up", "Up"));
-                    extraBindings.Add(new StickExtraBindingItem(this, "Down", "Down"));
-                    extraBindings.Add(new StickExtraBindingItem(this, "Left", "Left"));
-                    extraBindings.Add(new StickExtraBindingItem(this, "Right", "Right"));
                     break;
                 default:
                     break;

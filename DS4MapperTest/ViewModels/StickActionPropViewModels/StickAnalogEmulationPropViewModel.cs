@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.ActionUtil;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
 using DS4MapperTest.StickModifiers;
+using DS4MapperTest.ViewModels;
 using DS4MapperTest.ViewModels.Common;
 
 namespace DS4MapperTest.ViewModels.StickActionPropViewModels
@@ -105,6 +109,9 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             }
         }
         public event EventHandler ActionPresetChoiceChanged;
+
+        private List<StickAnalogDirectionBindItem> cardinalDirectionItems;
+        public List<StickAnalogDirectionBindItem> CardinalDirectionItems => cardinalDirectionItems;
 
         private List<EnumChoiceSelection<AnalogEmulationMath.ResolutionMode>> directionResolutionItems =
             new List<EnumChoiceSelection<AnalogEmulationMath.ResolutionMode>>()
@@ -420,6 +427,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 ActionPropertyChanged += ReplaceExistingLayerAction;
             }
 
+            PrepareDirectionItems();
+
             NameChanged += StickAnalogEmulationPropViewModel_NameChanged;
             DeadZoneTypeChanged += StickAnalogEmulationPropViewModel_DeadZoneTypeChanged;
             DeadZoneChanged += StickAnalogEmulationPropViewModel_DeadZoneChanged;
@@ -579,6 +588,91 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
                 ActionChanged?.Invoke(this, action);
             }
+        }
+
+        private void PrepareDirectionItems()
+        {
+            cardinalDirectionItems = new List<StickAnalogDirectionBindItem>()
+            {
+                new StickAnalogDirectionBindItem(this, StickAnalogEmulationAction.DirSlot.Up, "Up", "Cardinal direction"),
+                new StickAnalogDirectionBindItem(this, StickAnalogEmulationAction.DirSlot.Down, "Down", "Cardinal direction"),
+                new StickAnalogDirectionBindItem(this, StickAnalogEmulationAction.DirSlot.Left, "Left", "Cardinal direction"),
+                new StickAnalogDirectionBindItem(this, StickAnalogEmulationAction.DirSlot.Right, "Right", "Cardinal direction"),
+            };
+        }
+
+        internal ButtonAction GetDirectionAction(StickAnalogEmulationAction.DirSlot direction)
+        {
+            return action.DirButtons[(int)direction];
+        }
+
+        internal AxisDirButton EnsureEditableDirectionAction(StickAnalogEmulationAction.DirSlot direction)
+        {
+            if (!usingRealAction)
+            {
+                ReplaceExistingLayerAction(this, EventArgs.Empty);
+            }
+
+            AxisDirButton dirAction = action.DirButtons[(int)direction];
+            if (dirAction == null)
+            {
+                dirAction = new AxisDirButton(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                action.DirButtons[(int)direction] = dirAction;
+            }
+
+            MarkDirectionChanged(direction, dirAction);
+            return dirAction;
+        }
+
+        internal void MarkDirectionChanged(StickAnalogEmulationAction.DirSlot direction, ButtonAction dirAction)
+        {
+            string propertyName = GetDirectionPropertyName(direction);
+            if (!action.ChangedProperties.Contains(propertyName))
+            {
+                action.ChangedProperties.Add(propertyName);
+            }
+
+            action.UsingParentActionButton[(int)direction] = false;
+            action.RaiseNotifyPropertyChange(mapper, propertyName);
+            FaceButtonBindingItem.MarkFunctionsChanged(dirAction);
+        }
+
+        internal EditFaceBindingContext PrepareDirectionEdit(StickAnalogDirectionBindItem item)
+        {
+            AxisDirButton dirAction = EnsureEditableDirectionAction(item.Direction);
+            ActionFunc func = dirAction.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault();
+            if (func == null)
+            {
+                func = new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                mapper.ProcessMappingChangeAction(() =>
+                {
+                    dirAction.Release(mapper, ignoreReleaseActions: true);
+                    dirAction.ActionFuncs.Insert(0, func);
+                    MarkDirectionChanged(item.Direction, dirAction);
+                });
+            }
+
+            return new EditFaceBindingContext(mapper, dirAction, func);
+        }
+
+        internal void RefreshDirectionBindings()
+        {
+            foreach (StickAnalogDirectionBindItem item in cardinalDirectionItems)
+            {
+                item.Refresh();
+            }
+        }
+
+        private static string GetDirectionPropertyName(StickAnalogEmulationAction.DirSlot direction)
+        {
+            return direction switch
+            {
+                StickAnalogEmulationAction.DirSlot.Up => StickAnalogEmulationAction.PropertyKeyStrings.DIR_UP,
+                StickAnalogEmulationAction.DirSlot.Down => StickAnalogEmulationAction.PropertyKeyStrings.DIR_DOWN,
+                StickAnalogEmulationAction.DirSlot.Left => StickAnalogEmulationAction.PropertyKeyStrings.DIR_LEFT,
+                StickAnalogEmulationAction.DirSlot.Right => StickAnalogEmulationAction.PropertyKeyStrings.DIR_RIGHT,
+                _ => StickAnalogEmulationAction.PropertyKeyStrings.DIR_UP,
+            };
         }
 
         public void UpdateUpDirAction(ButtonAction oldAction, ButtonAction newAction)
@@ -749,6 +843,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             ActionDownBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
             ActionLeftBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
             ActionRightBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
+            RefreshDirectionBindings();
         }
 
         protected void ExecuteInMapperThread(Action tempAction)
@@ -763,6 +858,59 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             });
 
             resetEvent.Wait();
+        }
+    }
+
+    public class StickAnalogDirectionBindItem : INotifyPropertyChanged, IQuickBindTarget
+    {
+        private readonly StickAnalogEmulationPropViewModel owner;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public StickAnalogEmulationAction.DirSlot Direction { get; }
+        public string DisplayName { get; }
+        public string Subtitle { get; }
+
+        public string DisplayBind
+        {
+            get
+            {
+                ButtonAction action = owner.GetDirectionAction(Direction);
+                string result = action?.DescribeActions(((IQuickBindTarget)this).Mapper);
+                return string.IsNullOrWhiteSpace(result) ? "Unbound" : result;
+            }
+        }
+
+        public StickAnalogDirectionBindItem(StickAnalogEmulationPropViewModel owner,
+            StickAnalogEmulationAction.DirSlot direction, string displayName, string subtitle)
+        {
+            this.owner = owner;
+            Direction = direction;
+            DisplayName = displayName;
+            Subtitle = subtitle;
+        }
+
+        Mapper IQuickBindTarget.Mapper => owner.Mapper;
+        string IQuickBindTarget.RowLabel => DisplayName;
+        string IQuickBindTarget.SlotLabel => "Regular Press";
+        bool IQuickBindTarget.IsComplexBinding =>
+            !QuickBindActionApplier.IsSimpleFunc(
+                owner.GetDirectionAction(Direction)?.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault());
+
+        EditFaceBindingContext IQuickBindTarget.GetEditContext()
+        {
+            return owner.PrepareDirectionEdit(this);
+        }
+
+        void IQuickBindTarget.NotifyBindingChanged()
+        {
+            owner.MarkDirectionChanged(Direction, owner.GetDirectionAction(Direction));
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayBind)));
         }
     }
 }
