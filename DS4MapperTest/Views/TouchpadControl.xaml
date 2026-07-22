@@ -233,10 +233,10 @@
                   HorizontalScrollBarVisibility="Disabled"
                   CanContentScroll="False">
         <TabControl x:Name="TabControlRoot" Style="{StaticResource JsmccPillTabControlStyle}">
-            <TabItem Header="Touchpad Keybinds">
+            <TabItem Header="Click &amp; Touch Bindings">
                 <StackPanel>
                     <StackPanel Margin="0,0,0,6">
-                        <TextBlock Text="Touchpad Keybinds" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Click &amp; Touch Bindings" Style="{StaticResource JsmccSectionTitle}"/>
                         <TextBlock Text="Touch and click bindings for this touchpad. These are always available, regardless of the mode chosen in Mode."
                                    Style="{StaticResource JsmccBodyText}"
                                    TextWrapping="Wrap"
