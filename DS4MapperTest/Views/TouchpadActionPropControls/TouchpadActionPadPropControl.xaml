@@ -223,7 +223,7 @@
                     <Border Style="{StaticResource ModeRowBorder}">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="260"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Enable Counter Movement Release Press" Style="{StaticResource JsmccLabelText}"/>
@@ -231,7 +231,8 @@
                         </Grid>
                     </Border>
 
-                    <StackPanel IsEnabled="{Binding CounterMovementReleasePressEnabled}">
+                    <StackPanel IsEnabled="{Binding CounterMovementReleasePressEnabled}"
+                                Visibility="{Binding CounterMovementReleasePressEnabled, Converter={StaticResource BoolToVis}}">
                         <Border Style="{StaticResource ModeRowBorder}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
