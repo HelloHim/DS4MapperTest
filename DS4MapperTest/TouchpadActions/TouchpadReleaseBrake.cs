@@ -19,7 +19,7 @@ namespace DS4MapperTest.TouchpadActions
         private const int MAX_START_DELAY_MS = DigitalReleaseBrakePulse.MAX_BRAKE_DURATION_MS;
 
         public const int DEFAULT_START_DELAY_MINIMUM_MS = 0;
-        public const int DEFAULT_START_DELAY_MAXIMUM_MS = 20;
+        public const int DEFAULT_START_DELAY_MAXIMUM_MS = 0;
 
         public const int CS2_TAP_LENGTH_MINIMUM_MS = CounterMovementReleasePressProcessor.CS2_TAP_LENGTH_MINIMUM_MS;
         public const int CS2_TAP_LENGTH_MAXIMUM_MS = CounterMovementReleasePressProcessor.CS2_TAP_LENGTH_MAXIMUM_MS;

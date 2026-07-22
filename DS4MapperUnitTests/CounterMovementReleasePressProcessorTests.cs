@@ -92,7 +92,7 @@ namespace DS4MapperUnitTests
             CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
 
             Assert.AreEqual(0, brake.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(20, brake.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(0, brake.OppositeTapStartDelayMaximumMs);
         }
 
         [TestMethod]

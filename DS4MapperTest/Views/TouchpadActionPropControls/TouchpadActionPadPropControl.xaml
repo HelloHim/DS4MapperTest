@@ -284,7 +284,7 @@
 
                         <Border Style="{StaticResource ModeRowBorder}">
                             <StackPanel>
-                                <TextBlock Text="Opposite Tap Start Delay" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Opposite Tap Start Delay Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="170"/>
