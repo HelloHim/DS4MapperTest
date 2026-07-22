@@ -78,12 +78,12 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void OppositeTapLengthMs_DefaultIsOneHundredMilliseconds()
+        public void OppositeTapLengthMs_DefaultsToCs2Values()
         {
             CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
 
-            Assert.AreEqual(100, brake.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(100, brake.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(75, brake.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(120, brake.OppositeTapLengthMaximumMs);
         }
 
         [TestMethod]
@@ -96,11 +96,27 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void TapLengthPreset_DefaultIsCustom()
+        public void TapLengthPreset_DefaultIsCs2()
         {
             CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
 
-            Assert.AreEqual(CounterMovementTapLengthPreset.Custom, brake.TapLengthPreset);
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.TapLengthPreset);
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.EffectiveTapLengthPreset);
+        }
+
+        [TestMethod]
+        public void EffectiveTapLengthPreset_IsBidirectional()
+        {
+            CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.EffectiveTapLengthPreset);
+
+            brake.OppositeTapLengthMinimumMs = 60;
+            Assert.AreEqual(CounterMovementTapLengthPreset.Custom, brake.EffectiveTapLengthPreset,
+                "Editing away from the CS2 values must switch the displayed preset to Custom.");
+
+            brake.OppositeTapLengthMinimumMs = 75;
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.EffectiveTapLengthPreset,
+                "Editing back to exactly the CS2 values must switch the displayed preset back to CS2.");
         }
 
         [TestMethod]

@@ -71,8 +71,8 @@ namespace DS4MapperUnitTests
             StickAnalogEmulationAction action = new StickAnalogEmulationAction();
 
             Assert.IsFalse(action.CounterMovementReleasePress.Enabled);
-            Assert.AreEqual(100, action.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(100, action.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(75, action.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(120, action.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
             Assert.AreEqual(0, action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
             Assert.AreEqual(20, action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
             Assert.AreEqual(0, action.CounterMovementReleasePress.MinimumHoldMs);
