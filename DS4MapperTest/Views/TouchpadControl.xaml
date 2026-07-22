@@ -175,17 +175,51 @@
                     </StackPanel>
                 </Border>
 
-                <Border Visibility="{Binding IsZoneGestureAction, Converter={StaticResource BoolToVis}}">
+                <Border Visibility="{Binding IsZoneAction, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,6">
-                            <TextBlock Text="Zones &amp; Gestures" Style="{StaticResource JsmccSectionTitle}"/>
-                            <TextBlock Text="Deadzone, diagonal range, and gesture tuning for this touchpad input."
+                            <TextBlock Text="Zones" Style="{StaticResource JsmccSectionTitle}"/>
+                            <TextBlock Text="Deadzone and zone tuning for this touchpad input."
                                        Style="{StaticResource JsmccBodyText}"
                                        TextWrapping="Wrap"
                                        Margin="0,4,0,0"/>
                         </StackPanel>
                         <Border Style="{StaticResource TouchpadInlineCard}">
-                            <ContentControl Tag="ZonesGestures"
+                            <ContentControl Tag="Zones"
+                                            DataContext="{Binding}"
+                                            Loaded="InlineSettingsHost_Loaded"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Visibility="{Binding IsOuterRingAction, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,6">
+                            <TextBlock Text="Outer Ring" Style="{StaticResource JsmccSectionTitle}"/>
+                            <TextBlock Text="Outer ring activation and binding settings for this touchpad input."
+                                       Style="{StaticResource JsmccBodyText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Style="{StaticResource TouchpadInlineCard}">
+                            <ContentControl Tag="OuterRing"
+                                            DataContext="{Binding}"
+                                            Loaded="InlineSettingsHost_Loaded"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Visibility="{Binding IsGestureAction, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,6">
+                            <TextBlock Text="Gestures" Style="{StaticResource JsmccSectionTitle}"/>
+                            <TextBlock Text="Gesture binding and timing settings for this touchpad input."
+                                       Style="{StaticResource JsmccBodyText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Style="{StaticResource TouchpadInlineCard}">
+                            <ContentControl Tag="Gestures"
                                             DataContext="{Binding}"
                                             Loaded="InlineSettingsHost_Loaded"/>
                         </Border>

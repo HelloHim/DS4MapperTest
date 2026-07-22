@@ -356,6 +356,19 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler OppositeTapStartDelayMaximumMsChanged;
 
+        public bool CounterMovementDeadZoneReleaseEnabled
+        {
+            get => action.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled;
+            set
+            {
+                if (action.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled == value) return;
+                action.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled = value;
+                CounterMovementDeadZoneReleaseEnabledChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler CounterMovementDeadZoneReleaseEnabledChanged;
+
         public int BrakeMinimumHoldMs
         {
             get => action.ReleaseBrake.MinimumHoldMs;
@@ -515,6 +528,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         private List<TouchpadDirectionBindItem> diagonalDirectionItems;
         public List<TouchpadDirectionBindItem> DiagonalDirectionItems => diagonalDirectionItems;
 
+        public TouchpadRingBindItem RingBindItem { get; private set; }
+
         public bool HighlightName
         {
             get => action.ParentAction == null ||
@@ -648,6 +663,13 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler HighlightOppositeTapStartDelayMaximumMsChanged;
 
+        public bool HighlightCounterMovementDeadZoneReleaseEnabled
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED);
+        }
+        public event EventHandler HighlightCounterMovementDeadZoneReleaseEnabledChanged;
+
         public bool HighlightBrakeMinimumHoldMs
         {
             get => action.ParentAction == null ||
@@ -689,6 +711,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
             PrepareModel();
             PrepareDirectionItems();
+            RingBindItem = new TouchpadRingBindItem(this);
 
             NameChanged += TouchpadActionPadPropViewModel_NameChanged;
             DeadZoneChanged += TouchpadActionPadPropViewModel_DeadZoneChanged;
@@ -711,6 +734,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             OppositeTapLengthMaximumMsChanged += TouchpadActionPadPropViewModel_OppositeTapLengthMaximumMsChanged;
             OppositeTapStartDelayMinimumMsChanged += TouchpadActionPadPropViewModel_OppositeTapStartDelayMinimumMsChanged;
             OppositeTapStartDelayMaximumMsChanged += TouchpadActionPadPropViewModel_OppositeTapStartDelayMaximumMsChanged;
+            CounterMovementDeadZoneReleaseEnabledChanged += TouchpadActionPadPropViewModel_CounterMovementDeadZoneReleaseEnabledChanged;
             BrakeMinimumHoldMsChanged += TouchpadActionPadPropViewModel_BrakeMinimumHoldMsChanged;
         }
 
@@ -775,6 +799,13 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
             action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
             HighlightOppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadActionPadPropViewModel_CounterMovementDeadZoneReleaseEnabledChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED);
+            HighlightCounterMovementDeadZoneReleaseEnabledChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadActionPadPropViewModel_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
@@ -1018,6 +1049,49 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             {
                 item.Refresh();
             }
+        }
+
+        internal AxisDirButton EnsureEditableRingAction()
+        {
+            EnsureEditableAction();
+
+            if (action.RingButton == null)
+            {
+                action.RingButton = new AxisDirButton(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            }
+
+            MarkRingChanged(action.RingButton);
+            return action.RingButton;
+        }
+
+        internal void MarkRingChanged(ButtonAction ringAction)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.OUTER_RING_BUTTON))
+            {
+                action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.OUTER_RING_BUTTON);
+            }
+
+            action.UseParentRingButton = false;
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.OUTER_RING_BUTTON);
+            FaceButtonBindingItem.MarkFunctionsChanged(ringAction);
+        }
+
+        internal EditFaceBindingContext PrepareRingEdit()
+        {
+            AxisDirButton ringAction = EnsureEditableRingAction();
+            ActionFunc func = ringAction.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault();
+            if (func == null)
+            {
+                func = new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                mapper.ProcessMappingChangeAction(() =>
+                {
+                    ringAction.Release(mapper, ignoreReleaseActions: true);
+                    ringAction.ActionFuncs.Insert(0, func);
+                    MarkRingChanged(ringAction);
+                });
+            }
+
+            return new EditFaceBindingContext(mapper, ringAction, func);
         }
 
         private static string GetDirectionPropertyName(TouchpadActionPad.DpadDirections direction)
@@ -1391,6 +1465,50 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         void IQuickBindTarget.NotifyBindingChanged()
         {
             owner.MarkDirectionChanged(Direction, owner.GetDirectionAction(Direction));
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayBind)));
+        }
+    }
+
+    public class TouchpadRingBindItem : INotifyPropertyChanged, IQuickBindTarget
+    {
+        private readonly TouchpadActionPadPropViewModel owner;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public TouchpadRingBindItem(TouchpadActionPadPropViewModel owner)
+        {
+            this.owner = owner;
+        }
+
+        public string DisplayBind
+        {
+            get
+            {
+                string result = owner.Action.RingButton?.DescribeActions(((IQuickBindTarget)this).Mapper);
+                return string.IsNullOrWhiteSpace(result) ? "Unbound" : result;
+            }
+        }
+
+        Mapper IQuickBindTarget.Mapper => owner.Napper;
+        string IQuickBindTarget.RowLabel => "Outer Ring";
+        string IQuickBindTarget.SlotLabel => "Regular Press";
+        bool IQuickBindTarget.IsComplexBinding =>
+            !QuickBindActionApplier.IsSimpleFunc(
+                owner.Action.RingButton?.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault());
+
+        EditFaceBindingContext IQuickBindTarget.GetEditContext()
+        {
+            return owner.PrepareRingEdit();
+        }
+
+        void IQuickBindTarget.NotifyBindingChanged()
+        {
+            owner.MarkRingChanged(owner.Action.RingButton);
             Refresh();
         }
 

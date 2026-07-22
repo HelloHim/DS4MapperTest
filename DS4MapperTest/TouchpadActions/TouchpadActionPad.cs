@@ -51,6 +51,7 @@ namespace DS4MapperTest.TouchpadActions
             public const string COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS = "OppositeTapLengthMaximumMs";
             public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "OppositeTapStartDelayMinimumMs";
             public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "OppositeTapStartDelayMaximumMs";
+            public const string COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED = "CounterMovementDeadZoneReleaseEnabled";
             public const string BRAKE_MIN_HOLD_MS = "BrakeMinimumHoldMs";
         }
 
@@ -88,6 +89,7 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS,
             PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS,
             PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED,
             PropertyKeyStrings.BRAKE_MIN_HOLD_MS,
         };
 
@@ -1294,6 +1296,9 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
                             releaseBrake.OppositeTapStartDelayMaximumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMaximumMs;
                             break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED:
+                            releaseBrake.TriggerOnDeadZoneReleaseEnabled = tempPadAction.releaseBrake.TriggerOnDeadZoneReleaseEnabled;
+                            break;
                         case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
                             releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
                             break;
@@ -1468,6 +1473,9 @@ namespace DS4MapperTest.TouchpadActions
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
                     releaseBrake.OppositeTapStartDelayMaximumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMaximumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED:
+                    releaseBrake.TriggerOnDeadZoneReleaseEnabled = tempPadAction.releaseBrake.TriggerOnDeadZoneReleaseEnabled;
                     break;
                 case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
                     releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
