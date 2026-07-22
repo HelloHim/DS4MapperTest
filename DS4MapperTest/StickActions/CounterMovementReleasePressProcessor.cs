@@ -64,7 +64,7 @@ namespace DS4MapperTest.StickActions
 
         public static readonly int DEFAULT_TAP_LENGTH_MS = DigitalReleaseBrakePulse.DEFAULT_BRAKE_DURATION_MS;
         public const int DEFAULT_START_DELAY_MINIMUM_MS = 0;
-        public const int DEFAULT_START_DELAY_MAXIMUM_MS = 20;
+        public const int DEFAULT_START_DELAY_MAXIMUM_MS = 0;
 
         public const int CS2_TAP_LENGTH_MINIMUM_MS = 75;
         public const int CS2_TAP_LENGTH_MAXIMUM_MS = 120;

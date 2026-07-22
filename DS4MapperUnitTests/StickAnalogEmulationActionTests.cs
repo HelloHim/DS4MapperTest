@@ -74,7 +74,7 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(75, action.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
             Assert.AreEqual(120, action.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
             Assert.AreEqual(0, action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(20, action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(0, action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
             Assert.AreEqual(0, action.CounterMovementReleasePress.MinimumHoldMs);
             Assert.AreEqual(0.0, action.CounterMovementReleasePress.ArmingThreshold);
         }

@@ -736,7 +736,7 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(75, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
             Assert.AreEqual(120, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
             Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(20, padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
         }
 
         // --- Section 24/26: round trip through the serializer ----------------------
