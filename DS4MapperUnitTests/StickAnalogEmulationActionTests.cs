@@ -296,6 +296,21 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void SpeedEnabled_OnePercentFullSpeedThreshold_TinyDeflectionPastDeadzoneStaysContinuouslyActive()
+        {
+            // Default DeadZone is 0.30/MaxZone 1.0, so a 1% threshold should be satisfied by any
+            // deflection just past the deadzone edge (here ~1.4% of the post-deadzone range).
+            var (mapper, action) = LoadMapper(speedEnabled: true, speedPulseMs: 30, fullSpeedThresholdPercent: 1);
+
+            Neutral(mapper);
+            for (int i = 0; i < 10; i++)
+            {
+                HoldAngle(mapper, 90.0, magnitudeFraction: 0.31);
+                Assert.IsTrue(KeyDown(VK_D), "A 1% threshold should already be satisfied by a tiny deflection past the deadzone.");
+            }
+        }
+
+        [TestMethod]
         public void SpeedDisabled_ContinuousMovementRegardlessOfRadius()
         {
             var (mapper, action) = LoadMapper(speedEnabled: false);
