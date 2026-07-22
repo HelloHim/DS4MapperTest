@@ -1990,7 +1990,14 @@ namespace DS4MapperTest.ViewModels
                 actionResetEvent.Set();
             });
 
-            actionResetEvent.Wait();
+            // ProcessMappingChangeAction only tries once, for up to 500ms, to halt the
+            // input reading thread before giving up and never running the queued action
+            // at all. Without a bounded wait here, a missed halt window left this method
+            // (and the whole window, which stays disabled while it awaits) hung forever.
+            if (!actionResetEvent.Wait(TimeSpan.FromSeconds(5)))
+            {
+                throw new TimeoutException("Timed out waiting for the mapper thread to become available for saving.");
+            }
 
             if (!string.IsNullOrEmpty(tempOutJson) && overwriteFile)
             {
@@ -2026,7 +2033,13 @@ namespace DS4MapperTest.ViewModels
                 });
             }
 
-            actionResetEvent.Wait();
+            // See comment in TestFakeSave: ProcessMappingChangeAction gives up silently if
+            // it can't halt the input reading thread within 500ms, so this wait must be
+            // bounded or a missed halt window hangs the whole window forever.
+            if (!actionResetEvent.Wait(TimeSpan.FromSeconds(5)))
+            {
+                throw new TimeoutException("Timed out waiting for the mapper thread to become available for saving.");
+            }
 
             if (!string.IsNullOrEmpty(tempOutJson))
             {
