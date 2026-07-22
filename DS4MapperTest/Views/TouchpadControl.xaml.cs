@@ -1,7 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
 using DS4MapperTest.TouchpadActions;
@@ -12,9 +17,146 @@ namespace DS4MapperTest.Views
 {
     public partial class TouchpadControl : UserControl
     {
+        private enum TouchpadPadSide
+        {
+            Whole,
+            Left,
+            Right,
+            Other,
+        }
+
+        private readonly List<TabItem> touchpadSideTabs = new List<TabItem>();
+        private ObservableCollection<TouchBindingItemsTest> observedTouchpadBindings;
+
         public TouchpadControl()
         {
             InitializeComponent();
+
+            Loaded += (sender, e) =>
+            {
+                HookTouchpadBindings();
+                BuildTouchpadSideTabs();
+            };
+            DataContextChanged += (sender, e) =>
+            {
+                HookTouchpadBindings();
+                BuildTouchpadSideTabs();
+            };
+        }
+
+        private void HookTouchpadBindings()
+        {
+            if (observedTouchpadBindings != null)
+            {
+                observedTouchpadBindings.CollectionChanged -= TouchpadBindings_CollectionChanged;
+            }
+
+            observedTouchpadBindings = (DataContext as ProfileEditorTestViewModel)?.TouchpadBindings;
+
+            if (observedTouchpadBindings != null)
+            {
+                observedTouchpadBindings.CollectionChanged += TouchpadBindings_CollectionChanged;
+            }
+        }
+
+        private void TouchpadBindings_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            BuildTouchpadSideTabs();
+        }
+
+        private void BuildTouchpadSideTabs()
+        {
+            foreach (TabItem tab in touchpadSideTabs)
+            {
+                TabControlRoot.Items.Remove(tab);
+            }
+
+            touchpadSideTabs.Clear();
+
+            if (DataContext is not ProfileEditorTestViewModel vm)
+            {
+                return;
+            }
+
+            if (vm.TouchpadBindings.Count == 0)
+            {
+                TabItem emptyTab = new TabItem
+                {
+                    Header = "Touchpad Settings",
+                    Content = CreateMessage("No supported touchpad binding inputs are available for this controller."),
+                };
+                touchpadSideTabs.Add(emptyTab);
+                TabControlRoot.Items.Add(emptyTab);
+                return;
+            }
+
+            var ordered = vm.TouchpadBindings
+                .Select((item, index) => (item, classification: ClassifyTouchpadBinding(item.BindingName), index))
+                .OrderBy(entry => entry.classification.rank)
+                .ThenBy(entry => entry.index);
+
+            foreach (var entry in ordered)
+            {
+                FrameworkElement content = BuildSideSettingsContent(entry.item, entry.classification.side, vm);
+                TabItem tab = new TabItem
+                {
+                    Header = GetTouchpadTabHeader(entry.item, entry.classification.side),
+                    Content = content,
+                };
+                touchpadSideTabs.Add(tab);
+                TabControlRoot.Items.Add(tab);
+            }
+        }
+
+        private FrameworkElement BuildSideSettingsContent(TouchBindingItemsTest item, TouchpadPadSide side,
+            ProfileEditorTestViewModel vm)
+        {
+            DataTemplate template = (DataTemplate)Resources["TouchpadPadSettingsTemplate"];
+            FrameworkElement content = (FrameworkElement)template.LoadContent();
+            content.DataContext = item;
+
+            bool showSteamRotation = (side == TouchpadPadSide.Left || side == TouchpadPadSide.Right) &&
+                vm.HasSteamPadRotation;
+
+            if (showSteamRotation && content.FindName("SteamPadRotationSlot") is StackPanel slot)
+            {
+                string rotationTemplateKey = side == TouchpadPadSide.Left
+                    ? "LeftPadRotationRowTemplate" : "RightPadRotationRowTemplate";
+                DataTemplate rotationTemplate = (DataTemplate)Resources[rotationTemplateKey];
+                FrameworkElement rotationRow = (FrameworkElement)rotationTemplate.LoadContent();
+                rotationRow.DataContext = vm.SteamPadRotation;
+                slot.Children.Add(rotationRow);
+
+                if (content.FindName("ModeSettingsSectionRoot") is Border modeSettingsSection)
+                {
+                    BindingOperations.ClearBinding(modeSettingsSection, UIElement.VisibilityProperty);
+                    modeSettingsSection.Visibility = Visibility.Visible;
+                }
+            }
+
+            return content;
+        }
+
+        private static (int rank, TouchpadPadSide side) ClassifyTouchpadBinding(string bindingName)
+        {
+            return bindingName switch
+            {
+                "Touchpad" => (0, TouchpadPadSide.Whole),
+                "TouchpadLeft" or "LeftTouchpad" => (1, TouchpadPadSide.Left),
+                "TouchpadRight" or "RightTouchpad" => (2, TouchpadPadSide.Right),
+                _ => (3, TouchpadPadSide.Other),
+            };
+        }
+
+        private static string GetTouchpadTabHeader(TouchBindingItemsTest item, TouchpadPadSide side)
+        {
+            return side switch
+            {
+                TouchpadPadSide.Whole => "Touchpad Settings",
+                TouchpadPadSide.Left => "Left Touchpad Settings",
+                TouchpadPadSide.Right => "Right Touchpad Settings",
+                _ => $"{item.DisplayName} Settings",
+            };
         }
 
         private void InlineSettingsHost_Loaded(object sender, RoutedEventArgs e)
