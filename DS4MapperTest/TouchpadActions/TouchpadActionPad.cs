@@ -44,6 +44,9 @@ namespace DS4MapperTest.TouchpadActions
 
             public const string COUNTER_MOVEMENT_ENABLED = "CounterMovementReleasePressEnabled";
             public const string COUNTER_MOVEMENT_TAP_LENGTH_PRESET = "CounterMovementTapLengthPreset";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_MODE = "OppositeTapLengthMode";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS = "OppositeTapLengthMs";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT = "OppositeTapLengthVariancePercent";
             public const string COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS = "OppositeTapLengthMinimumMs";
             public const string COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS = "OppositeTapLengthMaximumMs";
             public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "OppositeTapStartDelayMinimumMs";
@@ -78,6 +81,9 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.DELAY_TIME,
             PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED,
             PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT,
             PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS,
             PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS,
             PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS,
@@ -1266,6 +1272,15 @@ namespace DS4MapperTest.TouchpadActions
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET:
                             releaseBrake.TapLengthPreset = tempPadAction.releaseBrake.TapLengthPreset;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE:
+                            releaseBrake.OppositeTapLengthMode = tempPadAction.releaseBrake.OppositeTapLengthMode;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS:
+                            releaseBrake.OppositeTapLengthMs = tempPadAction.releaseBrake.OppositeTapLengthMs;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT:
+                            releaseBrake.OppositeTapLengthVariancePercent = tempPadAction.releaseBrake.OppositeTapLengthVariancePercent;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS:
                             releaseBrake.OppositeTapLengthMinimumMs = tempPadAction.releaseBrake.OppositeTapLengthMinimumMs;
