@@ -144,36 +144,6 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
                 touchActionPropVM.UpdateDownRightAction));
         }
 
-        private void DirectionAdvancedEdit_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button { Tag: TouchpadDirectionBindItem item })
-            {
-                return;
-            }
-
-            RequestFuncEditor?.Invoke(this,
-                new DirButtonBindingArgs(touchActionPropVM.Action.EventCodes4[(int)item.Direction],
-                    !touchActionPropVM.Action.UseParentActionButton[(int)item.Direction],
-                    GetDirectionUpdateHandler(item.Direction)));
-        }
-
-        private DirButtonBindingArgs.UpdateActionHandler GetDirectionUpdateHandler(
-            TouchpadActionPad.DpadDirections direction)
-        {
-            return direction switch
-            {
-                TouchpadActionPad.DpadDirections.Up => touchActionPropVM.UpdateUpDirAction,
-                TouchpadActionPad.DpadDirections.Down => touchActionPropVM.UpdateDownDirAction,
-                TouchpadActionPad.DpadDirections.Left => touchActionPropVM.UpdateLeftDirAction,
-                TouchpadActionPad.DpadDirections.Right => touchActionPropVM.UpdateRightAction,
-                TouchpadActionPad.DpadDirections.UpLeft => touchActionPropVM.UpdateUpLeftAction,
-                TouchpadActionPad.DpadDirections.UpRight => touchActionPropVM.UpdateUpRightAction,
-                TouchpadActionPad.DpadDirections.DownLeft => touchActionPropVM.UpdateDownLeftAction,
-                TouchpadActionPad.DpadDirections.DownRight => touchActionPropVM.UpdateDownRightAction,
-                _ => null,
-            };
-        }
-
         private void btnEditTest_Click(object sender, RoutedEventArgs e)
         {
             RequestFuncEditor?.Invoke(this,
