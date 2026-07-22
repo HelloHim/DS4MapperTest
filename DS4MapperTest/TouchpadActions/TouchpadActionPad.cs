@@ -42,8 +42,12 @@ namespace DS4MapperTest.TouchpadActions
             public const string USE_AS_OUTER_RING = "UseAsOuterRing";
             public const string OUTER_RING_FULL_RANGE = "OuterRingFullRange";
 
-            public const string BRAKE_ENABLED = "BrakeEnabled";
-            public const string BRAKE_DURATION_MS = "BrakeDurationMs";
+            public const string COUNTER_MOVEMENT_ENABLED = "CounterMovementReleasePressEnabled";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_PRESET = "CounterMovementTapLengthPreset";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS = "OppositeTapLengthMinimumMs";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS = "OppositeTapLengthMaximumMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "OppositeTapStartDelayMinimumMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "OppositeTapStartDelayMaximumMs";
             public const string BRAKE_MIN_HOLD_MS = "BrakeMinimumHoldMs";
         }
 
@@ -72,8 +76,12 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.REQUIRES_CLICK,
             PropertyKeyStrings.DELAY_ENABLED,
             PropertyKeyStrings.DELAY_TIME,
-            PropertyKeyStrings.BRAKE_ENABLED,
-            PropertyKeyStrings.BRAKE_DURATION_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS,
             PropertyKeyStrings.BRAKE_MIN_HOLD_MS,
         };
 
@@ -1253,11 +1261,23 @@ namespace DS4MapperTest.TouchpadActions
                             }
 
                             break;
-                        case PropertyKeyStrings.BRAKE_ENABLED:
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED:
                             releaseBrake.Enabled = tempPadAction.releaseBrake.Enabled;
                             break;
-                        case PropertyKeyStrings.BRAKE_DURATION_MS:
-                            releaseBrake.BrakeDurationMs = tempPadAction.releaseBrake.BrakeDurationMs;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET:
+                            releaseBrake.TapLengthPreset = tempPadAction.releaseBrake.TapLengthPreset;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS:
+                            releaseBrake.OppositeTapLengthMinimumMs = tempPadAction.releaseBrake.OppositeTapLengthMinimumMs;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
+                            releaseBrake.OppositeTapLengthMaximumMs = tempPadAction.releaseBrake.OppositeTapLengthMaximumMs;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
+                            releaseBrake.OppositeTapStartDelayMinimumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMinimumMs;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
+                            releaseBrake.OppositeTapStartDelayMaximumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMaximumMs;
                             break;
                         case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
                             releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
@@ -1416,11 +1436,23 @@ namespace DS4MapperTest.TouchpadActions
                     }
 
                     break;
-                case PropertyKeyStrings.BRAKE_ENABLED:
+                case PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED:
                     releaseBrake.Enabled = tempPadAction.releaseBrake.Enabled;
                     break;
-                case PropertyKeyStrings.BRAKE_DURATION_MS:
-                    releaseBrake.BrakeDurationMs = tempPadAction.releaseBrake.BrakeDurationMs;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET:
+                    releaseBrake.TapLengthPreset = tempPadAction.releaseBrake.TapLengthPreset;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS:
+                    releaseBrake.OppositeTapLengthMinimumMs = tempPadAction.releaseBrake.OppositeTapLengthMinimumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
+                    releaseBrake.OppositeTapLengthMaximumMs = tempPadAction.releaseBrake.OppositeTapLengthMaximumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
+                    releaseBrake.OppositeTapStartDelayMinimumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMinimumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
+                    releaseBrake.OppositeTapStartDelayMaximumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMaximumMs;
                     break;
                 case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
                     releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;

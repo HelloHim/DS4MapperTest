@@ -576,6 +576,12 @@ namespace DS4MapperTest.ButtonActions
                 else if (!status)
                 {
                     activeActions.Clear();
+
+                    foreach (ActionFunc func in actionFuncCandidates)
+                    {
+                        func.Prepare(mapper, false, stateData);
+                    }
+
                     actionFuncCandidates.Clear();
 
                     bool stillActiveFun = false;

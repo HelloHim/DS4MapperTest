@@ -1343,34 +1343,97 @@ namespace DS4MapperTest
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.OUTER_RING_FULL_RANGE);
             }
 
-            public bool BrakeEnabled
+            public bool CounterMovementReleasePressEnabled
             {
                 get => touchActionPadAction.ReleaseBrake.Enabled;
                 set
                 {
                     touchActionPadAction.ReleaseBrake.Enabled = value;
-                    BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                    CounterMovementReleasePressEnabledChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler BrakeEnabledChanged;
-            public bool ShouldSerializeBrakeEnabled()
+            public event EventHandler CounterMovementReleasePressEnabledChanged;
+            public bool ShouldSerializeCounterMovementReleasePressEnabled()
             {
-                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED);
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             }
 
-            public int BrakeDurationMs
+            public string CounterMovementTapLengthPreset
             {
-                get => touchActionPadAction.ReleaseBrake.BrakeDurationMs;
+                get => touchActionPadAction.ReleaseBrake.TapLengthPreset.ToString();
                 set
                 {
-                    touchActionPadAction.ReleaseBrake.BrakeDurationMs = value;
-                    BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                    if (Enum.TryParse(value, out DS4MapperTest.StickActions.CounterMovementTapLengthPreset temp))
+                    {
+                        touchActionPadAction.ReleaseBrake.TapLengthPreset = temp;
+                        CounterMovementTapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                    }
                 }
             }
-            public event EventHandler BrakeDurationMsChanged;
-            public bool ShouldSerializeBrakeDurationMs()
+            public event EventHandler CounterMovementTapLengthPresetChanged;
+            public bool ShouldSerializeCounterMovementTapLengthPreset()
             {
-                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS);
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            }
+
+            public int OppositeTapLengthMinimumMs
+            {
+                get => touchActionPadAction.ReleaseBrake.OppositeTapLengthMinimumMs;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.OppositeTapLengthMinimumMs = value;
+                    OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapLengthMinimumMsChanged;
+            public bool ShouldSerializeOppositeTapLengthMinimumMs()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            }
+
+            public int OppositeTapLengthMaximumMs
+            {
+                get => touchActionPadAction.ReleaseBrake.OppositeTapLengthMaximumMs;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.OppositeTapLengthMaximumMs = value;
+                    OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapLengthMaximumMsChanged;
+            public bool ShouldSerializeOppositeTapLengthMaximumMs()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            }
+
+            public int OppositeTapStartDelayMinimumMs
+            {
+                get => touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMinimumMs;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMinimumMs = value;
+                    OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayMinimumMsChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMinimumMs()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+            }
+
+            public int OppositeTapStartDelayMaximumMs
+            {
+                get => touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMaximumMs;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMaximumMs = value;
+                    OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayMaximumMsChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMaximumMs()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
             }
 
             [JsonProperty("BrakeMinimumHoldMs")]
@@ -1388,6 +1451,24 @@ namespace DS4MapperTest
             {
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
             }
+
+            private bool? legacyBrakeEnabled;
+            internal bool? LegacyBrakeEnabled => legacyBrakeEnabled;
+            public bool BrakeEnabled
+            {
+                get => false;
+                set => legacyBrakeEnabled = value;
+            }
+            public bool ShouldSerializeBrakeEnabled() => false;
+
+            private int? legacyBrakeDurationMs;
+            internal int? LegacyBrakeDurationMs => legacyBrakeDurationMs;
+            public int BrakeDurationMs
+            {
+                get => 0;
+                set => legacyBrakeDurationMs = value;
+            }
+            public bool ShouldSerializeBrakeDurationMs() => false;
 
             public TouchpadActionPadSettings(TouchpadActionPad action)
             {
@@ -1462,19 +1543,43 @@ namespace DS4MapperTest
             settings.UseAsOuterRingChanged += Settings_UseAsOuterRingChanged;
             settings.OuterRingDeadZoneChanged += Settings_OuterRingDeadZoneChanged;
             settings.OuterRingRangeChanged += Settings_OuterRingRangeChanged;
-            settings.BrakeEnabledChanged += Settings_BrakeEnabledChanged;
-            settings.BrakeDurationMsChanged += Settings_BrakeDurationMsChanged;
+            settings.CounterMovementReleasePressEnabledChanged += Settings_CounterMovementReleasePressEnabledChanged;
+            settings.CounterMovementTapLengthPresetChanged += Settings_CounterMovementTapLengthPresetChanged;
+            settings.OppositeTapLengthMinimumMsChanged += Settings_OppositeTapLengthMinimumMsChanged;
+            settings.OppositeTapLengthMaximumMsChanged += Settings_OppositeTapLengthMaximumMsChanged;
+            settings.OppositeTapStartDelayMinimumMsChanged += Settings_OppositeTapStartDelayMinimumMsChanged;
+            settings.OppositeTapStartDelayMaximumMsChanged += Settings_OppositeTapStartDelayMaximumMsChanged;
             settings.BrakeMinimumHoldMsChanged += Settings_BrakeMinimumHoldMsChanged;
         }
 
-        private void Settings_BrakeEnabledChanged(object sender, EventArgs e)
+        private void Settings_CounterMovementReleasePressEnabledChanged(object sender, EventArgs e)
         {
-            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED);
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
         }
 
-        private void Settings_BrakeDurationMsChanged(object sender, EventArgs e)
+        private void Settings_CounterMovementTapLengthPresetChanged(object sender, EventArgs e)
         {
-            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS);
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+        }
+
+        private void Settings_OppositeTapLengthMinimumMsChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+        }
+
+        private void Settings_OppositeTapLengthMaximumMsChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayMinimumMsChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayMaximumMsChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
         }
 
         private void Settings_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
@@ -1699,6 +1804,58 @@ namespace DS4MapperTest
                 touchActionPadAction.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
                 //stickPadAct.RingButton.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
             }
+
+            MigrateLegacyCounterMovementReleasePressFields();
+        }
+
+        private void MigrateLegacyCounterMovementReleasePressFields()
+        {
+            if (settings.LegacyBrakeEnabled.HasValue &&
+                !touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED))
+            {
+                touchActionPadAction.ReleaseBrake.Enabled = settings.LegacyBrakeEnabled.Value;
+                touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
+            }
+
+            if (!settings.LegacyBrakeDurationMs.HasValue)
+            {
+                touchActionPadAction.ReleaseBrake.NormalizeRanges();
+                return;
+            }
+
+            int legacyDuration = DigitalReleaseBrakePulse.ClampBrakeDurationMs(settings.LegacyBrakeDurationMs.Value);
+            if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS))
+            {
+                touchActionPadAction.ReleaseBrake.OppositeTapLengthMinimumMs = legacyDuration;
+                touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            }
+
+            if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS))
+            {
+                touchActionPadAction.ReleaseBrake.OppositeTapLengthMaximumMs = legacyDuration;
+                touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            }
+
+            if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS))
+            {
+                touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMinimumMs = 0;
+                touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+            }
+
+            if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS))
+            {
+                touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMaximumMs = 0;
+                touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
+            }
+
+            if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET))
+            {
+                touchActionPadAction.ReleaseBrake.TapLengthPreset =
+                    DS4MapperTest.StickActions.CounterMovementTapLengthPreset.Custom;
+                touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            }
+
+            touchActionPadAction.ReleaseBrake.NormalizeRanges();
         }
 
         public void FlagBtnChangedDirection(TouchpadActionPad.DpadDirections dir,
