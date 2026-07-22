@@ -66,14 +66,17 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void Defaults_ReleaseBrake_MatchesLoosenedDefaults()
+        public void Defaults_CounterMovementReleasePress_MatchesLoosenedDefaults()
         {
             StickAnalogEmulationAction action = new StickAnalogEmulationAction();
 
-            Assert.IsFalse(action.ReleaseBrake.Enabled);
-            Assert.AreEqual(100, action.ReleaseBrake.BrakeDurationMs);
-            Assert.AreEqual(0, action.ReleaseBrake.MinimumHoldMs);
-            Assert.AreEqual(0.0, action.ReleaseBrake.ArmingThreshold);
+            Assert.IsFalse(action.CounterMovementReleasePress.Enabled);
+            Assert.AreEqual(100, action.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(100, action.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(0, action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
+            Assert.AreEqual(20, action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(0, action.CounterMovementReleasePress.MinimumHoldMs);
+            Assert.AreEqual(0.0, action.CounterMovementReleasePress.ArmingThreshold);
         }
 
         [TestMethod]
@@ -356,38 +359,41 @@ namespace DS4MapperUnitTests
             Assert.IsFalse(KeyDown(VK_D), "Release must drop any currently-held direction output.");
         }
 
-        // --- Digital Release Brake (shared with StickPadAction) ------------------
+        // --- Counter Movement Release Press (shared with StickPadAction) ---------
 
         [TestMethod]
-        public void ReleaseBrake_FastCardinalRelease_FiresOppositeDirection()
+        public void CounterMovementReleasePress_FastCardinalRelease_FiresOppositeDirection()
         {
             var (mapper, action) = LoadMapper(directionMode: "EightWay");
-            action.ReleaseBrake.Enabled = true;
-            action.ReleaseBrake.BrakeDurationMs = 40;
-            action.ReleaseBrake.MinimumHoldMs = 0;
-            action.ReleaseBrake.ArmingThreshold = 0.0;
+            action.CounterMovementReleasePress.Enabled = true;
+            action.CounterMovementReleasePress.OppositeTapLengthMinimumMs = 40;
+            action.CounterMovementReleasePress.OppositeTapLengthMaximumMs = 40;
+            action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs = 0;
+            action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs = 0;
+            action.CounterMovementReleasePress.MinimumHoldMs = 0;
+            action.CounterMovementReleasePress.ArmingThreshold = 0.0;
 
             Neutral(mapper);
             for (int i = 0; i < 20; i++) HoldAngle(mapper, 0.0); // hold Up (North) at full deflection
             Report(mapper, 0, 0); // sudden release to centre
 
-            Assert.AreEqual(StickReleaseBrake.BrakeState.Braking, action.ReleaseBrake.State);
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, action.CounterMovementReleasePress.State);
             Assert.IsFalse(KeyDown(VK_W), "Original Up key must be released.");
-            Assert.IsTrue(KeyDown(VK_S), "Opposite Down key must pulse due to the release brake.");
+            Assert.IsTrue(KeyDown(VK_S), "Opposite Down key must pulse due to Counter Movement Release Press.");
         }
 
         [TestMethod]
-        public void ReleaseBrake_Disabled_NeverArms()
+        public void CounterMovementReleasePress_Disabled_NeverArms()
         {
             var (mapper, action) = LoadMapper(directionMode: "EightWay");
-            Assert.IsFalse(action.ReleaseBrake.Enabled, "Precondition: brake off by default.");
+            Assert.IsFalse(action.CounterMovementReleasePress.Enabled, "Precondition: off by default.");
 
             Neutral(mapper);
             for (int i = 0; i < 20; i++) HoldAngle(mapper, 0.0);
             Report(mapper, 0, 0);
 
-            Assert.AreEqual(StickReleaseBrake.BrakeState.Unprimed, action.ReleaseBrake.State);
-            Assert.IsFalse(KeyDown(VK_S), "No opposite pulse should occur while the brake is disabled.");
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.Unprimed, action.CounterMovementReleasePress.State);
+            Assert.IsFalse(KeyDown(VK_S), "No opposite pulse should occur while disabled.");
         }
 
         // --- Default keybinds (WASD) for modes sharing Up/Down/Left/Right --------

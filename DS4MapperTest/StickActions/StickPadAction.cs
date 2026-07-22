@@ -42,8 +42,14 @@ namespace DS4MapperTest.StickActions
             public const string OUTER_RING_DEAD_ZONE = "OuterRingDeadZone";
             public const string USE_AS_OUTER_RING = "UseAsOuterRing";
 
-            public const string BRAKE_ENABLED = "BrakeEnabled";
-            public const string BRAKE_DURATION_MS = "BrakeDurationMs";
+            public const string COUNTER_MOVEMENT_ENABLED = "CounterMovementReleasePressEnabled";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_PRESET = "CounterMovementTapLengthPreset";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS = "OppositeTapLengthMinimumMs";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS = "OppositeTapLengthMaximumMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "OppositeTapStartDelayMinimumMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "OppositeTapStartDelayMaximumMs";
+            // Unchanged from the pre-rename "Digital Release Brake" feature: neither the
+            // concept nor its serialised name changed, only the feature it belongs to.
             public const string BRAKE_MIN_HOLD_MS = "BrakeMinimumHoldMs";
             public const string BRAKE_ARMING_THRESHOLD = "BrakeArmingThreshold";
         }
@@ -69,8 +75,12 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.USE_AS_OUTER_RING,
             PropertyKeyStrings.ROTATION,
             PropertyKeyStrings.DIAGONAL_RANGE,
-            PropertyKeyStrings.BRAKE_ENABLED,
-            PropertyKeyStrings.BRAKE_DURATION_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS,
             PropertyKeyStrings.BRAKE_MIN_HOLD_MS,
             PropertyKeyStrings.BRAKE_ARMING_THRESHOLD,
         };
@@ -156,8 +166,8 @@ namespace DS4MapperTest.StickActions
         public bool UseRingButton { get => useRingButton; set => useRingButton = value; }
         public double OuterRingDeadZone { get => outerRingDeadZone; set => outerRingDeadZone = value; }
 
-        private StickReleaseBrake releaseBrake = new StickReleaseBrake();
-        public StickReleaseBrake ReleaseBrake { get => releaseBrake; }
+        private CounterMovementReleasePressProcessor counterMovementReleasePress = new CounterMovementReleasePressProcessor();
+        public CounterMovementReleasePressProcessor CounterMovementReleasePress { get => counterMovementReleasePress; }
 
         public StickDeadZone DeadMod { get => deadMod; }
         //public OutputActionData[] EventCodes { get => eventCodes; }
@@ -236,10 +246,14 @@ namespace DS4MapperTest.StickActions
                 }
 
                 useParentRingButton = true;
-                releaseBrake.Enabled = parentAction.releaseBrake.Enabled;
-                releaseBrake.BrakeDurationMs = parentAction.releaseBrake.BrakeDurationMs;
-                releaseBrake.MinimumHoldMs = parentAction.releaseBrake.MinimumHoldMs;
-                releaseBrake.ArmingThreshold = parentAction.releaseBrake.ArmingThreshold;
+                counterMovementReleasePress.Enabled = parentAction.counterMovementReleasePress.Enabled;
+                counterMovementReleasePress.TapLengthPreset = parentAction.counterMovementReleasePress.TapLengthPreset;
+                counterMovementReleasePress.OppositeTapLengthMinimumMs = parentAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
+                counterMovementReleasePress.OppositeTapLengthMaximumMs = parentAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
+                counterMovementReleasePress.OppositeTapStartDelayMinimumMs = parentAction.counterMovementReleasePress.OppositeTapStartDelayMinimumMs;
+                counterMovementReleasePress.OppositeTapStartDelayMaximumMs = parentAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
+                counterMovementReleasePress.MinimumHoldMs = parentAction.counterMovementReleasePress.MinimumHoldMs;
+                counterMovementReleasePress.ArmingThreshold = parentAction.counterMovementReleasePress.ArmingThreshold;
                 //usedFuncList = usedEventButtonsList;
             }
         }
@@ -325,7 +339,7 @@ namespace DS4MapperTest.StickActions
             // in motion) and may mask components out of currentDir while a pulse is
             // suppressing the stick's own returning direction. DetermineDirection already
             // applies the selected D-Pad sub-mode and hysteresis/diagonal range logic.
-            currentDir = releaseBrake.Prepare(mapper, axisXDir, axisYDir, maxDirX, maxDirY, currentDir);
+            currentDir = counterMovementReleasePress.Prepare(mapper, axisXDir, axisYDir, maxDirX, maxDirY, currentDir);
 
             //if (currentDir != previousDir)
             {
@@ -876,7 +890,7 @@ namespace DS4MapperTest.StickActions
             //    }
             //}
 
-            releaseBrake.Event(mapper, eventCodes4);
+            counterMovementReleasePress.Event(mapper, eventCodes4);
 
             prevXNorm = xNorm; prevYNorm = yNorm;
             previousDir = currentDir;
@@ -889,7 +903,7 @@ namespace DS4MapperTest.StickActions
 
         public override void Release(Mapper mapper, bool resetState = true, bool ignoreReleaseActions = false)
         {
-            releaseBrake.Cleanup(mapper, eventCodes4);
+            counterMovementReleasePress.Cleanup(mapper, eventCodes4);
 
             if (active || tmpActiveBtns.Count > 0)
             {
@@ -987,7 +1001,7 @@ namespace DS4MapperTest.StickActions
         public override void SoftRelease(Mapper mapper, MapAction checkAction,
             bool resetState = true)
         {
-            releaseBrake.Cleanup(mapper, eventCodes4);
+            counterMovementReleasePress.Cleanup(mapper, eventCodes4);
 
             if (active || tmpActiveBtns.Count > 0)
             {
@@ -1588,17 +1602,29 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.DEAD_ZONE_TYPE:
                             deadMod.DeadZoneType = tempPadAction.deadMod.DeadZoneType;
                             break;
-                        case PropertyKeyStrings.BRAKE_ENABLED:
-                            releaseBrake.Enabled = tempPadAction.releaseBrake.Enabled;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED:
+                            counterMovementReleasePress.Enabled = tempPadAction.counterMovementReleasePress.Enabled;
                             break;
-                        case PropertyKeyStrings.BRAKE_DURATION_MS:
-                            releaseBrake.BrakeDurationMs = tempPadAction.releaseBrake.BrakeDurationMs;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET:
+                            counterMovementReleasePress.TapLengthPreset = tempPadAction.counterMovementReleasePress.TapLengthPreset;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS:
+                            counterMovementReleasePress.OppositeTapLengthMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
+                            counterMovementReleasePress.OppositeTapLengthMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
+                            counterMovementReleasePress.OppositeTapStartDelayMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMinimumMs;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
+                            counterMovementReleasePress.OppositeTapStartDelayMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
                             break;
                         case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
-                            releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
+                            counterMovementReleasePress.MinimumHoldMs = tempPadAction.counterMovementReleasePress.MinimumHoldMs;
                             break;
                         case PropertyKeyStrings.BRAKE_ARMING_THRESHOLD:
-                            releaseBrake.ArmingThreshold = tempPadAction.releaseBrake.ArmingThreshold;
+                            counterMovementReleasePress.ArmingThreshold = tempPadAction.counterMovementReleasePress.ArmingThreshold;
                             break;
                         default:
                             break;
@@ -1746,17 +1772,29 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.DEAD_ZONE_TYPE:
                     deadMod.DeadZoneType = tempPadAction.deadMod.DeadZoneType;
                     break;
-                case PropertyKeyStrings.BRAKE_ENABLED:
-                    releaseBrake.Enabled = tempPadAction.releaseBrake.Enabled;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED:
+                    counterMovementReleasePress.Enabled = tempPadAction.counterMovementReleasePress.Enabled;
                     break;
-                case PropertyKeyStrings.BRAKE_DURATION_MS:
-                    releaseBrake.BrakeDurationMs = tempPadAction.releaseBrake.BrakeDurationMs;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET:
+                    counterMovementReleasePress.TapLengthPreset = tempPadAction.counterMovementReleasePress.TapLengthPreset;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS:
+                    counterMovementReleasePress.OppositeTapLengthMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
+                    counterMovementReleasePress.OppositeTapLengthMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
+                    counterMovementReleasePress.OppositeTapStartDelayMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMinimumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
+                    counterMovementReleasePress.OppositeTapStartDelayMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
                     break;
                 case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
-                    releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
+                    counterMovementReleasePress.MinimumHoldMs = tempPadAction.counterMovementReleasePress.MinimumHoldMs;
                     break;
                 case PropertyKeyStrings.BRAKE_ARMING_THRESHOLD:
-                    releaseBrake.ArmingThreshold = tempPadAction.releaseBrake.ArmingThreshold;
+                    counterMovementReleasePress.ArmingThreshold = tempPadAction.counterMovementReleasePress.ArmingThreshold;
                     break;
                 default:
                     break;

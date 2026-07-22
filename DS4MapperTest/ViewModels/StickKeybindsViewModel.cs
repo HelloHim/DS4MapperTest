@@ -184,13 +184,13 @@ namespace DS4MapperTest.ViewModels
         }
 
         // DPad and Analog Emulation both use the same four Up/Down/Left/Right bindings, the
-        // same Digital Release Brake settings, and the same Dead Zone Type/Dead Zone/Rotation
-        // stick-shaping settings. Switching between them shouldn't wipe those out just because
-        // the rest of the mode's settings differ.
+        // same Counter Movement Release Press settings, and the same Dead Zone Type/Dead
+        // Zone/Rotation stick-shaping settings. Switching between them shouldn't wipe those
+        // out just because the rest of the mode's settings differ.
         private static void CarryOverSharedDigitalDirectionSettings(StickMapAction oldAction, StickMapAction newAction)
         {
             AxisDirButton[] oldDirs = null;
-            StickReleaseBrake oldBrake = null;
+            CounterMovementReleasePressProcessor oldReleasePress = null;
             StickDeadZone oldDeadMod = null;
             int oldRotation = 0;
 
@@ -203,7 +203,7 @@ namespace DS4MapperTest.ViewModels
                     oldPad.EventCodes4[(int)StickPadAction.DpadDirections.Left],
                     oldPad.EventCodes4[(int)StickPadAction.DpadDirections.Right],
                 };
-                oldBrake = oldPad.ReleaseBrake;
+                oldReleasePress = oldPad.CounterMovementReleasePress;
                 oldDeadMod = oldPad.DeadMod;
                 oldRotation = oldPad.Rotation;
             }
@@ -216,7 +216,7 @@ namespace DS4MapperTest.ViewModels
                     oldAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Left],
                     oldAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Right],
                 };
-                oldBrake = oldAnalog.ReleaseBrake;
+                oldReleasePress = oldAnalog.CounterMovementReleasePress;
                 oldDeadMod = oldAnalog.DeadMod;
                 oldRotation = oldAnalog.Rotation;
             }
@@ -229,7 +229,7 @@ namespace DS4MapperTest.ViewModels
                 newPad.EventCodes4[(int)StickPadAction.DpadDirections.Down] = oldDirs[1];
                 newPad.EventCodes4[(int)StickPadAction.DpadDirections.Left] = oldDirs[2];
                 newPad.EventCodes4[(int)StickPadAction.DpadDirections.Right] = oldDirs[3];
-                CopyBrakeSettings(oldBrake, newPad.ReleaseBrake);
+                CopyReleasePressSettings(oldReleasePress, newPad.CounterMovementReleasePress);
                 CopyDeadZoneAndRotation(oldDeadMod, oldRotation, newPad.DeadMod, val => newPad.Rotation = val);
             }
             else if (newAction is StickAnalogEmulationAction newAnalog)
@@ -238,17 +238,21 @@ namespace DS4MapperTest.ViewModels
                 newAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Down] = oldDirs[1];
                 newAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Left] = oldDirs[2];
                 newAnalog.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Right] = oldDirs[3];
-                CopyBrakeSettings(oldBrake, newAnalog.ReleaseBrake);
+                CopyReleasePressSettings(oldReleasePress, newAnalog.CounterMovementReleasePress);
                 CopyDeadZoneAndRotation(oldDeadMod, oldRotation, newAnalog.DeadMod, val => newAnalog.Rotation = val);
             }
         }
 
-        private static void CopyBrakeSettings(StickReleaseBrake src, StickReleaseBrake dst)
+        private static void CopyReleasePressSettings(CounterMovementReleasePressProcessor src, CounterMovementReleasePressProcessor dst)
         {
             if (src == null || dst == null) return;
 
             dst.Enabled = src.Enabled;
-            dst.BrakeDurationMs = src.BrakeDurationMs;
+            dst.TapLengthPreset = src.TapLengthPreset;
+            dst.OppositeTapLengthMinimumMs = src.OppositeTapLengthMinimumMs;
+            dst.OppositeTapLengthMaximumMs = src.OppositeTapLengthMaximumMs;
+            dst.OppositeTapStartDelayMinimumMs = src.OppositeTapStartDelayMinimumMs;
+            dst.OppositeTapStartDelayMaximumMs = src.OppositeTapStartDelayMaximumMs;
             dst.MinimumHoldMs = src.MinimumHoldMs;
             dst.ArmingThreshold = src.ArmingThreshold;
         }

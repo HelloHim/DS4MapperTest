@@ -36,8 +36,14 @@ namespace DS4MapperTest.StickActions
             public const string SPEED_PULSE_TIME_MS = "AnalogEmulationPulseTimeMs";
             public const string FULL_SPEED_THRESHOLD_PERCENT = "FullSpeedThresholdPercent";
 
-            public const string BRAKE_ENABLED = "BrakeEnabled";
-            public const string BRAKE_DURATION_MS = "BrakeDurationMs";
+            public const string COUNTER_MOVEMENT_ENABLED = "CounterMovementReleasePressEnabled";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_PRESET = "CounterMovementTapLengthPreset";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS = "OppositeTapLengthMinimumMs";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS = "OppositeTapLengthMaximumMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "OppositeTapStartDelayMinimumMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "OppositeTapStartDelayMaximumMs";
+            // Unchanged from the pre-rename "Digital Release Brake" feature: neither the
+            // concept nor its serialised name changed, only the feature it belongs to.
             public const string BRAKE_MIN_HOLD_MS = "BrakeMinimumHoldMs";
             public const string BRAKE_ARMING_THRESHOLD = "BrakeArmingThreshold";
         }
@@ -59,8 +65,12 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.SPEED_ACTIVE_PERCENT,
             PropertyKeyStrings.SPEED_PULSE_TIME_MS,
             PropertyKeyStrings.FULL_SPEED_THRESHOLD_PERCENT,
-            PropertyKeyStrings.BRAKE_ENABLED,
-            PropertyKeyStrings.BRAKE_DURATION_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS,
             PropertyKeyStrings.BRAKE_MIN_HOLD_MS,
             PropertyKeyStrings.BRAKE_ARMING_THRESHOLD,
         };
@@ -95,12 +105,13 @@ namespace DS4MapperTest.StickActions
             set => rotation = value;
         }
 
-        // Shared with StickPadAction's Digital Release Brake. A 13-slot adapter array keyed by
-        // StickPadAction.DpadDirections lets the same StickReleaseBrake implementation pulse
-        // this action's four AxisDirButtons; only the four cardinal indices are ever populated
-        // since Analog Emulation has no dedicated diagonal buttons.
-        private StickReleaseBrake releaseBrake = new StickReleaseBrake();
-        public StickReleaseBrake ReleaseBrake => releaseBrake;
+        // Shared with StickPadAction's Counter Movement Release Press. A 13-slot adapter
+        // array keyed by StickPadAction.DpadDirections lets the same
+        // CounterMovementReleasePressProcessor implementation pulse this action's four
+        // AxisDirButtons; only the four cardinal indices are ever populated since Analog
+        // Emulation has no dedicated diagonal buttons.
+        private CounterMovementReleasePressProcessor counterMovementReleasePress = new CounterMovementReleasePressProcessor();
+        public CounterMovementReleasePressProcessor CounterMovementReleasePress => counterMovementReleasePress;
         private AxisDirButton[] brakeSlotButtons = new AxisDirButton[13];
 
         private double xNorm, yNorm;
@@ -214,10 +225,14 @@ namespace DS4MapperTest.StickActions
                 speedPulseTimeMs = parentAction.speedPulseTimeMs;
                 fullSpeedThresholdPercent = parentAction.fullSpeedThresholdPercent;
 
-                releaseBrake.Enabled = parentAction.releaseBrake.Enabled;
-                releaseBrake.BrakeDurationMs = parentAction.releaseBrake.BrakeDurationMs;
-                releaseBrake.MinimumHoldMs = parentAction.releaseBrake.MinimumHoldMs;
-                releaseBrake.ArmingThreshold = parentAction.releaseBrake.ArmingThreshold;
+                counterMovementReleasePress.Enabled = parentAction.counterMovementReleasePress.Enabled;
+                counterMovementReleasePress.TapLengthPreset = parentAction.counterMovementReleasePress.TapLengthPreset;
+                counterMovementReleasePress.OppositeTapLengthMinimumMs = parentAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
+                counterMovementReleasePress.OppositeTapLengthMaximumMs = parentAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
+                counterMovementReleasePress.OppositeTapStartDelayMinimumMs = parentAction.counterMovementReleasePress.OppositeTapStartDelayMinimumMs;
+                counterMovementReleasePress.OppositeTapStartDelayMaximumMs = parentAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
+                counterMovementReleasePress.MinimumHoldMs = parentAction.counterMovementReleasePress.MinimumHoldMs;
+                counterMovementReleasePress.ArmingThreshold = parentAction.counterMovementReleasePress.ArmingThreshold;
             }
             else
             {
@@ -363,7 +378,7 @@ namespace DS4MapperTest.StickActions
             if (rawBlend >= 1.0) rawDpadDir |= ToDpadBit(rawSecondary);
 
             StickPadAction.DpadDirections effectiveDpadDir =
-                releaseBrake.Prepare(mapper, axisXDir, axisYDir, maxDirX, maxDirY, rawDpadDir);
+                counterMovementReleasePress.Prepare(mapper, axisXDir, axisYDir, maxDirX, maxDirY, rawDpadDir);
             StickPadAction.DpadDirections suppressedThisTick = rawDpadDir & ~effectiveDpadDir;
 
             bool primarySuppressed = (suppressedThisTick & ToDpadBit(currentPrimary)) != 0;
@@ -397,7 +412,7 @@ namespace DS4MapperTest.StickActions
                 if (btn.active) anyActive = true;
             }
 
-            releaseBrake.Event(mapper, brakeSlotButtons);
+            counterMovementReleasePress.Event(mapper, brakeSlotButtons);
 
             active = anyActive;
             activeEvent = false;
@@ -406,7 +421,7 @@ namespace DS4MapperTest.StickActions
         public override void Release(Mapper mapper, bool resetState = true, bool ignoreReleaseActions = false)
         {
             RefreshBrakeSlotButtons();
-            releaseBrake.Cleanup(mapper, brakeSlotButtons);
+            counterMovementReleasePress.Cleanup(mapper, brakeSlotButtons);
 
             for (int i = 0; i < dirButtons.Length; i++)
             {
@@ -431,7 +446,7 @@ namespace DS4MapperTest.StickActions
             StickAnalogEmulationAction checkAnalog = checkAction as StickAnalogEmulationAction;
 
             RefreshBrakeSlotButtons();
-            releaseBrake.Cleanup(mapper, brakeSlotButtons);
+            counterMovementReleasePress.Cleanup(mapper, brakeSlotButtons);
 
             for (int i = 0; i < dirButtons.Length; i++)
             {
@@ -568,17 +583,29 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.FULL_SPEED_THRESHOLD_PERCENT:
                     fullSpeedThresholdPercent = tempAction.fullSpeedThresholdPercent;
                     break;
-                case PropertyKeyStrings.BRAKE_ENABLED:
-                    releaseBrake.Enabled = tempAction.releaseBrake.Enabled;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED:
+                    counterMovementReleasePress.Enabled = tempAction.counterMovementReleasePress.Enabled;
                     break;
-                case PropertyKeyStrings.BRAKE_DURATION_MS:
-                    releaseBrake.BrakeDurationMs = tempAction.releaseBrake.BrakeDurationMs;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET:
+                    counterMovementReleasePress.TapLengthPreset = tempAction.counterMovementReleasePress.TapLengthPreset;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS:
+                    counterMovementReleasePress.OppositeTapLengthMinimumMs = tempAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
+                    counterMovementReleasePress.OppositeTapLengthMaximumMs = tempAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
+                    counterMovementReleasePress.OppositeTapStartDelayMinimumMs = tempAction.counterMovementReleasePress.OppositeTapStartDelayMinimumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
+                    counterMovementReleasePress.OppositeTapStartDelayMaximumMs = tempAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
                     break;
                 case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
-                    releaseBrake.MinimumHoldMs = tempAction.releaseBrake.MinimumHoldMs;
+                    counterMovementReleasePress.MinimumHoldMs = tempAction.counterMovementReleasePress.MinimumHoldMs;
                     break;
                 case PropertyKeyStrings.BRAKE_ARMING_THRESHOLD:
-                    releaseBrake.ArmingThreshold = tempAction.releaseBrake.ArmingThreshold;
+                    counterMovementReleasePress.ArmingThreshold = tempAction.counterMovementReleasePress.ArmingThreshold;
                     break;
                 default:
                     break;

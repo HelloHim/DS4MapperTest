@@ -194,39 +194,124 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler FullSpeedThresholdPercentChanged;
 
-        public bool BrakeEnabled
+        public bool CounterMovementReleasePressEnabled
         {
-            get => action.ReleaseBrake.Enabled;
+            get => action.CounterMovementReleasePress.Enabled;
             set
             {
-                if (action.ReleaseBrake.Enabled == value) return;
-                action.ReleaseBrake.Enabled = value;
-                BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                if (action.CounterMovementReleasePress.Enabled == value) return;
+                action.CounterMovementReleasePress.Enabled = value;
+                CounterMovementReleasePressEnabledChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler BrakeEnabledChanged;
+        public event EventHandler CounterMovementReleasePressEnabledChanged;
 
-        public int BrakeDurationMs
+        private List<EnumChoiceSelection<CounterMovementTapLengthPreset>> tapLengthPresetItems =
+            new List<EnumChoiceSelection<CounterMovementTapLengthPreset>>()
+            {
+                new EnumChoiceSelection<CounterMovementTapLengthPreset>("Custom", CounterMovementTapLengthPreset.Custom),
+                new EnumChoiceSelection<CounterMovementTapLengthPreset>("CS2", CounterMovementTapLengthPreset.CS2),
+            };
+        public List<EnumChoiceSelection<CounterMovementTapLengthPreset>> TapLengthPresetItems => tapLengthPresetItems;
+
+        public CounterMovementTapLengthPreset TapLengthPreset
         {
-            get => action.ReleaseBrake.BrakeDurationMs;
+            get => action.CounterMovementReleasePress.EffectiveTapLengthPreset;
             set
             {
-                if (action.ReleaseBrake.BrakeDurationMs == value) return;
-                action.ReleaseBrake.BrakeDurationMs = value;
-                BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                if (action.CounterMovementReleasePress.EffectiveTapLengthPreset == value) return;
+
+                if (value == CounterMovementTapLengthPreset.CS2)
+                {
+                    action.CounterMovementReleasePress.ApplyCs2Preset();
+                }
+                else
+                {
+                    action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                }
+
+                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler BrakeDurationMsChanged;
+        public event EventHandler TapLengthPresetChanged;
+
+        public int OppositeTapLengthMinimumMs
+        {
+            get => action.CounterMovementReleasePress.OppositeTapLengthMinimumMs;
+            set
+            {
+                if (action.CounterMovementReleasePress.OppositeTapLengthMinimumMs == value) return;
+                action.CounterMovementReleasePress.OppositeTapLengthMinimumMs = value;
+                action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                action.CounterMovementReleasePress.NormalizeRanges();
+                OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapLengthMinimumMsChanged;
+
+        public int OppositeTapLengthMaximumMs
+        {
+            get => action.CounterMovementReleasePress.OppositeTapLengthMaximumMs;
+            set
+            {
+                if (action.CounterMovementReleasePress.OppositeTapLengthMaximumMs == value) return;
+                action.CounterMovementReleasePress.OppositeTapLengthMaximumMs = value;
+                action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                action.CounterMovementReleasePress.NormalizeRanges();
+                OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapLengthMaximumMsChanged;
+
+        public int OppositeTapStartDelayMinimumMs
+        {
+            get => action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs;
+            set
+            {
+                if (action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs == value) return;
+                action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs = value;
+                action.CounterMovementReleasePress.NormalizeRanges();
+                OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapStartDelayMinimumMsChanged;
+
+        public int OppositeTapStartDelayMaximumMs
+        {
+            get => action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs;
+            set
+            {
+                if (action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs == value) return;
+                action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs = value;
+                action.CounterMovementReleasePress.NormalizeRanges();
+                OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapStartDelayMaximumMsChanged;
 
         public int BrakeMinimumHoldMs
         {
-            get => action.ReleaseBrake.MinimumHoldMs;
+            get => action.CounterMovementReleasePress.MinimumHoldMs;
             set
             {
-                if (action.ReleaseBrake.MinimumHoldMs == value) return;
-                action.ReleaseBrake.MinimumHoldMs = value;
+                if (action.CounterMovementReleasePress.MinimumHoldMs == value) return;
+                action.CounterMovementReleasePress.MinimumHoldMs = value;
                 BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -235,23 +320,31 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
         public int BrakeArmingThresholdPercent
         {
-            get => (int)Math.Round(action.ReleaseBrake.ArmingThreshold * 100.0);
+            get => (int)Math.Round(action.CounterMovementReleasePress.ArmingThreshold * 100.0);
             set
             {
                 int clamped = Math.Clamp(value, 0, 100);
                 double threshold = clamped / 100.0;
-                if (Math.Abs(action.ReleaseBrake.ArmingThreshold - threshold) < double.Epsilon) return;
-                action.ReleaseBrake.ArmingThreshold = threshold;
+                if (Math.Abs(action.CounterMovementReleasePress.ArmingThreshold - threshold) < double.Epsilon) return;
+                action.CounterMovementReleasePress.ArmingThreshold = threshold;
                 BrakeArmingThresholdPercentChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
         public event EventHandler BrakeArmingThresholdPercentChanged;
 
-        public bool HighlightBrakeEnabled =>
-            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ENABLED);
-        public bool HighlightBrakeDurationMs =>
-            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+        public bool HighlightCounterMovementReleasePressEnabled =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
+        public bool HighlightTapLengthPreset =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+        public bool HighlightOppositeTapLengthMinimumMs =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+        public bool HighlightOppositeTapLengthMaximumMs =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+        public bool HighlightOppositeTapStartDelayMinimumMs =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+        public bool HighlightOppositeTapStartDelayMaximumMs =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
         public bool HighlightBrakeMinimumHoldMs =>
             action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
         public bool HighlightBrakeArmingThreshold =>
@@ -327,22 +420,50 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             AnalogEmulationActivePercentChanged += StickAnalogEmulationPropViewModel_AnalogEmulationActivePercentChanged;
             AnalogEmulationPulseTimeMsChanged += StickAnalogEmulationPropViewModel_AnalogEmulationPulseTimeMsChanged;
             FullSpeedThresholdPercentChanged += StickAnalogEmulationPropViewModel_FullSpeedThresholdPercentChanged;
-            BrakeEnabledChanged += StickAnalogEmulationPropViewModel_BrakeEnabledChanged;
-            BrakeDurationMsChanged += StickAnalogEmulationPropViewModel_BrakeDurationMsChanged;
+            CounterMovementReleasePressEnabledChanged += StickAnalogEmulationPropViewModel_CounterMovementReleasePressEnabledChanged;
+            TapLengthPresetChanged += StickAnalogEmulationPropViewModel_TapLengthPresetChanged;
+            OppositeTapLengthMinimumMsChanged += StickAnalogEmulationPropViewModel_OppositeTapLengthMinimumMsChanged;
+            OppositeTapLengthMaximumMsChanged += StickAnalogEmulationPropViewModel_OppositeTapLengthMaximumMsChanged;
+            OppositeTapStartDelayMinimumMsChanged += StickAnalogEmulationPropViewModel_OppositeTapStartDelayMinimumMsChanged;
+            OppositeTapStartDelayMaximumMsChanged += StickAnalogEmulationPropViewModel_OppositeTapStartDelayMaximumMsChanged;
             BrakeMinimumHoldMsChanged += StickAnalogEmulationPropViewModel_BrakeMinimumHoldMsChanged;
             BrakeArmingThresholdPercentChanged += StickAnalogEmulationPropViewModel_BrakeArmingThresholdPercentChanged;
         }
 
-        private void StickAnalogEmulationPropViewModel_BrakeEnabledChanged(object sender, EventArgs e)
+        private void StickAnalogEmulationPropViewModel_CounterMovementReleasePressEnabledChanged(object sender, EventArgs e)
         {
-            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ENABLED);
-            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ENABLED);
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
         }
 
-        private void StickAnalogEmulationPropViewModel_BrakeDurationMsChanged(object sender, EventArgs e)
+        private void StickAnalogEmulationPropViewModel_TapLengthPresetChanged(object sender, EventArgs e)
         {
-            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_DURATION_MS);
-            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+        }
+
+        private void StickAnalogEmulationPropViewModel_OppositeTapLengthMinimumMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+        }
+
+        private void StickAnalogEmulationPropViewModel_OppositeTapLengthMaximumMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+        }
+
+        private void StickAnalogEmulationPropViewModel_OppositeTapStartDelayMinimumMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+        }
+
+        private void StickAnalogEmulationPropViewModel_OppositeTapStartDelayMaximumMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
         }
 
         private void StickAnalogEmulationPropViewModel_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
