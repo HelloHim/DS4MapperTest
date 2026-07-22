@@ -96,6 +96,26 @@
                         <ColumnDefinition Width="160"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Text="Binding Presets"
+                               Style="{StaticResource JsmccLabelText}"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding ActionPresetChoicesItems}"
+                              DisplayMemberPath="DisplayName"
+                              SelectedValuePath="ChoiceValue"
+                              SelectedValue="{Binding ActionPresetChoice}"
+                              Width="180"
+                              HorizontalAlignment="Left"
+                              Style="{StaticResource JsmccComboBoxStyle}"/>
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource JsmccSettingRowBorder}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Margin="0,0,12,0">
                         <TextBlock Text="Directional Binds"
                                    Style="{StaticResource JsmccLabelText}"/>
@@ -127,14 +147,6 @@
                                                            Margin="0,3,0,0"/>
                                             </StackPanel>
                                             <views:QuickBindControl Grid.Column="1"/>
-                                            <Button Grid.Column="2"
-                                                    Content="Edit Functions"
-                                                    Tag="{Binding}"
-                                                    Click="DirectionAdvancedEdit_Click"
-                                                    Style="{StaticResource JsmccButtonStyle}"
-                                                    MinWidth="104"
-                                                    Margin="10,0,0,0"
-                                                    HorizontalAlignment="Right"/>
                                             <ContentControl x:Name="InlineEditorHost"
                                                             Grid.Row="1"
                                                             Grid.Column="0"
@@ -169,14 +181,6 @@
                                                            Margin="0,3,0,0"/>
                                             </StackPanel>
                                             <views:QuickBindControl Grid.Column="1"/>
-                                            <Button Grid.Column="2"
-                                                    Content="Edit Functions"
-                                                    Tag="{Binding}"
-                                                    Click="DirectionAdvancedEdit_Click"
-                                                    Style="{StaticResource JsmccButtonStyle}"
-                                                    MinWidth="104"
-                                                    Margin="10,0,0,0"
-                                                    HorizontalAlignment="Right"/>
                                             <ContentControl x:Name="InlineEditorHost"
                                                             Grid.Row="1"
                                                             Grid.Column="0"
@@ -188,26 +192,6 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
-                </Grid>
-            </Border>
-
-            <Border Style="{StaticResource JsmccSettingRowBorder}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="160"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                               Text="Presets"
-                               Style="{StaticResource JsmccLabelText}"/>
-                    <ComboBox Grid.Column="1"
-                              ItemsSource="{Binding ActionPresetChoicesItems}"
-                              DisplayMemberPath="DisplayName"
-                              SelectedValuePath="ChoiceValue"
-                              SelectedValue="{Binding ActionPresetChoice}"
-                              Width="180"
-                              HorizontalAlignment="Left"
-                              Style="{StaticResource JsmccComboBoxStyle}"/>
                 </Grid>
             </Border>
 
