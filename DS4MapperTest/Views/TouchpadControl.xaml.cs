@@ -220,7 +220,9 @@ namespace DS4MapperTest.Views
                 "MouseMovement" => CreateSectionContent(host, item, section),
                 "SensitivityCalibration" => CreateSectionContent(host, item, section),
                 "FilteringStabilisation" => CreateSectionContent(host, item, section),
-                "ZonesGestures" => CreateSectionContent(host, item, section),
+                "Zones" => CreateSectionContent(host, item, section),
+                "OuterRing" => CreateSectionContent(host, item, section),
+                "Gestures" => CreateSectionContent(host, item, section),
                 "TrackballScroll" => CreateSectionContent(host, item, section),
                 "Advanced" => CreateSectionContent(host, item, section),
                 "Extra" => CreateSectionContent(host, item, section),
@@ -251,7 +253,9 @@ namespace DS4MapperTest.Views
                 "ModeSettings" => item.IsModeSettingsAction,
                 "SensitivityCalibration" => item.IsSensitivityCalibrationAction,
                 "FilteringStabilisation" => item.IsFilteringStabilisationAction,
-                "ZonesGestures" => item.IsZoneGestureAction,
+                "Zones" => item.IsZoneAction,
+                "OuterRing" => item.IsOuterRingAction,
+                "Gestures" => item.IsGestureAction,
                 "TrackballScroll" => item.IsTrackballScrollAction,
                 "Advanced" => item.IsAdvancedAction,
                 "Extra" => item.IsExtraAction,
@@ -295,8 +299,14 @@ namespace DS4MapperTest.Views
                 case "FilteringStabilisation":
                     parsedSection = TouchpadSettingsSection.FilteringStabilisation;
                     return true;
-                case "ZonesGestures":
-                    parsedSection = TouchpadSettingsSection.ZonesGestures;
+                case "Zones":
+                    parsedSection = TouchpadSettingsSection.Zones;
+                    return true;
+                case "OuterRing":
+                    parsedSection = TouchpadSettingsSection.OuterRing;
+                    return true;
+                case "Gestures":
+                    parsedSection = TouchpadSettingsSection.Gestures;
                     return true;
                 case "TrackballScroll":
                     parsedSection = TouchpadSettingsSection.TrackballScroll;
@@ -502,7 +512,9 @@ namespace DS4MapperTest.Views
                 "ModeSettings" => $"{item.DisplayName} is currently set to Unbound. Choose D-Pad Zones in Mode to configure touchpad mode settings.",
                 "SensitivityCalibration" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure sensitivity and calibration settings.",
                 "FilteringStabilisation" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure filtering and stabilisation settings.",
-                "ZonesGestures" => $"{item.DisplayName} is currently set to Unbound. Choose a zone or gesture-capable mode in Mode to configure gesture settings.",
+                "Zones" => $"{item.DisplayName} is currently set to Unbound. Choose a zone-capable mode in Mode to configure zone settings.",
+                "OuterRing" => $"{item.DisplayName} is currently set to Unbound. Choose an outer-ring-capable mode in Mode to configure outer ring settings.",
+                "Gestures" => $"{item.DisplayName} is currently set to Unbound. Choose a gesture-capable mode in Mode to configure gesture settings.",
                 "TrackballScroll" => $"{item.DisplayName} is currently set to Unbound. Choose a trackball or scroll mode in Mode to configure these settings.",
                 "Advanced" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure advanced settings.",
                 _ => $"{item.DisplayName} is currently set to Unbound.",
@@ -517,7 +529,9 @@ namespace DS4MapperTest.Views
                 "ModeSettings" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no dedicated mode settings.",
                 "SensitivityCalibration" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no sensitivity and calibration settings.",
                 "FilteringStabilisation" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no filtering and stabilisation settings.",
-                "ZonesGestures" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no zone or gesture settings.",
+                "Zones" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no zone settings.",
+                "OuterRing" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no outer ring settings.",
+                "Gestures" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no gesture settings.",
                 "TrackballScroll" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no trackball or scroll settings.",
                 "Advanced" => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no advanced settings.",
                 _ => $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no settings for this subsection.",

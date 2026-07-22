@@ -1482,6 +1482,21 @@ namespace DS4MapperTest
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
             }
 
+            public bool CounterMovementDeadZoneReleaseEnabled
+            {
+                get => touchActionPadAction.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled = value;
+                    CounterMovementDeadZoneReleaseEnabledChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler CounterMovementDeadZoneReleaseEnabledChanged;
+            public bool ShouldSerializeCounterMovementDeadZoneReleaseEnabled()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED);
+            }
+
             [JsonProperty("BrakeMinimumHoldMs")]
             public int BrakeMinimumHoldMs
             {
@@ -1598,6 +1613,7 @@ namespace DS4MapperTest
             settings.OppositeTapLengthMaximumMsChanged += Settings_OppositeTapLengthMaximumMsChanged;
             settings.OppositeTapStartDelayMinimumMsChanged += Settings_OppositeTapStartDelayMinimumMsChanged;
             settings.OppositeTapStartDelayMaximumMsChanged += Settings_OppositeTapStartDelayMaximumMsChanged;
+            settings.CounterMovementDeadZoneReleaseEnabledChanged += Settings_CounterMovementDeadZoneReleaseEnabledChanged;
             settings.BrakeMinimumHoldMsChanged += Settings_BrakeMinimumHoldMsChanged;
         }
 
@@ -1644,6 +1660,11 @@ namespace DS4MapperTest
         private void Settings_OppositeTapStartDelayMaximumMsChanged(object sender, EventArgs e)
         {
             touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
+        }
+
+        private void Settings_CounterMovementDeadZoneReleaseEnabledChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED);
         }
 
         private void Settings_BrakeMinimumHoldMsChanged(object sender, EventArgs e)

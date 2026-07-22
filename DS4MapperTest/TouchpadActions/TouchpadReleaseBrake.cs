@@ -47,6 +47,13 @@ namespace DS4MapperTest.TouchpadActions
             }
         }
 
+        private bool triggerOnDeadZoneReleaseEnabled = true;
+        public bool TriggerOnDeadZoneReleaseEnabled
+        {
+            get => triggerOnDeadZoneReleaseEnabled;
+            set => triggerOnDeadZoneReleaseEnabled = value;
+        }
+
         private CounterMovementTapLengthPreset tapLengthPreset = CounterMovementTapLengthPreset.CS2;
         public CounterMovementTapLengthPreset TapLengthPreset
         {
@@ -222,6 +229,11 @@ namespace DS4MapperTest.TouchpadActions
                 TransferPulseToRealInput(rawMask);
 
                 uint releasedComponents = controllingTouchActive ? activeComponents & ~rawMask : 0;
+                if (rawMask == 0 && !triggerOnDeadZoneReleaseEnabled)
+                {
+                    releasedComponents = 0;
+                }
+
                 controllingTouchActive = true;
                 TryStartPulse(releasedComponents);
                 AccumulateHold(rawMask, dt);

@@ -74,7 +74,9 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
                 ? Visibility.Visible : Visibility.Collapsed;
             ModeFieldsPanel.Visibility = section == TouchpadSettingsSection.ModeSettings
                 ? Visibility.Visible : Visibility.Collapsed;
-            ZoneGeometryFieldsPanel.Visibility = section == TouchpadSettingsSection.ZonesGestures
+            ZoneGeometryFieldsPanel.Visibility = section == TouchpadSettingsSection.Zones
+                ? Visibility.Visible : Visibility.Collapsed;
+            OuterRingFieldsPanel.Visibility = section == TouchpadSettingsSection.OuterRing
                 ? Visibility.Visible : Visibility.Collapsed;
             AdvancedFieldsPanel.Visibility = section == TouchpadSettingsSection.Advanced
                 ? Visibility.Visible : Visibility.Collapsed;

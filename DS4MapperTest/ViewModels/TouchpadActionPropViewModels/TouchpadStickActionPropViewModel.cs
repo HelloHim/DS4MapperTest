@@ -7,6 +7,7 @@ using DS4MapperTest.TouchpadActions;
 using DS4MapperTest.ViewModels.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -376,6 +377,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             }
         }
 
+        public TouchpadStickRingBindItem RingBindItem { get; private set; }
+
         public bool SmoothingEnabled
         {
             get => action.Smoothing;
@@ -596,6 +599,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             });
 
             PrepareModel();
+            RingBindItem = new TouchpadStickRingBindItem(this);
 
 
             NameChanged += TouchpadStickActionPropViewModel_NameChanged;
@@ -917,6 +921,52 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             });
         }
 
+        internal AxisDirButton EnsureEditableRingAction()
+        {
+            if (!usingRealAction)
+            {
+                ReplaceExistingLayerAction(this, EventArgs.Empty);
+            }
+
+            if (action.RingButton == null)
+            {
+                action.RingButton = new AxisDirButton(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            }
+
+            MarkRingChanged(action.RingButton);
+            return action.RingButton;
+        }
+
+        internal void MarkRingChanged(ButtonAction ringAction)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadStickAction.PropertyKeyStrings.OUTER_RING_BUTTON))
+            {
+                action.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.OUTER_RING_BUTTON);
+            }
+
+            action.UseParentRingButton = false;
+            action.RaiseNotifyPropertyChange(mapper, TouchpadStickAction.PropertyKeyStrings.OUTER_RING_BUTTON);
+            FaceButtonBindingItem.MarkFunctionsChanged(ringAction);
+        }
+
+        internal EditFaceBindingContext PrepareRingEdit()
+        {
+            AxisDirButton ringAction = EnsureEditableRingAction();
+            ActionFunc func = ringAction.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault();
+            if (func == null)
+            {
+                func = new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                mapper.ProcessMappingChangeAction(() =>
+                {
+                    ringAction.Release(mapper, ignoreReleaseActions: true);
+                    ringAction.ActionFuncs.Insert(0, func);
+                    MarkRingChanged(ringAction);
+                });
+            }
+
+            return new EditFaceBindingContext(mapper, ringAction, func);
+        }
+
         private void ReplaceExistingLayerAction(object sender, EventArgs e)
         {
             if (!usingRealAction)
@@ -990,6 +1040,50 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         {
             this.displayName = displayName;
             this.code = code;
+        }
+    }
+
+    public class TouchpadStickRingBindItem : INotifyPropertyChanged, IQuickBindTarget
+    {
+        private readonly TouchpadStickActionPropViewModel owner;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public TouchpadStickRingBindItem(TouchpadStickActionPropViewModel owner)
+        {
+            this.owner = owner;
+        }
+
+        public string DisplayBind
+        {
+            get
+            {
+                string result = owner.Action.RingButton?.DescribeActions(((IQuickBindTarget)this).Mapper);
+                return string.IsNullOrWhiteSpace(result) ? "Unbound" : result;
+            }
+        }
+
+        Mapper IQuickBindTarget.Mapper => owner.Mapper;
+        string IQuickBindTarget.RowLabel => "Outer Ring";
+        string IQuickBindTarget.SlotLabel => "Regular Press";
+        bool IQuickBindTarget.IsComplexBinding =>
+            !QuickBindActionApplier.IsSimpleFunc(
+                owner.Action.RingButton?.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault());
+
+        EditFaceBindingContext IQuickBindTarget.GetEditContext()
+        {
+            return owner.PrepareRingEdit();
+        }
+
+        void IQuickBindTarget.NotifyBindingChanged()
+        {
+            owner.MarkRingChanged(owner.Action.RingButton);
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayBind)));
         }
     }
 }

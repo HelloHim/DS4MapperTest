@@ -316,6 +316,26 @@
                             </StackPanel>
                         </Border>
 
+                        <Border Style="{StaticResource ModeRowBorder}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="260"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Deadzone Release Press" Style="{StaticResource JsmccLabelText}"/>
+                                    <CheckBox Grid.Column="1"
+                                              IsChecked="{Binding CounterMovementDeadZoneReleaseEnabled}"
+                                              Style="{StaticResource JsmccToggleStyle}"
+                                              VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="When enabled, sliding into the touchpad deadzone triggers the opposite tap without lifting your thumb."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
                         <Border Style="{StaticResource ModeRowBorder}"
                                 Visibility="{Binding ShowMinimumAndMaximumModeFields, Converter={StaticResource BoolToVis}}">
                             <StackPanel>
@@ -489,7 +509,7 @@
             </Border>
         </StackPanel>
 
-        <StackPanel x:Name="AdvancedFieldsPanel">
+        <StackPanel x:Name="OuterRingFieldsPanel">
             <Border Style="{StaticResource JsmccSettingRowBorder}">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -508,7 +528,7 @@
                                     Padding="6,4"
                                     Margin="0,0,8,4">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Use"
+                                    <TextBlock Text="Enable"
                                                Style="{StaticResource JsmccLabelText}"
                                                Margin="0,0,8,0"/>
                                     <CheckBox IsChecked="{Binding UseOuterRing}"
@@ -536,6 +556,10 @@
 
                         <Border Style="{StaticResource JsmccSettingRowBorder}">
                             <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="140"/>
                                     <ColumnDefinition Width="*"/>
@@ -543,12 +567,15 @@
                                 <TextBlock Grid.Column="0"
                                            Text="Outer Ring Bind"
                                            Style="{StaticResource JsmccLabelText}"/>
-                                <Button Grid.Column="1"
-                                        x:Name="btnEditTest"
-                                        Content="{Binding ActionRingDisplayBind, Mode=OneWay, FallbackValue='Test Bind'}"
-                                        Click="btnEditTest_Click"
-                                        Style="{StaticResource JsmccOutputButtonStyle}"
-                                        HorizontalAlignment="Left"/>
+                                <views:QuickBindControl Grid.Column="1"
+                                                        DataContext="{Binding RingBindItem}"
+                                                        HorizontalAlignment="Left"/>
+                                <ContentControl x:Name="InlineEditorHost"
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Grid.ColumnSpan="2"
+                                                Visibility="Collapsed"
+                                                Margin="0,8,0,0"/>
                             </Grid>
                         </Border>
 
@@ -592,5 +619,7 @@
                 </Grid>
             </Border>
         </StackPanel>
+
+        <StackPanel x:Name="AdvancedFieldsPanel"/>
     </StackPanel>
 </UserControl>
