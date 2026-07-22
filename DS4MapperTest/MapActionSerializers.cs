@@ -5666,42 +5666,105 @@ namespace DS4MapperTest
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.DIAGONAL_RANGE);
             }
 
-            public bool BrakeEnabled
+            public bool CounterMovementReleasePressEnabled
             {
-                get => padAction.ReleaseBrake.Enabled;
+                get => padAction.CounterMovementReleasePress.Enabled;
                 set
                 {
-                    padAction.ReleaseBrake.Enabled = value;
-                    BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.Enabled = value;
+                    CounterMovementReleasePressEnabledChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler BrakeEnabledChanged;
-            public bool ShouldSerializeBrakeEnabled()
+            public event EventHandler CounterMovementReleasePressEnabledChanged;
+            public bool ShouldSerializeCounterMovementReleasePressEnabled()
             {
-                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_ENABLED);
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             }
 
-            public int BrakeDurationMs
+            public string CounterMovementTapLengthPreset
             {
-                get => padAction.ReleaseBrake.BrakeDurationMs;
+                get => padAction.CounterMovementReleasePress.TapLengthPreset.ToString();
                 set
                 {
-                    padAction.ReleaseBrake.BrakeDurationMs = value;
-                    BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                    if (Enum.TryParse(value, out DS4MapperTest.StickActions.CounterMovementTapLengthPreset temp))
+                    {
+                        padAction.CounterMovementReleasePress.TapLengthPreset = temp;
+                        CounterMovementTapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                    }
                 }
             }
-            public event EventHandler BrakeDurationMsChanged;
-            public bool ShouldSerializeBrakeDurationMs()
+            public event EventHandler CounterMovementTapLengthPresetChanged;
+            public bool ShouldSerializeCounterMovementTapLengthPreset()
             {
-                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            }
+
+            public int OppositeTapLengthMinimumMs
+            {
+                get => padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs;
+                set
+                {
+                    padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs = value;
+                    OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapLengthMinimumMsChanged;
+            public bool ShouldSerializeOppositeTapLengthMinimumMs()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            }
+
+            public int OppositeTapLengthMaximumMs
+            {
+                get => padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs;
+                set
+                {
+                    padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs = value;
+                    OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapLengthMaximumMsChanged;
+            public bool ShouldSerializeOppositeTapLengthMaximumMs()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            }
+
+            public int OppositeTapStartDelayMinimumMs
+            {
+                get => padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs;
+                set
+                {
+                    padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs = value;
+                    OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayMinimumMsChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMinimumMs()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+            }
+
+            public int OppositeTapStartDelayMaximumMs
+            {
+                get => padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs;
+                set
+                {
+                    padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs = value;
+                    OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayMaximumMsChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMaximumMs()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
             }
 
             public int BrakeMinimumHoldMs
             {
-                get => padAction.ReleaseBrake.MinimumHoldMs;
+                get => padAction.CounterMovementReleasePress.MinimumHoldMs;
                 set
                 {
-                    padAction.ReleaseBrake.MinimumHoldMs = value;
+                    padAction.CounterMovementReleasePress.MinimumHoldMs = value;
                     BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
@@ -5713,10 +5776,10 @@ namespace DS4MapperTest
 
             public double BrakeArmingThreshold
             {
-                get => padAction.ReleaseBrake.ArmingThreshold;
+                get => padAction.CounterMovementReleasePress.ArmingThreshold;
                 set
                 {
-                    padAction.ReleaseBrake.ArmingThreshold = value;
+                    padAction.CounterMovementReleasePress.ArmingThreshold = value;
                     BrakeArmingThresholdChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
@@ -5725,6 +5788,30 @@ namespace DS4MapperTest
             {
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
             }
+
+            // --- Legacy compatibility (pre-rename "Digital Release Brake" profiles) ---
+            // Old profiles only ever wrote "BrakeEnabled"/"BrakeDurationMs". Captured here,
+            // not applied directly, so PopulateMap (which runs after the whole object has
+            // deserialized) can apply them using the old immediate-start semantics, and only
+            // for whichever new-named fields this same profile did not already specify
+            // explicitly under their new names. Never re-serialized.
+            private bool? legacyBrakeEnabled;
+            internal bool? LegacyBrakeEnabled => legacyBrakeEnabled;
+            public bool BrakeEnabled
+            {
+                get => false;
+                set => legacyBrakeEnabled = value;
+            }
+            public bool ShouldSerializeBrakeEnabled() => false;
+
+            private int? legacyBrakeDurationMs;
+            internal int? LegacyBrakeDurationMs => legacyBrakeDurationMs;
+            public int BrakeDurationMs
+            {
+                get => 0;
+                set => legacyBrakeDurationMs = value;
+            }
+            public bool ShouldSerializeBrakeDurationMs() => false;
 
             public StickPadActionSettings(StickPadAction padAction)
             {
@@ -5836,20 +5923,44 @@ namespace DS4MapperTest
             settings.UseAsOuterRingChanged += Settings_UseAsOuterRingChanged;
             settings.RotationChanged += Settings_RotationChanged;
             settings.DiagonalRangeChanged += Settings_DiagonalRangeChanged;
-            settings.BrakeEnabledChanged += Settings_BrakeEnabledChanged;
-            settings.BrakeDurationMsChanged += Settings_BrakeDurationMsChanged;
+            settings.CounterMovementReleasePressEnabledChanged += Settings_CounterMovementReleasePressEnabledChanged;
+            settings.CounterMovementTapLengthPresetChanged += Settings_CounterMovementTapLengthPresetChanged;
+            settings.OppositeTapLengthMinimumMsChanged += Settings_OppositeTapLengthMinimumMsChanged;
+            settings.OppositeTapLengthMaximumMsChanged += Settings_OppositeTapLengthMaximumMsChanged;
+            settings.OppositeTapStartDelayMinimumMsChanged += Settings_OppositeTapStartDelayMinimumMsChanged;
+            settings.OppositeTapStartDelayMaximumMsChanged += Settings_OppositeTapStartDelayMaximumMsChanged;
             settings.BrakeMinimumHoldMsChanged += Settings_BrakeMinimumHoldMsChanged;
             settings.BrakeArmingThresholdChanged += Settings_BrakeArmingThresholdChanged;
         }
 
-        private void Settings_BrakeEnabledChanged(object sender, EventArgs e)
+        private void Settings_CounterMovementReleasePressEnabledChanged(object sender, EventArgs e)
         {
-            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_ENABLED);
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
         }
 
-        private void Settings_BrakeDurationMsChanged(object sender, EventArgs e)
+        private void Settings_CounterMovementTapLengthPresetChanged(object sender, EventArgs e)
         {
-            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+        }
+
+        private void Settings_OppositeTapLengthMinimumMsChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+        }
+
+        private void Settings_OppositeTapLengthMaximumMsChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayMinimumMsChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayMaximumMsChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
         }
 
         private void Settings_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
@@ -6054,6 +6165,65 @@ namespace DS4MapperTest
                 stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
                 //stickPadAct.RingButton.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
             }
+
+            MigrateLegacyCounterMovementReleasePressFields();
+        }
+
+        // Legacy "Digital Release Brake" profile migration: pre-rename profiles only ever
+        // wrote BrakeEnabled/BrakeDurationMs. Applied here (after the whole object has
+        // deserialized) using the old immediate-start semantics, i.e. the migrated tap
+        // length window becomes min == max == the old single duration, with a 0-0ms start
+        // delay so the generated press still begins immediately, matching pre-rename
+        // behaviour exactly. Runs only for whichever new-named fields this same profile did
+        // not already specify explicitly, so a legacy field can never silently overwrite a
+        // value the profile also set directly under its new name.
+        private void MigrateLegacyCounterMovementReleasePressFields()
+        {
+            if (settings.LegacyBrakeEnabled.HasValue &&
+                !stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED))
+            {
+                stickPadAct.CounterMovementReleasePress.Enabled = settings.LegacyBrakeEnabled.Value;
+                stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
+            }
+
+            if (!settings.LegacyBrakeDurationMs.HasValue)
+            {
+                return;
+            }
+
+            int legacyDuration = DigitalReleaseBrakePulse.ClampBrakeDurationMs(settings.LegacyBrakeDurationMs.Value);
+
+            if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS))
+            {
+                stickPadAct.CounterMovementReleasePress.OppositeTapLengthMinimumMs = legacyDuration;
+                stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            }
+
+            if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS))
+            {
+                stickPadAct.CounterMovementReleasePress.OppositeTapLengthMaximumMs = legacyDuration;
+                stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            }
+
+            if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS))
+            {
+                stickPadAct.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs = 0;
+                stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+            }
+
+            if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS))
+            {
+                stickPadAct.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs = 0;
+                stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
+            }
+
+            if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET))
+            {
+                stickPadAct.CounterMovementReleasePress.TapLengthPreset = DS4MapperTest.StickActions.CounterMovementTapLengthPreset.Custom;
+                stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            }
+
+            stickPadAct.CounterMovementReleasePress.NormalizeRanges();
         }
 
         public void FlagBtnChangedDirection(StickPadAction.DpadDirections dir,
@@ -6254,42 +6424,105 @@ namespace DS4MapperTest
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.FULL_SPEED_THRESHOLD_PERCENT);
             }
 
-            public bool BrakeEnabled
+            public bool CounterMovementReleasePressEnabled
             {
-                get => analogAction.ReleaseBrake.Enabled;
+                get => analogAction.CounterMovementReleasePress.Enabled;
                 set
                 {
-                    analogAction.ReleaseBrake.Enabled = value;
-                    BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.Enabled = value;
+                    CounterMovementReleasePressEnabledChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler BrakeEnabledChanged;
-            public bool ShouldSerializeBrakeEnabled()
+            public event EventHandler CounterMovementReleasePressEnabledChanged;
+            public bool ShouldSerializeCounterMovementReleasePressEnabled()
             {
-                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ENABLED);
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             }
 
-            public int BrakeDurationMs
+            public string CounterMovementTapLengthPreset
             {
-                get => analogAction.ReleaseBrake.BrakeDurationMs;
+                get => analogAction.CounterMovementReleasePress.TapLengthPreset.ToString();
                 set
                 {
-                    analogAction.ReleaseBrake.BrakeDurationMs = value;
-                    BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                    if (Enum.TryParse(value, out DS4MapperTest.StickActions.CounterMovementTapLengthPreset temp))
+                    {
+                        analogAction.CounterMovementReleasePress.TapLengthPreset = temp;
+                        CounterMovementTapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                    }
                 }
             }
-            public event EventHandler BrakeDurationMsChanged;
-            public bool ShouldSerializeBrakeDurationMs()
+            public event EventHandler CounterMovementTapLengthPresetChanged;
+            public bool ShouldSerializeCounterMovementTapLengthPreset()
             {
-                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            }
+
+            public int OppositeTapLengthMinimumMs
+            {
+                get => analogAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs;
+                set
+                {
+                    analogAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs = value;
+                    OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapLengthMinimumMsChanged;
+            public bool ShouldSerializeOppositeTapLengthMinimumMs()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            }
+
+            public int OppositeTapLengthMaximumMs
+            {
+                get => analogAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs;
+                set
+                {
+                    analogAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs = value;
+                    OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapLengthMaximumMsChanged;
+            public bool ShouldSerializeOppositeTapLengthMaximumMs()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            }
+
+            public int OppositeTapStartDelayMinimumMs
+            {
+                get => analogAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs;
+                set
+                {
+                    analogAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs = value;
+                    OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayMinimumMsChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMinimumMs()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+            }
+
+            public int OppositeTapStartDelayMaximumMs
+            {
+                get => analogAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs;
+                set
+                {
+                    analogAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs = value;
+                    OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayMaximumMsChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMaximumMs()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
             }
 
             public int BrakeMinimumHoldMs
             {
-                get => analogAction.ReleaseBrake.MinimumHoldMs;
+                get => analogAction.CounterMovementReleasePress.MinimumHoldMs;
                 set
                 {
-                    analogAction.ReleaseBrake.MinimumHoldMs = value;
+                    analogAction.CounterMovementReleasePress.MinimumHoldMs = value;
                     BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
@@ -6301,10 +6534,10 @@ namespace DS4MapperTest
 
             public double BrakeArmingThreshold
             {
-                get => analogAction.ReleaseBrake.ArmingThreshold;
+                get => analogAction.CounterMovementReleasePress.ArmingThreshold;
                 set
                 {
-                    analogAction.ReleaseBrake.ArmingThreshold = value;
+                    analogAction.CounterMovementReleasePress.ArmingThreshold = value;
                     BrakeArmingThresholdChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
@@ -6313,6 +6546,28 @@ namespace DS4MapperTest
             {
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
             }
+
+            // --- Legacy compatibility (pre-rename "Digital Release Brake" profiles) ---
+            // See StickPadActionSerializer.StickPadActionSettings for the full rationale;
+            // Analog Emulation shares the same CounterMovementReleasePressProcessor type and
+            // so needs the same migration shadow properties.
+            private bool? legacyBrakeEnabled;
+            internal bool? LegacyBrakeEnabled => legacyBrakeEnabled;
+            public bool BrakeEnabled
+            {
+                get => false;
+                set => legacyBrakeEnabled = value;
+            }
+            public bool ShouldSerializeBrakeEnabled() => false;
+
+            private int? legacyBrakeDurationMs;
+            internal int? LegacyBrakeDurationMs => legacyBrakeDurationMs;
+            public int BrakeDurationMs
+            {
+                get => 0;
+                set => legacyBrakeDurationMs = value;
+            }
+            public bool ShouldSerializeBrakeDurationMs() => false;
 
             public AnalogEmulationSettings(StickAnalogEmulationAction analogAction)
             {
@@ -6366,20 +6621,44 @@ namespace DS4MapperTest
             settings.AnalogEmulationActivePercentChanged += Settings_AnalogEmulationActivePercentChanged;
             settings.AnalogEmulationPulseTimeMsChanged += Settings_AnalogEmulationPulseTimeMsChanged;
             settings.FullSpeedThresholdPercentChanged += Settings_FullSpeedThresholdPercentChanged;
-            settings.BrakeEnabledChanged += Settings_BrakeEnabledChanged;
-            settings.BrakeDurationMsChanged += Settings_BrakeDurationMsChanged;
+            settings.CounterMovementReleasePressEnabledChanged += Settings_CounterMovementReleasePressEnabledChanged;
+            settings.CounterMovementTapLengthPresetChanged += Settings_CounterMovementTapLengthPresetChanged;
+            settings.OppositeTapLengthMinimumMsChanged += Settings_OppositeTapLengthMinimumMsChanged;
+            settings.OppositeTapLengthMaximumMsChanged += Settings_OppositeTapLengthMaximumMsChanged;
+            settings.OppositeTapStartDelayMinimumMsChanged += Settings_OppositeTapStartDelayMinimumMsChanged;
+            settings.OppositeTapStartDelayMaximumMsChanged += Settings_OppositeTapStartDelayMaximumMsChanged;
             settings.BrakeMinimumHoldMsChanged += Settings_BrakeMinimumHoldMsChanged;
             settings.BrakeArmingThresholdChanged += Settings_BrakeArmingThresholdChanged;
         }
 
-        private void Settings_BrakeEnabledChanged(object sender, EventArgs e)
+        private void Settings_CounterMovementReleasePressEnabledChanged(object sender, EventArgs e)
         {
-            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ENABLED);
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
         }
 
-        private void Settings_BrakeDurationMsChanged(object sender, EventArgs e)
+        private void Settings_CounterMovementTapLengthPresetChanged(object sender, EventArgs e)
         {
-            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_DURATION_MS);
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+        }
+
+        private void Settings_OppositeTapLengthMinimumMsChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+        }
+
+        private void Settings_OppositeTapLengthMaximumMsChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayMinimumMsChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayMaximumMsChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
         }
 
         private void Settings_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
@@ -6516,6 +6795,60 @@ namespace DS4MapperTest
 
                 FlagBtnChangedDirection(idx, analogAct);
             }
+
+            MigrateLegacyCounterMovementReleasePressFields();
+        }
+
+        // See StickPadActionSerializer.MigrateLegacyCounterMovementReleasePressFields for
+        // the full rationale; Analog Emulation shares the same
+        // CounterMovementReleasePressProcessor type and the same legacy field names.
+        private void MigrateLegacyCounterMovementReleasePressFields()
+        {
+            if (settings.LegacyBrakeEnabled.HasValue &&
+                !analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED))
+            {
+                analogAct.CounterMovementReleasePress.Enabled = settings.LegacyBrakeEnabled.Value;
+                analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
+            }
+
+            if (!settings.LegacyBrakeDurationMs.HasValue)
+            {
+                return;
+            }
+
+            int legacyDuration = DigitalReleaseBrakePulse.ClampBrakeDurationMs(settings.LegacyBrakeDurationMs.Value);
+
+            if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS))
+            {
+                analogAct.CounterMovementReleasePress.OppositeTapLengthMinimumMs = legacyDuration;
+                analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            }
+
+            if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS))
+            {
+                analogAct.CounterMovementReleasePress.OppositeTapLengthMaximumMs = legacyDuration;
+                analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            }
+
+            if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS))
+            {
+                analogAct.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs = 0;
+                analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+            }
+
+            if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS))
+            {
+                analogAct.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs = 0;
+                analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
+            }
+
+            if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET))
+            {
+                analogAct.CounterMovementReleasePress.TapLengthPreset = DS4MapperTest.StickActions.CounterMovementTapLengthPreset.Custom;
+                analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            }
+
+            analogAct.CounterMovementReleasePress.NormalizeRanges();
         }
 
         public void FlagBtnChangedDirection(int idx, StickAnalogEmulationAction action)

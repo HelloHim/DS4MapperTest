@@ -6,21 +6,27 @@ using DS4MapperTest.ButtonActions;
 namespace DS4MapperTest.StickActions
 {
     /// <summary>
-    /// Optional per-action "Digital Release Brake" for StickPadAction D-Pad modes.
-    /// When a spring-loaded stick is released, the mechanical spring can take tens of
-    /// milliseconds to return to centre. During that window this detector suppresses the
-    /// stick's own returning digital direction and briefly pulses the logically opposite
+    /// Optional per-action "Counter Movement Release Press" for StickPadAction D-Pad modes
+    /// (and, sharing the same instance, Analog Emulation). When a spring-loaded stick is
+    /// released, the mechanical spring can take tens of milliseconds to return to centre.
+    /// During that window this detector suppresses the stick's own returning digital
+    /// direction and generates a short, optionally delayed press of the logically opposite
     /// direction, using whichever AxisDirButton bindings the action already owns.
     /// Detection is derived solely from analogue stick X/Y position; no other sensing is used.
+    /// This is an offline accessibility and controller-customisation tool: it contains no
+    /// anti-cheat detection or bypass logic, no server or game-process detection, and no
+    /// behaviour that changes based on online state. Timing is entirely driven by the
+    /// settings below.
     /// </summary>
-    public class StickReleaseBrake
+    public class CounterMovementReleasePressProcessor
     {
-        public enum BrakeState
+        public enum CounterMovementReleasePressState
         {
             Unprimed,
             Idle,
             Armed,
-            Braking,
+            WaitingForOppositeTap,
+            OppositeTapActive,
             Suppressed,
         }
 
@@ -50,6 +56,19 @@ namespace DS4MapperTest.StickActions
         private const double DT_ABS_MAX_SECONDS = 0.5;
         private const double DT_AVG_TAU_SECONDS = 0.2;
 
+        // Start delay is clamped to the same absolute ceiling as tap length; the tighter,
+        // "must not exceed the selected tap-length minimum" constraint is enforced by
+        // NormalizeRanges rather than by this per-field clamp.
+        private const int MIN_START_DELAY_MS = 0;
+        private const int MAX_START_DELAY_MS = DigitalReleaseBrakePulse.MAX_BRAKE_DURATION_MS;
+
+        public static readonly int DEFAULT_TAP_LENGTH_MS = DigitalReleaseBrakePulse.DEFAULT_BRAKE_DURATION_MS;
+        public const int DEFAULT_START_DELAY_MINIMUM_MS = 0;
+        public const int DEFAULT_START_DELAY_MAXIMUM_MS = 20;
+
+        public const int CS2_TAP_LENGTH_MINIMUM_MS = 75;
+        public const int CS2_TAP_LENGTH_MAXIMUM_MS = 120;
+
         private static readonly StickPadAction.DpadDirections[] CardinalComponents = new[]
         {
             StickPadAction.DpadDirections.Up,
@@ -64,6 +83,21 @@ namespace DS4MapperTest.StickActions
         /// </summary>
         public bool DiagnosticsEnabled = false;
 
+        private readonly IRandomRangeProvider randomProvider;
+
+        public CounterMovementReleasePressProcessor() : this(RandomRangeProvider.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Test/DI entry point: substitute a deterministic IRandomRangeProvider so timing
+        /// tests never depend on real randomness.
+        /// </summary>
+        public CounterMovementReleasePressProcessor(IRandomRangeProvider randomProvider)
+        {
+            this.randomProvider = randomProvider ?? RandomRangeProvider.Instance;
+        }
+
         private bool enabled;
         public bool Enabled
         {
@@ -74,13 +108,6 @@ namespace DS4MapperTest.StickActions
                 enabled = value;
                 ForceReleaseAndReset();
             }
-        }
-
-        private int brakeDurationMs = 100;
-        public int BrakeDurationMs
-        {
-            get => brakeDurationMs;
-            set => brakeDurationMs = DigitalReleaseBrakePulse.ClampBrakeDurationMs(value);
         }
 
         private int minimumHoldMs = 0;
@@ -103,8 +130,103 @@ namespace DS4MapperTest.StickActions
             }
         }
 
-        private BrakeState state = BrakeState.Unprimed;
-        public BrakeState State => state;
+        private CounterMovementTapLengthPreset tapLengthPreset = CounterMovementTapLengthPreset.Custom;
+        public CounterMovementTapLengthPreset TapLengthPreset
+        {
+            get => tapLengthPreset;
+            set => tapLengthPreset = value;
+        }
+
+        private int oppositeTapLengthMinimumMs = DEFAULT_TAP_LENGTH_MS;
+        public int OppositeTapLengthMinimumMs
+        {
+            get => oppositeTapLengthMinimumMs;
+            set => oppositeTapLengthMinimumMs = DigitalReleaseBrakePulse.ClampBrakeDurationMs(value);
+        }
+
+        private int oppositeTapLengthMaximumMs = DEFAULT_TAP_LENGTH_MS;
+        public int OppositeTapLengthMaximumMs
+        {
+            get => oppositeTapLengthMaximumMs;
+            set => oppositeTapLengthMaximumMs = DigitalReleaseBrakePulse.ClampBrakeDurationMs(value);
+        }
+
+        private int oppositeTapStartDelayMinimumMs = DEFAULT_START_DELAY_MINIMUM_MS;
+        public int OppositeTapStartDelayMinimumMs
+        {
+            get => oppositeTapStartDelayMinimumMs;
+            set => oppositeTapStartDelayMinimumMs = Math.Clamp(value, MIN_START_DELAY_MS, MAX_START_DELAY_MS);
+        }
+
+        private int oppositeTapStartDelayMaximumMs = DEFAULT_START_DELAY_MAXIMUM_MS;
+        public int OppositeTapStartDelayMaximumMs
+        {
+            get => oppositeTapStartDelayMaximumMs;
+            set => oppositeTapStartDelayMaximumMs = Math.Clamp(value, MIN_START_DELAY_MS, MAX_START_DELAY_MS);
+        }
+
+        /// <summary>
+        /// Corrects malformed range combinations (min greater than max, or a start delay
+        /// maximum that could exceed the sampled tap-length window) in place. Cheap enough
+        /// to call on every activation and after every load, so it is never relied on to
+        /// run per mapper tick.
+        /// </summary>
+        public void NormalizeRanges()
+        {
+            if (oppositeTapLengthMinimumMs > oppositeTapLengthMaximumMs)
+            {
+                oppositeTapLengthMaximumMs = oppositeTapLengthMinimumMs;
+            }
+
+            if (oppositeTapStartDelayMinimumMs > oppositeTapStartDelayMaximumMs)
+            {
+                oppositeTapStartDelayMaximumMs = oppositeTapStartDelayMinimumMs;
+            }
+
+            // The start delay must never be able to sample longer than the tap-length window
+            // can sample short, otherwise actualOppositeHoldMs could go negative.
+            if (oppositeTapStartDelayMaximumMs > oppositeTapLengthMinimumMs)
+            {
+                oppositeTapStartDelayMaximumMs = oppositeTapLengthMinimumMs;
+            }
+
+            if (oppositeTapStartDelayMinimumMs > oppositeTapStartDelayMaximumMs)
+            {
+                oppositeTapStartDelayMinimumMs = oppositeTapStartDelayMaximumMs;
+            }
+        }
+
+        /// <summary>
+        /// Applies the CS2 preset (75-120ms tap length only; start delay and every other
+        /// setting are left untouched) and marks the preset as CS2.
+        /// </summary>
+        public void ApplyCs2Preset()
+        {
+            oppositeTapLengthMinimumMs = CS2_TAP_LENGTH_MINIMUM_MS;
+            oppositeTapLengthMaximumMs = CS2_TAP_LENGTH_MAXIMUM_MS;
+            tapLengthPreset = CounterMovementTapLengthPreset.CS2;
+        }
+
+        /// <summary>
+        /// The numeric tap-length values are authoritative over the stored preset field: a
+        /// profile claiming CS2 whose values do not match 75/120 must display as Custom
+        /// rather than silently overwriting the loaded numeric values.
+        /// </summary>
+        public bool MatchesCs2Values =>
+            oppositeTapLengthMinimumMs == CS2_TAP_LENGTH_MINIMUM_MS &&
+            oppositeTapLengthMaximumMs == CS2_TAP_LENGTH_MAXIMUM_MS;
+
+        /// <summary>
+        /// Resolves the preset that should actually be displayed for the current numeric
+        /// values, reconciling a possibly-stale stored preset field per MatchesCs2Values.
+        /// </summary>
+        public CounterMovementTapLengthPreset EffectiveTapLengthPreset =>
+            tapLengthPreset == CounterMovementTapLengthPreset.CS2 && !MatchesCs2Values
+                ? CounterMovementTapLengthPreset.Custom
+                : tapLengthPreset;
+
+        private CounterMovementReleasePressState state = CounterMovementReleasePressState.Unprimed;
+        public CounterMovementReleasePressState State => state;
 
         private bool filterSeeded;
         private double rFiltered;
@@ -119,13 +241,26 @@ namespace DS4MapperTest.StickActions
 
         private StickPadAction.DpadDirections suppressedComponents;
         private StickPadAction.DpadDirections pulseOwnedComponents;
+        private StickPadAction.DpadDirections pendingOppositeComponents;
         private StickPadAction.DpadDirections explicitReleaseComponents;
-        // Accumulated from validated report dt (genuine elapsed time, never a poll count),
-        // so pulse duration tracks real elapsed time regardless of report cadence and is
-        // immune to hitches (only validated samples advance it). A monotonic wall-clock
-        // fallback bounds the pulse if the reader reports invalid dt for a few frames.
-        private double pulseElapsedSeconds;
-        private long pulseStartTimestamp;
+
+        // Sampled once per activation in EnterReleasePress, then held for the lifetime of
+        // that activation. Never resampled while WaitingForOppositeTap/OppositeTapActive or
+        // by mapper updates; only a fresh qualifying release samples new values.
+        private int selectedTotalTapWindowMs;
+        private int selectedStartDelayMs;
+        private int actualOppositeHoldMs;
+
+        // Single monotonic reference point for the whole release-to-end window (see class
+        // doc / EnterReleasePress): both the "begin opposite press" and "end the action"
+        // checks compare elapsed time from this one timestamp, so mapper update rounding
+        // can never extend the action past the requested window. Accumulated from
+        // validated report dt (genuine elapsed time, never a poll count), so it tracks real
+        // elapsed time regardless of report cadence and is immune to hitches (only
+        // validated samples advance it). A monotonic wall-clock fallback bounds the action
+        // if the reader reports invalid dt for a few frames.
+        private double releasePressElapsedSeconds;
+        private long releasePressStartTimestamp;
 
         private bool hasFiredThisCycle;
         private double postTriggerMinR;
@@ -144,7 +279,8 @@ namespace DS4MapperTest.StickActions
         {
             if (!enabled)
             {
-                if (state != BrakeState.Unprimed || suppressedComponents != StickPadAction.DpadDirections.Centered ||
+                if (state != CounterMovementReleasePressState.Unprimed ||
+                    suppressedComponents != StickPadAction.DpadDirections.Centered ||
                     pulseOwnedComponents != StickPadAction.DpadDirections.Centered)
                 {
                     ForceReleaseAndReset();
@@ -187,18 +323,18 @@ namespace DS4MapperTest.StickActions
 
             switch (state)
             {
-                case BrakeState.Unprimed:
+                case CounterMovementReleasePressState.Unprimed:
                     if (rFiltered <= RESET_THRESHOLD)
                     {
-                        state = BrakeState.Idle;
+                        state = CounterMovementReleasePressState.Idle;
                     }
                     break;
 
-                case BrakeState.Idle:
+                case CounterMovementReleasePressState.Idle:
                     if (rawCurrentDir != StickPadAction.DpadDirections.Centered &&
                         (armingThreshold <= 0.0 || rFiltered >= armingThreshold))
                     {
-                        state = BrakeState.Armed;
+                        state = CounterMovementReleasePressState.Armed;
                         peakRadius = rFiltered;
                         latchedZone = rawCurrentDir;
                         hasFiredThisCycle = false;
@@ -207,7 +343,7 @@ namespace DS4MapperTest.StickActions
                     }
                     break;
 
-                case BrakeState.Armed:
+                case CounterMovementReleasePressState.Armed:
                     peakRadius = Math.Max(peakRadius, rFiltered);
                     if (rawCurrentDir != StickPadAction.DpadDirections.Centered)
                     {
@@ -223,39 +359,46 @@ namespace DS4MapperTest.StickActions
 
                     if (fastRelease)
                     {
-                        EnterBraking(ReleaseTriggerReason.Derivative);
+                        EnterReleasePress(ReleaseTriggerReason.Derivative);
                     }
                     else if (slowFallback)
                     {
-                        EnterBraking(ReleaseTriggerReason.SlowReleaseFallback);
+                        EnterReleasePress(ReleaseTriggerReason.SlowReleaseFallback);
                     }
                     break;
 
-                case BrakeState.Braking:
+                case CounterMovementReleasePressState.WaitingForOppositeTap:
                     effectiveDir = ApplySuppression(rawCurrentDir);
                     CheckReengagement(rawCurrentDir, dr, dtValid, ref effectiveDir);
-                    if (state == BrakeState.Braking)
+                    if (state == CounterMovementReleasePressState.WaitingForOppositeTap)
                     {
-                        if (dtValid) pulseElapsedSeconds += dt;
-                        if (GetPulseElapsedSeconds() * 1000.0 >= brakeDurationMs)
+                        if (dtValid) releasePressElapsedSeconds += dt;
+                        AdvanceWaitingForOppositeTap();
+                    }
+                    break;
+
+                case CounterMovementReleasePressState.OppositeTapActive:
+                    effectiveDir = ApplySuppression(rawCurrentDir);
+                    CheckReengagement(rawCurrentDir, dr, dtValid, ref effectiveDir);
+                    if (state == CounterMovementReleasePressState.OppositeTapActive)
+                    {
+                        if (dtValid) releasePressElapsedSeconds += dt;
+                        if (GetReleasePressElapsedMs() >= selectedTotalTapWindowMs)
                         {
-                            explicitReleaseComponents |= pulseOwnedComponents;
-                            pulseOwnedComponents = StickPadAction.DpadDirections.Centered;
-                            pulseStartTimestamp = 0;
-                            state = BrakeState.Suppressed;
+                            EndOppositeTap();
                         }
                     }
                     break;
 
-                case BrakeState.Suppressed:
+                case CounterMovementReleasePressState.Suppressed:
                     effectiveDir = ApplySuppression(rawCurrentDir);
                     CheckReengagement(rawCurrentDir, dr, dtValid, ref effectiveDir);
-                    if (state == BrakeState.Suppressed && rFiltered <= RESET_THRESHOLD)
+                    if (state == CounterMovementReleasePressState.Suppressed && rFiltered <= RESET_THRESHOLD)
                     {
                         suppressedComponents = StickPadAction.DpadDirections.Centered;
                         latchedZone = StickPadAction.DpadDirections.Centered;
                         holdUp = holdDown = holdLeft = holdRight = 0.0;
-                        state = BrakeState.Idle;
+                        state = CounterMovementReleasePressState.Idle;
                         lastTriggerReason = ReleaseTriggerReason.NeutralReset;
                     }
                     break;
@@ -292,9 +435,9 @@ namespace DS4MapperTest.StickActions
         }
 
         /// <summary>
-        /// Called from StickPadAction.Release/SoftRelease. Releases only brake-owned output,
+        /// Called from StickPadAction.Release/SoftRelease. Releases only owned output,
         /// clears all state, and returns to Unprimed so a subsequent controller connect/profile
-        /// load/layer switch cannot cause a spurious brake.
+        /// load/layer switch cannot cause a spurious activation.
         /// </summary>
         public void Cleanup(Mapper mapper, AxisDirButton[] usedFuncList)
         {
@@ -326,7 +469,14 @@ namespace DS4MapperTest.StickActions
             explicitReleaseComponents = StickPadAction.DpadDirections.Centered;
         }
 
-        private void EnterBraking(ReleaseTriggerReason reason)
+        /// <summary>
+        /// Entered once per qualifying release. Samples the total tap window and start
+        /// delay exactly once here (never resampled for the lifetime of this activation),
+        /// subtracts the delay from the window per the class doc, and either begins the
+        /// opposite press immediately (delay 0, matching the pre-timing-variance behaviour)
+        /// or moves to WaitingForOppositeTap to wait out the delay first.
+        /// </summary>
+        private void EnterReleasePress(ReleaseTriggerReason reason)
         {
             hasFiredThisCycle = true;
             lastTriggerReason = reason;
@@ -344,11 +494,11 @@ namespace DS4MapperTest.StickActions
 
             if (eligible == StickPadAction.DpadDirections.Centered)
             {
-                // Nothing qualified for a pulse. Still consume the single trigger for this
+                // Nothing qualified for a press. Still consume the single trigger for this
                 // movement cycle and wait out neutral before arming again.
                 suppressedComponents = StickPadAction.DpadDirections.Centered;
                 pulseOwnedComponents = StickPadAction.DpadDirections.Centered;
-                state = BrakeState.Suppressed;
+                state = CounterMovementReleasePressState.Suppressed;
                 return;
             }
 
@@ -363,12 +513,74 @@ namespace DS4MapperTest.StickActions
                 }
             }
 
-            pulseOwnedComponents = opposite;
-            pulseElapsedSeconds = 0.0;
-            pulseStartTimestamp = Stopwatch.GetTimestamp();
+            NormalizeRanges();
+            selectedTotalTapWindowMs = randomProvider.NextInclusive(oppositeTapLengthMinimumMs, oppositeTapLengthMaximumMs);
+            selectedStartDelayMs = randomProvider.NextInclusive(oppositeTapStartDelayMinimumMs, oppositeTapStartDelayMaximumMs);
+            // The start delay is included inside the selected tap-length window, not added
+            // on top of it: the delay is subtracted from the total window to get the actual
+            // opposite-direction hold duration, clamped at zero so a delay sampled equal to
+            // (or, defensively, slightly above) the window can never go negative.
+            actualOppositeHoldMs = Math.Max(0, selectedTotalTapWindowMs - selectedStartDelayMs);
+
+            pendingOppositeComponents = opposite;
+            releasePressElapsedSeconds = 0.0;
+            releasePressStartTimestamp = Stopwatch.GetTimestamp();
             postTriggerMinR = rFiltered;
             risingTickCount = 0;
-            state = BrakeState.Braking;
+
+            if (selectedStartDelayMs <= 0)
+            {
+                BeginOppositeTapOrSkip();
+            }
+            else
+            {
+                pulseOwnedComponents = StickPadAction.DpadDirections.Centered;
+                state = CounterMovementReleasePressState.WaitingForOppositeTap;
+            }
+        }
+
+        private void AdvanceWaitingForOppositeTap()
+        {
+            if (GetReleasePressElapsedMs() >= selectedStartDelayMs)
+            {
+                BeginOppositeTapOrSkip();
+
+                // A single huge dt jump (e.g. a resumed-from-background report) could
+                // satisfy both thresholds in the same tick; handle that immediately rather
+                // than waiting for a further tick that may never suppress correctly.
+                if (state == CounterMovementReleasePressState.OppositeTapActive &&
+                    GetReleasePressElapsedMs() >= selectedTotalTapWindowMs)
+                {
+                    EndOppositeTap();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Begins the generated opposite press, unless the computed hold duration is zero
+        /// (total window entirely consumed by the delay), in which case no key is pressed
+        /// at all and the action ends cleanly by moving straight to Suppressed.
+        /// </summary>
+        private void BeginOppositeTapOrSkip()
+        {
+            if (actualOppositeHoldMs <= 0)
+            {
+                pulseOwnedComponents = StickPadAction.DpadDirections.Centered;
+                releasePressStartTimestamp = 0;
+                state = CounterMovementReleasePressState.Suppressed;
+                return;
+            }
+
+            pulseOwnedComponents = pendingOppositeComponents;
+            state = CounterMovementReleasePressState.OppositeTapActive;
+        }
+
+        private void EndOppositeTap()
+        {
+            explicitReleaseComponents |= pulseOwnedComponents;
+            pulseOwnedComponents = StickPadAction.DpadDirections.Centered;
+            releasePressStartTimestamp = 0;
+            state = CounterMovementReleasePressState.Suppressed;
         }
 
         private void CheckReengagement(StickPadAction.DpadDirections rawCurrentDir, double dr, bool dtValid,
@@ -424,7 +636,7 @@ namespace DS4MapperTest.StickActions
                             pulseOwnedComponents &= ~opp;
                             if (pulseOwnedComponents == StickPadAction.DpadDirections.Centered)
                             {
-                                pulseStartTimestamp = 0;
+                                releasePressStartTimestamp = 0;
                             }
                             explicitReleaseComponents |= opp;
                         }
@@ -453,18 +665,20 @@ namespace DS4MapperTest.StickActions
                 }
                 if (pulseOwnedComponents == StickPadAction.DpadDirections.Centered)
                 {
-                    pulseStartTimestamp = 0;
+                    releasePressStartTimestamp = 0;
                 }
                 lastTriggerReason = ReleaseTriggerReason.NewInputCancellation;
                 effectiveDir = ApplySuppression(rawCurrentDir);
             }
             else
             {
-                // Genuinely different direction. Abandon this brake cycle entirely and
-                // start fresh tracking of the new push.
+                // Genuinely different direction (this also covers WaitingForOppositeTap,
+                // where pulseOwnedComponents is still empty so touchesPulse can never be
+                // true): abandon this activation entirely, release anything owned so far,
+                // and start fresh tracking of the new push.
                 explicitReleaseComponents |= pulseOwnedComponents;
                 pulseOwnedComponents = StickPadAction.DpadDirections.Centered;
-                pulseStartTimestamp = 0;
+                releasePressStartTimestamp = 0;
                 suppressedComponents = StickPadAction.DpadDirections.Centered;
                 lastTriggerReason = ReleaseTriggerReason.NewInputCancellation;
                 effectiveDir = rawCurrentDir;
@@ -474,7 +688,7 @@ namespace DS4MapperTest.StickActions
 
         private void ResumeArmedTracking(StickPadAction.DpadDirections rawCurrentDir)
         {
-            state = BrakeState.Armed;
+            state = CounterMovementReleasePressState.Armed;
             hasFiredThisCycle = false;
             latchedZone = rawCurrentDir;
             peakRadius = rFiltered;
@@ -518,16 +732,17 @@ namespace DS4MapperTest.StickActions
             }
         }
 
-        private double GetPulseElapsedSeconds()
+        private double GetReleasePressElapsedMs()
         {
-            if (pulseStartTimestamp == 0)
+            double accumulated = releasePressElapsedSeconds;
+            if (releasePressStartTimestamp != 0)
             {
-                return pulseElapsedSeconds;
+                double wallElapsedSeconds = (Stopwatch.GetTimestamp() - releasePressStartTimestamp) /
+                    (double)Stopwatch.Frequency;
+                accumulated = Math.Max(accumulated, wallElapsedSeconds);
             }
 
-            double wallElapsedSeconds = (Stopwatch.GetTimestamp() - pulseStartTimestamp) /
-                (double)Stopwatch.Frequency;
-            return Math.Max(pulseElapsedSeconds, wallElapsedSeconds);
+            return accumulated * 1000.0;
         }
 
         private static bool Has(StickPadAction.DpadDirections mask, StickPadAction.DpadDirections bit)
@@ -569,13 +784,17 @@ namespace DS4MapperTest.StickActions
         {
             explicitReleaseComponents |= pulseOwnedComponents;
             pulseOwnedComponents = StickPadAction.DpadDirections.Centered;
+            pendingOppositeComponents = StickPadAction.DpadDirections.Centered;
             suppressedComponents = StickPadAction.DpadDirections.Centered;
             latchedZone = StickPadAction.DpadDirections.Centered;
             holdUp = holdDown = holdLeft = holdRight = 0.0;
             hasFiredThisCycle = false;
-            pulseElapsedSeconds = 0.0;
-            pulseStartTimestamp = 0;
-            state = BrakeState.Unprimed;
+            selectedTotalTapWindowMs = 0;
+            selectedStartDelayMs = 0;
+            actualOppositeHoldMs = 0;
+            releasePressElapsedSeconds = 0.0;
+            releasePressStartTimestamp = 0;
+            state = CounterMovementReleasePressState.Unprimed;
             filterSeeded = false;
             rFiltered = prevRFiltered = 0.0;
             peakRadius = 0.0;
@@ -591,11 +810,12 @@ namespace DS4MapperTest.StickActions
             if (!DiagnosticsEnabled) return;
 
             Trace.WriteLine(string.Format(
-                "[ReleaseBrake] t={0} dt={1:F5} valid={2} r={3:F3} rF={4:F3} dr={5:F2} state={6} " +
-                "raw={7} eff={8} latched={9} peak={10:F3} suppressed={11} pulseOwned={12} reason={13}",
+                "[CounterMovementReleasePress] t={0} dt={1:F5} valid={2} r={3:F3} rF={4:F3} dr={5:F2} state={6} " +
+                "raw={7} eff={8} latched={9} peak={10:F3} suppressed={11} pulseOwned={12} reason={13} " +
+                "totalWindowMs={14} startDelayMs={15} actualHoldMs={16}",
                 Environment.TickCount64, dt, dtValid, rPhysical, rFiltered, dr, state,
                 rawDir, effectiveDir, latchedZone, peakRadius, suppressedComponents, pulseOwnedComponents,
-                lastTriggerReason));
+                lastTriggerReason, selectedTotalTapWindowMs, selectedStartDelayMs, actualOppositeHoldMs));
         }
     }
 }
