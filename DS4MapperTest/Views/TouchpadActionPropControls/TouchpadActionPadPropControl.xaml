@@ -9,6 +9,9 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <Style x:Key="ModeRowBorder" TargetType="Border" BasedOn="{StaticResource JsmccSettingRowBorder}">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
     </UserControl.Resources>
 
     <StackPanel>
@@ -211,74 +214,124 @@
             <Border Style="{StaticResource JsmccSettingRowBorder}"
                     Visibility="{Binding ShowReleaseBrakeSection, Converter={StaticResource BoolToVis}}">
                 <StackPanel>
-                    <TextBlock Text="Digital Release Brake"
-                               Style="{StaticResource JsmccCardTitle}"/>
+                    <TextBlock Text="Counter Movement Release Press" Style="{StaticResource JsmccLabelText}" FontWeight="Bold" Margin="0,0,0,2"/>
+                    <TextBlock Text="When a digital touchpad direction is released, the mapper can generate a short press of the opposite direction."
+                               Style="{StaticResource JsmccMutedText}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,4"/>
 
-                    <WrapPanel Margin="0,8,0,0">
-                        <Border Background="{DynamicResource JsmccBgInputBrush}"
-                                BorderBrush="{DynamicResource JsmccBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                Padding="6,4"
-                                Margin="0,0,8,4">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Enable"
-                                           Style="{StaticResource JsmccLabelText}"
-                                           Margin="0,0,8,0"/>
-                                <CheckBox IsChecked="{Binding BrakeEnabled}"
-                                          Style="{StaticResource JsmccToggleStyle}"
-                                          VerticalAlignment="Center"/>
-                            </StackPanel>
+                    <Border Style="{StaticResource ModeRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Enable Counter Movement Release Press" Style="{StaticResource JsmccLabelText}"/>
+                            <CheckBox Grid.Column="1" IsChecked="{Binding CounterMovementReleasePressEnabled}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel IsEnabled="{Binding CounterMovementReleasePressEnabled}">
+                        <Border Style="{StaticResource ModeRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="260"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Opposite Tap Length Variance Preset" Style="{StaticResource JsmccLabelText}"/>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding TapLengthPresetItems}"
+                                          DisplayMemberPath="DisplayName"
+                                          SelectedValuePath="ChoiceValue"
+                                          SelectedValue="{Binding TapLengthPreset}"
+                                          Style="{StaticResource JsmccComboBoxStyle}"
+                                          HorizontalAlignment="Left"
+                                          MinWidth="150"
+                                          ToolTip="Custom uses the Opposite Tap Length Variance values below. CS2 sets the tap-length range to 75-120ms and leaves everything else, including the start delay, unchanged."/>
+                            </Grid>
                         </Border>
 
-                        <Border Background="{DynamicResource JsmccBgInputBrush}"
-                                BorderBrush="{DynamicResource JsmccBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                Padding="6,4"
-                                Margin="0,0,8,4">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Opposite Tap Length"
-                                           Style="{StaticResource JsmccLabelText}"
-                                           Margin="0,0,8,0"/>
-                                <hc:NumericUpDown Minimum="10"
-                                                  Maximum="150"
-                                                  Value="{Binding BrakeDurationMs}"
-                                                  DecimalPlaces="0"
-                                                  Increment="1"
-                                                  Width="96"
-                                                  Style="{StaticResource JsmccNumericUpDownStyle}"/>
-                                <TextBlock Text="ms"
+                        <Border Style="{StaticResource ModeRowBorder}">
+                            <StackPanel>
+                                <TextBlock Text="Opposite Tap Length Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="170"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="170"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Minimum" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding OppositeTapLengthMinimumMs, UpdateSourceTrigger=LostFocus}"/>
+                                    <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,12,0" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Text="Maximum" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="4" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding OppositeTapLengthMaximumMs, UpdateSourceTrigger=LostFocus}"/>
+                                    <TextBlock Grid.Column="5" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="Sets the minimum and maximum total duration from the original-direction release until the generated opposite press ends. On each qualifying release, one value is picked at random from this range and used as the complete window for that release."
                                            Style="{StaticResource JsmccMutedText}"
-                                           Margin="6,0,0,0"
-                                           VerticalAlignment="Center"/>
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Background="{DynamicResource JsmccBgInputBrush}"
-                                BorderBrush="{DynamicResource JsmccBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                Padding="6,4"
-                                Margin="0,0,8,4">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Minimum Hold Time"
-                                           Style="{StaticResource JsmccLabelText}"
-                                           Margin="0,0,8,0"/>
-                                <hc:NumericUpDown Minimum="0"
-                                                  Maximum="300"
-                                                  Value="{Binding BrakeMinimumHoldMs}"
-                                                  DecimalPlaces="0"
-                                                  Increment="1"
-                                                  Width="96"
-                                                  Style="{StaticResource JsmccNumericUpDownStyle}"/>
-                                <TextBlock Text="ms"
+                        <Border Style="{StaticResource ModeRowBorder}">
+                            <StackPanel>
+                                <TextBlock Text="Opposite Tap Start Delay" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="170"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="170"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Minimum" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="150" DecimalPlaces="0" Increment="1"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding OppositeTapStartDelayMinimumMs, UpdateSourceTrigger=LostFocus}"/>
+                                    <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,12,0" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Text="Maximum" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="4" Minimum="0" Maximum="150" DecimalPlaces="0" Increment="1"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding OppositeTapStartDelayMaximumMs, UpdateSourceTrigger=LostFocus}"/>
+                                    <TextBlock Grid.Column="5" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="Sets the minimum and maximum neutral delay before the generated opposite press begins. The start delay is included within the selected tap-length window above: it is subtracted from the opposite-direction hold time, so the complete action never runs longer than the selected duration."
                                            Style="{StaticResource JsmccMutedText}"
-                                           Margin="6,0,0,0"
-                                           VerticalAlignment="Center"/>
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
                             </StackPanel>
                         </Border>
-                    </WrapPanel>
+
+                        <Border Style="{StaticResource ModeRowBorder}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="170"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Minimum Hold Time" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="300" DecimalPlaces="0" Increment="1"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding BrakeMinimumHoldMs, UpdateSourceTrigger=LostFocus}"/>
+                                    <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="Controls how long a digital direction must stay active before Counter Movement Release Press is eligible."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="170,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </StackPanel>

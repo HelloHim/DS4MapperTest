@@ -128,31 +128,116 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         public bool ShowReleaseBrakeSection => true;
         public event EventHandler ShowReleaseBrakeSectionChanged;
 
-        public bool BrakeEnabled
+        public bool CounterMovementReleasePressEnabled
         {
             get => action.ReleaseBrake.Enabled;
             set
             {
                 if (action.ReleaseBrake.Enabled == value) return;
                 action.ReleaseBrake.Enabled = value;
-                BrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+                CounterMovementReleasePressEnabledChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler BrakeEnabledChanged;
+        public event EventHandler CounterMovementReleasePressEnabledChanged;
 
-        public int BrakeDurationMs
+        private List<EnumChoiceSelection<CounterMovementTapLengthPreset>> tapLengthPresetItems =
+            new List<EnumChoiceSelection<CounterMovementTapLengthPreset>>()
+            {
+                new EnumChoiceSelection<CounterMovementTapLengthPreset>("Custom", CounterMovementTapLengthPreset.Custom),
+                new EnumChoiceSelection<CounterMovementTapLengthPreset>("CS2", CounterMovementTapLengthPreset.CS2),
+            };
+        public List<EnumChoiceSelection<CounterMovementTapLengthPreset>> TapLengthPresetItems => tapLengthPresetItems;
+
+        public CounterMovementTapLengthPreset TapLengthPreset
         {
-            get => action.ReleaseBrake.BrakeDurationMs;
+            get => action.ReleaseBrake.EffectiveTapLengthPreset;
             set
             {
-                if (action.ReleaseBrake.BrakeDurationMs == value) return;
-                action.ReleaseBrake.BrakeDurationMs = value;
-                BrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+                if (action.ReleaseBrake.EffectiveTapLengthPreset == value) return;
+
+                if (value == CounterMovementTapLengthPreset.CS2)
+                {
+                    action.ReleaseBrake.ApplyCs2Preset();
+                }
+                else
+                {
+                    action.ReleaseBrake.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                }
+
+                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler BrakeDurationMsChanged;
+        public event EventHandler TapLengthPresetChanged;
+
+        public int OppositeTapLengthMinimumMs
+        {
+            get => action.ReleaseBrake.OppositeTapLengthMinimumMs;
+            set
+            {
+                if (action.ReleaseBrake.OppositeTapLengthMinimumMs == value) return;
+                action.ReleaseBrake.OppositeTapLengthMinimumMs = value;
+                action.ReleaseBrake.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                action.ReleaseBrake.NormalizeRanges();
+                OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapLengthMinimumMsChanged;
+
+        public int OppositeTapLengthMaximumMs
+        {
+            get => action.ReleaseBrake.OppositeTapLengthMaximumMs;
+            set
+            {
+                if (action.ReleaseBrake.OppositeTapLengthMaximumMs == value) return;
+                action.ReleaseBrake.OppositeTapLengthMaximumMs = value;
+                action.ReleaseBrake.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                action.ReleaseBrake.NormalizeRanges();
+                OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapLengthMaximumMsChanged;
+
+        public int OppositeTapStartDelayMinimumMs
+        {
+            get => action.ReleaseBrake.OppositeTapStartDelayMinimumMs;
+            set
+            {
+                if (action.ReleaseBrake.OppositeTapStartDelayMinimumMs == value) return;
+                action.ReleaseBrake.OppositeTapStartDelayMinimumMs = value;
+                action.ReleaseBrake.NormalizeRanges();
+                OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapStartDelayMinimumMsChanged;
+
+        public int OppositeTapStartDelayMaximumMs
+        {
+            get => action.ReleaseBrake.OppositeTapStartDelayMaximumMs;
+            set
+            {
+                if (action.ReleaseBrake.OppositeTapStartDelayMaximumMs == value) return;
+                action.ReleaseBrake.OppositeTapStartDelayMaximumMs = value;
+                action.ReleaseBrake.NormalizeRanges();
+                OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapStartDelayMaximumMsChanged;
 
         public int BrakeMinimumHoldMs
         {
@@ -383,19 +468,47 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler HighlightOuterRingRangeChoiceChanged;
 
-        public bool HighlightBrakeEnabled
+        public bool HighlightCounterMovementReleasePressEnabled
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED);
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
         }
-        public event EventHandler HighlightBrakeEnabledChanged;
+        public event EventHandler HighlightCounterMovementReleasePressEnabledChanged;
 
-        public bool HighlightBrakeDurationMs
+        public bool HighlightTapLengthPreset
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS);
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
         }
-        public event EventHandler HighlightBrakeDurationMsChanged;
+        public event EventHandler HighlightTapLengthPresetChanged;
+
+        public bool HighlightOppositeTapLengthMinimumMs
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+        }
+        public event EventHandler HighlightOppositeTapLengthMinimumMsChanged;
+
+        public bool HighlightOppositeTapLengthMaximumMs
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+        }
+        public event EventHandler HighlightOppositeTapLengthMaximumMsChanged;
+
+        public bool HighlightOppositeTapStartDelayMinimumMs
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+        }
+        public event EventHandler HighlightOppositeTapStartDelayMinimumMsChanged;
+
+        public bool HighlightOppositeTapStartDelayMaximumMs
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
+        }
+        public event EventHandler HighlightOppositeTapStartDelayMaximumMsChanged;
 
         public bool HighlightBrakeMinimumHoldMs
         {
@@ -451,31 +564,55 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             SelectedPadModeIndexChanged += TouchpadActionPadPropViewModel_SelectedPadModeIndexChanged;
             OuterRingRangeChoiceChanged += TouchpadActionPadPropViewModel_OuterRingRangeChoiceChanged;
             ActionPresetChoiceChanged += TouchpadActionPadPropViewModel_ActionPresetChoiceChanged;
-            BrakeEnabledChanged += TouchpadActionPadPropViewModel_BrakeEnabledChanged;
-            BrakeDurationMsChanged += TouchpadActionPadPropViewModel_BrakeDurationMsChanged;
+            CounterMovementReleasePressEnabledChanged += TouchpadActionPadPropViewModel_CounterMovementReleasePressEnabledChanged;
+            TapLengthPresetChanged += TouchpadActionPadPropViewModel_TapLengthPresetChanged;
+            OppositeTapLengthMinimumMsChanged += TouchpadActionPadPropViewModel_OppositeTapLengthMinimumMsChanged;
+            OppositeTapLengthMaximumMsChanged += TouchpadActionPadPropViewModel_OppositeTapLengthMaximumMsChanged;
+            OppositeTapStartDelayMinimumMsChanged += TouchpadActionPadPropViewModel_OppositeTapStartDelayMinimumMsChanged;
+            OppositeTapStartDelayMaximumMsChanged += TouchpadActionPadPropViewModel_OppositeTapStartDelayMaximumMsChanged;
             BrakeMinimumHoldMsChanged += TouchpadActionPadPropViewModel_BrakeMinimumHoldMsChanged;
         }
 
-        private void TouchpadActionPadPropViewModel_BrakeEnabledChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterMovementReleasePressEnabledChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED))
-            {
-                action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED);
-            }
-
-            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.BRAKE_ENABLED);
-            HighlightBrakeEnabledChanged?.Invoke(this, EventArgs.Empty);
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
+            HighlightCounterMovementReleasePressEnabledChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_BrakeDurationMsChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_TapLengthPresetChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS))
-            {
-                action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS);
-            }
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            HighlightTapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+        }
 
-            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.BRAKE_DURATION_MS);
-            HighlightBrakeDurationMsChanged?.Invoke(this, EventArgs.Empty);
+        private void TouchpadActionPadPropViewModel_OppositeTapLengthMinimumMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            HighlightOppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadActionPadPropViewModel_OppositeTapLengthMaximumMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            HighlightOppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadActionPadPropViewModel_OppositeTapStartDelayMinimumMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+            HighlightOppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadActionPadPropViewModel_OppositeTapStartDelayMaximumMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
+            HighlightOppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadActionPadPropViewModel_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
