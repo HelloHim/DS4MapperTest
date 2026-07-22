@@ -18,7 +18,8 @@
         </Style>
 
         <DataTemplate x:Key="CounterMovementReleasePressSection">
-            <StackPanel>
+            <Border Style="{StaticResource JsmccSettingRowBorder}">
+                <StackPanel>
                 <TextBlock Text="Counter Movement Release Press" Style="{StaticResource JsmccLabelText}" FontWeight="Bold" Margin="0,0,0,2"/>
                 <TextBlock Text="When a digital stick direction is released, the mapper can generate a short press of the opposite direction."
                            Style="{StaticResource JsmccMutedText}"
@@ -28,7 +29,7 @@
                 <Border Style="{StaticResource ModeRowBorder}">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="260"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Enable Counter Movement Release Press" Style="{StaticResource JsmccLabelText}"/>
@@ -36,7 +37,8 @@
                     </Grid>
                 </Border>
 
-                <StackPanel IsEnabled="{Binding CounterMovementReleasePressEnabled}">
+                <StackPanel IsEnabled="{Binding CounterMovementReleasePressEnabled}"
+                            Visibility="{Binding CounterMovementReleasePressEnabled, Converter={StaticResource BoolToVis}}">
                     <Border Style="{StaticResource ModeRowBorder}">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -158,7 +160,8 @@
                         </StackPanel>
                     </Border>
                 </StackPanel>
-            </StackPanel>
+                </StackPanel>
+            </Border>
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type propvm:StickPadActionPropViewModel}">
