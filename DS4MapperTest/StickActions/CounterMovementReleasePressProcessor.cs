@@ -68,6 +68,11 @@ namespace DS4MapperTest.StickActions
 
         public const int CS2_TAP_LENGTH_MINIMUM_MS = 75;
         public const int CS2_TAP_LENGTH_MAXIMUM_MS = 120;
+        public const int CS2_FIXED_TAP_LENGTH_MS = 98;
+        public const int CS2_WAIT_VARIANCE_PERCENT = 23;
+
+        public const int MIN_WAIT_VARIANCE_PERCENT = 0;
+        public const int MAX_WAIT_VARIANCE_PERCENT = 100;
 
         private static readonly StickPadAction.DpadDirections[] CardinalComponents = new[]
         {
@@ -138,19 +143,69 @@ namespace DS4MapperTest.StickActions
             set => tapLengthPreset = value;
         }
 
-        private int oppositeTapLengthMinimumMs = CS2_TAP_LENGTH_MINIMUM_MS;
-        public int OppositeTapLengthMinimumMs
+        // All tap-length representation storage and computation (mode, Fixed, Percent,
+        // Minimum, Maximum, the percentage/best-fit maths and the CS2 constants) lives in
+        // this one shared object so it exists in exactly one place; TouchpadReleaseBrake
+        // composes the same type rather than duplicating any of it. See its class doc for
+        // why synchronisation is never done inside a raw property setter.
+        private readonly OppositeTapLengthTiming tapLengthTiming = new OppositeTapLengthTiming();
+
+        public OppositeTapLengthMode OppositeTapLengthMode
         {
-            get => oppositeTapLengthMinimumMs;
-            set => oppositeTapLengthMinimumMs = DigitalReleaseBrakePulse.ClampBrakeDurationMs(value);
+            get => tapLengthTiming.Mode;
+            set => tapLengthTiming.Mode = value;
         }
 
-        private int oppositeTapLengthMaximumMs = CS2_TAP_LENGTH_MAXIMUM_MS;
+        public int OppositeTapLengthMs
+        {
+            get => tapLengthTiming.FixedMs;
+            set => tapLengthTiming.FixedMs = value;
+        }
+
+        public int OppositeTapLengthVariancePercent
+        {
+            get => tapLengthTiming.VariancePercent;
+            set => tapLengthTiming.VariancePercent = value;
+        }
+
+        public int OppositeTapLengthMinimumMs
+        {
+            get => tapLengthTiming.MinimumMs;
+            set => tapLengthTiming.MinimumMs = value;
+        }
+
         public int OppositeTapLengthMaximumMs
         {
-            get => oppositeTapLengthMaximumMs;
-            set => oppositeTapLengthMaximumMs = DigitalReleaseBrakePulse.ClampBrakeDurationMs(value);
+            get => tapLengthTiming.MaximumMs;
+            set => tapLengthTiming.MaximumMs = value;
         }
+
+        /// <summary>
+        /// User-edit entry point for Fixed mode / Wait Variance Percentage mode. See
+        /// OppositeTapLengthTiming.ApplyFixedAndPercentage. Only ever called from a
+        /// ViewModel edit, CS2 preset application or profile migration - never from the
+        /// per-report runtime path.
+        /// </summary>
+        public void ApplyFixedAndPercentage(int fixedMs, int percent) => tapLengthTiming.ApplyFixedAndPercentage(fixedMs, percent);
+
+        /// <summary>
+        /// User-edit entry point for Minimum and Maximum mode. See
+        /// OppositeTapLengthTiming.ApplyMinimumAndMaximum. Only ever called from a
+        /// ViewModel edit or profile migration - never from the per-report runtime path.
+        /// </summary>
+        public void ApplyMinimumAndMaximum(int minimumMs, int maximumMs)
+        {
+            tapLengthTiming.ApplyMinimumAndMaximum(minimumMs, maximumMs);
+            NormalizeRanges();
+        }
+
+        /// <summary>
+        /// Returns the runtime effective Minimum/Maximum for the currently selected mode.
+        /// This is the single, central place mode-aware timing logic lives (per class doc):
+        /// the state machine below must only ever consult this, never branch on the mode
+        /// itself.
+        /// </summary>
+        public (int Minimum, int Maximum) GetEffectiveOppositeTapLengthRange() => tapLengthTiming.GetEffectiveRange();
 
         private int oppositeTapStartDelayMinimumMs = DEFAULT_START_DELAY_MINIMUM_MS;
         public int OppositeTapStartDelayMinimumMs
@@ -174,9 +229,9 @@ namespace DS4MapperTest.StickActions
         /// </summary>
         public void NormalizeRanges()
         {
-            if (oppositeTapLengthMinimumMs > oppositeTapLengthMaximumMs)
+            if (OppositeTapLengthMinimumMs > OppositeTapLengthMaximumMs)
             {
-                oppositeTapLengthMaximumMs = oppositeTapLengthMinimumMs;
+                OppositeTapLengthMaximumMs = OppositeTapLengthMinimumMs;
             }
 
             if (oppositeTapStartDelayMinimumMs > oppositeTapStartDelayMaximumMs)
@@ -186,9 +241,9 @@ namespace DS4MapperTest.StickActions
 
             // The start delay must never be able to sample longer than the tap-length window
             // can sample short, otherwise actualOppositeHoldMs could go negative.
-            if (oppositeTapStartDelayMaximumMs > oppositeTapLengthMinimumMs)
+            if (oppositeTapStartDelayMaximumMs > OppositeTapLengthMinimumMs)
             {
-                oppositeTapStartDelayMaximumMs = oppositeTapLengthMinimumMs;
+                oppositeTapStartDelayMaximumMs = OppositeTapLengthMinimumMs;
             }
 
             if (oppositeTapStartDelayMinimumMs > oppositeTapStartDelayMaximumMs)
@@ -198,13 +253,15 @@ namespace DS4MapperTest.StickActions
         }
 
         /// <summary>
-        /// Applies the CS2 preset (75-120ms tap length only; start delay and every other
-        /// setting are left untouched) and marks the preset as CS2.
+        /// Applies the CS2 preset (its 98ms/23% Fixed and Wait Variance Percentage values,
+        /// and their equivalent 75-120ms Minimum/Maximum; start delay and every other setting
+        /// are left untouched) and marks the preset as CS2. Does not change the selected
+        /// timing mode: which representation the preset actually drives at runtime depends on
+        /// whatever mode is already selected.
         /// </summary>
         public void ApplyCs2Preset()
         {
-            oppositeTapLengthMinimumMs = CS2_TAP_LENGTH_MINIMUM_MS;
-            oppositeTapLengthMaximumMs = CS2_TAP_LENGTH_MAXIMUM_MS;
+            tapLengthTiming.ApplyCs2Preset();
             tapLengthPreset = CounterMovementTapLengthPreset.CS2;
         }
 
@@ -213,9 +270,7 @@ namespace DS4MapperTest.StickActions
         /// preset's values, regardless of how they got there (the preset dropdown, a direct
         /// edit, migration, or a loaded profile).
         /// </summary>
-        public bool MatchesCs2Values =>
-            oppositeTapLengthMinimumMs == CS2_TAP_LENGTH_MINIMUM_MS &&
-            oppositeTapLengthMaximumMs == CS2_TAP_LENGTH_MAXIMUM_MS;
+        public bool MatchesCs2Values => tapLengthTiming.MatchesCs2Values;
 
         /// <summary>
         /// The preset that should actually be displayed, derived purely from the current
@@ -517,7 +572,18 @@ namespace DS4MapperTest.StickActions
             }
 
             NormalizeRanges();
-            selectedTotalTapWindowMs = randomProvider.NextInclusive(oppositeTapLengthMinimumMs, oppositeTapLengthMaximumMs);
+            if (OppositeTapLengthMode == OppositeTapLengthMode.Fixed)
+            {
+                // Fixed mode is deterministic: every qualifying activation uses exactly the
+                // fixed duration, so the random provider is never consulted for it at all.
+                selectedTotalTapWindowMs = OppositeTapLengthMs;
+            }
+            else
+            {
+                (int effectiveMinimumMs, int effectiveMaximumMs) = GetEffectiveOppositeTapLengthRange();
+                selectedTotalTapWindowMs = randomProvider.NextInclusive(effectiveMinimumMs, effectiveMaximumMs);
+            }
+
             selectedStartDelayMs = randomProvider.NextInclusive(oppositeTapStartDelayMinimumMs, oppositeTapStartDelayMaximumMs);
             // The start delay is included inside the selected tap-length window, not added
             // on top of it: the delay is subtracted from the total window to get the actual

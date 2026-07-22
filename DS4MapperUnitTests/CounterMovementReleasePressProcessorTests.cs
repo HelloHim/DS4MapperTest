@@ -273,6 +273,35 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void EnablingForTheFirstTime_AlwaysLandsOnWaitVariancePercentageAndCs2()
+        {
+            var (mapper, padAction) = LoadMapper();
+            StickPadActionPropViewModel vm = new StickPadActionPropViewModel(mapper, padAction);
+
+            // LoadMapper's fixture profile is legacy-format (BrakeEnabled/BrakeDurationMs), so
+            // it loads already enabled; disable it first so the assertion below exercises a
+            // genuine off-to-on transition rather than a same-value no-op.
+            vm.CounterMovementReleasePressEnabled = false;
+
+            // Perturb the mode and values away from the CS2/Wait Variance Percentage
+            // combination before enabling, to prove enabling forces both back regardless of
+            // whatever was previously configured.
+            vm.OppositeTapLengthMode = OppositeTapLengthMode.MinimumAndMaximum;
+            vm.OppositeTapLengthMinimumMs = 40;
+            vm.OppositeTapLengthMaximumMs = 60;
+
+            vm.CounterMovementReleasePressEnabled = true;
+
+            Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, vm.OppositeTapLengthMode,
+                "Enabling for the first time must always land on Wait Variance Percentage mode.");
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, vm.TapLengthPreset);
+            Assert.AreEqual(98, vm.OppositeTapLengthMs);
+            Assert.AreEqual(23, vm.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(75, vm.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(120, vm.OppositeTapLengthMaximumMs);
+        }
+
+        [TestMethod]
         [DataRow("Standard")]
         [DataRow("EightWay")]
         [DataRow("FourWayCardinal")]

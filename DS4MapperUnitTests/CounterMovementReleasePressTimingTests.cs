@@ -814,5 +814,154 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(70, child.CounterMovementReleasePress.OppositeTapLengthMaximumMs,
                 "Once explicitly overridden, the child must stop tracking the parent for that property.");
         }
+
+        [TestMethod]
+        public void InheritedAction_PicksUpParentModeAndFixedPercentValues()
+        {
+            StickPadAction parent = new StickPadAction();
+            parent.CounterMovementReleasePress.OppositeTapLengthMode = OppositeTapLengthMode.Fixed;
+            parent.CounterMovementReleasePress.ApplyFixedAndPercentage(90, 15);
+
+            StickPadAction child = new StickPadAction();
+            child.SoftCopyFromParent(parent);
+
+            Assert.AreEqual(OppositeTapLengthMode.Fixed, child.CounterMovementReleasePress.OppositeTapLengthMode);
+            Assert.AreEqual(90, child.CounterMovementReleasePress.OppositeTapLengthMs);
+            Assert.AreEqual(15, child.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+        }
+
+        // --- Section 20: three-generation profile migration --------------------------
+
+        [TestMethod]
+        public void CurrentGenerationProfile_WithExplicitRangeButNoModeField_MigratesToMinimumAndMaximumMode()
+        {
+            // LoadMapper's JSON already only ever writes OppositeTapLengthMinimumMs/MaximumMs
+            // (no oppositeTapLengthMode field), matching a profile saved by the pre-timing-mode
+            // range-only implementation.
+            var (_, padAction) = LoadMapper(tapLengthMin: 75, tapLengthMax: 120, startDelayMin: 0, startDelayMax: 20);
+
+            Assert.AreEqual(OppositeTapLengthMode.MinimumAndMaximum, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
+            Assert.AreEqual(75, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(120, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(98, padAction.CounterMovementReleasePress.OppositeTapLengthMs,
+                "The best-fit Fixed value must be derived from the already-loaded range.");
+            Assert.AreEqual(23, padAction.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+        }
+
+        [TestMethod]
+        public void CurrentGenerationProfile_MigrationPreservesExistingPresetWhenConsistent()
+        {
+            var (_, padAction) = LoadMapper(tapLengthMin: 75, tapLengthMax: 120, startDelayMin: 0, startDelayMax: 20, preset: "CS2");
+
+            Assert.AreEqual(OppositeTapLengthMode.MinimumAndMaximum, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, padAction.CounterMovementReleasePress.EffectiveTapLengthPreset);
+        }
+
+        [TestMethod]
+        public void LegacyProfile_MigratesToFixedModeWithZeroPercent()
+        {
+            var (_, padAction) = LoadLegacyMapper(enabled: true, brakeDurationMs: 90);
+
+            Assert.AreEqual(OppositeTapLengthMode.Fixed, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMs);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
+        }
+
+        [TestMethod]
+        public void NewProfile_WithNoCounterMovementFieldsAtAll_KeepsConstructedDefaults()
+        {
+            // Reuses the "no brake-related fields at all" JSON from
+            // MissingNewFields_LoadSafelyWithProcessorDefaults to confirm the mode default is
+            // also left untouched for a genuinely brand new profile.
+            string json = @"{
+  ""Name"": ""NoFieldsTest"",
+  ""Description"": ""NoFieldsTest"",
+  ""Creator"": ""test"",
+  ""CreationDate"": ""2026-07-22T00:00:00+0000"",
+  ""ActionSets"": [
+    {
+      ""Index"": 0,
+      ""Name"": ""Set 1"",
+      ""Description"": ""Only ActionSets"",
+      ""ActionLayers"": [
+        {
+          ""Index"": 0,
+          ""Name"": ""Default"",
+          ""Description"": ""Only Action Layer"",
+          ""MappedActions"": [
+            {
+              ""Id"": 0,
+              ""Name"": ""StickWASD"",
+              ""ActionMode"": ""StickPadAction"",
+              ""Bindings"": {
+                ""Up"": { ""Name"": ""Up"", ""Functions"": [ { ""Type"": ""NormalPress"", ""OutputActions"": [ { ""Type"": ""Keyboard"", ""Code"": ""W"" } ] } ] }
+              },
+              ""Settings"": { ""PadMode"": ""Standard"", ""DeadZone"": 0.3 }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  ""Mappings"": [
+    { ""ActionSet"": 0, ""ActionLayer"": 0, ""InputMappings"": [ { ""Input"": ""Stick"", ""Action"": 0 } ] }
+  ]
+}";
+
+            eventInputMapping = new SendInputMapping();
+            ProfileSerializer.EventInputMapper = eventInputMapping;
+            Profile tempProfile = new Profile();
+            mapper = new TestMapper(tempProfile);
+            typeof(Mapper).GetField("eventInputHandler", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(mapper, new NoOpVirtualKBM());
+            tempProfile.ActionSets.Clear();
+
+            ProfileSerializer profileSerializer = new ProfileSerializer(tempProfile);
+            JsonConvert.PopulateObject(json, profileSerializer);
+            profileSerializer.PopulateProfile();
+            tempProfile.ResetAliases();
+            FillMappingProfileInitialData(tempProfile, profileSerializer.ActionMappings);
+            SyncActionData(tempProfile);
+
+            StickPadAction padAction = tempProfile.ActionSets[0].ActionLayers[0].stickActionDict["Stick"] as StickPadAction;
+
+            Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
+            Assert.AreEqual(98, padAction.CounterMovementReleasePress.OppositeTapLengthMs);
+            Assert.AreEqual(23, padAction.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+        }
+
+        [TestMethod]
+        public void NewProfile_RoundTripsModeFixedAndPercentThroughSerialization()
+        {
+            StickPadAction actionToSave = new StickPadAction();
+            actionToSave.Id = 9;
+            actionToSave.CounterMovementReleasePress.Enabled = true;
+            actionToSave.CounterMovementReleasePress.OppositeTapLengthMode = OppositeTapLengthMode.Fixed;
+            actionToSave.CounterMovementReleasePress.ApplyFixedAndPercentage(64, 12);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+
+            string json = JsonConvert.SerializeObject(new StickPadActionSerializer(null, actionToSave));
+            JObject parsed = JObject.Parse(json);
+
+            Assert.AreEqual("Fixed", parsed["Settings"]?["OppositeTapLengthMode"]?.Value<string>());
+            Assert.AreEqual(64, parsed["Settings"]?["OppositeTapLengthMs"]?.Value<int>());
+            Assert.AreEqual(12, parsed["Settings"]?["OppositeTapLengthVariancePercent"]?.Value<int>());
+
+            StickPadActionSerializer reimport = new StickPadActionSerializer();
+            JsonConvert.PopulateObject(json, reimport);
+            reimport.PopulateMap();
+            StickPadAction reloaded = reimport.MapAction as StickPadAction;
+
+            Assert.AreEqual(OppositeTapLengthMode.Fixed, reloaded.CounterMovementReleasePress.OppositeTapLengthMode);
+            Assert.AreEqual(64, reloaded.CounterMovementReleasePress.OppositeTapLengthMs);
+            Assert.AreEqual(12, reloaded.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+        }
     }
 }

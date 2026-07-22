@@ -40,12 +40,36 @@
                 <StackPanel IsEnabled="{Binding CounterMovementReleasePressEnabled}"
                             Visibility="{Binding CounterMovementReleasePressEnabled, Converter={StaticResource BoolToVis}}">
                     <Border Style="{StaticResource ModeRowBorder}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="260"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Opposite Tap Length Mode" Style="{StaticResource JsmccLabelText}"/>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding TapLengthModeItems}"
+                                          DisplayMemberPath="DisplayName"
+                                          SelectedValuePath="ChoiceValue"
+                                          SelectedValue="{Binding OppositeTapLengthMode}"
+                                          Style="{StaticResource JsmccComboBoxStyle}"
+                                          HorizontalAlignment="Left"
+                                          MinWidth="220"/>
+                            </Grid>
+                            <TextBlock Text="{Binding OppositeTapLengthModeDescription}"
+                                       Style="{StaticResource JsmccMutedText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource ModeRowBorder}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="260"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Opposite Tap Length Variance Preset" Style="{StaticResource JsmccLabelText}"/>
+                            <TextBlock Grid.Column="0" Text="Opposite Tap Length Preset" Style="{StaticResource JsmccLabelText}"/>
                             <ComboBox Grid.Column="1"
                                       ItemsSource="{Binding TapLengthPresetItems}"
                                       DisplayMemberPath="DisplayName"
@@ -54,11 +78,68 @@
                                       Style="{StaticResource JsmccComboBoxStyle}"
                                       HorizontalAlignment="Left"
                                       MinWidth="150"
-                                      ToolTip="Custom uses the Opposite Tap Length Variance values below. CS2 sets the tap-length range to 75-120ms and leaves everything else, including the start delay, unchanged."/>
+                                      ToolTip="Custom uses the values below. CS2 sets the fixed duration to 98ms with 23% variance (equivalent to a 75-120ms range) and leaves everything else, including the start delay, unchanged."/>
                         </Grid>
                     </Border>
 
-                    <Border Style="{StaticResource ModeRowBorder}">
+                    <Border Style="{StaticResource ModeRowBorder}"
+                            Visibility="{Binding ShowFixedModeFields, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="260"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Opposite Tap Length" Style="{StaticResource JsmccLabelText}"/>
+                                <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
+                                                  Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Value="{Binding OppositeTapLengthMs, UpdateSourceTrigger=LostFocus}"/>
+                                <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock Text="Uses the same total duration for every qualifying release."
+                                       Style="{StaticResource JsmccMutedText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource ModeRowBorder}"
+                            Visibility="{Binding ShowWaitVariancePercentageModeFields, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="260"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Opposite Tap Length" Style="{StaticResource JsmccLabelText}"/>
+                                <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
+                                                  Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Value="{Binding OppositeTapLengthMs, UpdateSourceTrigger=LostFocus}"/>
+                                <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="260"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Wait Variance Percentage" Style="{StaticResource JsmccLabelText}"/>
+                                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="0" Increment="1"
+                                                  Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Value="{Binding OppositeTapLengthVariancePercent, UpdateSourceTrigger=LostFocus}"/>
+                                <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock Text="Sets the percentage range below and above the fixed tap length. Final boundaries are rounded down to whole milliseconds."
+                                       Style="{StaticResource JsmccMutedText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource ModeRowBorder}"
+                            Visibility="{Binding ShowMinimumAndMaximumModeFields, Converter={StaticResource BoolToVis}}">
                         <StackPanel>
                             <TextBlock Text="Opposite Tap Length Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
                             <Grid>
@@ -81,7 +162,7 @@
                                                   Value="{Binding OppositeTapLengthMaximumMs, UpdateSourceTrigger=LostFocus}"/>
                                 <TextBlock Grid.Column="5" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                             </Grid>
-                            <TextBlock Text="Sets the minimum and maximum total duration from the original-direction release until the generated opposite press ends. On each qualifying release, one value is picked at random from this range and used as the complete window for that release."
+                            <TextBlock Text="Selects a total duration at random from the specified inclusive range. On each qualifying release, one value is picked at random from this range and used as the complete window for that release."
                                        Style="{StaticResource JsmccMutedText}"
                                        TextWrapping="Wrap"
                                        Margin="0,4,0,0"/>
