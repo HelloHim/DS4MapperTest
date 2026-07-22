@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ViewModels.Common;
 using DS4MapperTest.ButtonActions;
 using DS4MapperTest.StickActions;
 using DS4MapperTest.StickModifiers;
 using DS4MapperTest.MapperUtil;
+using DS4MapperTest.ViewModels;
 
 namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 {
@@ -208,6 +211,12 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             }
         }
         public event EventHandler ActionPresetChoiceChanged;
+
+        private List<StickPadDirectionBindItem> cardinalDirectionItems;
+        public List<StickPadDirectionBindItem> CardinalDirectionItems => cardinalDirectionItems;
+
+        private List<StickPadDirectionBindItem> diagonalDirectionItems;
+        public List<StickPadDirectionBindItem> DiagonalDirectionItems => diagonalDirectionItems;
 
         public bool HighlightName
         {
@@ -502,6 +511,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             }
 
             PrepareModel();
+            PrepareDirectionItems();
 
             NameChanged += StickPadActionPropViewModel_NameChanged;
             DeadZoneChanged += StickPadActionPropViewModel_DeadZoneChanged;
@@ -694,6 +704,108 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             {
                 selectedPadModeIndex = index;
             }
+        }
+
+        private void PrepareDirectionItems()
+        {
+            cardinalDirectionItems = new List<StickPadDirectionBindItem>()
+            {
+                new StickPadDirectionBindItem(this, StickPadAction.DpadDirections.Up, "Up", "Cardinal zone"),
+                new StickPadDirectionBindItem(this, StickPadAction.DpadDirections.Down, "Down", "Cardinal zone"),
+                new StickPadDirectionBindItem(this, StickPadAction.DpadDirections.Left, "Left", "Cardinal zone"),
+                new StickPadDirectionBindItem(this, StickPadAction.DpadDirections.Right, "Right", "Cardinal zone"),
+            };
+
+            diagonalDirectionItems = new List<StickPadDirectionBindItem>()
+            {
+                new StickPadDirectionBindItem(this, StickPadAction.DpadDirections.UpLeft, "Up Left", "Diagonal zone"),
+                new StickPadDirectionBindItem(this, StickPadAction.DpadDirections.UpRight, "Up Right", "Diagonal zone"),
+                new StickPadDirectionBindItem(this, StickPadAction.DpadDirections.DownLeft, "Down Left", "Diagonal zone"),
+                new StickPadDirectionBindItem(this, StickPadAction.DpadDirections.DownRight, "Down Right", "Diagonal zone"),
+            };
+        }
+
+        internal ButtonAction GetDirectionAction(StickPadAction.DpadDirections direction)
+        {
+            return action.EventCodes4[(int)direction];
+        }
+
+        internal AxisDirButton EnsureEditableDirectionAction(StickPadAction.DpadDirections direction)
+        {
+            if (!usingRealAction)
+            {
+                ReplaceExistingLayerAction(this, EventArgs.Empty);
+            }
+
+            AxisDirButton dirAction = action.EventCodes4[(int)direction];
+            if (dirAction == null)
+            {
+                dirAction = new AxisDirButton(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                action.EventCodes4[(int)direction] = dirAction;
+            }
+
+            MarkDirectionChanged(direction, dirAction);
+            return dirAction;
+        }
+
+        internal void MarkDirectionChanged(StickPadAction.DpadDirections direction, ButtonAction dirAction)
+        {
+            string propertyName = GetDirectionPropertyName(direction);
+            if (!action.ChangedProperties.Contains(propertyName))
+            {
+                action.ChangedProperties.Add(propertyName);
+            }
+
+            action.UsingParentActionButton[(int)direction] = false;
+            action.RaiseNotifyPropertyChange(mapper, propertyName);
+            FaceButtonBindingItem.MarkFunctionsChanged(dirAction);
+        }
+
+        internal EditFaceBindingContext PrepareDirectionEdit(StickPadDirectionBindItem item)
+        {
+            AxisDirButton dirAction = EnsureEditableDirectionAction(item.Direction);
+            ActionFunc func = dirAction.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault();
+            if (func == null)
+            {
+                func = new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                mapper.ProcessMappingChangeAction(() =>
+                {
+                    dirAction.Release(mapper, ignoreReleaseActions: true);
+                    dirAction.ActionFuncs.Insert(0, func);
+                    MarkDirectionChanged(item.Direction, dirAction);
+                });
+            }
+
+            return new EditFaceBindingContext(mapper, dirAction, func);
+        }
+
+        internal void RefreshDirectionBindings()
+        {
+            foreach (StickPadDirectionBindItem item in cardinalDirectionItems)
+            {
+                item.Refresh();
+            }
+
+            foreach (StickPadDirectionBindItem item in diagonalDirectionItems)
+            {
+                item.Refresh();
+            }
+        }
+
+        private static string GetDirectionPropertyName(StickPadAction.DpadDirections direction)
+        {
+            return direction switch
+            {
+                StickPadAction.DpadDirections.Up => StickPadAction.PropertyKeyStrings.PAD_DIR_UP,
+                StickPadAction.DpadDirections.Down => StickPadAction.PropertyKeyStrings.PAD_DIR_DOWN,
+                StickPadAction.DpadDirections.Left => StickPadAction.PropertyKeyStrings.PAD_DIR_LEFT,
+                StickPadAction.DpadDirections.Right => StickPadAction.PropertyKeyStrings.PAD_DIR_RIGHT,
+                StickPadAction.DpadDirections.UpLeft => StickPadAction.PropertyKeyStrings.PAD_DIR_UPLEFT,
+                StickPadAction.DpadDirections.UpRight => StickPadAction.PropertyKeyStrings.PAD_DIR_UPRIGHT,
+                StickPadAction.DpadDirections.DownLeft => StickPadAction.PropertyKeyStrings.PAD_DIR_DOWNLEFT,
+                StickPadAction.DpadDirections.DownRight => StickPadAction.PropertyKeyStrings.PAD_DIR_DOWNRIGHT,
+                _ => StickPadAction.PropertyKeyStrings.PAD_DIR_UP,
+            };
         }
 
         public void UpdateUpDirAction(ButtonAction oldAction, ButtonAction newAction)
@@ -988,6 +1100,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             ActionDownBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
             ActionLeftBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
             ActionRightBtnDisplayBindChanged?.Invoke(this, EventArgs.Empty);
+            RefreshDirectionBindings();
         }
 
         protected void ExecuteInMapperThread(Action tempAction)
@@ -1002,6 +1115,59 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             });
 
             resetEvent.Wait();
+        }
+    }
+
+    public class StickPadDirectionBindItem : INotifyPropertyChanged, IQuickBindTarget
+    {
+        private readonly StickPadActionPropViewModel owner;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public StickPadAction.DpadDirections Direction { get; }
+        public string DisplayName { get; }
+        public string Subtitle { get; }
+
+        public string DisplayBind
+        {
+            get
+            {
+                ButtonAction action = owner.GetDirectionAction(Direction);
+                string result = action?.DescribeActions(((IQuickBindTarget)this).Mapper);
+                return string.IsNullOrWhiteSpace(result) ? "Unbound" : result;
+            }
+        }
+
+        public StickPadDirectionBindItem(StickPadActionPropViewModel owner,
+            StickPadAction.DpadDirections direction, string displayName, string subtitle)
+        {
+            this.owner = owner;
+            Direction = direction;
+            DisplayName = displayName;
+            Subtitle = subtitle;
+        }
+
+        Mapper IQuickBindTarget.Mapper => owner.Mapper;
+        string IQuickBindTarget.RowLabel => DisplayName;
+        string IQuickBindTarget.SlotLabel => "Regular Press";
+        bool IQuickBindTarget.IsComplexBinding =>
+            !QuickBindActionApplier.IsSimpleFunc(
+                owner.GetDirectionAction(Direction)?.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault());
+
+        EditFaceBindingContext IQuickBindTarget.GetEditContext()
+        {
+            return owner.PrepareDirectionEdit(this);
+        }
+
+        void IQuickBindTarget.NotifyBindingChanged()
+        {
+            owner.MarkDirectionChanged(Direction, owner.GetDirectionAction(Direction));
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayBind)));
         }
     }
 

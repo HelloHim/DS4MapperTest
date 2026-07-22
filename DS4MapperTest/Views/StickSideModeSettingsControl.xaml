@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:propvm="clr-namespace:DS4MapperTest.ViewModels.StickActionPropViewModels"
+             xmlns:views="clr-namespace:DS4MapperTest.Views"
              mc:Ignorable="d"
              d:DesignHeight="720"
              d:DesignWidth="860">
@@ -254,7 +255,7 @@
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Binding Preset" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBlock Grid.Column="0" Text="Binding Presets" Style="{StaticResource JsmccLabelText}"/>
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding ActionPresetChoicesItems}"
                                   DisplayMemberPath="DisplayName"
@@ -266,10 +267,90 @@
                     </Grid>
                 </Border>
 
-                <TextBlock Text="Direction bindings are configured on the Bindings page."
-                           Style="{StaticResource JsmccMutedText}"
-                           TextWrapping="Wrap"
-                           Margin="0,4,0,0"/>
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                            <TextBlock Text="Directional Binds"
+                                       Style="{StaticResource JsmccLabelText}"/>
+                            <TextBlock Text="Quick bind"
+                                       Style="{StaticResource JsmccMutedText}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <ItemsControl ItemsSource="{Binding CardinalDirectionItems}"
+                                          Visibility="{Binding ShowCardinalPad, Converter={StaticResource BoolToVis}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource ModeRowBorder}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               Style="{StaticResource JsmccLabelText}"/>
+                                                    <TextBlock Text="{Binding Subtitle}"
+                                                               Style="{StaticResource JsmccMutedText}"
+                                                               Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <views:QuickBindControl Grid.Column="1"/>
+                                                <ContentControl x:Name="InlineEditorHost"
+                                                                Grid.Row="1"
+                                                                Grid.Column="0"
+                                                                Grid.ColumnSpan="3"
+                                                                Visibility="Collapsed"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <ItemsControl ItemsSource="{Binding DiagonalDirectionItems}"
+                                          Visibility="{Binding ShowDiagonalPad, Converter={StaticResource BoolToVis}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource ModeRowBorder}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               Style="{StaticResource JsmccLabelText}"/>
+                                                    <TextBlock Text="{Binding Subtitle}"
+                                                               Style="{StaticResource JsmccMutedText}"
+                                                               Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <views:QuickBindControl Grid.Column="1"/>
+                                                <ContentControl x:Name="InlineEditorHost"
+                                                                Grid.Row="1"
+                                                                Grid.Column="0"
+                                                                Grid.ColumnSpan="3"
+                                                                Visibility="Collapsed"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
+                </Border>
             </StackPanel>
         </DataTemplate>
 
@@ -618,7 +699,7 @@
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Binding Preset" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBlock Grid.Column="0" Text="Binding Presets" Style="{StaticResource JsmccLabelText}"/>
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding ActionPresetChoicesItems}"
                                   DisplayMemberPath="DisplayName"
@@ -627,6 +708,56 @@
                                   Style="{StaticResource JsmccComboBoxStyle}"
                                   HorizontalAlignment="Left"
                                   MinWidth="150"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                            <TextBlock Text="Directional Binds"
+                                       Style="{StaticResource JsmccLabelText}"/>
+                            <TextBlock Text="Quick bind"
+                                       Style="{StaticResource JsmccMutedText}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <ItemsControl ItemsSource="{Binding CardinalDirectionItems}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource ModeRowBorder}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               Style="{StaticResource JsmccLabelText}"/>
+                                                    <TextBlock Text="{Binding Subtitle}"
+                                                               Style="{StaticResource JsmccMutedText}"
+                                                               Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <views:QuickBindControl Grid.Column="1"/>
+                                                <ContentControl x:Name="InlineEditorHost"
+                                                                Grid.Row="1"
+                                                                Grid.Column="0"
+                                                                Grid.ColumnSpan="3"
+                                                                Visibility="Collapsed"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
@@ -744,11 +875,6 @@
                                TextWrapping="Wrap"
                                Margin="0,0,0,4"/>
                 </StackPanel>
-
-                <TextBlock Text="Direction bindings are configured on the Stick Keybinds page."
-                           Style="{StaticResource JsmccMutedText}"
-                           TextWrapping="Wrap"
-                           Margin="0,4,0,0"/>
             </StackPanel>
         </DataTemplate>
     </UserControl.Resources>
