@@ -45,7 +45,6 @@ namespace DS4MapperTest.ActionUtil
         // checking the specific ActionFunc class type. Flag should be set in
         // subclass ctor
         public bool analog;
-        public bool onRelease;
         public bool onDistance;
         public bool onChorded;
 

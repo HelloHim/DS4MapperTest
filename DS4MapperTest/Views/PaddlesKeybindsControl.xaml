@@ -9,7 +9,7 @@
              d:DesignWidth="860">
     <views:SharedButtonKeybindsControl
         SectionTitle="Paddles"
-        Description="Regular Press maps to Normal Press. Add Hold, Double, Distance, Start, or Release bindings per rear input."
+        Description="Regular Press maps to Normal Press. Add Hold, Double, Distance, or Start bindings per rear input."
         EmptyText="No paddle, rear button, or grip bindings were found for the current controller."
         CardSubtitle="Rear input"
         ItemsSource="{Binding PaddleButtonBindings}"/>

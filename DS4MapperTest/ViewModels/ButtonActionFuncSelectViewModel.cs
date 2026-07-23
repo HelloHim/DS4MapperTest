@@ -44,14 +44,11 @@ namespace DS4MapperTest.ViewModels
                 case StartPressFunc:
                     selectedIndex = 3;
                     break;
-                case ReleaseFunc:
+                case DistanceFunc:
                     selectedIndex = 4;
                     break;
-                case DistanceFunc:
-                    selectedIndex = 5;
-                    break;
                 case ChordedPressFunc:
-                    selectedIndex = 6;
+                    selectedIndex = 5;
                     break;
                 default:
                     break;

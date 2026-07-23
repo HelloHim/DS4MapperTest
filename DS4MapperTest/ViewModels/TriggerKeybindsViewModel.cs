@@ -79,13 +79,11 @@ namespace DS4MapperTest.ViewModels
         public bool HasDistancePress => HasFunc<DistanceFunc>();
         public bool HasChordedPress => HasFunc<ChordedPressFunc>();
         public bool HasStartPress => HasFunc<StartPressFunc>();
-        public bool HasReleasePress => HasFunc<ReleaseFunc>();
         public bool CanAddHoldPress => IsButtonMode && !HasHoldPress;
         public bool CanAddDoublePress => IsButtonMode && !HasDoublePress;
         public bool CanAddDistancePress => IsButtonMode && !HasDistancePress;
         public bool CanAddChordedPress => IsButtonMode && !HasChordedPress;
         public bool CanAddStartPress => IsButtonMode && !HasStartPress;
-        public bool CanAddReleasePress => IsButtonMode && !HasReleasePress;
 
         public TriggerBindingMode CurrentMode
         {
@@ -399,7 +397,6 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Distance => buttonAction.ActionFuncs.OfType<DistanceFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Chorded => buttonAction.ActionFuncs.OfType<ChordedPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Start => buttonAction.ActionFuncs.OfType<StartPressFunc>().FirstOrDefault(),
-                FaceBindingFuncKind.Release => buttonAction.ActionFuncs.OfType<ReleaseFunc>().FirstOrDefault(),
                 _ => null,
             };
         }
@@ -450,9 +447,6 @@ namespace DS4MapperTest.ViewModels
                             break;
                         case StartPressFunc:
                             functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Start, func));
-                            break;
-                        case ReleaseFunc:
-                            functionItems.Add(new TriggerButtonFuncItem(this, FaceBindingFuncKind.Release, func));
                             break;
                     }
                 }
@@ -558,7 +552,6 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Distance => HasDistancePress,
                 FaceBindingFuncKind.Chorded => HasChordedPress,
                 FaceBindingFuncKind.Start => HasStartPress,
-                FaceBindingFuncKind.Release => HasReleasePress,
                 _ => false,
             };
         }
@@ -584,7 +577,6 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Distance => CreateOutputFunc(new DistanceFunc(), emptyOutput),
                 FaceBindingFuncKind.Chorded => CreateOutputFunc(new ChordedPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
-                FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
                 _ => null,
             };
         }
@@ -640,13 +632,11 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(HasDistancePress));
             OnPropertyChanged(nameof(HasChordedPress));
             OnPropertyChanged(nameof(HasStartPress));
-            OnPropertyChanged(nameof(HasReleasePress));
             OnPropertyChanged(nameof(CanAddHoldPress));
             OnPropertyChanged(nameof(CanAddDoublePress));
             OnPropertyChanged(nameof(CanAddDistancePress));
             OnPropertyChanged(nameof(CanAddChordedPress));
             OnPropertyChanged(nameof(CanAddStartPress));
-            OnPropertyChanged(nameof(CanAddReleasePress));
         }
 
         private void OnPropertyChanged(string propertyName)
@@ -772,12 +762,11 @@ namespace DS4MapperTest.ViewModels
         public bool IsExtraBinding => Kind != FaceBindingFuncKind.Regular && func != null;
         public bool CanRemove => IsExtraBinding;
         public bool IsTurboEnabled => SupportsTurbo && TurboEnabled;
-        public bool SupportsToggle => func is NormalPressFunc || func is HoldPressFunc || func is DoublePressFunc || func is StartPressFunc || func is ReleaseFunc;
+        public bool SupportsToggle => func is NormalPressFunc || func is HoldPressFunc || func is DoublePressFunc || func is StartPressFunc;
         public bool SupportsTurbo => func is NormalPressFunc || func is HoldPressFunc;
         public bool SupportsFireDelay => func is NormalPressFunc;
         public bool SupportsHoldTime => func is HoldPressFunc;
         public bool SupportsTapWindow => func is DoublePressFunc;
-        public bool SupportsReleaseOptions => func is ReleaseFunc;
         public bool SupportsDistanceOptions => func is DistanceFunc;
         public bool SupportsChordOptions => func is ChordedPressFunc;
 
@@ -789,7 +778,6 @@ namespace DS4MapperTest.ViewModels
             FaceBindingFuncKind.Distance => "Distance",
             FaceBindingFuncKind.Chorded => "Chorded Press",
             FaceBindingFuncKind.Start => "Start Press",
-            FaceBindingFuncKind.Release => "Release Press",
             _ => "Binding",
         };
 
@@ -937,60 +925,6 @@ namespace DS4MapperTest.ViewModels
                     MarkButtonChanged();
                 });
                 OnPropertyChanged(nameof(TapWindowMs));
-            }
-        }
-
-        public string ReleaseDurationMs
-        {
-            get => func is ReleaseFunc releaseFunc ? releaseFunc.DurationMs.ToString() : "0";
-            set
-            {
-                TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
-                if ((owner.FindButtonFunc(Kind) ?? func) is not ReleaseFunc releaseFunc ||
-                    !int.TryParse(value, out int temp)) return;
-                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
-                {
-                    triggerAction?.EventButton.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
-                    releaseFunc.DurationMs = temp;
-                    MarkButtonChanged();
-                });
-                OnPropertyChanged(nameof(ReleaseDurationMs));
-            }
-        }
-
-        public string ReleaseDelayMs
-        {
-            get => func is ReleaseFunc releaseFunc ? releaseFunc.DelayDurationMs.ToString() : "0";
-            set
-            {
-                TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
-                if ((owner.FindButtonFunc(Kind) ?? func) is not ReleaseFunc releaseFunc ||
-                    !int.TryParse(value, out int temp)) return;
-                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
-                {
-                    triggerAction?.EventButton.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
-                    releaseFunc.DelayDurationMs = temp;
-                    MarkButtonChanged();
-                });
-                OnPropertyChanged(nameof(ReleaseDelayMs));
-            }
-        }
-
-        public bool ReleaseInterruptable
-        {
-            get => func is ReleaseFunc releaseFunc && releaseFunc.interruptable;
-            set
-            {
-                TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
-                if ((owner.FindButtonFunc(Kind) ?? func) is not ReleaseFunc releaseFunc ||
-                    releaseFunc.interruptable == value) return;
-                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
-                {
-                    triggerAction?.EventButton.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
-                    releaseFunc.interruptable = value;
-                    MarkButtonChanged();
-                });
-                OnPropertyChanged(nameof(ReleaseInterruptable));
             }
         }
 

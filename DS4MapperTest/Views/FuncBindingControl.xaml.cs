@@ -145,16 +145,6 @@ namespace DS4MapperTest.Views
                     }
 
                     break;
-                case ReleaseFunc releaseFunc:
-                    {
-                        ReleaseFuncPropControl propControl = new ReleaseFuncPropControl();
-                        propControl.PostInit(funcBindVM.Mapper, funcBindVM.Action, releaseFunc);
-                        propControl.RequestBindingEditor += PropControl_RequestBindingEditor;
-                        propControl.RequestChangeFuncType += PropControl_RequestChangeFuncType;
-                        funcBindVM.DisplayPropControl = propControl;
-                    }
-
-                    break;
                 case StartPressFunc startFunc:
                     {
                         StartPressFuncPropControl propControl = new StartPressFuncPropControl();

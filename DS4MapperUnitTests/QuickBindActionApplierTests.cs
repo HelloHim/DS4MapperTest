@@ -154,7 +154,7 @@ namespace DS4MapperUnitTests
         {
             ButtonActionFuncSelectViewModel vm = new ButtonActionFuncSelectViewModel(new ChordedPressFunc());
 
-            Assert.AreEqual(6, vm.SelectedIndex);
+            Assert.AreEqual(5, vm.SelectedIndex);
         }
 
         [TestMethod]
@@ -166,7 +166,7 @@ namespace DS4MapperUnitTests
                 new OutputActionData(OutputActionData.ActionType.Empty, 0)));
             FuncBindingControlViewModel vm = new FuncBindingControlViewModel(mapper, action, null);
 
-            vm.ChangeFunc(0, 6);
+            vm.ChangeFunc(0, 5);
 
             Assert.IsInstanceOfType(action.ActionFuncs[0], typeof(ChordedPressFunc));
             Assert.AreEqual(1, action.ActionFuncs[0].OutputActions.Count);
@@ -207,6 +207,24 @@ namespace DS4MapperUnitTests
             Assert.IsTrue(json.Contains("\"Trigger\":\"BtnSouth\""));
             Assert.AreEqual(JoypadActionCodes.BtnSouth, loaded.ChorededPressFunc.TriggerButton);
             Assert.AreEqual((int)VirtualKeys.C, loaded.ChorededPressFunc.OutputActions.Single().OutputCode);
+        }
+
+        [TestMethod]
+        public void LegacyReleaseProfileEntry_LoadsAsInertPlaceholderWithoutCrashing()
+        {
+            string json = "{\"Type\":\"Release\",\"OutputActions\":[{\"Type\":\"Keyboard\",\"Code\":\"A\"}]," +
+                "\"Settings\":{\"Duration\":250,\"Interruptable\":true,\"DelayDuration\":150}}";
+
+            ActionFuncSerializer loaded = JsonConvert.DeserializeObject<ActionFuncSerializer>(json);
+            loaded.PopulateFunc();
+
+            Assert.IsInstanceOfType(loaded, typeof(LegacyReleaseFuncPlaceholderSerializer));
+            Assert.IsInstanceOfType(loaded.ActionFunc, typeof(LegacyReleaseFuncPlaceholder));
+
+            Mapper mapper = new QuickBindTestMapper();
+            loaded.ActionFunc.Prepare(mapper, true, new ActionFuncStateData());
+            loaded.ActionFunc.Event(mapper, new ActionFuncStateData());
+            loaded.ActionFunc.Release(mapper);
         }
 
         [TestMethod]
@@ -292,16 +310,16 @@ namespace DS4MapperUnitTests
             ButtonAction action = new ButtonAction();
             NormalPressFunc normalFunc = new NormalPressFunc(
                 new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.W));
-            ReleaseFunc releaseFunc = new ReleaseFunc();
-            releaseFunc.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.S));
+            HoldPressFunc holdFunc = new HoldPressFunc();
+            holdFunc.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.S));
             action.ActionFuncs.Add(normalFunc);
-            action.ActionFuncs.Add(releaseFunc);
+            action.ActionFuncs.Add(holdFunc);
 
             EditFaceBindingContext ctx = new EditFaceBindingContext(mapper, action, normalFunc);
             QuickBindActionApplier.ApplyKeyboard(ctx, VirtualKeys.E, "E");
 
             Assert.AreEqual((int)VirtualKeys.E, normalFunc.OutputActions.Single().OutputCode);
-            Assert.AreEqual((int)VirtualKeys.S, releaseFunc.OutputActions.Single().OutputCode);
+            Assert.AreEqual((int)VirtualKeys.S, holdFunc.OutputActions.Single().OutputCode);
         }
     }
 }
