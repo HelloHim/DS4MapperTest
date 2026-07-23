@@ -19,7 +19,7 @@
     <StackPanel>
         <StackPanel Margin="0,0,0,6">
             <TextBlock Text="Bumpers" Style="{StaticResource JsmccSectionTitle}"/>
-            <TextBlock Text="Regular Press maps to Normal Press. Add Hold, Double, Distance, Start, or Release bindings per bumper."
+            <TextBlock Text="Regular Press maps to Normal Press. Add Hold, Double, Distance, or Start bindings per bumper."
                        Style="{StaticResource JsmccBodyText}"
                        TextWrapping="Wrap"
                        Margin="0,4,0,0"/>
@@ -80,10 +80,6 @@
                                             <MenuItem Header="Start Press"
                                                       Tag="Start"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                      Click="AddExtraBindingMenuItem_Click"/>
-                                            <MenuItem Header="Release Press"
-                                                      Tag="Release"
-                                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click"/>
                                         </ContextMenu>
                                     </Button.ContextMenu>
@@ -310,58 +306,6 @@
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
-                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
-                                                            BorderThickness="1"
-                                                            CornerRadius="4"
-                                                            Padding="6,4"
-                                                            Margin="0,0,8,4"
-                                                            Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Min Duration" Style="{StaticResource BumperControlLabel}"/>
-                                                            <TextBox Text="{Binding ReleaseDurationMs, UpdateSourceTrigger=PropertyChanged}"
-                                                                     Width="72"
-                                                                     Style="{StaticResource JsmccTextBoxStyle}"/>
-                                                            <TextBlock Text="ms"
-                                                                       Style="{StaticResource JsmccMutedText}"
-                                                                       Margin="6,0,0,0"
-                                                                       VerticalAlignment="Center"/>
-                                                        </StackPanel>
-                                                    </Border>
-
-                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
-                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
-                                                            BorderThickness="1"
-                                                            CornerRadius="4"
-                                                            Padding="6,4"
-                                                            Margin="0,0,8,4"
-                                                            Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="End Delay" Style="{StaticResource BumperControlLabel}"/>
-                                                            <TextBox Text="{Binding ReleaseDelayMs, UpdateSourceTrigger=PropertyChanged}"
-                                                                     Width="72"
-                                                                     Style="{StaticResource JsmccTextBoxStyle}"/>
-                                                            <TextBlock Text="ms"
-                                                                       Style="{StaticResource JsmccMutedText}"
-                                                                       Margin="6,0,0,0"
-                                                                       VerticalAlignment="Center"/>
-                                                        </StackPanel>
-                                                    </Border>
-
-                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
-                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
-                                                            BorderThickness="1"
-                                                            CornerRadius="4"
-                                                            Padding="6,4"
-                                                            Margin="0,0,8,4"
-                                                            Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Interruptible" Style="{StaticResource BumperControlLabel}"/>
-                                                            <CheckBox IsChecked="{Binding ReleaseInterruptable}"
-                                                                      Style="{StaticResource JsmccToggleStyle}"
-                                                                      VerticalAlignment="Center"/>
-                                                        </StackPanel>
-                                                    </Border>
                                                 </WrapPanel>
 
                                                 <ContentControl x:Name="InlineEditorHost"

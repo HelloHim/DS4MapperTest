@@ -14,7 +14,6 @@
                 <ComboBoxItem>Normal Press</ComboBoxItem>
                 <ComboBoxItem>Hold Press</ComboBoxItem>
                 <ComboBoxItem>Start Press</ComboBoxItem>
-                <ComboBoxItem>Release Press</ComboBoxItem>
                 <ComboBoxItem>Distance</ComboBoxItem>
                 <ComboBoxItem>Chorded Press</ComboBoxItem>
             </ComboBox>

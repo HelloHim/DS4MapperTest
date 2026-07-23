@@ -195,14 +195,10 @@ namespace DS4MapperTest.ViewModels
                     result.OutputActions.Add(tempData);
                     break;
                 case 4:
-                    result = new ReleaseFunc();
-                    result.OutputActions.Add(tempData);
-                    break;
-                case 5:
                     result = new DistanceFunc();
                     result.OutputActions.Add(tempData);
                     break;
-                case 6:
+                case 5:
                     result = new ChordedPressFunc();
                     result.OutputActions.Add(tempData);
                     break;
@@ -371,8 +367,8 @@ namespace DS4MapperTest.ViewModels
                     case StartPressFunc:
                         result = "StartPress";
                         break;
-                    case ReleaseFunc:
-                        result = "Release";
+                    case LegacyReleaseFuncPlaceholder:
+                        result = "Release (removed)";
                         break;
                     case DistanceFunc:
                         result = "Distance";
