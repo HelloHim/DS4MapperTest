@@ -37,6 +37,8 @@ namespace DS4MapperTest.ViewModels
         private List<GamepadCodeItem> gamepadComboItems;
         public List<GamepadCodeItem> GamepadComboItems => gamepadComboItems;
 
+        public bool OutputControllerDisabled => !mapper.ActionProfile.OutputGamepadSettings.Enabled;
+
         private List<KeyboardCodeItem> keyboardComboItems;
         public List<KeyboardCodeItem> KeyboardComboItems => keyboardComboItems;
 
@@ -698,8 +700,26 @@ namespace DS4MapperTest.ViewModels
             });
 
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
+            mapper.ActionProfile.OutputGamepadSettings.OutputGamepadChanged += OutputGamepadSettings_OutputGamepadChanged;
 
             SetupEvents();
+        }
+
+        private void OutputGamepadSettings_OutputGamepadChanged(object sender, EventArgs e)
+        {
+            RefreshGamepadLabels();
+        }
+
+        private void RefreshGamepadLabels()
+        {
+            bool useDualShock4Labels = UsingDualShock4Output;
+            foreach (var def in gamepadButtonDefs)
+            {
+                if (gamepadIndexAliases.TryGetValue(def.Code, out int index))
+                {
+                    gamepadComboItems[index].DisplayName = useDualShock4Labels ? def.DualShock4Label : def.XboxLabel;
+                }
+            }
         }
 
         private void ButtonActionEditViewModel_SelectedSlotItemIndexChanged(object sender, EventArgs e)
@@ -1414,34 +1434,53 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        // Button name shown per output controller type. DPad and stick axes read the
+        // same on both pads, so only the face/shoulder/special buttons need two labels.
+        private static readonly (JoypadActionCodes Code, string XboxLabel, string DualShock4Label)[] gamepadButtonDefs =
+            new (JoypadActionCodes, string, string)[]
+            {
+                (JoypadActionCodes.X360_A, "A", "Cross"),
+                (JoypadActionCodes.X360_B, "B", "Circle"),
+                (JoypadActionCodes.X360_X, "X", "Square"),
+                (JoypadActionCodes.X360_Y, "Y", "Triangle"),
+                (JoypadActionCodes.X360_LB, "LB", "L1"),
+                (JoypadActionCodes.X360_RB, "RB", "R1"),
+                (JoypadActionCodes.X360_LT, "LT", "L2"),
+                (JoypadActionCodes.X360_RT, "RT", "R2"),
+                (JoypadActionCodes.X360_Guide, "Guide", "PS"),
+                (JoypadActionCodes.X360_Back, "Back", "Share"),
+                (JoypadActionCodes.X360_Start, "Start", "Options"),
+                (JoypadActionCodes.X360_ThumbL, "LStick Click", "L3"),
+                (JoypadActionCodes.X360_ThumbR, "RStick Click", "R3"),
+                (JoypadActionCodes.X360_DPAD_UP, "DPad Up", "DPad Up"),
+                (JoypadActionCodes.X360_DPAD_DOWN, "DPad Down", "DPad Down"),
+                (JoypadActionCodes.X360_DPAD_LEFT, "DPad Left", "DPad Left"),
+                (JoypadActionCodes.X360_DPAD_RIGHT, "DPad Right", "DPad Right"),
+            };
+
+        private bool UsingDualShock4Output =>
+            mapper.ActionProfile.OutputGamepadSettings.OutputGamepad == Mapper.OutputContType.DualShock4;
+
         public void PopulateComboBoxAliases()
         {
             int tempInd = 0;
 
-            //if (mapper.ActionProfile.OutputGamepadSettings.outputGamepad == EmulatedControllerSettings.OutputControllerType.Xbox360)
             {
+                bool useDualShock4Labels = UsingDualShock4Output;
+
                 tempInd = 0;
+                gamepadComboItems.Add(new GamepadCodeItem("Unbound", JoypadActionCodes.Empty, tempInd++));
+                foreach (var def in gamepadButtonDefs)
+                {
+                    string label = useDualShock4Labels ? def.DualShock4Label : def.XboxLabel;
+                    gamepadComboItems.Add(new GamepadCodeItem(label, def.Code, tempInd++));
+                }
+                // Real hardware feature, only present on DS4/DualSense pads, so it keeps
+                // its DS4 prefix and appears the same regardless of output controller type.
+                gamepadComboItems.Add(new GamepadCodeItem("DS4_Touchpad_Click", JoypadActionCodes.CenterPadClick, tempInd++));
+
                 gamepadComboItems.AddRange(new GamepadCodeItem[]
                 {
-                    new GamepadCodeItem("Unbound", JoypadActionCodes.Empty, tempInd++),
-                    new GamepadCodeItem("X360_A", JoypadActionCodes.X360_A, tempInd++),
-                    new GamepadCodeItem("X360_B", JoypadActionCodes.X360_B, tempInd++),
-                    new GamepadCodeItem("X360_X", JoypadActionCodes.X360_X, tempInd++),
-                    new GamepadCodeItem("X360_Y", JoypadActionCodes.X360_Y, tempInd++),
-                    new GamepadCodeItem("X360_LB", JoypadActionCodes.X360_LB, tempInd++),
-                    new GamepadCodeItem("X360_RB", JoypadActionCodes.X360_RB, tempInd++),
-                    new GamepadCodeItem("X360_LT", JoypadActionCodes.X360_LT, tempInd++),
-                    new GamepadCodeItem("X360_RT", JoypadActionCodes.X360_RT, tempInd++),
-                    new GamepadCodeItem("X360_Guide", JoypadActionCodes.X360_Guide, tempInd++),
-                    new GamepadCodeItem("X360_Back", JoypadActionCodes.X360_Back, tempInd++),
-                    new GamepadCodeItem("X360_Start", JoypadActionCodes.X360_Start, tempInd++),
-                    new GamepadCodeItem("X360_ThumbL", JoypadActionCodes.X360_ThumbL, tempInd++),
-                    new GamepadCodeItem("X360_ThumbR", JoypadActionCodes.X360_ThumbR, tempInd++),
-                    new GamepadCodeItem("X360_DPad_Up", JoypadActionCodes.X360_DPAD_UP, tempInd++),
-                    new GamepadCodeItem("X360_DPad_Down", JoypadActionCodes.X360_DPAD_DOWN, tempInd++),
-                    new GamepadCodeItem("X360_DPad_Left", JoypadActionCodes.X360_DPAD_LEFT, tempInd++),
-                    new GamepadCodeItem("X360_DPad_Right", JoypadActionCodes.X360_DPAD_RIGHT, tempInd++),
-                    new GamepadCodeItem("DS4_Touchpad_Click", JoypadActionCodes.CenterPadClick, tempInd++),
                     new GamepadCodeItem("LS Up", JoypadActionCodes.AxisLYNeg, tempInd++),
                     new GamepadCodeItem("LS Down", JoypadActionCodes.AxisLYPos, tempInd++),
                     new GamepadCodeItem("LS Left", JoypadActionCodes.AxisLXNeg, tempInd++),
@@ -1820,10 +1859,21 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
-    public class GamepadCodeItem
+    public class GamepadCodeItem : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
         private string displayName;
-        public string DisplayName => displayName;
+        public string DisplayName
+        {
+            get => displayName;
+            set
+            {
+                if (displayName == value) return;
+                displayName = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayName)));
+            }
+        }
 
         private JoypadActionCodes code;
         public JoypadActionCodes Code => code;

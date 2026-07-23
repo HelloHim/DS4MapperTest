@@ -67,13 +67,20 @@
         <TabControl Style="{StaticResource JsmccPillTabControlStyle}"
                     SelectionChanged="OutputTypeTabControl_SelectionChanged">
             <TabItem Header="Gamepad">
-                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                    <TextBlock Text="Output" Style="{StaticResource EditorFieldLabel}"/>
-                    <ComboBox ItemsSource="{Binding GamepadComboItems}"
-                              SelectedIndex="{Binding SelectedIndex, FallbackValue='0'}"
-                              DisplayMemberPath="DisplayName"
-                              MinWidth="180"
-                              Style="{StaticResource JsmccComboBoxStyle}"/>
+                <StackPanel Margin="0,10,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Output" Style="{StaticResource EditorFieldLabel}"/>
+                        <ComboBox ItemsSource="{Binding GamepadComboItems}"
+                                  SelectedIndex="{Binding SelectedIndex, FallbackValue='0'}"
+                                  DisplayMemberPath="DisplayName"
+                                  MinWidth="180"
+                                  Style="{StaticResource JsmccComboBoxStyle}"/>
+                    </StackPanel>
+                    <TextBlock Text="Output Controller is off in Settings, so this bind won't work until it's switched on."
+                               Foreground="{DynamicResource JsmccDangerTextBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,6,0,0"
+                               Visibility="{Binding OutputControllerDisabled, Converter={StaticResource BoolToVis}}"/>
                 </StackPanel>
             </TabItem>
 

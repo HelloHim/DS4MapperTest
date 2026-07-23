@@ -181,8 +181,15 @@ namespace DS4MapperTest
         public OutputContType OutputGamepad
         {
             get => outputGamepad;
-            set => outputGamepad = value;
+            set
+            {
+                if (outputGamepad == value) return;
+                outputGamepad = value;
+                OutputGamepadChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
+        public event EventHandler OutputGamepadChanged;
+
         public bool ShouldSerializeOutputGamepad()
         {
             return enabled;
