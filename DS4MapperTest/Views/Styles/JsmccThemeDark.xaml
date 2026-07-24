@@ -20,9 +20,9 @@
     <Color x:Key="JsmccWarningBgColor">#1FFFB74D</Color>
     <Color x:Key="JsmccWarningBorderColor">#66FFB74D</Color>
     <Color x:Key="JsmccWarningTextColor">#FFFFD28A</Color>
-    <Color x:Key="JsmccDangerBgColor">#1FFF786F</Color>
-    <Color x:Key="JsmccDangerBorderColor">#99FF786F</Color>
-    <Color x:Key="JsmccDangerTextColor">#FFFFB7AF</Color>
+    <Color x:Key="JsmccDangerBgColor">#33EF4444</Color>
+    <Color x:Key="JsmccDangerBorderColor">#CCEF4444</Color>
+    <Color x:Key="JsmccDangerTextColor">#FFFF8A8A</Color>
     <Color x:Key="JsmccSuccessBgColor">#1F6FD5B3</Color>
     <Color x:Key="JsmccSuccessBorderColor">#666FD5B3</Color>
     <Color x:Key="JsmccSuccessTextColor">#FFA9FFE2</Color>
