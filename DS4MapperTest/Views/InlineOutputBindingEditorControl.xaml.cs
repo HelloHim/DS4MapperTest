@@ -38,7 +38,23 @@ namespace DS4MapperTest.Views
             profileWasDirty = mapper?.ActionProfile?.Dirty == true;
 
             TitleText.Text = title;
-            Editor.PostInit(mapper, action, func);
+            Editor.PostInit(mapper, action, func, 0);
+            Focus();
+        }
+
+        public void PostInit(Mapper mapper, ButtonAction action, ActionFunc func, string title,
+            int initialSlotIndex)
+        {
+            this.mapper = mapper;
+            this.action = action;
+            this.func = func;
+            snapshot = CloneOutputs(func.OutputActions);
+            snapshotHadFunctionsChange =
+                action.ChangedProperties.Contains(ButtonAction.PropertyKeyStrings.FUNCTIONS);
+            profileWasDirty = mapper?.ActionProfile?.Dirty == true;
+
+            TitleText.Text = title;
+            Editor.PostInit(mapper, action, func, initialSlotIndex);
             Focus();
         }
 

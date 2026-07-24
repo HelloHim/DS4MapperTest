@@ -349,12 +349,8 @@
                                                                Style="{StaticResource JsmccMutedText}"
                                                                Margin="0,3,0,0"/>
                                                 </StackPanel>
-                                                <views:QuickBindControl Grid.Column="1"/>
-                                                <ContentControl x:Name="InlineEditorHost"
-                                                                Grid.Row="1"
-                                                                Grid.Column="0"
-                                                                Grid.ColumnSpan="3"
-                                                                Visibility="Collapsed"/>
+                                                <views:ActionOutputListControl Grid.Column="1"
+                                                                               Grid.ColumnSpan="2"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -383,12 +379,8 @@
                                                                Style="{StaticResource JsmccMutedText}"
                                                                Margin="0,3,0,0"/>
                                                 </StackPanel>
-                                                <views:QuickBindControl Grid.Column="1"/>
-                                                <ContentControl x:Name="InlineEditorHost"
-                                                                Grid.Row="1"
-                                                                Grid.Column="0"
-                                                                Grid.ColumnSpan="3"
-                                                                Visibility="Collapsed"/>
+                                                <views:ActionOutputListControl Grid.Column="1"
+                                                                               Grid.ColumnSpan="2"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -1207,12 +1199,8 @@
                                                                Style="{StaticResource JsmccMutedText}"
                                                                Margin="0,3,0,0"/>
                                                 </StackPanel>
-                                                <views:QuickBindControl Grid.Column="1"/>
-                                                <ContentControl x:Name="InlineEditorHost"
-                                                                Grid.Row="1"
-                                                                Grid.Column="0"
-                                                                Grid.ColumnSpan="3"
-                                                                Visibility="Collapsed"/>
+                                                <views:ActionOutputListControl Grid.Column="1"
+                                                                               Grid.ColumnSpan="2"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
