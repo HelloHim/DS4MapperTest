@@ -120,6 +120,10 @@
                                                           Tag="Start"
                                                           IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                           Click="AddExtraBindingMenuItem_Click"/>
+                                                <MenuItem Header="Release Press"
+                                                          Tag="Release"
+                                                          IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          Click="AddExtraBindingMenuItem_Click"/>
                                             </ContextMenu>
                                         </Button.ContextMenu>
                                     </Button>
@@ -297,6 +301,20 @@
                                                                           MaxDropDownHeight="240"
                                                                           Width="160"
                                                                           Style="{StaticResource JsmccComboBoxStyle}"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                                Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="End Delay" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <TextBox Text="{Binding ReleaseDelayMs, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Width="72"
+                                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                                                <TextBlock Text="ms"
+                                                                           Style="{StaticResource JsmccMutedText}"
+                                                                           Margin="6,0,0,0"
+                                                                           VerticalAlignment="Center"/>
                                                             </StackPanel>
                                                         </Border>
 

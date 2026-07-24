@@ -17,6 +17,7 @@ namespace DS4MapperTest.ViewModels
         Distance,
         Chorded,
         Start,
+        Release,
     }
 
     public class FaceButtonBindingItem : INotifyPropertyChanged
@@ -51,11 +52,13 @@ namespace DS4MapperTest.ViewModels
         public bool HasDistancePress => HasFunc<DistanceFunc>();
         public bool HasChordedPress => HasFunc<ChordedPressFunc>();
         public bool HasStartPress => HasFunc<StartPressFunc>();
+        public bool HasReleasePress => HasFunc<ReleaseFunc>();
         public bool CanAddHoldPress => !HasHoldPress;
         public bool CanAddDoublePress => !HasDoublePress;
         public bool CanAddDistancePress => !HasDistancePress;
         public bool CanAddChordedPress => !HasChordedPress;
         public bool CanAddStartPress => !HasStartPress;
+        public bool CanAddReleasePress => !HasReleasePress;
 
         public FaceButtonBindingItem(ProfileEditorTestViewModel owner,
             BindingItemsTest sourceItem, string displayName, string subtitle = null)
@@ -103,6 +106,9 @@ namespace DS4MapperTest.ViewModels
                             break;
                         case StartPressFunc:
                             functionItems.Add(new FaceButtonFuncItem(this, FaceBindingFuncKind.Start, func));
+                            break;
+                        case ReleaseFunc:
+                            functionItems.Add(new FaceButtonFuncItem(this, FaceBindingFuncKind.Release, func));
                             break;
                     }
                 }
@@ -186,6 +192,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Distance => HasDistancePress,
                 FaceBindingFuncKind.Chorded => HasChordedPress,
                 FaceBindingFuncKind.Start => HasStartPress,
+                FaceBindingFuncKind.Release => HasReleasePress,
                 _ => false,
             };
         }
@@ -212,6 +219,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Distance => CreateOutputFunc(new DistanceFunc(), emptyOutput),
                 FaceBindingFuncKind.Chorded => CreateOutputFunc(new ChordedPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
+                FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
                 _ => null,
             };
         }
@@ -238,11 +246,13 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(HasDistancePress));
             OnPropertyChanged(nameof(HasChordedPress));
             OnPropertyChanged(nameof(HasStartPress));
+            OnPropertyChanged(nameof(HasReleasePress));
             OnPropertyChanged(nameof(CanAddHoldPress));
             OnPropertyChanged(nameof(CanAddDoublePress));
             OnPropertyChanged(nameof(CanAddDistancePress));
             OnPropertyChanged(nameof(CanAddChordedPress));
             OnPropertyChanged(nameof(CanAddStartPress));
+            OnPropertyChanged(nameof(CanAddReleasePress));
         }
 
         private void OnPropertyChanged(string propertyName)
@@ -264,11 +274,12 @@ namespace DS4MapperTest.ViewModels
         public bool IsExtraBinding => Kind != FaceBindingFuncKind.Regular && func != null;
         public bool CanRemove => IsExtraBinding;
         public bool IsTurboEnabled => SupportsTurbo && TurboEnabled;
-        public bool SupportsToggle => func is NormalPressFunc || func is HoldPressFunc || func is DoublePressFunc || func is StartPressFunc;
+        public bool SupportsToggle => func is NormalPressFunc || func is HoldPressFunc || func is DoublePressFunc || func is StartPressFunc || func is ReleaseFunc;
         public bool SupportsTurbo => func is NormalPressFunc || func is HoldPressFunc;
         public bool SupportsFireDelay => func is NormalPressFunc;
         public bool SupportsHoldTime => func is HoldPressFunc;
         public bool SupportsTapWindow => func is DoublePressFunc;
+        public bool SupportsReleaseOptions => func is ReleaseFunc;
         public bool SupportsDistanceOptions => func is DistanceFunc;
         public bool SupportsChordOptions => func is ChordedPressFunc;
 
@@ -280,6 +291,7 @@ namespace DS4MapperTest.ViewModels
             FaceBindingFuncKind.Distance => "Distance",
             FaceBindingFuncKind.Chorded => "Chorded Press",
             FaceBindingFuncKind.Start => "Start Press",
+            FaceBindingFuncKind.Release => "Release Press",
             _ => "Binding",
         };
 
@@ -308,6 +320,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Distance => buttonAction.ActionFuncs.OfType<DistanceFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Chorded => buttonAction.ActionFuncs.OfType<ChordedPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Start => buttonAction.ActionFuncs.OfType<StartPressFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.Release => buttonAction.ActionFuncs.OfType<ReleaseFunc>().FirstOrDefault(),
                 _ => null,
             };
 
@@ -461,6 +474,24 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        public string ReleaseDelayMs
+        {
+            get => func is ReleaseFunc releaseFunc ? releaseFunc.DelayDurationMs.ToString() : "0";
+            set
+            {
+                if (func is not ReleaseFunc || !int.TryParse(value, out int temp)) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not ReleaseFunc targetFunc) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    owner.Owner.ReleaseFaceAction(owner);
+                    targetFunc.DelayDurationMs = temp;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
+                });
+                owner.RefreshAfterEdit();
+            }
+        }
+
         public string DistanceName
         {
             get => func is DistanceFunc distanceFunc ? distanceFunc.Name : "";
@@ -543,6 +574,7 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(FireDelayMs));
             OnPropertyChanged(nameof(HoldMs));
             OnPropertyChanged(nameof(TapWindowMs));
+            OnPropertyChanged(nameof(ReleaseDelayMs));
             OnPropertyChanged(nameof(DistanceName));
             OnPropertyChanged(nameof(DistanceValue));
             OnPropertyChanged(nameof(ChordTrigger));

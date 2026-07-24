@@ -50,6 +50,9 @@ namespace DS4MapperTest.ViewModels
                 case ChordedPressFunc:
                     selectedIndex = 5;
                     break;
+                case ReleaseFunc:
+                    selectedIndex = 6;
+                    break;
                 default:
                     break;
             }

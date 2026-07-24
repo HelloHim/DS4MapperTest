@@ -210,7 +210,7 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void LegacyReleaseProfileEntry_LoadsAsInertPlaceholderWithoutCrashing()
+        public void LegacyReleaseProfileEntry_LoadsIgnoringOldDurationAndInterruptable()
         {
             string json = "{\"Type\":\"Release\",\"OutputActions\":[{\"Type\":\"Keyboard\",\"Code\":\"A\"}]," +
                 "\"Settings\":{\"Duration\":250,\"Interruptable\":true,\"DelayDuration\":150}}";
@@ -218,13 +218,17 @@ namespace DS4MapperUnitTests
             ActionFuncSerializer loaded = JsonConvert.DeserializeObject<ActionFuncSerializer>(json);
             loaded.PopulateFunc();
 
-            Assert.IsInstanceOfType(loaded, typeof(LegacyReleaseFuncPlaceholderSerializer));
-            Assert.IsInstanceOfType(loaded.ActionFunc, typeof(LegacyReleaseFuncPlaceholder));
+            Assert.IsInstanceOfType(loaded, typeof(ReleaseFuncSerializer));
+            Assert.IsInstanceOfType(loaded.ActionFunc, typeof(ReleaseFunc));
 
-            Mapper mapper = new QuickBindTestMapper();
-            loaded.ActionFunc.Prepare(mapper, true, new ActionFuncStateData());
-            loaded.ActionFunc.Event(mapper, new ActionFuncStateData());
-            loaded.ActionFunc.Release(mapper);
+            ReleaseFunc releaseFunc = (ReleaseFunc)loaded.ActionFunc;
+            Assert.AreEqual(150, releaseFunc.DelayDurationMs);
+            Assert.AreEqual((int)VirtualKeys.A, releaseFunc.OutputActions.Single().OutputCode);
+            Assert.IsFalse(releaseFunc.toggleEnabled);
+
+            string resaved = JsonConvert.SerializeObject(loaded);
+            Assert.IsFalse(resaved.Contains("Duration\":250"));
+            Assert.IsFalse(resaved.Contains("Interruptable"));
         }
 
         [TestMethod]

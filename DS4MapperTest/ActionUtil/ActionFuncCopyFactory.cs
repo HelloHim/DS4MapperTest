@@ -33,9 +33,9 @@ namespace DS4MapperTest.ActionUtil
                         result = temp;
                         break;
                     }
-                case LegacyReleaseFuncPlaceholder legacyReleaseFunc:
+                case ReleaseFunc releaseFunc:
                     {
-                        LegacyReleaseFuncPlaceholder temp = new LegacyReleaseFuncPlaceholder(legacyReleaseFunc);
+                        ReleaseFunc temp = new ReleaseFunc(releaseFunc);
                         result = temp;
                         break;
                     }

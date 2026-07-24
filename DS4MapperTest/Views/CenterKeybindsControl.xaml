@@ -9,7 +9,7 @@
              d:DesignWidth="860">
     <views:SharedButtonKeybindsControl
         SectionTitle="Center"
-        Description="Regular Press maps to Normal Press. Add Hold, Double, Distance, or Start bindings per system button."
+        Description="Regular Press maps to Normal Press. Add Hold, Double, Distance, Start, or Release bindings per system button."
         EmptyText="No center button bindings were found for the current controller."
         CardSubtitle="System button"
         ItemsSource="{Binding CenterButtonBindings}"/>
