@@ -41,6 +41,7 @@ namespace DS4MapperTest.ButtonActions
 
         // Cleared at start of event loop. Populated during event loop
         private List<ActionFunc> activeFuns = new List<ActionFunc>();
+        private List<ActionFunc> releaseFuns = new List<ActionFunc>();
         private List<ActionFunc> distanceFuns = new List<ActionFunc>();
         private List<int> removeFuncsCandiates = new List<int>();
 
@@ -221,7 +222,13 @@ namespace DS4MapperTest.ButtonActions
                     {
                         //ActionFunc func = funcEnumerator.Current;
                         func.Prepare(mapper, true, stateData);
-                        if (func.onDistance)
+                        if (func.onRelease)
+                        {
+                            releaseFuns.Add(func);
+                            removeFuncsCandiates.Add(i);
+                            removed = true;
+                        }
+                        else if (func.onDistance)
                         {
                             distanceFuns.Add(func);
                             if (!func.interruptable && func.active)
@@ -640,6 +647,13 @@ namespace DS4MapperTest.ButtonActions
                         }
                     }
 
+                    // Genuine digital falling edge: fire any Release Press-style functions
+                    // that were armed while the source was held.
+                    if (releaseFuns.Count > 0)
+                    {
+                        FireArmedReleaseFuncs(mapper);
+                    }
+
                     /*foreach (ActionFunc func in actionFuncCandidates)
                     {
                         func.Prepare(mapper, false, stateData);
@@ -757,6 +771,18 @@ namespace DS4MapperTest.ButtonActions
                 */
             }
 
+            if (releaseFuns.Count > 0)
+            {
+                if (!ignoreReleaseActions)
+                {
+                    FireArmedReleaseFuncs(mapper);
+                }
+                else
+                {
+                    DiscardArmedReleaseFuncs(mapper);
+                }
+            }
+
             active = false;
             activeEvent = false;
             interruptFound = false;
@@ -765,6 +791,46 @@ namespace DS4MapperTest.ButtonActions
             //{
             //    stateData.Reset(true);
             //}
+        }
+
+        // Fires any Release Press-style functions that were armed while the source was
+        // held, exactly once per genuine falling edge. Presses configured outputs
+        // immediately and, for a non-toggle firing, hands the func to the mapper's pending
+        // list so the matching release lands on a later output synchronization pass.
+        private void FireArmedReleaseFuncs(Mapper mapper)
+        {
+            foreach (ActionFunc func in releaseFuns)
+            {
+                func.Prepare(mapper, false, stateData);
+                if (func.active)
+                {
+                    foreach (OutputActionData action in func.OutputActions)
+                    {
+                        mapper.RunEventFromButton(action, func.outputActive);
+                        action.firstRun = true;
+                    }
+
+                    if (!func.finished)
+                    {
+                        mapper.PendingReleaseFuns.Add(func);
+                    }
+                }
+            }
+
+            releaseFuns.Clear();
+        }
+
+        // Used when an armed Release Press func is being discarded rather than genuinely
+        // released (ignoreReleaseActions binding edits, or a soft layer/action swap): clears
+        // the armed state safely without firing any output.
+        private void DiscardArmedReleaseFuncs(Mapper mapper)
+        {
+            foreach (ActionFunc func in releaseFuns)
+            {
+                func.Release(mapper);
+            }
+
+            releaseFuns.Clear();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -783,6 +849,13 @@ namespace DS4MapperTest.ButtonActions
 
             activeFuns.Clear();
             actionFuncCandidates.Clear();
+
+            // This is a soft/layer-instance release, not a genuine source release - any
+            // armed Release Press func is discarded without firing.
+            if (releaseFuns.Count > 0)
+            {
+                DiscardArmedReleaseFuncs(mapper);
+            }
 
             OutputActionDataEnumerator activeActionsEnumerator =
                 new OutputActionDataEnumerator(activeActions);

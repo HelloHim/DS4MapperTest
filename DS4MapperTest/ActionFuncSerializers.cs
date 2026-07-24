@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -346,35 +345,84 @@ namespace DS4MapperTest
         }
     }
 
-    // Temporary compatibility serializer for the legacy "Release" function type while
-    // the feature is being reimplemented from scratch. Deliberately does not parse the
-    // old Duration/Interruptable/DelayDuration "Settings" object (Newtonsoft ignores
-    // unmapped JSON members by default) - the profile still loads and the rest of its
-    // bindings remain usable, but the old Release Press configuration is not honoured.
-    public class LegacyReleaseFuncPlaceholderSerializer : ActionFuncSerializer
+    public class ReleaseFuncSerializer : ActionFuncSerializer
     {
+        // Old profiles may still contain "Duration" (the removed Min Duration) and
+        // "Interruptable" - both are simply not mapped to any property here, so
+        // Newtonsoft's default MissingMemberHandling.Ignore drops them silently on load.
+        // Neither is ever written back out by the new implementation.
+        public class ReleaseFuncSettings
+        {
+            private ReleaseFunc releaseFuncInstance;
+
+            public int DelayDuration
+            {
+                get => releaseFuncInstance.DelayDurationMs;
+                set => releaseFuncInstance.DelayDurationMs = value;
+            }
+            public bool ShouldSerializeDelayDuration()
+            {
+                return releaseFuncInstance.DelayDurationMs != ReleaseFunc.DELAY_DURATION_DEFAULT;
+            }
+
+            public bool Toggle
+            {
+                get => releaseFuncInstance.toggleEnabled;
+                set => releaseFuncInstance.toggleEnabled = value;
+            }
+            public bool ShouldSerializeToggle()
+            {
+                return releaseFuncInstance.toggleEnabled == true;
+            }
+
+            public bool IsDefault()
+            {
+                return releaseFuncInstance.DelayDurationMs == ReleaseFunc.DELAY_DURATION_DEFAULT &&
+                    releaseFuncInstance.toggleEnabled == false;
+            }
+
+            public ReleaseFuncSettings(ReleaseFunc funcInstance)
+            {
+                releaseFuncInstance = funcInstance;
+            }
+        }
+
         private const string typeString = "Release";
-        private LegacyReleaseFuncPlaceholder placeholderInstance = new LegacyReleaseFuncPlaceholder();
+        private ReleaseFunc releaseFuncInstance = new ReleaseFunc();
+        private ReleaseFuncSettings settings;
 
         [JsonIgnore]
-        public LegacyReleaseFuncPlaceholder PlaceholderInstance
+        public ReleaseFunc ReleaseFuncInstance
         {
-            get => placeholderInstance; set => placeholderInstance = value;
+            get => releaseFuncInstance; set => releaseFuncInstance = value;
         }
 
-        public LegacyReleaseFuncPlaceholderSerializer() : base()
+        [JsonProperty(PropertyName = "Settings")]
+        public ReleaseFuncSettings Settings
+        {
+            get => settings;
+            set => settings = value;
+        }
+        public bool ShouldSerializeSettings()
+        {
+            return !settings.IsDefault();
+        }
+
+        public ReleaseFuncSerializer() : base()
         {
             this.type = typeString;
-            actionFunc = placeholderInstance;
+            actionFunc = releaseFuncInstance;
+            settings = new ReleaseFuncSettings(releaseFuncInstance);
         }
 
-        public LegacyReleaseFuncPlaceholderSerializer(ActionFunc tempFunc) : base(tempFunc)
+        public ReleaseFuncSerializer(ActionFunc tempFunc) : base(tempFunc)
         {
-            if (tempFunc is LegacyReleaseFuncPlaceholder temp)
+            if (tempFunc is ReleaseFunc temp)
             {
-                this.placeholderInstance = temp;
+                this.releaseFuncInstance = temp;
                 this.type = typeString;
-                actionFunc = placeholderInstance;
+                actionFunc = releaseFuncInstance;
+                settings = new ReleaseFuncSettings(releaseFuncInstance);
 
                 PopulateOutputActionData();
             }
@@ -762,16 +810,10 @@ namespace DS4MapperTest
                     resultInstance = doublePressInstance;
                     break;
                 case "Release":
-                    // Legacy Release Press has been removed and is being reimplemented.
-                    // Recognize the old type so profiles containing it still load, but
-                    // skip its behavior rather than reinterpreting it as another press type.
-                    Trace.TraceWarning("Profile contains a legacy 'Release Press' function " +
-                        "(\"Type\": \"Release\") which has been removed pending reimplementation; " +
-                        "it will be loaded as an inert placeholder and will not fire.");
-                    LegacyReleaseFuncPlaceholderSerializer legacyReleaseInstance = new LegacyReleaseFuncPlaceholderSerializer();
-                    JsonConvert.PopulateObject(j.ToString(), legacyReleaseInstance);
-                    legacyReleaseInstance.ActionDataSerializers.RemoveAll((item) => item == null);
-                    resultInstance = legacyReleaseInstance;
+                    ReleaseFuncSerializer releaseInstance = new ReleaseFuncSerializer();
+                    JsonConvert.PopulateObject(j.ToString(), releaseInstance);
+                    releaseInstance.ActionDataSerializers.RemoveAll((item) => item == null);
+                    resultInstance = releaseInstance;
                     break;
                 case "StartPress":
                     StartPressFuncSerializer startPressInstance = new StartPressFuncSerializer();
@@ -836,9 +878,9 @@ namespace DS4MapperTest
 
                     break;
                 case "Release":
-                    if (current is LegacyReleaseFuncPlaceholderSerializer legacyReleaseFuncSerializer)
+                    if (current is ReleaseFuncSerializer releaseFuncSerializer)
                     {
-                        serializer.Serialize(writer, legacyReleaseFuncSerializer);
+                        serializer.Serialize(writer, releaseFuncSerializer);
                     }
 
                     break;

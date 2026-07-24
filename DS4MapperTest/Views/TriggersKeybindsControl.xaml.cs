@@ -41,6 +41,7 @@ namespace DS4MapperTest.Views
                 "Distance" => FaceBindingFuncKind.Distance,
                 "Chorded" => FaceBindingFuncKind.Chorded,
                 "Start" => FaceBindingFuncKind.Start,
+                "Release" => FaceBindingFuncKind.Release,
                 _ => null,
             };
 

@@ -2844,6 +2844,23 @@ namespace DS4MapperTest
             }
         }
 
+        // Force-releases any Release Press-style outputs still mid-pulse (pressed, waiting
+        // on their End Delay) so nothing is left stuck down. Called on shutdown/disconnect,
+        // where no further mapper ticks will occur to let ProcessReleaseEvents finish them
+        // naturally.
+        public void ReleaseAllPendingReleaseFuns()
+        {
+            if (pendingReleaseFuns.Count > 0)
+            {
+                foreach (ActionFunc actionFunc in pendingReleaseFuns)
+                {
+                    actionFunc.Release(this);
+                }
+
+                pendingReleaseFuns.Clear();
+            }
+        }
+
         /// <summary>
         /// Add Action to a list of Actions to call at the end of mapping routine.
         /// Action will be called in input thread
@@ -3261,6 +3278,7 @@ namespace DS4MapperTest
             quit = true;
 
             actionProfile.CurrentActionSet.ReleaseActions(this, true);
+            ReleaseAllPendingReleaseFuns();
 
             editActionSet = null;
             editLayer = null;

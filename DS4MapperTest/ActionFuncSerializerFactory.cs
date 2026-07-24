@@ -23,8 +23,8 @@ namespace DS4MapperTest
                 case StartPressFunc:
                     serializer = new StartPressFuncSerializer(tempFunc);
                     break;
-                case LegacyReleaseFuncPlaceholder:
-                    serializer = new LegacyReleaseFuncPlaceholderSerializer(tempFunc);
+                case ReleaseFunc:
+                    serializer = new ReleaseFuncSerializer(tempFunc);
                     break;
                 case DistanceFunc:
                     serializer = new DistanceFuncSerializer(tempFunc);
