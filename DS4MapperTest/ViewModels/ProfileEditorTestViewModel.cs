@@ -54,6 +54,7 @@ namespace DS4MapperTest.ViewModels
         }
 
         private bool suppressDirtyTracking;
+        private string savedProfileFingerprint;
 
         public bool IsProfileDirty => tempProfile?.Dirty == true;
 
@@ -64,15 +65,18 @@ namespace DS4MapperTest.ViewModels
         public void MarkProfileDirty()
         {
             if (suppressDirtyTracking || tempProfile == null) return;
-            if (tempProfile.Dirty) return;
+            bool isDirty = !string.Equals(savedProfileFingerprint,
+                CreateProfileFingerprint(), StringComparison.Ordinal);
+            if (tempProfile.Dirty == isDirty) return;
 
-            tempProfile.Dirty = true;
+            tempProfile.Dirty = isDirty;
             RaisePropertyChanged(nameof(IsProfileDirty));
         }
 
         public void MarkProfileClean()
         {
             if (tempProfile == null) return;
+            savedProfileFingerprint = CreateProfileFingerprint();
             if (!tempProfile.Dirty)
             {
                 RaisePropertyChanged(nameof(IsProfileDirty));
@@ -702,6 +706,7 @@ namespace DS4MapperTest.ViewModels
             this.mapper = mapper;
             this.profileEnt = profileEnt;
             this.tempProfile = currentProfile;
+            savedProfileFingerprint = CreateProfileFingerprint();
 
             tempProfile.DirtyChanged += TempProfile_DirtyChanged;
             mapper.ProfileEditCommitted += Mapper_ProfileEditCommitted;
@@ -754,6 +759,17 @@ namespace DS4MapperTest.ViewModels
             RaisePropertyChanged(nameof(LightbarBatteryHexColor));
             RaisePropertyChanged(nameof(LightbarBatteryPreviewBrush));
             MarkProfileDirty();
+        }
+
+        private string CreateProfileFingerprint()
+        {
+            if (tempProfile == null) return string.Empty;
+
+            // ProfileSerializer is the authoritative persisted representation.
+            // Comparing it means the unsaved indicator mirrors exactly what Save
+            // and Discard operate on, including action and keybind changes.
+            ProfileSerializer serializer = new ProfileSerializer(tempProfile);
+            return JsonConvert.SerializeObject(serializer, Formatting.None);
         }
 
         public void Test()
