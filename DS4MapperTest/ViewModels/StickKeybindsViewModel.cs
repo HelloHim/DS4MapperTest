@@ -807,14 +807,18 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
-    public class StickExtraFuncItem : INotifyPropertyChanged, IQuickBindTarget
+    public class StickExtraFuncItem : INotifyPropertyChanged, IQuickBindTarget,
+        IActionOutputListOwner
     {
         private readonly StickExtraBindingItem owner;
+        private readonly ObservableCollection<ActionOutputItem> outputItems =
+            new ObservableCollection<ActionOutputItem>();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public StickExtraBindingItem Owner => owner;
         public FaceBindingFuncKind Kind { get; }
+        public ObservableCollection<ActionOutputItem> OutputItems => outputItems;
 
         public ActionFunc Func => FindFunc(owner.CurrentButtonAction(), Kind);
 
@@ -1130,6 +1134,65 @@ namespace DS4MapperTest.ViewModels
         {
             this.owner = owner;
             Kind = kind;
+            RefreshOutputItems();
+        }
+
+        public void AddOutputAction()
+        {
+            EditFaceBindingContext ctx = owner.PrepareEdit(this);
+            if (ctx?.Func == null || ctx.Action == null) return;
+
+            owner.Owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                StickSideViewModel.MarkFunctionsChanged(ctx.Action);
+            });
+
+            owner.RefreshAfterEdit();
+        }
+
+        public void RemoveOutputAction(ActionOutputItem item)
+        {
+            if (item == null) return;
+
+            EditFaceBindingContext ctx = owner.PrepareEdit(this);
+            if (ctx?.Func == null || ctx.Action == null) return;
+            int index = item.Index;
+            if (index <= 0 || index >= ctx.Func.OutputActions.Count) return;
+
+            owner.Owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.RemoveAt(index);
+                StickSideViewModel.MarkFunctionsChanged(ctx.Action);
+            });
+
+            owner.RefreshAfterEdit();
+        }
+
+        private EditFaceBindingContext PrepareEdit(ActionOutputItem item)
+        {
+            EditFaceBindingContext ctx = owner.PrepareEdit(this);
+            if (ctx?.Func == null) return ctx;
+
+            int index = item?.Index ?? 0;
+            while (ctx.Func.OutputActions.Count <= index)
+            {
+                ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            }
+
+            return new EditFaceBindingContext(ctx.Mapper, ctx.Action, ctx.Func, index);
+        }
+
+        private void RefreshOutputItems()
+        {
+            outputItems.Clear();
+            int count = Math.Max(1, Func?.OutputActions.Count ?? 0);
+            for (int i = 0; i < count; i++)
+            {
+                outputItems.Add(new ActionOutputItem(this, i));
+            }
         }
 
         // IQuickBindTarget
@@ -1139,6 +1202,15 @@ namespace DS4MapperTest.ViewModels
         bool IQuickBindTarget.IsComplexBinding => !QuickBindActionApplier.IsSimpleFunc(Func);
         EditFaceBindingContext IQuickBindTarget.GetEditContext() => owner.PrepareEdit(this);
         void IQuickBindTarget.NotifyBindingChanged() => owner.RefreshAfterEdit();
+
+        Mapper IActionOutputListOwner.Mapper => owner.Owner.Owner.DeviceMapper;
+        string IActionOutputListOwner.RowLabel => owner.DisplayName;
+        string IActionOutputListOwner.SlotLabel => DisplayName;
+        ActionFunc IActionOutputListOwner.Func => Func;
+        EditFaceBindingContext IActionOutputListOwner.PrepareEdit(ActionOutputItem item) => PrepareEdit(item);
+        void IActionOutputListOwner.AddOutputAction() => AddOutputAction();
+        void IActionOutputListOwner.RemoveOutputAction(ActionOutputItem item) => RemoveOutputAction(item);
+        void IActionOutputListOwner.NotifyBindingChanged() => owner.RefreshAfterEdit();
 
         private static ActionFunc FindFunc(ButtonAction action, FaceBindingFuncKind kind)
         {

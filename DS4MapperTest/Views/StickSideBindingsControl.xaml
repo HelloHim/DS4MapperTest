@@ -40,7 +40,7 @@
                     </StackPanel>
 
                     <Button DockPanel.Dock="Right"
-                            Content="Add Extra Binding"
+                            Content="+ Add Extra Command"
                             Click="ClickAddExtraBindingButton_Click"
                             Style="{StaticResource JsmccButtonStyle}">
                         <Button.ContextMenu>
@@ -90,32 +90,36 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,12,0">
-                                        <TextBlock Text="{Binding DisplayName}"
-                                                   Style="{StaticResource JsmccLabelText}"/>
-                                        <TextBlock Text="Press behaviour"
-                                                   Style="{StaticResource JsmccMutedText}"
-                                                   Margin="0,3,0,0"/>
-                                    </StackPanel>
-
-                                    <views:QuickBindControl Grid.Row="0"
-                                                            Grid.Column="1"/>
-
-                                    <StackPanel Grid.Row="0"
-                                                Grid.Column="2"
-                                                Orientation="Horizontal"
-                                                HorizontalAlignment="Right"
-                                                Margin="10,0,0,0">
-                                        <Button Content="Remove"
+                                    <Grid Grid.Row="0"
+                                          Grid.Column="0"
+                                          Grid.ColumnSpan="3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="{Binding DisplayName}"
+                                                       Style="{StaticResource JsmccLabelText}"/>
+                                            <TextBlock Text="Press behaviour"
+                                                       Style="{StaticResource JsmccMutedText}"
+                                                       Margin="0,3,0,0"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Content="Remove Binding"
                                                 Tag="{Binding}"
                                                 Click="ClickRemoveBinding_Click"
                                                 Style="{StaticResource JsmccDangerButtonStyle}"
-                                                MinWidth="76"
-                                                Margin="8,0,0,0"
+                                                MinWidth="112"
+                                                VerticalAlignment="Top"
                                                 Visibility="{Binding CanRemove, Converter={StaticResource BoolToVis}}"/>
-                                    </StackPanel>
+                                    </Grid>
 
-                                    <WrapPanel Grid.Row="1"
+                                    <views:ActionOutputListControl Grid.Row="1"
+                                                                   Grid.Column="0"
+                                                                   Grid.ColumnSpan="3"
+                                                                   Margin="0,6,0,0"/>
+
+                                    <WrapPanel Grid.Row="2"
                                                Grid.Column="0"
                                                Grid.ColumnSpan="3"
                                                Margin="0,10,0,0">
@@ -350,11 +354,6 @@
 
                                     </WrapPanel>
 
-                                    <ContentControl x:Name="InlineEditorHost"
-                                                    Grid.Row="2"
-                                                    Grid.Column="0"
-                                                    Grid.ColumnSpan="3"
-                                                    Visibility="Collapsed"/>
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -401,7 +400,7 @@
                                 </StackPanel>
 
                                 <Button DockPanel.Dock="Right"
-                                        Content="Add Extra Binding"
+                                        Content="+ Add Extra Command"
                                         Click="ExtraAddExtraBindingButton_Click"
                                         Style="{StaticResource JsmccButtonStyle}">
                                     <Button.ContextMenu>
@@ -451,32 +450,36 @@
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,12,0">
-                                                    <TextBlock Text="{Binding DisplayName}"
-                                                               Style="{StaticResource JsmccLabelText}"/>
-                                                    <TextBlock Text="Press behaviour"
-                                                               Style="{StaticResource JsmccMutedText}"
-                                                               Margin="0,3,0,0"/>
-                                                </StackPanel>
-
-                                                <views:QuickBindControl Grid.Row="0"
-                                                                        Grid.Column="1"/>
-
-                                                <StackPanel Grid.Row="0"
-                                                            Grid.Column="2"
-                                                            Orientation="Horizontal"
-                                                            HorizontalAlignment="Right"
-                                                            Margin="10,0,0,0">
-                                                    <Button Content="Remove"
+                                                <Grid Grid.Row="0"
+                                                      Grid.Column="0"
+                                                      Grid.ColumnSpan="3">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                        <TextBlock Text="{Binding DisplayName}"
+                                                                   Style="{StaticResource JsmccLabelText}"/>
+                                                        <TextBlock Text="Press behaviour"
+                                                                   Style="{StaticResource JsmccMutedText}"
+                                                                   Margin="0,3,0,0"/>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1"
+                                                            Content="Remove Binding"
                                                             Tag="{Binding}"
                                                             Click="ExtraRemoveBinding_Click"
                                                             Style="{StaticResource JsmccDangerButtonStyle}"
-                                                            MinWidth="76"
-                                                            Margin="8,0,0,0"
+                                                            MinWidth="112"
+                                                            VerticalAlignment="Top"
                                                             Visibility="{Binding CanRemove, Converter={StaticResource BoolToVis}}"/>
-                                                </StackPanel>
+                                                </Grid>
 
-                                                <WrapPanel Grid.Row="1"
+                                                <views:ActionOutputListControl Grid.Row="1"
+                                                                               Grid.Column="0"
+                                                                               Grid.ColumnSpan="3"
+                                                                               Margin="0,6,0,0"/>
+
+                                                <WrapPanel Grid.Row="2"
                                                            Grid.Column="0"
                                                            Grid.ColumnSpan="3"
                                                            Margin="0,10,0,0">
@@ -711,11 +714,6 @@
 
                                                 </WrapPanel>
 
-                                                <ContentControl x:Name="InlineEditorHost"
-                                                                Grid.Row="2"
-                                                                Grid.Column="0"
-                                                                Grid.ColumnSpan="3"
-                                                                Visibility="Collapsed"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>

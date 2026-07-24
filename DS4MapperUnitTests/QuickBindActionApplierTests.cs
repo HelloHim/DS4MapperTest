@@ -308,6 +308,84 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void ApplyKeyboard_RowContext_ReplacesOnlyTargetSlot()
+        {
+            EditFaceBindingContext ctx = MakeContext(out ActionFunc func);
+            func.OutputActions.Clear();
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.A));
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.B));
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.MouseButton, MouseButtonCodes.MOUSE_LEFT_BUTTON));
+
+            QuickBindActionApplier.ApplyKeyboard(
+                new EditFaceBindingContext(ctx.Mapper, ctx.Action, func, 1),
+                VirtualKeys.J,
+                "J");
+
+            Assert.AreEqual(3, func.OutputActions.Count);
+            Assert.AreEqual((int)VirtualKeys.A, func.OutputActions[0].OutputCode);
+            Assert.AreEqual(OutputActionData.ActionType.Keyboard, func.OutputActions[1].OutputType);
+            Assert.AreEqual((int)VirtualKeys.J, func.OutputActions[1].OutputCode);
+            Assert.AreEqual(OutputActionData.ActionType.MouseButton, func.OutputActions[2].OutputType);
+        }
+
+        [TestMethod]
+        public void ApplyUnbound_RowContext_ClearsOnlyTargetSlot()
+        {
+            EditFaceBindingContext ctx = MakeContext(out ActionFunc func);
+            func.OutputActions.Clear();
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.H));
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.J));
+
+            QuickBindActionApplier.ApplyUnbound(
+                new EditFaceBindingContext(ctx.Mapper, ctx.Action, func, 0));
+
+            Assert.AreEqual(2, func.OutputActions.Count);
+            Assert.AreEqual(OutputActionData.ActionType.Empty, func.OutputActions[0].OutputType);
+            Assert.AreEqual((int)VirtualKeys.J, func.OutputActions[1].OutputCode);
+        }
+
+        [TestMethod]
+        public void NormalPressSerializer_RoundTripsMultipleOutputsInOrder()
+        {
+            NormalPressFunc source = new NormalPressFunc(new[]
+            {
+                new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.H),
+                new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.J),
+                new OutputActionData(OutputActionData.ActionType.MouseButton, MouseButtonCodes.MOUSE_LEFT_BUTTON),
+            });
+            NormalPressFuncSerializer serializer = new NormalPressFuncSerializer(source);
+
+            string json = JsonConvert.SerializeObject(serializer);
+            ActionFuncSerializer loaded = JsonConvert.DeserializeObject<ActionFuncSerializer>(json);
+            loaded.PopulateFunc();
+
+            Assert.IsInstanceOfType(loaded.ActionFunc, typeof(NormalPressFunc));
+            Assert.AreEqual(3, loaded.ActionFunc.OutputActions.Count);
+            Assert.AreEqual((int)VirtualKeys.H, loaded.ActionFunc.OutputActions[0].OutputCode);
+            Assert.AreEqual((int)VirtualKeys.J, loaded.ActionFunc.OutputActions[1].OutputCode);
+            Assert.AreEqual(OutputActionData.ActionType.MouseButton, loaded.ActionFunc.OutputActions[2].OutputType);
+        }
+
+        [TestMethod]
+        public void CopyFunc_MultipleOutputs_CreatesIndependentOutputCopies()
+        {
+            NormalPressFunc source = new NormalPressFunc(new[]
+            {
+                new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.H),
+                new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.J),
+            });
+
+            NormalPressFunc copy = ActionFuncCopyFactory.CopyFunc(source) as NormalPressFunc;
+
+            Assert.IsNotNull(copy);
+            Assert.AreEqual(2, copy.OutputActions.Count);
+            Assert.AreNotSame(source.OutputActions[0], copy.OutputActions[0]);
+            copy.OutputActions[0].Prepare(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.K);
+            Assert.AreEqual((int)VirtualKeys.H, source.OutputActions[0].OutputCode);
+            Assert.AreEqual((int)VirtualKeys.K, copy.OutputActions[0].OutputCode);
+        }
+
+        [TestMethod]
         public void ApplyKeyboard_ReplacingNormalPress_LeavesOtherFuncsOnActionUntouched()
         {
             Mapper mapper = new QuickBindTestMapper();

@@ -247,12 +247,26 @@ namespace DS4MapperTest.Views
             RequestClear();
         }
 
+        private void AddSubCommandButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ActionOutputItem item)
+            {
+                item.Owner.AddOutputAction();
+            }
+        }
+
         private void RequestClear()
         {
             IQuickBindTarget target = Target;
             if (target == null) return;
 
             if (listening) EndListening();
+
+            if (target is IQuickBindRemovableTarget removable && removable.CanRemoveTarget)
+            {
+                removable.RemoveTarget();
+                return;
+            }
 
             if (!target.IsComplexBinding)
             {

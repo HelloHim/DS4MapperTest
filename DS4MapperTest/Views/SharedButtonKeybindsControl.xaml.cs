@@ -105,5 +105,6 @@ namespace DS4MapperTest.Views
                 item.Owner.RemoveBinding(item);
             }
         }
+
     }
 }

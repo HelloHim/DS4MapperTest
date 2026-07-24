@@ -44,7 +44,14 @@ namespace DS4MapperTest.Views
 
         public void PostInit(Mapper mapper, ButtonAction currentAction, ActionFunc func)
         {
-            buttonActionEditVM = new ButtonActionEditViewModel(mapper, currentAction, func);
+            PostInit(mapper, currentAction, func, 0);
+        }
+
+        public void PostInit(Mapper mapper, ButtonAction currentAction, ActionFunc func,
+            int initialSlotIndex)
+        {
+            buttonActionEditVM = new ButtonActionEditViewModel(mapper, currentAction, func,
+                initialSlotIndex);
 
             DataContext = buttonActionEditVM;
         }

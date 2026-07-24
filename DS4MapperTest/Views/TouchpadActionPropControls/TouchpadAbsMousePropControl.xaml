@@ -72,15 +72,15 @@
                         </StackPanel>
 
                         <Border Margin="0,8,0,0">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <Label Content="Outer Ring Bind" />
-                                    <views:QuickBindControl DataContext="{Binding RingBindItem}" Margin="8,0,0,0" />
-                                </StackPanel>
-                                <ContentControl x:Name="InlineEditorHost"
-                                                Visibility="Collapsed"
-                                                Margin="0,8,0,0"/>
-                            </StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" Content="Outer Ring Bind" />
+                                <views:ActionOutputListControl Grid.Column="1"
+                                                               DataContext="{Binding RingBindItem}"/>
+                            </Grid>
                         </Border>
 
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">

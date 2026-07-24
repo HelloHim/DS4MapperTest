@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -1251,7 +1252,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
     }
 
-    public class StickAnalogDirectionBindItem : INotifyPropertyChanged, IQuickBindTarget
+    public class StickAnalogDirectionBindItem : INotifyPropertyChanged, IQuickBindTarget,
+        IActionOutputListOwner
     {
         private readonly StickAnalogEmulationPropViewModel owner;
 
@@ -1260,6 +1262,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         public StickAnalogEmulationAction.DirSlot Direction { get; }
         public string DisplayName { get; }
         public string Subtitle { get; }
+        public ObservableCollection<ActionOutputItem> OutputItems { get; } =
+            new ObservableCollection<ActionOutputItem>();
 
         public string DisplayBind
         {
@@ -1278,6 +1282,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             Direction = direction;
             DisplayName = displayName;
             Subtitle = subtitle;
+            RefreshOutputItems();
         }
 
         Mapper IQuickBindTarget.Mapper => owner.Mapper;
@@ -1298,9 +1303,99 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             Refresh();
         }
 
+        Mapper IActionOutputListOwner.Mapper => owner.Mapper;
+        string IActionOutputListOwner.RowLabel => DisplayName;
+        string IActionOutputListOwner.SlotLabel => "Regular Press";
+        ActionFunc IActionOutputListOwner.Func => CurrentFunc;
+        EditFaceBindingContext IActionOutputListOwner.PrepareEdit(ActionOutputItem item) => PrepareEdit(item);
+        void IActionOutputListOwner.AddOutputAction() => AddOutputAction();
+        void IActionOutputListOwner.RemoveOutputAction(ActionOutputItem item) => RemoveOutputAction(item);
+        void IActionOutputListOwner.NotifyBindingChanged()
+        {
+            owner.MarkDirectionChanged(Direction, owner.GetDirectionAction(Direction));
+            Refresh();
+        }
+
+        private ActionFunc CurrentFunc =>
+            owner.GetDirectionAction(Direction)?.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault();
+
+        public EditFaceBindingContext PrepareEdit(ActionOutputItem item)
+        {
+            EditFaceBindingContext ctx = owner.PrepareDirectionEdit(this);
+            int index = item?.Index ?? 0;
+            EnsureOutputSlot(ctx, index);
+            return new EditFaceBindingContext(ctx.Mapper, ctx.Action, ctx.Func, index);
+        }
+
+        public void AddOutputAction()
+        {
+            EditFaceBindingContext ctx = owner.PrepareDirectionEdit(this);
+            owner.Mapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Mapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                owner.MarkDirectionChanged(Direction, ctx.Action);
+            });
+
+            RefreshOutputItems();
+        }
+
+        public void RemoveOutputAction(ActionOutputItem item)
+        {
+            if (item == null || item.Index <= 0)
+            {
+                return;
+            }
+
+            EditFaceBindingContext ctx = owner.PrepareDirectionEdit(this);
+            if (item.Index >= ctx.Func.OutputActions.Count)
+            {
+                return;
+            }
+
+            owner.Mapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Mapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.RemoveAt(item.Index);
+                owner.MarkDirectionChanged(Direction, ctx.Action);
+            });
+
+            RefreshOutputItems();
+        }
+
+        private void EnsureOutputSlot(EditFaceBindingContext ctx, int index)
+        {
+            if (ctx.Func.OutputActions.Count > index)
+            {
+                return;
+            }
+
+            owner.Mapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Mapper, ignoreReleaseActions: true);
+                while (ctx.Func.OutputActions.Count <= index)
+                {
+                    ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                }
+
+                owner.MarkDirectionChanged(Direction, ctx.Action);
+            });
+        }
+
+        private void RefreshOutputItems()
+        {
+            OutputItems.Clear();
+            int count = Math.Max(1, CurrentFunc?.OutputActions.Count ?? 0);
+            for (int i = 0; i < count; i++)
+            {
+                OutputItems.Add(new ActionOutputItem(this, i));
+            }
+        }
+
         public void Refresh()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayBind)));
+            RefreshOutputItems();
         }
     }
 }

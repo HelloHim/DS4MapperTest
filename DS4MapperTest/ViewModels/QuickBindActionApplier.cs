@@ -23,7 +23,14 @@ namespace DS4MapperTest.ViewModels
             if (func.OutputActions.Count == 0) return true;
             if (func.OutputActions.Count > 1) return false;
 
-            OutputActionData.ActionType type = func.OutputActions[0].OutputType;
+            return IsSimpleOutput(func.OutputActions[0]);
+        }
+
+        public static bool IsSimpleOutput(OutputActionData data)
+        {
+            if (data == null) return true;
+
+            OutputActionData.ActionType type = data.OutputType;
             return type == OutputActionData.ActionType.Empty ||
                 type == OutputActionData.ActionType.Keyboard ||
                 type == OutputActionData.ActionType.MouseButton ||
@@ -38,7 +45,7 @@ namespace DS4MapperTest.ViewModels
             {
                 ctx.Action.Release(ctx.Mapper, ignoreReleaseActions: true);
 
-                OutputActionData data = EnsureSingleSlot(ctx.Func);
+                OutputActionData data = EnsureTargetSlot(ctx);
                 data.Reset();
 
                 uint eventCode = ProfileSerializer.EventInputMapper.GetRealEventKey((uint)key);
@@ -58,7 +65,7 @@ namespace DS4MapperTest.ViewModels
             {
                 ctx.Action.Release(ctx.Mapper, ignoreReleaseActions: true);
 
-                OutputActionData data = EnsureSingleSlot(ctx.Func);
+                OutputActionData data = EnsureTargetSlot(ctx);
                 data.Reset();
 
                 data.Prepare(OutputActionData.ActionType.MouseButton, mouseButtonCode);
@@ -76,7 +83,7 @@ namespace DS4MapperTest.ViewModels
             {
                 ctx.Action.Release(ctx.Mapper, ignoreReleaseActions: true);
 
-                OutputActionData data = EnsureSingleSlot(ctx.Func);
+                OutputActionData data = EnsureTargetSlot(ctx);
                 data.Reset();
 
                 data.Prepare(OutputActionData.ActionType.MouseWheel, (int)wheelCode);
@@ -95,7 +102,7 @@ namespace DS4MapperTest.ViewModels
             {
                 ctx.Action.Release(ctx.Mapper, ignoreReleaseActions: true);
 
-                OutputActionData data = EnsureSingleSlot(ctx.Func);
+                OutputActionData data = EnsureTargetSlot(ctx);
                 data.Reset();
 
                 data.Prepare(OutputActionData.ActionType.Empty, 0);
@@ -105,9 +112,24 @@ namespace DS4MapperTest.ViewModels
             });
         }
 
-        // Collapses the func down to exactly one output slot (used both for a
-        // brand-new unbound func and for a confirmed replacement of a complex,
-        // multi-output func) and returns that slot for mutation in place.
+        // Whole-function quick bind keeps the old simple workflow by replacing the
+        // single visible slot. Row-level quick bind targets only the requested slot.
+        private static OutputActionData EnsureTargetSlot(EditFaceBindingContext ctx)
+        {
+            if (ctx.OutputIndex.HasValue)
+            {
+                int index = ctx.OutputIndex.Value;
+                while (ctx.Func.OutputActions.Count <= index)
+                {
+                    ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                }
+
+                return ctx.Func.OutputActions[index];
+            }
+
+            return EnsureSingleSlot(ctx.Func);
+        }
+
         private static OutputActionData EnsureSingleSlot(ActionFunc func)
         {
             OutputActionData first = func.OutputActions.Count > 0
