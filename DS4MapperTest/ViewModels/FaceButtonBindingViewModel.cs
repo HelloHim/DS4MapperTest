@@ -551,13 +551,15 @@ namespace DS4MapperTest.ViewModels
             get => func is DistanceFunc distanceFunc ? distanceFunc.distance : 0.0;
             set
             {
-                if (func is not DistanceFunc) return;
+                if (func is not DistanceFunc distanceFunc || double.IsNaN(value)) return;
+                double clampedValue = Math.Clamp(value, 0.0, 1.0);
+                if (distanceFunc.distance == clampedValue) return;
                 var (buttonAction, target) = BeginEdit();
                 if (target is not DistanceFunc targetFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     owner.Owner.ReleaseFaceAction(owner);
-                    targetFunc.distance = Math.Clamp(value, 0.0, 1.0);
+                    targetFunc.distance = clampedValue;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
                 owner.RefreshAfterEdit();

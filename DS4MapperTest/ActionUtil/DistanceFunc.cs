@@ -6,16 +6,19 @@ namespace DS4MapperTest.ActionUtil
 {
     public class DistanceFunc : ActionFunc
     {
+        public const double DEFAULT_DISTANCE = 1.0;
+
         private bool inputStatus;
         private bool distanceOutputActive;
 
         public DistanceFunc()
         {
             onDistance = true;
+            distance = DEFAULT_DISTANCE;
         }
 
         public DistanceFunc(OutputActionData outputAction,
-            double distance=0.0)
+            double distance=DEFAULT_DISTANCE)
         {
             onDistance = true;
 
@@ -26,7 +29,7 @@ namespace DS4MapperTest.ActionUtil
         }
 
         public DistanceFunc(IEnumerable<OutputActionData> outputActions,
-            double distance=0.0)
+            double distance=DEFAULT_DISTANCE)
         {
             onDistance = true;
 

@@ -738,13 +738,13 @@ namespace DS4MapperTest
             }
             public bool ShouldSerializeDistance()
             {
-                return distanceFunc.distance != 0.0;
+                return distanceFunc.distance != DistanceFunc.DEFAULT_DISTANCE;
             }
 
             public bool IsDefault()
             {
                 return string.IsNullOrEmpty(distanceFunc.Name) &&
-                    distanceFunc.distance == 0.0;
+                    distanceFunc.distance == DistanceFunc.DEFAULT_DISTANCE;
             }
 
             public DistanceSettings(DistanceFunc actionFunc)

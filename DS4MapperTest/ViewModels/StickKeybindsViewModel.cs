@@ -1025,14 +1025,16 @@ namespace DS4MapperTest.ViewModels
             get => Func is DistanceFunc distanceFunc ? distanceFunc.distance : 0.0;
             set
             {
-                if (Func is not DistanceFunc) return;
+                if (Func is not DistanceFunc currentDistanceFunc || double.IsNaN(value)) return;
+                double clampedValue = Math.Clamp(value, 0.0, 1.0);
+                if (currentDistanceFunc.distance == clampedValue) return;
 
                 owner.Owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     ButtonAction editable = owner.Owner.EnsureEditableExtraButtonAction(owner.SlotKey);
                     if (FindFunc(editable, Kind) is DistanceFunc distanceFunc)
                     {
-                        distanceFunc.distance = Math.Clamp(value, 0.0, 1.0);
+                        distanceFunc.distance = clampedValue;
                     }
                     StickSideViewModel.MarkFunctionsChanged(editable);
                 });
