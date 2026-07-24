@@ -930,7 +930,7 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
             Assert.AreEqual(98, padAction.CounterMovementReleasePress.OppositeTapLengthMs);
             Assert.AreEqual(23, padAction.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
-            Assert.AreEqual(OppositeTapStartDelayMode.Fixed, padAction.CounterMovementReleasePress.OppositeTapStartDelayMode);
+            Assert.AreEqual(OppositeTapStartDelayMode.MinimumAndMaximum, padAction.CounterMovementReleasePress.OppositeTapStartDelayMode);
             Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMs);
             Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent);
             Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
