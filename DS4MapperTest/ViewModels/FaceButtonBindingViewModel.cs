@@ -492,6 +492,42 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        public bool MaxHoldTimeEnabled
+        {
+            get => func is ReleaseFunc releaseFunc && releaseFunc.MaxHoldTimeEnabled;
+            set
+            {
+                if (func is not ReleaseFunc releaseFuncGuard || releaseFuncGuard.MaxHoldTimeEnabled == value) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not ReleaseFunc targetFunc) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    owner.Owner.ReleaseFaceAction(owner);
+                    targetFunc.MaxHoldTimeEnabled = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
+                });
+                owner.RefreshAfterEdit();
+            }
+        }
+
+        public string MaxHoldTimeMs
+        {
+            get => func is ReleaseFunc releaseFunc ? releaseFunc.MaxHoldTimeMs.ToString() : "0";
+            set
+            {
+                if (func is not ReleaseFunc || !int.TryParse(value, out int temp)) return;
+                var (buttonAction, target) = BeginEdit();
+                if (target is not ReleaseFunc targetFunc) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    owner.Owner.ReleaseFaceAction(owner);
+                    targetFunc.MaxHoldTimeMs = temp;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
+                });
+                owner.RefreshAfterEdit();
+            }
+        }
+
         public string DistanceName
         {
             get => func is DistanceFunc distanceFunc ? distanceFunc.Name : "";
@@ -575,6 +611,8 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(HoldMs));
             OnPropertyChanged(nameof(TapWindowMs));
             OnPropertyChanged(nameof(ReleaseDelayMs));
+            OnPropertyChanged(nameof(MaxHoldTimeEnabled));
+            OnPropertyChanged(nameof(MaxHoldTimeMs));
             OnPropertyChanged(nameof(DistanceName));
             OnPropertyChanged(nameof(DistanceValue));
             OnPropertyChanged(nameof(ChordTrigger));
