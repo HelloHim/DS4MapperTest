@@ -930,6 +930,11 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
             Assert.AreEqual(98, padAction.CounterMovementReleasePress.OppositeTapLengthMs);
             Assert.AreEqual(23, padAction.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(OppositeTapStartDelayMode.Fixed, padAction.CounterMovementReleasePress.OppositeTapStartDelayMode);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMs);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
         }
 
         [TestMethod]
@@ -962,6 +967,42 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(OppositeTapLengthMode.Fixed, reloaded.CounterMovementReleasePress.OppositeTapLengthMode);
             Assert.AreEqual(64, reloaded.CounterMovementReleasePress.OppositeTapLengthMs);
             Assert.AreEqual(12, reloaded.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+        }
+
+        [TestMethod]
+        public void StartDelay_RoundTripsModeFixedAndPercentThroughSerialization()
+        {
+            StickPadAction actionToSave = new StickPadAction();
+            actionToSave.Id = 9;
+            actionToSave.CounterMovementReleasePress.Enabled = true;
+            actionToSave.CounterMovementReleasePress.OppositeTapStartDelayMode = OppositeTapStartDelayMode.WaitVariancePercentage;
+            actionToSave.CounterMovementReleasePress.ApplyStartDelayFixedAndPercentage(20, 25);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
+
+            string json = JsonConvert.SerializeObject(new StickPadActionSerializer(null, actionToSave));
+            JObject parsed = JObject.Parse(json);
+
+            Assert.AreEqual("WaitVariancePercentage", parsed["Settings"]?["OppositeTapStartDelayMode"]?.Value<string>());
+            Assert.AreEqual(20, parsed["Settings"]?["OppositeTapStartDelayMs"]?.Value<int>());
+            Assert.AreEqual(25, parsed["Settings"]?["OppositeTapStartDelayVariancePercent"]?.Value<int>());
+            Assert.AreEqual(15, parsed["Settings"]?["OppositeTapStartDelayMinimumMs"]?.Value<int>());
+            Assert.AreEqual(25, parsed["Settings"]?["OppositeTapStartDelayMaximumMs"]?.Value<int>());
+
+            StickPadActionSerializer reimport = new StickPadActionSerializer();
+            JsonConvert.PopulateObject(json, reimport);
+            reimport.PopulateMap();
+            StickPadAction reloaded = reimport.MapAction as StickPadAction;
+
+            Assert.AreEqual(OppositeTapStartDelayMode.WaitVariancePercentage, reloaded.CounterMovementReleasePress.OppositeTapStartDelayMode);
+            Assert.AreEqual(20, reloaded.CounterMovementReleasePress.OppositeTapStartDelayMs);
+            Assert.AreEqual(25, reloaded.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent);
+            Assert.AreEqual(15, reloaded.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
+            Assert.AreEqual(25, reloaded.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
         }
     }
 }
