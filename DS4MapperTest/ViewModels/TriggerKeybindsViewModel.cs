@@ -792,10 +792,13 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
-    public class TriggerDualStageBindItem : INotifyPropertyChanged, IQuickBindTarget
+    public class TriggerDualStageBindItem : INotifyPropertyChanged, IQuickBindTarget,
+        IActionOutputListOwner
     {
         private readonly TriggerKeybindItem owner;
         private readonly bool fullPull;
+        private readonly ObservableCollection<ActionOutputItem> outputItems =
+            new ObservableCollection<ActionOutputItem>();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -803,7 +806,10 @@ namespace DS4MapperTest.ViewModels
         {
             this.owner = owner;
             this.fullPull = fullPull;
+            RefreshOutputItems();
         }
+
+        public ObservableCollection<ActionOutputItem> OutputItems => outputItems;
 
         public string DisplayBind
         {
@@ -822,6 +828,10 @@ namespace DS4MapperTest.ViewModels
         private string PropertyName => fullPull
             ? TriggerDualStageAction.PropertyKeyStrings.FULLPULL_BUTTON
             : TriggerDualStageAction.PropertyKeyStrings.SOFTPULL_BUTTON;
+
+        public ActionFunc Func => FindNormalPressFunc(StageAction);
+
+        public string DisplayName => fullPull ? "Full Pull" : "Soft Pull";
 
         // IQuickBindTarget
         Mapper IQuickBindTarget.Mapper => owner.Owner.DeviceMapper;
@@ -849,9 +859,89 @@ namespace DS4MapperTest.ViewModels
             Refresh();
         }
 
+        public void AddOutputAction()
+        {
+            EditFaceBindingContext ctx = PrepareEdit(null);
+            if (ctx?.Func == null || ctx.Action == null) return;
+
+            owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                MarkStageChanged(ctx.Action);
+            });
+
+            owner.RefreshAfterEdit();
+            Refresh();
+        }
+
+        public void RemoveOutputAction(ActionOutputItem item)
+        {
+            if (item == null) return;
+
+            EditFaceBindingContext ctx = PrepareEdit(item);
+            if (ctx?.Func == null || ctx.Action == null) return;
+            int index = item.Index;
+            if (index <= 0 || index >= ctx.Func.OutputActions.Count) return;
+
+            owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.RemoveAt(index);
+                MarkStageChanged(ctx.Action);
+            });
+
+            owner.RefreshAfterEdit();
+            Refresh();
+        }
+
         public void Refresh()
         {
+            RefreshOutputItems();
             OnPropertyChanged(nameof(DisplayBind));
+            OnPropertyChanged(nameof(OutputItems));
+        }
+
+        private EditFaceBindingContext PrepareEdit(ActionOutputItem item)
+        {
+            TriggerButtonEditContext ctx = fullPull
+                ? owner.PrepareFullPullEdit()
+                : owner.PrepareSoftPullEdit();
+            if (ctx?.Action == null) return null;
+
+            ActionFunc func = EnsureNormalPressFunc(ctx.Action);
+            int index = item?.Index ?? 0;
+            while (func.OutputActions.Count <= index)
+            {
+                func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            }
+
+            MarkStageChanged(ctx.Action);
+            return new EditFaceBindingContext(owner.Owner.DeviceMapper, ctx.Action, func, item == null ? null : index);
+        }
+
+        private void RefreshOutputItems()
+        {
+            outputItems.Clear();
+            int count = Math.Max(1, Func?.OutputActions.Count ?? 0);
+            for (int i = 0; i < count; i++)
+            {
+                outputItems.Add(new ActionOutputItem(this, i));
+            }
+        }
+
+        Mapper IActionOutputListOwner.Mapper => owner.Owner.DeviceMapper;
+        string IActionOutputListOwner.RowLabel => owner.DisplayName;
+        string IActionOutputListOwner.SlotLabel => DisplayName;
+        ActionFunc IActionOutputListOwner.Func => Func;
+        EditFaceBindingContext IActionOutputListOwner.PrepareEdit(ActionOutputItem item) => PrepareEdit(item);
+        void IActionOutputListOwner.AddOutputAction() => AddOutputAction();
+        void IActionOutputListOwner.RemoveOutputAction(ActionOutputItem item) => RemoveOutputAction(item);
+        void IActionOutputListOwner.NotifyBindingChanged()
+        {
+            MarkStageChanged(StageAction);
+            owner.RefreshAfterEdit();
+            Refresh();
         }
 
         private ActionFunc EnsureNormalPressFunc(AxisDirButton action)
@@ -896,16 +986,20 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
-    public class TriggerButtonFuncItem : INotifyPropertyChanged, IQuickBindTarget
+    public class TriggerButtonFuncItem : INotifyPropertyChanged, IQuickBindTarget,
+        IActionOutputListOwner
     {
         private readonly TriggerKeybindItem owner;
         private readonly ActionFunc func;
+        private readonly ObservableCollection<ActionOutputItem> outputItems =
+            new ObservableCollection<ActionOutputItem>();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public TriggerKeybindItem Owner => owner;
         public FaceBindingFuncKind Kind { get; }
         public ActionFunc Func => func;
+        public ObservableCollection<ActionOutputItem> OutputItems => outputItems;
         public bool IsExtraBinding => Kind != FaceBindingFuncKind.Regular && func != null;
         public bool CanRemove => IsExtraBinding;
         public bool IsTurboEnabled => SupportsTurbo && TurboEnabled;
@@ -1208,6 +1302,65 @@ namespace DS4MapperTest.ViewModels
             this.owner = owner;
             Kind = kind;
             this.func = func;
+            RefreshOutputItems();
+        }
+
+        public void AddOutputAction()
+        {
+            EditTriggerButtonBindingContext ctx = owner.PrepareEdit(this);
+            if (ctx?.Func == null || ctx.Action == null) return;
+
+            owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                MarkButtonChanged();
+            });
+
+            owner.RefreshAfterEdit();
+        }
+
+        public void RemoveOutputAction(ActionOutputItem item)
+        {
+            if (item == null) return;
+
+            EditTriggerButtonBindingContext ctx = owner.PrepareEdit(this);
+            if (ctx?.Func == null || ctx.Action == null) return;
+            int index = item.Index;
+            if (index <= 0 || index >= ctx.Func.OutputActions.Count) return;
+
+            owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.RemoveAt(index);
+                MarkButtonChanged();
+            });
+
+            owner.RefreshAfterEdit();
+        }
+
+        private EditFaceBindingContext PrepareEdit(ActionOutputItem item)
+        {
+            EditTriggerButtonBindingContext ctx = owner.PrepareEdit(this);
+            if (ctx?.Func == null) return null;
+
+            int index = item?.Index ?? 0;
+            while (ctx.Func.OutputActions.Count <= index)
+            {
+                ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            }
+
+            return new EditFaceBindingContext(ctx.Mapper, ctx.Action, ctx.Func, index);
+        }
+
+        private void RefreshOutputItems()
+        {
+            outputItems.Clear();
+            int count = Math.Max(1, func?.OutputActions.Count ?? 0);
+            for (int i = 0; i < count; i++)
+            {
+                outputItems.Add(new ActionOutputItem(this, i));
+            }
         }
 
         // IQuickBindTarget
@@ -1221,6 +1374,15 @@ namespace DS4MapperTest.ViewModels
             return ctx == null ? null : new EditFaceBindingContext(ctx.Mapper, ctx.Action, ctx.Func);
         }
         void IQuickBindTarget.NotifyBindingChanged() => owner.RefreshAfterEdit();
+
+        Mapper IActionOutputListOwner.Mapper => owner.Owner.DeviceMapper;
+        string IActionOutputListOwner.RowLabel => owner.DisplayName;
+        string IActionOutputListOwner.SlotLabel => DisplayName;
+        ActionFunc IActionOutputListOwner.Func => func;
+        EditFaceBindingContext IActionOutputListOwner.PrepareEdit(ActionOutputItem item) => PrepareEdit(item);
+        void IActionOutputListOwner.AddOutputAction() => AddOutputAction();
+        void IActionOutputListOwner.RemoveOutputAction(ActionOutputItem item) => RemoveOutputAction(item);
+        void IActionOutputListOwner.NotifyBindingChanged() => owner.RefreshAfterEdit();
 
         private void MarkButtonChanged()
         {

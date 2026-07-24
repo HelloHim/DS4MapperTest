@@ -27,7 +27,8 @@ namespace DS4MapperTest.Views
             CloseActive(null, cancel: true);
 
             InlineOutputBindingEditorControl editor = new InlineOutputBindingEditorControl();
-            editor.PostInit(context.Mapper, context.Action, context.Func, title);
+            editor.PostInit(context.Mapper, context.Action, context.Func, title,
+                context.OutputIndex ?? 0);
             editor.Applied += (_, _) => CloseHost(host, refresh);
             editor.Cancelled += (_, _) => CloseHost(host, refresh);
 

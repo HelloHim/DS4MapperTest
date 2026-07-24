@@ -146,12 +146,8 @@
                                                            Style="{StaticResource JsmccMutedText}"
                                                            Margin="0,3,0,0"/>
                                             </StackPanel>
-                                            <views:QuickBindControl Grid.Column="1"/>
-                                            <ContentControl x:Name="InlineEditorHost"
-                                                            Grid.Row="1"
-                                                            Grid.Column="0"
-                                                            Grid.ColumnSpan="3"
-                                                            Visibility="Collapsed"/>
+                                            <views:ActionOutputListControl Grid.Column="1"
+                                                                           Grid.ColumnSpan="2"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -180,12 +176,8 @@
                                                            Style="{StaticResource JsmccMutedText}"
                                                            Margin="0,3,0,0"/>
                                             </StackPanel>
-                                            <views:QuickBindControl Grid.Column="1"/>
-                                            <ContentControl x:Name="InlineEditorHost"
-                                                            Grid.Row="1"
-                                                            Grid.Column="0"
-                                                            Grid.ColumnSpan="3"
-                                                            Visibility="Collapsed"/>
+                                            <views:ActionOutputListControl Grid.Column="1"
+                                                                           Grid.ColumnSpan="2"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -648,15 +640,8 @@
                                 <TextBlock Grid.Column="0"
                                            Text="Outer Ring Bind"
                                            Style="{StaticResource JsmccLabelText}"/>
-                                <views:QuickBindControl Grid.Column="1"
-                                                        DataContext="{Binding RingBindItem}"
-                                                        HorizontalAlignment="Left"/>
-                                <ContentControl x:Name="InlineEditorHost"
-                                                Grid.Row="1"
-                                                Grid.Column="0"
-                                                Grid.ColumnSpan="2"
-                                                Visibility="Collapsed"
-                                                Margin="0,8,0,0"/>
+                                <views:ActionOutputListControl Grid.Column="1"
+                                                               DataContext="{Binding RingBindItem}"/>
                             </Grid>
                         </Border>
 
