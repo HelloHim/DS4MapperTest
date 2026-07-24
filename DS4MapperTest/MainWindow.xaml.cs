@@ -1030,6 +1030,11 @@ namespace DS4MapperTest
             await SaveCurrentProfileAsync();
         }
 
+        private async void DiscardProfileChangesButton_Click(object sender, RoutedEventArgs e)
+        {
+            await DiscardCurrentProfileChangesAsync();
+        }
+
         private async Task<bool> SaveCurrentProfileAsync()
         {
             if (editorTestVM == null || isSavingProfile) return false;
@@ -1041,6 +1046,7 @@ namespace DS4MapperTest
             ProfileEditorTestViewModel activeVM = editorTestVM;
             saveProfileButton.Content = "Saving...";
             saveProfileButton.IsEnabled = false;
+            discardProfileChangesButton.IsEnabled = false;
             IsEnabled = false;
 
             Exception saveException = null;
@@ -1055,6 +1061,7 @@ namespace DS4MapperTest
 
             IsEnabled = true;
             saveProfileButton.IsEnabled = true;
+            discardProfileChangesButton.IsEnabled = editorTestVM?.IsProfileDirty == true;
             isSavingProfile = false;
 
             if (saveException == null)
@@ -1075,6 +1082,53 @@ namespace DS4MapperTest
             }
         }
 
+        private async Task<bool> DiscardCurrentProfileChangesAsync()
+        {
+            if (editorTestVM?.CurrentProfile?.Dirty != true || currentDeviceItem == null) return true;
+
+            DirtySwitchDecision decision = ShowDirtySwitchDialog(
+                allowSave: false,
+                title: "Discard Changes",
+                messageText: "Discard all unsaved changes to the current profile?");
+            if (decision != DirtySwitchDecision.Discard) return false;
+
+            IsEnabled = false;
+            saveStatusHideTimer?.Stop();
+            HideSaveStatusPill(animate: false);
+            InlineBindingEditorService.CloseAny();
+            ExitRenameSetMode();
+            ExitRenameLayerMode();
+
+            bool discarded = false;
+            Exception discardException = null;
+            try
+            {
+                int profileIndex = currentDeviceItem.ProfileIndex;
+                await Task.Run(() => currentDeviceItem.ResyncProfileIndex(profileIndex, reloadProfile: true));
+                discarded = LoadProfileForDevice(currentDeviceItem);
+            }
+            catch (Exception ex)
+            {
+                discardException = ex;
+            }
+
+            saveProfileButton.Content = "Save Profile";
+            IsEnabled = true;
+
+            if (!discarded)
+            {
+                MessageBox.Show(
+                    discardException == null
+                        ? "Failed to reload the current profile."
+                        : $"Failed to reload the current profile:\n{discardException.Message}",
+                    "Discard Changes",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+
+            return discarded;
+        }
+
         private async Task<bool> ConfirmDiscardProfileChangesAsync()
         {
             if (editorTestVM?.CurrentProfile?.Dirty != true) return true;
@@ -1091,13 +1145,16 @@ namespace DS4MapperTest
             }
         }
 
-        private DirtySwitchDecision ShowDirtySwitchDialog()
+        private DirtySwitchDecision ShowDirtySwitchDialog(
+            bool allowSave = true,
+            string title = "Unsaved Changes",
+            string messageText = "The current profile has unsaved changes.")
         {
             DirtySwitchDecision decision = DirtySwitchDecision.Cancel;
             Window dialog = new Window
             {
                 Owner = this,
-                Title = "Unsaved Changes",
+                Title = title,
                 SizeToContent = SizeToContent.WidthAndHeight,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 ResizeMode = ResizeMode.NoResize,
@@ -1107,7 +1164,7 @@ namespace DS4MapperTest
             StackPanel root = new StackPanel { Width = 360 };
             TextBlock message = new TextBlock
             {
-                Text = "The current profile has unsaved changes.",
+                Text = messageText,
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(0, 0, 0, 14),
             };
@@ -1120,15 +1177,18 @@ namespace DS4MapperTest
                 HorizontalAlignment = HorizontalAlignment.Right,
             };
 
-            Button saveButton = CreateDirtyDialogButton("Save", "JsmccPrimaryButtonStyle");
+            Button saveButton = allowSave ? CreateDirtyDialogButton("Save", "JsmccPrimaryButtonStyle") : null;
             Button discardButton = CreateDirtyDialogButton("Discard", "JsmccDangerButtonStyle");
             Button cancelButton = CreateDirtyDialogButton("Cancel", "JsmccButtonStyle");
 
-            saveButton.Click += (_, _) =>
+            if (saveButton != null)
             {
-                decision = DirtySwitchDecision.Save;
-                dialog.DialogResult = true;
-            };
+                saveButton.Click += (_, _) =>
+                {
+                    decision = DirtySwitchDecision.Save;
+                    dialog.DialogResult = true;
+                };
+            }
             discardButton.Click += (_, _) =>
             {
                 decision = DirtySwitchDecision.Discard;
@@ -1140,7 +1200,10 @@ namespace DS4MapperTest
                 dialog.DialogResult = false;
             };
 
-            buttons.Children.Add(saveButton);
+            if (saveButton != null)
+            {
+                buttons.Children.Add(saveButton);
+            }
             buttons.Children.Add(discardButton);
             buttons.Children.Add(cancelButton);
             root.Children.Add(buttons);
