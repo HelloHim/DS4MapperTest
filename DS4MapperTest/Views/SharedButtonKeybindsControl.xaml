@@ -77,10 +77,6 @@
                                                       Tag="Double"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddDoublePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click"/>
-                                            <MenuItem Header="Distance"
-                                                      Tag="Distance"
-                                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddDistancePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                      Click="AddExtraBindingMenuItem_Click"/>
                                             <MenuItem Header="Chorded Press"
                                                       Tag="Chorded"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
@@ -92,6 +88,10 @@
                                             <MenuItem Header="Release Press"
                                                       Tag="Release"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Click="AddExtraBindingMenuItem_Click"/>
+                                            <MenuItem Header="Distance"
+                                                      Tag="Distance"
+                                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddDistancePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click"/>
                                         </ContextMenu>
                                     </Button.ContextMenu>
@@ -393,7 +393,7 @@
                                                                               Increment="0.1"
                                                                               Width="108"
                                                                               Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                              Value="{Binding DistanceValue, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                              Value="{Binding DistanceValue, UpdateSourceTrigger=LostFocus}"/>
                                                         </StackPanel>
                                                     </Border>
 

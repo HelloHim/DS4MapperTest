@@ -1016,12 +1016,16 @@ namespace DS4MapperTest.ViewModels
             get => func is DistanceFunc distanceFunc ? distanceFunc.distance : 0.0;
             set
             {
+                if (double.IsNaN(value)) return;
+                ActionFunc currentFunc = owner.FindButtonFunc(Kind) ?? func;
+                if (currentFunc is not DistanceFunc distanceFunc) return;
+                double clampedValue = Math.Clamp(value, 0.0, 1.0);
+                if (distanceFunc.distance == clampedValue) return;
                 TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
-                if ((owner.FindButtonFunc(Kind) ?? func) is not DistanceFunc distanceFunc) return;
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     triggerAction?.EventButton.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
-                    distanceFunc.distance = Math.Clamp(value, 0.0, 1.0);
+                    distanceFunc.distance = clampedValue;
                     MarkButtonChanged();
                 });
                 OnPropertyChanged(nameof(DistanceValue));

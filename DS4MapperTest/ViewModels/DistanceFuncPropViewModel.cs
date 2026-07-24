@@ -38,7 +38,10 @@ namespace DS4MapperTest.ViewModels
             get => func.distance;
             set
             {
-                func.distance = Math.Clamp(value, 0.0, 1.0);
+                if (double.IsNaN(value)) return;
+                double clampedValue = Math.Clamp(value, 0.0, 1.0);
+                if (func.distance == clampedValue) return;
+                func.distance = clampedValue;
                 DistanceChanged?.Invoke(this, EventArgs.Empty);
             }
         }
