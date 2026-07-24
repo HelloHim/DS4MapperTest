@@ -371,6 +371,87 @@
                             <StackPanel Margin="12,8,0,0">
                                 <Border Style="{StaticResource ModeRowBorder}">
                                     <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="260"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Opposite Tap Start Delay Mode" Style="{StaticResource JsmccLabelText}"/>
+                                            <ComboBox Grid.Column="1"
+                                                      ItemsSource="{Binding StartDelayModeItems}"
+                                                      DisplayMemberPath="DisplayName"
+                                                      SelectedValuePath="ChoiceValue"
+                                                      SelectedValue="{Binding OppositeTapStartDelayMode}"
+                                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                                      HorizontalAlignment="Left"
+                                                      MinWidth="220"/>
+                                        </Grid>
+                                        <TextBlock Text="{Binding OppositeTapStartDelayModeDescription}"
+                                                   Style="{StaticResource JsmccMutedText}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource ModeRowBorder}"
+                                        Visibility="{Binding ShowStartDelayFixedModeFields, Converter={StaticResource BoolToVis}}">
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="260"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Opposite Tap Start Delay" Style="{StaticResource JsmccLabelText}"/>
+                                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="150" DecimalPlaces="0" Increment="1"
+                                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                              Value="{Binding OppositeTapStartDelayMs, UpdateSourceTrigger=LostFocus}"/>
+                                            <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                        </Grid>
+                                        <TextBlock Text="Sets a fixed neutral delay before the generated opposite press begins."
+                                                   Style="{StaticResource JsmccMutedText}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource ModeRowBorder}"
+                                        Visibility="{Binding ShowStartDelayWaitVariancePercentageModeFields, Converter={StaticResource BoolToVis}}">
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="260"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Opposite Tap Start Delay" Style="{StaticResource JsmccLabelText}"/>
+                                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="150" DecimalPlaces="0" Increment="1"
+                                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                              Value="{Binding OppositeTapStartDelayMs, UpdateSourceTrigger=LostFocus}"/>
+                                            <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                        </Grid>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="260"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Wait Variance Percentage" Style="{StaticResource JsmccLabelText}"/>
+                                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="0" Increment="1"
+                                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                              Value="{Binding OppositeTapStartDelayVariancePercent, UpdateSourceTrigger=LostFocus}"/>
+                                            <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                        </Grid>
+                                        <TextBlock Text="Sets the percentage range below and above the fixed start delay. Final boundaries are rounded down to whole milliseconds."
+                                                   Style="{StaticResource JsmccMutedText}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource ModeRowBorder}"
+                                        Visibility="{Binding ShowStartDelayMinimumAndMaximumModeFields, Converter={StaticResource BoolToVis}}">
+                                    <StackPanel>
                                         <TextBlock Text="Opposite Tap Start Delay Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>

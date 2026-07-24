@@ -98,6 +98,104 @@
                                 </Button>
                             </DockPanel>
 
+                            <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                    Visibility="{Binding IsTouchpadPressureBinding, Converter={StaticResource BoolToVis}}"
+                                    Margin="0,0,0,6">
+                                <StackPanel>
+                                    <TextBlock Text="Activation Style"
+                                               Style="{StaticResource JsmccLabelText}"/>
+                                    <TextBlock Text="Pressure settings"
+                                               Style="{StaticResource JsmccMutedText}"
+                                               Margin="0,3,0,6"/>
+
+                                    <ComboBox ItemsSource="{Binding ActivationStyleItems}"
+                                              SelectedValue="{Binding ActivationStyle, UpdateSourceTrigger=PropertyChanged}"
+                                              SelectedValuePath="Value"
+                                              DisplayMemberPath="DisplayName"
+                                              Width="240"
+                                              HorizontalAlignment="Left"
+                                              Margin="0,0,0,8"
+                                              Style="{StaticResource JsmccComboBoxStyle}"/>
+
+                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="6,4"
+                                            Margin="0,0,0,6"
+                                            HorizontalAlignment="Left">
+                                        <StackPanel>
+                                            <TextBlock Text="Soft Press Threshold" Style="{StaticResource SharedControlLabel}" Margin="0,0,0,4"/>
+                                            <hc:NumericUpDown Minimum="0"
+                                                              Maximum="32767"
+                                                              DecimalPlaces="0"
+                                                              Increment="500"
+                                                              Width="108"
+                                                              HorizontalAlignment="Left"
+                                                              Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                              Value="{Binding SoftPressThreshold, UpdateSourceTrigger=LostFocus}"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="6,4"
+                                            Margin="0,0,0,6"
+                                            HorizontalAlignment="Left">
+                                        <StackPanel>
+                                            <TextBlock Text="Full Press Threshold" Style="{StaticResource SharedControlLabel}" Margin="0,0,0,4"/>
+                                            <hc:NumericUpDown Minimum="0"
+                                                              Maximum="32767"
+                                                              DecimalPlaces="0"
+                                                              Increment="500"
+                                                              Width="108"
+                                                              HorizontalAlignment="Left"
+                                                              Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                              Value="{Binding FullPressThreshold, UpdateSourceTrigger=LostFocus}"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="6,4"
+                                            Margin="0,0,0,6"
+                                            HorizontalAlignment="Left">
+                                        <StackPanel>
+                                            <TextBlock Text="Hip Fire Delay" Style="{StaticResource SharedControlLabel}" Margin="0,0,0,4"/>
+                                            <hc:NumericUpDown Minimum="0"
+                                                              Maximum="10000"
+                                                              DecimalPlaces="0"
+                                                              Increment="10"
+                                                              Width="96"
+                                                              HorizontalAlignment="Left"
+                                                              Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                              Value="{Binding HipFireDelayMs, UpdateSourceTrigger=LostFocus}"/>
+                                            <TextBlock Text="ms"
+                                                       Style="{StaticResource JsmccMutedText}"
+                                                       Margin="0,3,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="6,4"
+                                            HorizontalAlignment="Left">
+                                        <StackPanel>
+                                            <TextBlock Text="Force Hip Fire Delay" Style="{StaticResource SharedControlLabel}" Margin="0,0,0,4"/>
+                                            <CheckBox IsChecked="{Binding ForceHipFireDelay}"
+                                                      Style="{StaticResource JsmccToggleStyle}"
+                                                      HorizontalAlignment="Left"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
                             <ItemsControl ItemsSource="{Binding FunctionItems}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
