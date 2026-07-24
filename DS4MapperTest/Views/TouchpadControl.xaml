@@ -132,8 +132,59 @@
                     </Grid>
                 </Border>
 
+                <Border Visibility="{Binding IsSensitivityCalibrationAction, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,6">
+                            <TextBlock Text="Sensitivity &amp; Calibration" Style="{StaticResource JsmccSectionTitle}"/>
+                            <TextBlock Text="Calibration, base and vertical sensitivity, and acceleration curve settings for this touchpad input."
+                                       Style="{StaticResource JsmccBodyText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Style="{StaticResource TouchpadInlineCard}">
+                            <ContentControl Tag="SensitivityCalibration"
+                                            DataContext="{Binding}"
+                                            Loaded="InlineSettingsHost_Loaded"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Visibility="{Binding IsFilteringStabilisationAction, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,6">
+                            <TextBlock Text="Filtering &amp; Stabilisation" Style="{StaticResource JsmccSectionTitle}"/>
+                            <TextBlock Text="Deadzone, smoothing, and stability settings for this touchpad input."
+                                       Style="{StaticResource JsmccBodyText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Style="{StaticResource TouchpadInlineCard}">
+                            <ContentControl Tag="FilteringStabilisation"
+                                            DataContext="{Binding}"
+                                            Loaded="InlineSettingsHost_Loaded"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Visibility="{Binding IsTrackballScrollAction, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,6">
+                            <TextBlock Text="Trackball &amp; Scroll" Style="{StaticResource JsmccSectionTitle}"/>
+                            <TextBlock Text="Trackball and scroll settings for this touchpad input."
+                                       Style="{StaticResource JsmccBodyText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Style="{StaticResource TouchpadInlineCard}">
+                            <ContentControl Tag="TrackballScroll"
+                                            DataContext="{Binding}"
+                                            Loaded="InlineSettingsHost_Loaded"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
                 <Border x:Name="ModeSettingsSectionRoot"
-                        Visibility="{Binding HasAdvancedTouchpadSettings, Converter={StaticResource BoolToVis}}">
+                        Visibility="{Binding IsModeSettingsAction, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
                         <StackPanel Margin="0,0,0,6">
                             <TextBlock Text="Mode Settings" Style="{StaticResource JsmccSectionTitle}"/>
@@ -148,20 +199,6 @@
                         <Border Style="{StaticResource TouchpadInlineCard}"
                                 Visibility="{Binding IsModeSettingsAction, Converter={StaticResource BoolToVis}}">
                             <ContentControl Tag="ModeSettings"
-                                            DataContext="{Binding}"
-                                            Loaded="InlineSettingsHost_Loaded"/>
-                        </Border>
-
-                        <Border Style="{StaticResource TouchpadInlineCard}"
-                                Visibility="{Binding IsFilteringStabilisationAction, Converter={StaticResource BoolToVis}}">
-                            <ContentControl Tag="FilteringStabilisation"
-                                            DataContext="{Binding}"
-                                            Loaded="InlineSettingsHost_Loaded"/>
-                        </Border>
-
-                        <Border Style="{StaticResource TouchpadInlineCard}"
-                                Visibility="{Binding IsTrackballScrollAction, Converter={StaticResource BoolToVis}}">
-                            <ContentControl Tag="TrackballScroll"
                                             DataContext="{Binding}"
                                             Loaded="InlineSettingsHost_Loaded"/>
                         </Border>
@@ -237,23 +274,6 @@
                         </StackPanel>
                         <Border Style="{StaticResource TouchpadInlineCard}">
                             <ContentControl Tag="MouseMovement"
-                                            DataContext="{Binding}"
-                                            Loaded="InlineSettingsHost_Loaded"/>
-                        </Border>
-                    </StackPanel>
-                </Border>
-
-                <Border Visibility="{Binding IsSensitivityCalibrationAction, Converter={StaticResource BoolToVis}}">
-                    <StackPanel>
-                        <StackPanel Margin="0,0,0,6">
-                            <TextBlock Text="Sensitivity &amp; Calibration" Style="{StaticResource JsmccSectionTitle}"/>
-                            <TextBlock Text="Calibration, base and vertical sensitivity, and acceleration curve settings for this touchpad input."
-                                       Style="{StaticResource JsmccBodyText}"
-                                       TextWrapping="Wrap"
-                                       Margin="0,4,0,0"/>
-                        </StackPanel>
-                        <Border Style="{StaticResource TouchpadInlineCard}">
-                            <ContentControl Tag="SensitivityCalibration"
                                             DataContext="{Binding}"
                                             Loaded="InlineSettingsHost_Loaded"/>
                         </Border>

@@ -26,7 +26,7 @@ namespace DS4MapperTest.TouchpadActions
         // DS4/DualSense pads are 1920 counts wide; other pads scale.
         public const double REFERENCE_PAD_WIDTH = 1920.0;
 
-        public const TouchpadStabilityMode DEFAULT_MODE = TouchpadStabilityMode.Off;
+        public const TouchpadStabilityMode DEFAULT_MODE = TouchpadStabilityMode.Light;
         public const double DEFAULT_TOUCH_SETTLE_MS = 8.0;
         public const double DEFAULT_BASE_NOISE_FLOOR = 6.0;
         public const double DEFAULT_HYSTERESIS_EXIT_MULTIPLIER = 1.5;
@@ -102,6 +102,11 @@ namespace DS4MapperTest.TouchpadActions
 
         private TouchpadStabilitySettings customSnapshot;
 
+        public TouchpadStabilitySettings()
+        {
+            ApplyPreset(DEFAULT_MODE);
+        }
+
         public void CopyFrom(TouchpadStabilitySettings other)
         {
             Mode = other.Mode;
@@ -136,29 +141,7 @@ namespace DS4MapperTest.TouchpadActions
 
         public void ResetToDefaults()
         {
-            Mode = DEFAULT_MODE;
-            TouchSettleMs = DEFAULT_TOUCH_SETTLE_MS;
-            BaseNoiseFloor = DEFAULT_BASE_NOISE_FLOOR;
-            HysteresisExitMultiplier = DEFAULT_HYSTERESIS_EXIT_MULTIPLIER;
-            FastPassthroughThreshold = DEFAULT_FAST_PASSTHROUGH_THRESHOLD;
-            EdgeGuardEnabled = DEFAULT_EDGE_GUARD_ENABLED;
-            LeftEdgePercent = DEFAULT_LEFT_EDGE_PERCENT;
-            RightEdgePercent = DEFAULT_RIGHT_EDGE_PERCENT;
-            TopEdgePercent = DEFAULT_TOP_EDGE_PERCENT;
-            BottomEdgePercent = DEFAULT_BOTTOM_EDGE_PERCENT;
-            EdgeJitterMultiplier = DEFAULT_EDGE_JITTER_MULTIPLIER;
-            CornerJitterMultiplier = DEFAULT_CORNER_JITTER_MULTIPLIER;
-            TopLeftCornerMultiplier = DEFAULT_TOP_LEFT_CORNER_MULTIPLIER;
-            EdgeHysteresisPercent = DEFAULT_EDGE_HYSTERESIS_PERCENT;
-            EdgeStartGateEnabled = DEFAULT_EDGE_START_GATE_ENABLED;
-            EdgeStartThreshold = DEFAULT_EDGE_START_THRESHOLD;
-            EdgeLockEnabled = DEFAULT_EDGE_LOCK_ENABLED;
-            StationaryHoldEnabled = DEFAULT_STATIONARY_HOLD_ENABLED;
-            StationaryDetectionMs = DEFAULT_STATIONARY_DETECTION_MS;
-            StationaryNoiseMultiplier = DEFAULT_STATIONARY_NOISE_MULTIPLIER;
-            StationaryBreakoutThreshold = DEFAULT_STATIONARY_BREAKOUT_THRESHOLD;
-            DeltaClampEnabled = DEFAULT_DELTA_CLAMP_ENABLED;
-            MaxDeltaPerFrame = DEFAULT_MAX_DELTA_PER_FRAME;
+            ApplyPreset(DEFAULT_MODE);
             customSnapshot = null;
         }
 
