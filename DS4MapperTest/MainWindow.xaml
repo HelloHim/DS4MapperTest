@@ -260,6 +260,13 @@
                                            Style="{StaticResource SaveStatusPillTextSuccessStyle}"/>
                             </Border>
 
+                            <Button x:Name="discardProfileChangesButton"
+                                    Content="Discard Changes"
+                                    Click="DiscardProfileChangesButton_Click"
+                                    IsEnabled="{Binding IsProfileDirty, TargetNullValue=False, FallbackValue=False}"
+                                    Margin="12,0,0,0"
+                                    Style="{StaticResource JsmccDangerButtonStyle}"/>
+
                             <Button x:Name="saveProfileButton"
                                     Content="Save Profile"
                                     Click="SaveProfileButton_Click"
