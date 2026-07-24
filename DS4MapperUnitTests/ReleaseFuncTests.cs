@@ -1,5 +1,7 @@
+using System.Linq;
 using System.Reflection;
 using DS4MapperTest;
+using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.SteamControllerLibrary;
@@ -131,6 +133,15 @@ namespace DS4MapperUnitTests
               ""Functions"": [
                 { ""Type"": ""NormalPress"", ""OutputActions"": [ { ""Type"": ""Keyboard"", ""Code"": ""N"" } ] }
               ]
+            },
+            {
+              ""Id"": 7,
+              ""Name"": ""MaxHoldTimeRelease"",
+              ""ActionMode"": ""ButtonAction"",
+              ""Functions"": [
+                { ""Type"": ""NormalPress"", ""OutputActions"": [ { ""Type"": ""Empty"" } ] },
+                { ""Type"": ""Release"", ""OutputActions"": [ { ""Type"": ""Keyboard"", ""Code"": ""M"" } ], ""Settings"": { ""DelayDuration"": 0, ""MaxHoldTimeEnabled"": true, ""MaxHoldTimeMs"": 250 } }
+              ]
             }
           ]
         }
@@ -148,7 +159,8 @@ namespace DS4MapperUnitTests
         { ""Input"": ""RShoulder"", ""Action"": 3 },
         { ""Input"": ""B"", ""Action"": 4 },
         { ""Input"": ""X"", ""Action"": 5 },
-        { ""Input"": ""Y"", ""Action"": 6 }
+        { ""Input"": ""Y"", ""Action"": 6 },
+        { ""Input"": ""Back"", ""Action"": 7 }
       ]
     }
   ]
@@ -237,6 +249,13 @@ namespace DS4MapperUnitTests
         {
             SteamControllerState state = NeutralState(dt);
             state.Y = pressed;
+            Report(mapper, state);
+        }
+
+        private static void SetMaxHoldButton(TestMapper mapper, bool pressed, double dt = DT)
+        {
+            SteamControllerState state = NeutralState(dt);
+            state.Back = pressed;
             Report(mapper, state);
         }
 
@@ -473,6 +492,115 @@ namespace DS4MapperUnitTests
 
             Assert.IsFalse(KeyDown((uint)VirtualKeys.V), "A pending pulse must not be left stuck down when the mapper shuts down.");
             Assert.AreEqual(0, mapper.PendingReleaseFuns.Count);
+        }
+
+        [TestMethod]
+        public void MaxHoldTime_HeldLongerThanMax_SuppressesFire()
+        {
+            TestMapper mapper = LoadMapper();
+
+            SetMaxHoldButton(mapper, true);
+            System.Threading.Thread.Sleep(300); // > configured 250ms max hold time
+            SetMaxHoldButton(mapper, false);
+
+            Assert.IsFalse(KeyDown((uint)VirtualKeys.M),
+                "Held longer than the configured Max Hold Time - Release Press must not fire.");
+        }
+
+        [TestMethod]
+        public void MaxHoldTime_HeldShorterThanMax_FiresNormally()
+        {
+            TestMapper mapper = LoadMapper();
+
+            SetMaxHoldButton(mapper, true);
+            SetMaxHoldButton(mapper, false);
+
+            Assert.IsTrue(KeyDown((uint)VirtualKeys.M),
+                "Held well under the configured Max Hold Time - Release Press must fire normally.");
+        }
+
+        [TestMethod]
+        public void MaxHoldTime_Disabled_HoldDurationHasNoEffect()
+        {
+            TestMapper mapper = LoadMapper();
+
+            // "A" is bound to a Release Press with MaxHoldTimeEnabled left at its default
+            // (false). Even a long hold must still fire when the feature is off.
+            SetA(mapper, true);
+            System.Threading.Thread.Sleep(300);
+            SetA(mapper, false);
+
+            Assert.IsTrue(KeyDown((uint)VirtualKeys.Z),
+                "Max Hold Time disabled - hold duration must have no effect on firing.");
+        }
+
+        [TestMethod]
+        public void MaxHoldTime_DefaultsToOffWithTwoFiftyMsWhenNewlyCreated()
+        {
+            ReleaseFunc func = new ReleaseFunc();
+
+            Assert.IsFalse(func.MaxHoldTimeEnabled, "Max Hold Time must default to Off.");
+            Assert.AreEqual(250, func.MaxHoldTimeMs, "Enabled default value must be 250ms.");
+        }
+
+        [TestMethod]
+        public void MaxHoldTime_ProfileSaveLoad_RoundTripsThroughRealSerializer()
+        {
+            ReleaseFunc source = new ReleaseFunc
+            {
+                MaxHoldTimeEnabled = true,
+                MaxHoldTimeMs = 500,
+            };
+            source.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.K));
+
+            ActionFuncSerializer serializer = ActionFuncSerializerFactory.CreateSerializer(source);
+            string json = JsonConvert.SerializeObject(serializer);
+
+            Assert.IsTrue(json.Contains("\"MaxHoldTimeEnabled\":true"));
+            Assert.IsTrue(json.Contains("\"MaxHoldTimeMs\":500"));
+
+            ActionFuncSerializer loaded = JsonConvert.DeserializeObject<ActionFuncSerializer>(json);
+            loaded.PopulateFunc();
+
+            Assert.IsInstanceOfType(loaded.ActionFunc, typeof(ReleaseFunc));
+            ReleaseFunc loadedFunc = (ReleaseFunc)loaded.ActionFunc;
+            Assert.IsTrue(loadedFunc.MaxHoldTimeEnabled);
+            Assert.AreEqual(500, loadedFunc.MaxHoldTimeMs);
+        }
+
+        [TestMethod]
+        public void MaxHoldTime_DefaultValue_IsNotWrittenToProfile()
+        {
+            ReleaseFunc source = new ReleaseFunc();
+            source.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.K));
+
+            ActionFuncSerializer serializer = ActionFuncSerializerFactory.CreateSerializer(source);
+            string json = JsonConvert.SerializeObject(serializer);
+
+            Assert.IsFalse(json.Contains("MaxHoldTime"),
+                "Default (disabled, 250ms) Max Hold Time must be omitted from a saved profile.");
+        }
+
+        [TestMethod]
+        public void MaxHoldTime_Clone_CopiesValueIndependently()
+        {
+            ReleaseFunc source = new ReleaseFunc
+            {
+                MaxHoldTimeEnabled = true,
+                MaxHoldTimeMs = 400,
+            };
+
+            ActionFunc cloned = ActionFuncCopyFactory.CopyFunc(source);
+
+            Assert.IsInstanceOfType(cloned, typeof(ReleaseFunc));
+            ReleaseFunc clonedRelease = (ReleaseFunc)cloned;
+            Assert.IsTrue(clonedRelease.MaxHoldTimeEnabled);
+            Assert.AreEqual(400, clonedRelease.MaxHoldTimeMs);
+
+            // Mutating the clone must not affect the source (independent copy, not a
+            // reference share).
+            clonedRelease.MaxHoldTimeMs = 999;
+            Assert.AreEqual(400, source.MaxHoldTimeMs);
         }
     }
 }

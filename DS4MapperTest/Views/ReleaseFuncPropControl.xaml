@@ -7,6 +7,9 @@
              xmlns:local="clr-namespace:DS4MapperTest.Views"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
     <DockPanel>
         <StackPanel>
             <local:ButtonActionFuncSelectControl x:Name="funcTypeControl" Margin="0,8,0,0" />
@@ -30,6 +33,20 @@
                 <CheckBox IsChecked="{Binding ToggleEnabled}" Margin="8,0,0,0"
                           ToolTip="Alternate press and release on each source release, instead of a timed pulse">
                 </CheckBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <Label Content="Max Hold Time" />
+                <CheckBox IsChecked="{Binding MaxHoldTimeEnabled}" Margin="8,0,0,0"
+                          ToolTip="If held longer than this, Release Press will not fire on release">
+                </CheckBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
+                        Visibility="{Binding MaxHoldTimeEnabled, Converter={StaticResource BoolToVis}}">
+                <Label Content="Max Hold Duration" />
+                <hc:NumericUpDown Value="{Binding MaxHoldTimeMs, UpdateSourceTrigger=LostFocus}" DecimalPlaces="0"
+                                  Minimum="1" Maximum="60000" Increment="10"
+                                  Width="300" Margin="8,0,0,0" />
+                <TextBlock Text="ms" VerticalAlignment="Center" Margin="6,0,0,0" />
             </StackPanel>
         </StackPanel>
     </DockPanel>

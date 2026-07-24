@@ -645,6 +645,46 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        public bool MaxHoldTimeEnabled
+        {
+            get => Func is ReleaseFunc releaseFunc && releaseFunc.MaxHoldTimeEnabled;
+            set
+            {
+                if (Func is not ReleaseFunc currentReleaseFunc || currentReleaseFunc.MaxHoldTimeEnabled == value) return;
+
+                owner.ProfileVm.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    ButtonAction editable = owner.ProfileVm.EnsureEditableDPadDirectionAction(owner.Kind);
+                    if (FindFunc(editable, Kind) is ReleaseFunc releaseFunc)
+                    {
+                        releaseFunc.MaxHoldTimeEnabled = value;
+                    }
+                    DPadDirectionBindingItem.MarkFunctionsChanged(editable);
+                });
+                OnPropertyChanged(nameof(MaxHoldTimeEnabled));
+            }
+        }
+
+        public string MaxHoldTimeMs
+        {
+            get => Func is ReleaseFunc releaseFunc ? releaseFunc.MaxHoldTimeMs.ToString() : "0";
+            set
+            {
+                if (Func is not ReleaseFunc || !int.TryParse(value, out int temp)) return;
+
+                owner.ProfileVm.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    ButtonAction editable = owner.ProfileVm.EnsureEditableDPadDirectionAction(owner.Kind);
+                    if (FindFunc(editable, Kind) is ReleaseFunc releaseFunc)
+                    {
+                        releaseFunc.MaxHoldTimeMs = temp;
+                    }
+                    DPadDirectionBindingItem.MarkFunctionsChanged(editable);
+                });
+                OnPropertyChanged(nameof(MaxHoldTimeMs));
+            }
+        }
+
         public string DistanceName
         {
             get => Func is DistanceFunc distanceFunc ? distanceFunc.Name : "";

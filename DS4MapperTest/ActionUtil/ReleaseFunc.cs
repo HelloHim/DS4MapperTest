@@ -19,12 +19,22 @@ namespace DS4MapperTest.ActionUtil
     public class ReleaseFunc : ActionFunc
     {
         public const int DELAY_DURATION_DEFAULT = 100;
+        public const int MAX_HOLD_TIME_DEFAULT = 250;
 
         private bool armed;
         private bool inToggleState;
 
         private int delayDurationMs = DELAY_DURATION_DEFAULT;
         public int DelayDurationMs { get => delayDurationMs; set => delayDurationMs = value; }
+
+        // Optional: if enabled, a hold longer than MaxHoldTimeMs suppresses the release
+        // firing entirely (release is still consumed/armed cleared, just nothing fires).
+        // Held for exactly or less than the configured value still fires normally.
+        private bool maxHoldTimeEnabled;
+        public bool MaxHoldTimeEnabled { get => maxHoldTimeEnabled; set => maxHoldTimeEnabled = value; }
+
+        private int maxHoldTimeMs = MAX_HOLD_TIME_DEFAULT;
+        public int MaxHoldTimeMs { get => maxHoldTimeMs; set => maxHoldTimeMs = value; }
 
         private Stopwatch delayTimer = new Stopwatch();
 
@@ -39,6 +49,8 @@ namespace DS4MapperTest.ActionUtil
             onRelease = true;
             delayDurationMs = srcFunc.delayDurationMs;
             toggleEnabled = srcFunc.toggleEnabled;
+            maxHoldTimeEnabled = srcFunc.maxHoldTimeEnabled;
+            maxHoldTimeMs = srcFunc.maxHoldTimeMs;
         }
 
         public override void Prepare(Mapper mapper, bool state, ActionFuncStateData stateData)
@@ -58,7 +70,18 @@ namespace DS4MapperTest.ActionUtil
                 {
                     armed = false;
 
-                    if (toggleEnabled)
+                    // stateData.elapsed is restarted by ButtonAction on the press's rising
+                    // edge, so at release time it holds the full hold duration - no separate
+                    // timer needed here. "Longer than" the configured value suppresses the
+                    // fire; exactly at or under it still fires normally.
+                    bool heldTooLong = maxHoldTimeEnabled &&
+                        stateData.elapsed.ElapsedMilliseconds > maxHoldTimeMs;
+
+                    if (heldTooLong)
+                    {
+                        active = false;
+                    }
+                    else if (toggleEnabled)
                     {
                         ApplyToggleFiring();
                     }

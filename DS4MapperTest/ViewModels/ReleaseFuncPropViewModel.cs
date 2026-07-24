@@ -46,6 +46,24 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        public bool MaxHoldTimeEnabled
+        {
+            get => func.MaxHoldTimeEnabled;
+            set
+            {
+                func.MaxHoldTimeEnabled = value;
+            }
+        }
+
+        public int MaxHoldTimeMs
+        {
+            get => func.MaxHoldTimeMs;
+            set
+            {
+                func.MaxHoldTimeMs = value;
+            }
+        }
+
         public ReleaseFuncPropViewModel(Mapper mapper, ButtonAction action,
             ReleaseFunc func)
         {

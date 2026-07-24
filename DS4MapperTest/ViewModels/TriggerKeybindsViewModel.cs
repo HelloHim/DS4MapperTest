@@ -958,6 +958,42 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        public bool MaxHoldTimeEnabled
+        {
+            get => func is ReleaseFunc releaseFunc && releaseFunc.MaxHoldTimeEnabled;
+            set
+            {
+                TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
+                if ((owner.FindButtonFunc(Kind) ?? func) is not ReleaseFunc releaseFunc ||
+                    releaseFunc.MaxHoldTimeEnabled == value) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    triggerAction?.EventButton.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                    releaseFunc.MaxHoldTimeEnabled = value;
+                    MarkButtonChanged();
+                });
+                OnPropertyChanged(nameof(MaxHoldTimeEnabled));
+            }
+        }
+
+        public string MaxHoldTimeMs
+        {
+            get => func is ReleaseFunc releaseFunc ? releaseFunc.MaxHoldTimeMs.ToString() : "0";
+            set
+            {
+                TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
+                if ((owner.FindButtonFunc(Kind) ?? func) is not ReleaseFunc releaseFunc ||
+                    !int.TryParse(value, out int temp)) return;
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    triggerAction?.EventButton.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                    releaseFunc.MaxHoldTimeMs = temp;
+                    MarkButtonChanged();
+                });
+                OnPropertyChanged(nameof(MaxHoldTimeMs));
+            }
+        }
+
         public string DistanceName
         {
             get => func is DistanceFunc distanceFunc ? distanceFunc.Name : "";

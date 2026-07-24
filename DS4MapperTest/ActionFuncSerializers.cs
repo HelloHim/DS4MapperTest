@@ -375,10 +375,32 @@ namespace DS4MapperTest
                 return releaseFuncInstance.toggleEnabled == true;
             }
 
+            public bool MaxHoldTimeEnabled
+            {
+                get => releaseFuncInstance.MaxHoldTimeEnabled;
+                set => releaseFuncInstance.MaxHoldTimeEnabled = value;
+            }
+            public bool ShouldSerializeMaxHoldTimeEnabled()
+            {
+                return releaseFuncInstance.MaxHoldTimeEnabled == true;
+            }
+
+            public int MaxHoldTimeMs
+            {
+                get => releaseFuncInstance.MaxHoldTimeMs;
+                set => releaseFuncInstance.MaxHoldTimeMs = value;
+            }
+            public bool ShouldSerializeMaxHoldTimeMs()
+            {
+                return releaseFuncInstance.MaxHoldTimeMs != ReleaseFunc.MAX_HOLD_TIME_DEFAULT;
+            }
+
             public bool IsDefault()
             {
                 return releaseFuncInstance.DelayDurationMs == ReleaseFunc.DELAY_DURATION_DEFAULT &&
-                    releaseFuncInstance.toggleEnabled == false;
+                    releaseFuncInstance.toggleEnabled == false &&
+                    releaseFuncInstance.MaxHoldTimeEnabled == false &&
+                    releaseFuncInstance.MaxHoldTimeMs == ReleaseFunc.MAX_HOLD_TIME_DEFAULT;
             }
 
             public ReleaseFuncSettings(ReleaseFunc funcInstance)
