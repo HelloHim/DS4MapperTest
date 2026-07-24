@@ -355,7 +355,7 @@
                     </GroupBox>
                 </StackPanel>
 
-                <GroupBox Header="Trackpad Stability" MinWidth="360" Margin="0,8,16,0">
+                <GroupBox Header="Trackpad Stability Filters" MinWidth="360" Margin="0,8,16,0">
                     <StackPanel Margin="8,4,8,8">
                         <TextBlock Text="Filters physical edge and corner jitter before normal deadzone, smoothing, acceleration, and output scaling. Off preserves the old path."
                                    TextWrapping="Wrap" Margin="0,0,0,8" />
