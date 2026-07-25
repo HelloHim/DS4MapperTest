@@ -564,7 +564,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         public List<EnumChoiceSelection<TriggerSensitivityModifierConfigureUsing>> TriggerSensitivityModifierConfigureUsingItems { get; } = new()
         { new("Absolute Sensitivity", TriggerSensitivityModifierConfigureUsing.AbsoluteSensitivity), new("Multiplier", TriggerSensitivityModifierConfigureUsing.Multiplier) };
         public List<EnumChoiceSelection<TriggerSensitivityModifierResponseCurve>> TriggerSensitivityModifierResponseCurveItems { get; } = new()
-        { new("Linear", TriggerSensitivityModifierResponseCurve.Linear), new("Quadratic", TriggerSensitivityModifierResponseCurve.Quadratic), new("Cubic", TriggerSensitivityModifierResponseCurve.Cubic) };
+        { new("Linear", TriggerSensitivityModifierResponseCurve.Linear), new("Quadratic", TriggerSensitivityModifierResponseCurve.Quadratic), new("Cubic", TriggerSensitivityModifierResponseCurve.Cubic), new("Instant", TriggerSensitivityModifierResponseCurve.Instant) };
         private void RaiseTriggerModifierChanged()
         {
             action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.TRIGGER_SENSITIVITY_MODIFIER);

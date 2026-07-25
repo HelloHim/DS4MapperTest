@@ -5,7 +5,7 @@ namespace DS4MapperTest.GyroActions
     public enum TriggerSensitivityModifierTrigger { Left, Right }
     public enum TriggerSensitivityModifierBehaviour { DecreaseWithPull, IncreaseWithPull }
     public enum TriggerSensitivityModifierConfigureUsing { AbsoluteSensitivity, Multiplier }
-    public enum TriggerSensitivityModifierResponseCurve { Linear, Quadratic, Cubic }
+    public enum TriggerSensitivityModifierResponseCurve { Linear, Quadratic, Cubic, Instant }
 
     public struct TriggerSensitivityModifierSettings
     {
@@ -73,6 +73,7 @@ namespace DS4MapperTest.GyroActions
             {
                 TriggerSensitivityModifierResponseCurve.Quadratic => progress * progress,
                 TriggerSensitivityModifierResponseCurve.Cubic => progress * progress * progress,
+                TriggerSensitivityModifierResponseCurve.Instant => progress > 0.0 ? 1.0 : 0.0,
                 _ => progress,
             };
             return baseSensitivity + (target - baseSensitivity) * progress;
