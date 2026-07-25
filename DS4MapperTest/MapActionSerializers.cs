@@ -7504,6 +7504,17 @@ namespace DS4MapperTest
             }
             public event EventHandler DeltaSettingsChanged;
 
+            public double VerticalScale
+            {
+                get => stickMouseAction.VerticalScale;
+                set
+                {
+                    stickMouseAction.VerticalScale = value;
+                    VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalScaleChanged;
+
             public StickMouseSettings(StickMouse mouseAction)
             {
                 stickMouseAction = mouseAction;
@@ -7528,6 +7539,7 @@ namespace DS4MapperTest
             settings.MaxZoneChanged += Settings_MaxZoneChanged;
             settings.OutputCurveChanged += Settings_OutputCurveChanged;
             settings.DeltaSettingsChanged += Settings_DeltaSettingsChanged;
+            settings.VerticalScaleChanged += Settings_VerticalScaleChanged;
         }
 
         public StickMouseSerializer(ActionLayer tempLayer, MapAction action) :
@@ -7569,6 +7581,11 @@ namespace DS4MapperTest
         private void Settings_DeadZoneChanged(object sender, EventArgs e)
         {
             stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_VerticalScaleChanged(object sender, EventArgs e)
+        {
+            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.VERTICAL_SCALE);
         }
     }
 

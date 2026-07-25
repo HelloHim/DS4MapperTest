@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,8 +11,9 @@ using System.Threading;
 
 namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 {
-    public class StickMousePropViewModel
+    public class StickMousePropViewModel : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
         private Mapper mapper;
         public Mapper Mapper
         {
@@ -66,6 +68,75 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             get => (action.MouseSpeed * 20).ToString();
         }
         public event EventHandler MouseSpeedOutputChanged;
+
+        public double VerticalScale
+        {
+            get => action.VerticalScale;
+            set
+            {
+                double verticalScale = Math.Clamp(value, 0.0, StickMouse.MaxVerticalScale);
+                if (action.VerticalScale == verticalScale) return;
+                action.VerticalScale = verticalScale;
+                VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler VerticalScaleChanged;
+
+        public double VerticalSensitivity
+        {
+            get => Math.Round(action.MouseSpeed * action.VerticalScale, 4);
+            set
+            {
+                double mouseSpeedD = action.MouseSpeed;
+                double verticalScale = Math.Abs(mouseSpeedD) < 1e-10
+                    ? 0.0
+                    : value / mouseSpeedD;
+                verticalScale = Math.Clamp(verticalScale, 0.0, StickMouse.MaxVerticalScale);
+                if (action.VerticalScale == verticalScale) return;
+                action.VerticalScale = verticalScale;
+                VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private bool verticalScaleIsAbsoluteMode = false;
+        public bool VerticalScaleIsAbsoluteMode
+        {
+            get => verticalScaleIsAbsoluteMode;
+            set
+            {
+                if (!value || verticalScaleIsAbsoluteMode) return;
+                verticalScaleIsAbsoluteMode = true;
+                NotifyVerticalScaleModeChanged();
+            }
+        }
+
+        public bool VerticalScaleIsMultiplierMode
+        {
+            get => !verticalScaleIsAbsoluteMode;
+            set
+            {
+                if (!value || !verticalScaleIsAbsoluteMode) return;
+                verticalScaleIsAbsoluteMode = false;
+                NotifyVerticalScaleModeChanged();
+            }
+        }
+
+        private void NotifyVerticalScaleModeChanged()
+        {
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nameof(VerticalScaleIsAbsoluteMode)));
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nameof(VerticalScaleIsMultiplierMode)));
+        }
+
+        public bool HighlightVerticalScale
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_SCALE);
+        }
+        public event EventHandler HighlightVerticalScaleChanged;
 
         private List<EnumChoiceSelection<StickOutCurve.Curve>> outputCurveChoiceItems =
             new List<EnumChoiceSelection<StickOutCurve.Curve>>()
@@ -277,6 +348,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             DeadZoneChanged += StickMousePropViewModel_DeadZoneChanged;
             MouseSpeedChanged += StickMousePropViewModel_MouseSpeedChanged;
             MouseSpeedChanged += RenderUpdatedOutputMouseSpeed;
+            MouseSpeedChanged += StickMousePropViewModel_MouseSpeedChangedForVerticalSensitivity;
+            VerticalScaleChanged += StickMousePropViewModel_VerticalScaleChanged;
             OutputCurveChoiceChanged += StickMousePropViewModel_OutputCurveChoiceChanged;
             DeltaEnabledChanged += StickMousePropViewModel_DeltaEnabledChanged;
             DeltaMultiplierChanged += StickMousePropViewModel_DeltaMultiplierChanged;
@@ -284,6 +357,24 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             DeltaMaxTravelChanged += StickMousePropViewModel_DeltaMaxTravelChanged;
             DeltaEasingDurationChanged += StickMousePropViewModel_DeltaEasingDurationChanged;
             DeltaMinFactorChanged += StickMousePropViewModel_DeltaMinFactorChanged;
+        }
+
+        private void StickMousePropViewModel_MouseSpeedChangedForVerticalSensitivity(object sender, EventArgs e)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
+        }
+
+        private void StickMousePropViewModel_VerticalScaleChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_SCALE))
+            {
+                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.VERTICAL_SCALE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.VERTICAL_SCALE);
+            HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
         }
 
         private void StickMousePropViewModel_DeltaMinFactorChanged(object sender, EventArgs e)
