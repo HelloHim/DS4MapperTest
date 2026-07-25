@@ -67,6 +67,7 @@ namespace DS4MapperTest.TriggerActions
         }
 
         public const string ACTION_TYPE_NAME = "TriggerDualStageAction";
+        public const int DEFAULT_HIPFIRE_DELAY_MS = 100;
 
         private double axisNorm;
         private AxisDeadZone deadMod;
@@ -81,7 +82,7 @@ namespace DS4MapperTest.TriggerActions
         public ActiveZoneButtons previousActiveButtons = ActiveZoneButtons.None;
 
         private DualStageMode triggerStageMode;
-        private int hipFireMs;
+        private int hipFireMs = DEFAULT_HIPFIRE_DELAY_MS;
         private bool fullPullClick;
         private bool forceHipTime;
         public bool ForceHipTime
