@@ -126,6 +126,7 @@ namespace DS4MapperTest.GyroActions
         public double verticalAccelerationMultiplier;
         public bool verticalAccelerationScaleMode;
         public SmoothingFilterSettings smoothingFilterSettings;
+        public TriggerSensitivityModifierSettings triggerSensitivityModifier;
         //public double oneEuroMinCutoff;
         //public double oneEuroMinBeta;
     }
@@ -169,6 +170,7 @@ namespace DS4MapperTest.GyroActions
             public const string VERTICAL_ACCELERATION_SCALE_MODE = "VerticalAccelerationScaleMode";
             public const string SMOOTHING_ENABLED = "SmoothingEnabled";
             public const string SMOOTHING_FILTER = "SmoothingFilter";
+            public const string TRIGGER_SENSITIVITY_MODIFIER = "TriggerSensitivityModifier";
             //public const string SMOOTHING_MINCUTOFF = "SmoothingMinCutoff";
             //public const string SMOOTHING_MINBETA = "SmoothingMinBeta";
         }
@@ -204,6 +206,7 @@ namespace DS4MapperTest.GyroActions
             PropertyKeyStrings.TOGGLE_ACTION,
             PropertyKeyStrings.SMOOTHING_ENABLED,
             PropertyKeyStrings.SMOOTHING_FILTER,
+            PropertyKeyStrings.TRIGGER_SENSITIVITY_MODIFIER,
             PropertyKeyStrings.MULTIPLIER_COMPENSATION,
             PropertyKeyStrings.ACCELERATION_MULTIPLIER,
             PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER,
@@ -259,6 +262,8 @@ namespace DS4MapperTest.GyroActions
                 accelerationMultiplier = GyroMouseParams.ACCELERATION_MULTIPLIER_DEFAULT,
                 verticalAccelerationMultiplier = GyroMouseParams.VERTICAL_ACCELERATION_MULTIPLIER_DEFAULT,
                 verticalAccelerationScaleMode = GyroMouseParams.VERTICAL_ACCELERATION_SCALE_MODE_DEFAULT,
+                triggerSensitivityModifier = new TriggerSensitivityModifierSettings(
+                    GyroMouseParams.SENSITIVITY_DEFAULT),
             };
 
             mouseParams.smoothingFilterSettings = new SmoothingFilterSettings();
@@ -342,6 +347,13 @@ namespace DS4MapperTest.GyroActions
             //double coefficient = (mouseParams.realWorldCalibration / mouseParams.inGameSens) * mouseParams.sensitivity;
             double coefficient = (mouseParams.realWorldCalibration / mouseParams.inGameSens);
             double sensMulti = mouseParams.sensitivity;
+            double effectiveSensitivity = TriggerSensitivityModifier.Evaluate(
+                mouseParams.triggerSensitivityModifier, sensMulti,
+                mapper.GetNormalisedTriggerPosition(mouseParams.triggerSensitivityModifier.trigger));
+            double triggerSensitivityScale = sensMulti > 0.0
+                ? effectiveSensitivity / sensMulti : 1.0;
+            double verticalTriggerSensitivityScale = mouseParams.triggerSensitivityModifier.modifyVerticalSensitivity
+                ? triggerSensitivityScale : 1.0;
             double deadZone = mouseParams.deadzone;
 
             double timeElapsed = gyroFrame.timeElapsed;
@@ -563,6 +575,8 @@ namespace DS4MapperTest.GyroActions
             //double finalCoefficient = coefficient * sensMulti * modSensMulti;
             double finalCoefficient = coefficient * modSensMultiX;
             double finalCoefficientY = coefficient * modSensMultiY;
+            finalCoefficient *= triggerSensitivityScale;
+            finalCoefficientY *= verticalTriggerSensitivityScale;
             if (mouseParams.multiplierCompensation)
             {
                 double accelMultiplier = Math.Clamp(mouseParams.accelerationMultiplier,

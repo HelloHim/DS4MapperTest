@@ -29,6 +29,10 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
 
         public override DeviceReaderBase BaseReader => reader;
         public override InputDeviceType DeviceType => InputDeviceType.SteamControllerTriton;
+        public override double GetNormalisedTriggerPosition(
+            TriggerSensitivityModifierTrigger trigger) => Math.Clamp(
+                (trigger == TriggerSensitivityModifierTrigger.Left ? currentMapperState.L2 : currentMapperState.R2) / 32767.0,
+                0.0, 1.0);
 
         private StickDefinition lsDefintion;
         private StickDefinition rsDefintion;

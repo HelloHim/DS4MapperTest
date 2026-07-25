@@ -5,10 +5,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:views="clr-namespace:DS4MapperTest.Views"
+             xmlns:converters="clr-namespace:DS4MapperTest.Converters"
              mc:Ignorable="d"
              d:DesignHeight="700"
              d:DesignWidth="860">
     <UserControl.Resources>
+        <converters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVis"/>
         <Style x:Key="SensRowBorder" TargetType="Border" BasedOn="{StaticResource JsmccSettingRowBorder}">
             <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
@@ -98,6 +100,46 @@
                                 Style="{StaticResource JsmccButtonStyle}"
                                 HorizontalAlignment="Left"
                                 Margin="0,6,0,0"/>
+
+                        <Border Style="{StaticResource JsmccCardBorder}" Margin="0,12,0,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Trigger Sensitivity Modifier" Style="{StaticResource JsmccCardTitle}" VerticalAlignment="Center"/>
+                                    <CheckBox Content="Enable Trigger Sensitivity Modifier" Style="{StaticResource JsmccToggleStyle}"
+                                              IsChecked="{Binding TriggerSensitivityModifierEnabled}" Margin="12,0,0,0"/>
+                                </StackPanel>
+                                <StackPanel IsEnabled="{Binding TriggerSensitivityModifierEnabled}">
+                                    <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Trigger" Style="{StaticResource SensRowLabel}"/><ComboBox Grid.Column="1" ItemsSource="{Binding TriggerSensitivityModifierTriggerItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerSensitivityModifierTrigger}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
+                                    </Grid></Border>
+                                    <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Sensitivity Behaviour" Style="{StaticResource SensRowLabel}"/><ComboBox Grid.Column="1" ItemsSource="{Binding TriggerSensitivityModifierBehaviourItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerSensitivityModifierBehaviour}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
+                                    </Grid></Border>
+                                    <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Configure Using" Style="{StaticResource SensRowLabel}"/><ComboBox Grid.Column="1" ItemsSource="{Binding TriggerSensitivityModifierConfigureUsingItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerSensitivityModifierConfigureUsing}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
+                                    </Grid></Border>
+                                    <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Target Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="Absolute Sensitivity keeps the target sensitivity fixed when the base sensitivity changes."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="3" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" IsEnabled="{Binding TriggerSensitivityModifierTargetEditable}" Value="{Binding TriggerSensitivityModifierTargetSensitivity}"/>
+                                    </Grid></Border>
+                                    <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Multiplier" Style="{StaticResource SensRowLabel}" ToolTip="Multiplier keeps the proportional adjustment fixed when the base sensitivity changes."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="3" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" IsEnabled="{Binding TriggerSensitivityModifierMultiplierEditable}" Value="{Binding TriggerSensitivityModifierMultiplier}"/>
+                                    </Grid></Border>
+                                    <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Base Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="This is the shared horizontal gyro sensitivity. Changes here also update Static Sensitivity."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="3" Increment="0.01" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding Sensitivity}"/>
+                                    </Grid></Border>
+                                    <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Modify Vertical Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="Off leaves vertical sensitivity unchanged. When enabled, it follows the horizontal modifier."/><CheckBox Grid.Column="1" Content="Match horizontal modifier" Style="{StaticResource JsmccToggleStyle}" IsChecked="{Binding TriggerSensitivityModifierModifyVerticalSensitivity}"/>
+                                    </Grid></Border>
+                                    <Border Style="{StaticResource SensRowBorder}" IsEnabled="{Binding TriggerSensitivityModifierModifyVerticalSensitivity}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Base Vertical Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="This is the shared vertical gyro sensitivity. Changes here also update Static Sensitivity."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="3" Increment="0.01" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding VerticalScale}"/>
+                                    </Grid></Border>
+                                    <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Response Curve" Style="{StaticResource SensRowLabel}"/><ComboBox Grid.Column="1" ItemsSource="{Binding TriggerSensitivityModifierResponseCurveItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerSensitivityModifierResponseCurve}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
+                                    </Grid></Border>
+                                    <TextBlock Text="{Binding TriggerSensitivityModifierValidationMessage}" Foreground="IndianRed" Visibility="{Binding TriggerSensitivityModifierIsValid, Converter={StaticResource InvertBoolToVis}}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
                     </TabItem>

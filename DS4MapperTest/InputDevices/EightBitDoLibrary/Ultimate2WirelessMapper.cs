@@ -21,6 +21,10 @@ namespace DS4MapperTest.InputDevices.EightBitDoLibrary
         private Ultimate2WirelessReader reader;
 
         public override InputDeviceType DeviceType => InputDeviceType.EightBitDoUltimate2Wireless;
+        public override double GetNormalisedTriggerPosition(
+            TriggerSensitivityModifierTrigger trigger) => Math.Clamp(
+                (trigger == TriggerSensitivityModifierTrigger.Left ? currentMapperState.LT : currentMapperState.RT) / 255.0,
+                0.0, 1.0);
         public override DeviceReaderBase BaseReader
         {
             get => reader;
