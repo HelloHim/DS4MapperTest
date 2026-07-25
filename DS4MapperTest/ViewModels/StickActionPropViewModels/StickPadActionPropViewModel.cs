@@ -117,6 +117,52 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler DeadZoneChanged;
 
+        public bool SeparateAxisDeadZones
+        {
+            get => action.DeadMod.SeparateAxisDeadZones;
+            set
+            {
+                if (action.DeadMod.SeparateAxisDeadZones == value) return;
+                if (value)
+                {
+                    action.DeadMod.DeadZoneX = action.DeadMod.DeadZone;
+                    action.DeadMod.DeadZoneY = action.DeadMod.DeadZone;
+                    DeadZoneXChanged?.Invoke(this, EventArgs.Empty);
+                    DeadZoneYChanged?.Invoke(this, EventArgs.Empty);
+                }
+                action.DeadMod.SeparateAxisDeadZones = value;
+                SeparateAxisDeadZonesChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler SeparateAxisDeadZonesChanged;
+
+        public string DeadZoneX
+        {
+            get => action.DeadMod.DeadZoneX.ToString();
+            set
+            {
+                if (!double.TryParse(value, out double result)) return;
+                action.DeadMod.DeadZoneX = Math.Clamp(result, 0.0, 1.0);
+                DeadZoneXChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler DeadZoneXChanged;
+
+        public string DeadZoneY
+        {
+            get => action.DeadMod.DeadZoneY.ToString();
+            set
+            {
+                if (!double.TryParse(value, out double result)) return;
+                action.DeadMod.DeadZoneY = Math.Clamp(result, 0.0, 1.0);
+                DeadZoneYChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler DeadZoneYChanged;
+
         public int DiagonalRange
         {
             get => action.DiagonalRange;
@@ -648,6 +694,9 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             NameChanged += StickPadActionPropViewModel_NameChanged;
             DeadZoneChanged += StickPadActionPropViewModel_DeadZoneChanged;
             DeadZoneTypeChanged += StickPadActionPropViewModel_DeadZoneTypeChanged;
+            SeparateAxisDeadZonesChanged += StickPadActionPropViewModel_SeparateAxisDeadZonesChanged;
+            DeadZoneXChanged += StickPadActionPropViewModel_DeadZoneXChanged;
+            DeadZoneYChanged += StickPadActionPropViewModel_DeadZoneYChanged;
             RotationChanged += StickPadActionPropViewModel_RotationChanged;
             ActionPresetChoiceChanged += StickPadActionPropViewModel_ActionPresetChoiceChanged;
             SelectedPadModeIndexChanged += ChangeStickPadMode;
@@ -786,6 +835,24 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.DEAD_ZONE);
             HighlightDeadZoneChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickPadActionPropViewModel_SeparateAxisDeadZonesChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.SEPARATE_AXIS_DEAD_ZONES);
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.SEPARATE_AXIS_DEAD_ZONES);
+        }
+
+        private void StickPadActionPropViewModel_DeadZoneXChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.DEAD_ZONE_X);
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.DEAD_ZONE_X);
+        }
+
+        private void StickPadActionPropViewModel_DeadZoneYChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.DEAD_ZONE_Y);
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.DEAD_ZONE_Y);
         }
 
         private void ChangeStickPadMode(object sender, EventArgs e)

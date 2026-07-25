@@ -31,6 +31,9 @@ namespace DS4MapperTest.StickModifiers
         private double antiDeadZone;
         private bool circleDead = true;
         private DeadZoneTypes deadZoneType;
+        private bool separateAxisDeadZones;
+        private double deadZoneX;
+        private double deadZoneY;
 
         private AxialDeadSettings deadSettingsXAxis = new AxialDeadSettings();
         private AxialDeadSettings deadSettingsYAxis = new AxialDeadSettings();
@@ -70,6 +73,9 @@ namespace DS4MapperTest.StickModifiers
         {
             get => deadZoneType; set => deadZoneType = value;
         }
+        public bool SeparateAxisDeadZones { get => separateAxisDeadZones; set => separateAxisDeadZones = value; }
+        public double DeadZoneX { get => deadZoneX; set => deadZoneX = value; }
+        public double DeadZoneY { get => deadZoneY; set => deadZoneY = value; }
         public AxialDeadSettings DeadSettingsXAxis
         {
             get => deadSettingsXAxis;
@@ -85,6 +91,8 @@ namespace DS4MapperTest.StickModifiers
             this.deadZone = deadZone;
             this.maxZone = maxZone;
             this.antiDeadZone = antiDeadZone;
+            deadZoneX = deadZone;
+            deadZoneY = deadZone;
             circleDead = true;
             deadZoneType = DeadZoneTypes.Radial;
         }
@@ -107,6 +115,9 @@ namespace DS4MapperTest.StickModifiers
             deadSettingsYAxis.maxZone = maxZoneY;
             deadSettingsYAxis.deadZone = deadZoneY;
             deadSettingsYAxis.antiDeadZone = antiDeadZoneY;
+            this.deadZoneX = deadZoneX;
+            this.deadZoneY = deadZoneY;
+            separateAxisDeadZones = true;
             circleDead = false;
             deadZoneType = DeadZoneTypes.Axial;
         }
@@ -120,6 +131,9 @@ namespace DS4MapperTest.StickModifiers
             //maxZoneX = other.maxZoneX;
             //maxZoneY = other.maxZoneY;
             antiDeadZone = other.antiDeadZone;
+            separateAxisDeadZones = other.separateAxisDeadZones;
+            deadZoneX = other.deadZoneX;
+            deadZoneY = other.deadZoneY;
             //antiDeadZoneX = other.antiDeadZoneX;
             //antiDeadZoneY = other.antiDeadZoneY;
             other.deadSettingsXAxis.CopyTo(this.deadSettingsXAxis);
@@ -137,6 +151,13 @@ namespace DS4MapperTest.StickModifiers
 
             if (deadZoneType == DeadZoneTypes.Radial)
             {
+                if (separateAxisDeadZones && Math.Abs(deadZoneX - deadZoneY) > double.Epsilon)
+                {
+                    CalcEllipticalRadialValues(axisXDir, axisYDir, maxDirX, maxDirY,
+                        out xNorm, out yNorm);
+                    return;
+                }
+
                 double angle = Math.Atan2(-(axisYDir), axisXDir);
                 double angCos = Math.Abs(Math.Cos(angle)),
                     angSin = Math.Abs(Math.Sin(angle));
@@ -220,10 +241,20 @@ namespace DS4MapperTest.StickModifiers
 
                 int currentDeadX = (int)(deadZone * maxDirX * angCos);
                 int currentDeadY = (int)(deadZone * maxDirY * angSin);
+                if (separateAxisDeadZones && Math.Abs(deadZoneX - deadZoneY) > double.Epsilon)
+                {
+                    double xUnit = Math.Abs(axisXDir) / Math.Max(1.0, Math.Abs((double)maxDirX));
+                    double yUnit = Math.Abs(axisYDir) / Math.Max(1.0, Math.Abs((double)maxDirY));
+                    double ellipticalAngle = Math.Atan2(yUnit, xUnit);
+                    currentDeadX = (int)(deadZoneX * Math.Abs(maxDirX) * Math.Cos(ellipticalAngle));
+                    currentDeadY = (int)(deadZoneY * Math.Abs(maxDirY) * Math.Sin(ellipticalAngle));
+                }
 
                 double stickDeadzoneSquared = (currentDeadX * currentDeadX) + (currentDeadY * currentDeadY);
                 double stickSquared = Math.Pow(axisXDir, 2) + Math.Pow(axisYDir, 2);
-                inSafeZone = stickSquared > stickDeadzoneSquared;
+                inSafeZone = separateAxisDeadZones && Math.Abs(deadZoneX - deadZoneY) > double.Epsilon ?
+                    IsOutsideEllipticalDeadZone(axisXDir, axisYDir, maxDirX, maxDirY) :
+                    stickSquared > stickDeadzoneSquared;
                 //Trace.WriteLine($"{deadZone} {stickDeadzoneSquared} {Math.Sqrt(stickDeadzoneSquared)} {axisXDir} {axisYDir} {maxDirX} {maxDirY}");
 
                 if (inSafeZone)
@@ -295,6 +326,52 @@ namespace DS4MapperTest.StickModifiers
             {
                 xNorm = yNorm = 0.0;
             }
+        }
+
+        private bool IsOutsideEllipticalDeadZone(int axisXDir, int axisYDir, int maxDirX, int maxDirY)
+        {
+            if (deadZoneX <= 0.0 && deadZoneY <= 0.0)
+            {
+                return axisXDir != 0 || axisYDir != 0;
+            }
+
+            double xRadius = Math.Max(double.Epsilon, Math.Abs(maxDirX) * deadZoneX);
+            double yRadius = Math.Max(double.Epsilon, Math.Abs(maxDirY) * deadZoneY);
+            double x = axisXDir / xRadius;
+            double y = axisYDir / yRadius;
+            return (x * x) + (y * y) > 1.0;
+        }
+
+        private void CalcEllipticalRadialValues(int axisXDir, int axisYDir, int maxDirX, int maxDirY,
+            out double xNorm, out double yNorm)
+        {
+            inSafeZone = IsOutsideEllipticalDeadZone(axisXDir, axisYDir, maxDirX, maxDirY);
+            if (!inSafeZone)
+            {
+                xNorm = yNorm = 0.0;
+                return;
+            }
+
+            bool xNegative = axisXDir < 0;
+            bool yNegative = axisYDir < 0;
+            double xUnit = Math.Abs(axisXDir) / Math.Max(1.0, Math.Abs((double)maxDirX));
+            double yUnit = Math.Abs(axisYDir) / Math.Max(1.0, Math.Abs((double)maxDirY));
+            double angle = Math.Atan2(yUnit, xUnit);
+            int currentDeadX = (int)(deadZoneX * Math.Abs(maxDirX) * Math.Cos(angle));
+            int currentDeadY = (int)(deadZoneY * Math.Abs(maxDirY) * Math.Sin(angle));
+            int maxZoneDirX = (int)(maxZone * maxDirX);
+            int maxZoneDirY = (int)(maxZone * maxDirY);
+            int valueX = Math.Clamp(axisXDir, -Math.Abs(maxZoneDirX), Math.Abs(maxZoneDirX));
+            int valueY = Math.Clamp(axisYDir, -Math.Abs(maxZoneDirY), Math.Abs(maxZoneDirY));
+
+            xNorm = (1.0 - antiDeadZone * Math.Cos(angle)) *
+                ((Math.Abs(valueX) - currentDeadX) / (double)Math.Max(1, Math.Abs(maxZoneDirX) - currentDeadX)) +
+                antiDeadZone * Math.Cos(angle);
+            yNorm = (1.0 - antiDeadZone * Math.Sin(angle)) *
+                ((Math.Abs(valueY) - currentDeadY) / (double)Math.Max(1, Math.Abs(maxZoneDirY) - currentDeadY)) +
+                antiDeadZone * Math.Sin(angle);
+            if (xNegative) xNorm *= -1.0;
+            if (yNegative) yNorm *= -1.0;
         }
 
         public void SetAxialDeadZone(double deadzoneX, double deadzoneY)
