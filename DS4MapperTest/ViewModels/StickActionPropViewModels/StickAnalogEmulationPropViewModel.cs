@@ -76,6 +76,52 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler DeadZoneChanged;
 
+        public bool SeparateAxisDeadZones
+        {
+            get => action.DeadMod.SeparateAxisDeadZones;
+            set
+            {
+                if (action.DeadMod.SeparateAxisDeadZones == value) return;
+                if (value)
+                {
+                    action.DeadMod.DeadZoneX = action.DeadMod.DeadZone;
+                    action.DeadMod.DeadZoneY = action.DeadMod.DeadZone;
+                    DeadZoneXChanged?.Invoke(this, EventArgs.Empty);
+                    DeadZoneYChanged?.Invoke(this, EventArgs.Empty);
+                }
+                action.DeadMod.SeparateAxisDeadZones = value;
+                SeparateAxisDeadZonesChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler SeparateAxisDeadZonesChanged;
+
+        public string DeadZoneX
+        {
+            get => action.DeadMod.DeadZoneX.ToString();
+            set
+            {
+                if (!double.TryParse(value, out double result)) return;
+                action.DeadMod.DeadZoneX = Math.Clamp(result, 0.0, 1.0);
+                DeadZoneXChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler DeadZoneXChanged;
+
+        public string DeadZoneY
+        {
+            get => action.DeadMod.DeadZoneY.ToString();
+            set
+            {
+                if (!double.TryParse(value, out double result)) return;
+                action.DeadMod.DeadZoneY = Math.Clamp(result, 0.0, 1.0);
+                DeadZoneYChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler DeadZoneYChanged;
+
         public int Rotation
         {
             get => action.Rotation;
@@ -641,6 +687,9 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             NameChanged += StickAnalogEmulationPropViewModel_NameChanged;
             DeadZoneTypeChanged += StickAnalogEmulationPropViewModel_DeadZoneTypeChanged;
             DeadZoneChanged += StickAnalogEmulationPropViewModel_DeadZoneChanged;
+            SeparateAxisDeadZonesChanged += StickAnalogEmulationPropViewModel_SeparateAxisDeadZonesChanged;
+            DeadZoneXChanged += StickAnalogEmulationPropViewModel_DeadZoneXChanged;
+            DeadZoneYChanged += StickAnalogEmulationPropViewModel_DeadZoneYChanged;
             RotationChanged += StickAnalogEmulationPropViewModel_RotationChanged;
             ActionPresetChoiceChanged += StickAnalogEmulationPropViewModel_ActionPresetChoiceChanged;
             DirectionResolutionChanged += StickAnalogEmulationPropViewModel_DirectionResolutionChanged;
@@ -765,6 +814,24 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         {
             action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE);
             action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void StickAnalogEmulationPropViewModel_SeparateAxisDeadZonesChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.SEPARATE_AXIS_DEAD_ZONES);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.SEPARATE_AXIS_DEAD_ZONES);
+        }
+
+        private void StickAnalogEmulationPropViewModel_DeadZoneXChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_X);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_X);
+        }
+
+        private void StickAnalogEmulationPropViewModel_DeadZoneYChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_Y);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_Y);
         }
 
         private void StickAnalogEmulationPropViewModel_RotationChanged(object sender, EventArgs e)

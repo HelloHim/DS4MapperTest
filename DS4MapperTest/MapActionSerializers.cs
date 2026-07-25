@@ -6028,6 +6028,45 @@ namespace DS4MapperTest
         {
             private StickPadAction padAction;
 
+            public bool SeparateAxisDeadZones
+            {
+                get => padAction.DeadMod.SeparateAxisDeadZones;
+                set
+                {
+                    padAction.DeadMod.SeparateAxisDeadZones = value;
+                    SeparateAxisDeadZonesChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SeparateAxisDeadZonesChanged;
+            public bool ShouldSerializeSeparateAxisDeadZones() =>
+                padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.SEPARATE_AXIS_DEAD_ZONES);
+
+            public double DeadZoneX
+            {
+                get => padAction.DeadMod.DeadZoneX;
+                set
+                {
+                    padAction.DeadMod.DeadZoneX = Math.Clamp(value, 0.0, 1.0);
+                    DeadZoneXChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DeadZoneXChanged;
+            public bool ShouldSerializeDeadZoneX() =>
+                padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.DEAD_ZONE_X);
+
+            public double DeadZoneY
+            {
+                get => padAction.DeadMod.DeadZoneY;
+                set
+                {
+                    padAction.DeadMod.DeadZoneY = Math.Clamp(value, 0.0, 1.0);
+                    DeadZoneYChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DeadZoneYChanged;
+            public bool ShouldSerializeDeadZoneY() =>
+                padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.DEAD_ZONE_Y);
+
             public double DeadZone
             {
                 get => padAction.DeadMod.DeadZone;
@@ -6457,6 +6496,9 @@ namespace DS4MapperTest
             settings.PadModeChanged += Settings_PadModeChanged;
             settings.DeadZoneTypeChanged += Settings_DeadZoneTypeChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
+            settings.SeparateAxisDeadZonesChanged += Settings_SeparateAxisDeadZonesChanged;
+            settings.DeadZoneXChanged += Settings_DeadZoneXChanged;
+            settings.DeadZoneYChanged += Settings_DeadZoneYChanged;
             settings.UseOuterRingChanged += Settings_UseOuterRingChanged;
             settings.OuterRingDeadZoneChanged += Settings_OuterRingDeadZoneChanged;
             settings.UseAsOuterRingChanged += Settings_UseAsOuterRingChanged;
@@ -6538,6 +6580,21 @@ namespace DS4MapperTest
         private void Settings_DeadZoneChanged(object sender, EventArgs e)
         {
             stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_SeparateAxisDeadZonesChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.SEPARATE_AXIS_DEAD_ZONES);
+        }
+
+        private void Settings_DeadZoneXChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.DEAD_ZONE_X);
+        }
+
+        private void Settings_DeadZoneYChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.DEAD_ZONE_Y);
         }
 
         private void Settings_DiagonalRangeChanged(object sender, EventArgs e)
@@ -6871,6 +6928,45 @@ namespace DS4MapperTest
         public class AnalogEmulationSettings
         {
             private StickAnalogEmulationAction analogAction;
+
+            public bool SeparateAxisDeadZones
+            {
+                get => analogAction.DeadMod.SeparateAxisDeadZones;
+                set
+                {
+                    analogAction.DeadMod.SeparateAxisDeadZones = value;
+                    SeparateAxisDeadZonesChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SeparateAxisDeadZonesChanged;
+            public bool ShouldSerializeSeparateAxisDeadZones() =>
+                analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.SEPARATE_AXIS_DEAD_ZONES);
+
+            public double DeadZoneX
+            {
+                get => analogAction.DeadMod.DeadZoneX;
+                set
+                {
+                    analogAction.DeadMod.DeadZoneX = Math.Clamp(value, 0.0, 1.0);
+                    DeadZoneXChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DeadZoneXChanged;
+            public bool ShouldSerializeDeadZoneX() =>
+                analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_X);
+
+            public double DeadZoneY
+            {
+                get => analogAction.DeadMod.DeadZoneY;
+                set
+                {
+                    analogAction.DeadMod.DeadZoneY = Math.Clamp(value, 0.0, 1.0);
+                    DeadZoneYChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DeadZoneYChanged;
+            public bool ShouldSerializeDeadZoneY() =>
+                analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_Y);
 
             public double DeadZone
             {
@@ -7264,6 +7360,9 @@ namespace DS4MapperTest
             NameChanged += AnalogEmulationActionSerializer_NameChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
             settings.DeadZoneTypeChanged += Settings_DeadZoneTypeChanged;
+            settings.SeparateAxisDeadZonesChanged += Settings_SeparateAxisDeadZonesChanged;
+            settings.DeadZoneXChanged += Settings_DeadZoneXChanged;
+            settings.DeadZoneYChanged += Settings_DeadZoneYChanged;
             settings.RotationChanged += Settings_RotationChanged;
             settings.MaxZoneChanged += Settings_MaxZoneChanged;
             settings.DirectionModeChanged += Settings_DirectionModeChanged;
@@ -7348,6 +7447,21 @@ namespace DS4MapperTest
         private void Settings_DeadZoneChanged(object sender, EventArgs e)
         {
             analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_SeparateAxisDeadZonesChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.SEPARATE_AXIS_DEAD_ZONES);
+        }
+
+        private void Settings_DeadZoneXChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_X);
+        }
+
+        private void Settings_DeadZoneYChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DEAD_ZONE_Y);
         }
 
         private void Settings_DeadZoneTypeChanged(object sender, EventArgs e)
