@@ -157,6 +157,12 @@ namespace DS4MapperTest.ViewModels
                 case 9:
                     {
                         TouchpadFlickStick tempAction = new TouchpadFlickStick();
+                        // Flick stick uses these values at runtime, so seed a newly selected
+                        // touchpad action from the profile-wide calibration immediately. The
+                        // profile is the source of truth for RWC, in-game sensitivity, and the
+                        // derived counts-per-360 value used by the other calibrated actions.
+                        tempAction.RealWorldCalibration = mapper.ActionProfile.CalibRwc;
+                        tempAction.InGameSens = mapper.ActionProfile.CalibInGameSens;
                         result = tempAction;
                     }
 
