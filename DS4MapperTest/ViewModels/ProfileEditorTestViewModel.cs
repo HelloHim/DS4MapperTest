@@ -54,9 +54,11 @@ namespace DS4MapperTest.ViewModels
         }
 
         private bool suppressDirtyTracking;
+        private bool refreshingDirtyState;
         private string savedProfileFingerprint;
 
-        public bool IsProfileDirty => tempProfile?.Dirty == true;
+        public bool IsProfileDirty => tempProfile != null && !string.Equals(
+            savedProfileFingerprint, CreateProfileFingerprint(), StringComparison.Ordinal);
 
         public bool SupportsLightbar =>
             mapper?.DeviceType == InputDeviceType.DS4 ||
@@ -65,11 +67,25 @@ namespace DS4MapperTest.ViewModels
         public void MarkProfileDirty()
         {
             if (suppressDirtyTracking || tempProfile == null) return;
-            bool isDirty = !string.Equals(savedProfileFingerprint,
-                CreateProfileFingerprint(), StringComparison.Ordinal);
-            if (tempProfile.Dirty == isDirty) return;
+            RefreshProfileDirtyState();
+        }
 
-            tempProfile.Dirty = isDirty;
+        private void RefreshProfileDirtyState()
+        {
+            if (tempProfile == null) return;
+            bool isDirty = IsProfileDirty;
+            if (tempProfile.Dirty != isDirty)
+            {
+                refreshingDirtyState = true;
+                try
+                {
+                    tempProfile.Dirty = isDirty;
+                }
+                finally
+                {
+                    refreshingDirtyState = false;
+                }
+            }
             RaisePropertyChanged(nameof(IsProfileDirty));
         }
 
@@ -77,14 +93,7 @@ namespace DS4MapperTest.ViewModels
         {
             if (tempProfile == null) return;
             savedProfileFingerprint = CreateProfileFingerprint();
-            if (!tempProfile.Dirty)
-            {
-                RaisePropertyChanged(nameof(IsProfileDirty));
-                return;
-            }
-
-            tempProfile.Dirty = false;
-            RaisePropertyChanged(nameof(IsProfileDirty));
+            RefreshProfileDirtyState();
         }
 
         public void RestoreProfileDirtyState(bool isDirty)
@@ -139,7 +148,11 @@ namespace DS4MapperTest.ViewModels
             {
                 tempProfile.Name = value;
             }
-            RestoreProfileDirtyState(wasDirty);
+            if (!wasDirty)
+            {
+                savedProfileFingerprint = CreateProfileFingerprint();
+            }
+            RefreshProfileDirtyState();
             RaisePropertyChanged(nameof(ProfileName));
         }
 
@@ -725,7 +738,14 @@ namespace DS4MapperTest.ViewModels
 
         private void TempProfile_DirtyChanged(object sender, EventArgs e)
         {
-            RaisePropertyChanged(nameof(IsProfileDirty));
+            if (!refreshingDirtyState)
+            {
+                MarkProfileDirty();
+            }
+            else
+            {
+                RaisePropertyChanged(nameof(IsProfileDirty));
+            }
         }
 
         public void UpdateSelectedSolidColor(byte red, byte green, byte blue)
