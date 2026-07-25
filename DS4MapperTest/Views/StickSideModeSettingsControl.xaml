@@ -379,6 +379,78 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <RadioButton Grid.Row="0" Grid.Column="0"
+                                     IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
+                                     VerticalAlignment="Center" Content="Vertical Sensitivity"
+                                     Foreground="{DynamicResource JsmccTextMidBrush}">
+                            <RadioButton.Style>
+                                <Style TargetType="RadioButton">
+                                    <Setter Property="Opacity" Value="1.0"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
+                        </RadioButton>
+                        <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="10000" DecimalPlaces="0" Increment="500"
+                                          Width="90" IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
+                                          Value="{Binding VerticalSensitivity, UpdateSourceTrigger=LostFocus}">
+                            <hc:NumericUpDown.Style>
+                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </hc:NumericUpDown.Style>
+                        </hc:NumericUpDown>
+
+                        <RadioButton Grid.Row="1" Grid.Column="0" Margin="0,6,0,0"
+                                     IsChecked="{Binding VerticalScaleIsMultiplierMode, Mode=TwoWay}"
+                                     VerticalAlignment="Center" Content="Vertical Scale"
+                                     Foreground="{DynamicResource JsmccTextMidBrush}">
+                            <RadioButton.Style>
+                                <Style TargetType="RadioButton">
+                                    <Setter Property="Opacity" Value="1.0"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding VerticalScaleIsMultiplierMode}" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
+                        </RadioButton>
+                        <hc:NumericUpDown Grid.Row="1" Grid.Column="1" Margin="0,6,0,0" Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.1"
+                                          Width="90" IsEnabled="{Binding VerticalScaleIsMultiplierMode}"
+                                          ValueFormat="0.0###"
+                                          Value="{Binding VerticalScale, UpdateSourceTrigger=LostFocus}">
+                            <hc:NumericUpDown.Style>
+                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding VerticalScaleIsMultiplierMode}" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </hc:NumericUpDown.Style>
+                        </hc:NumericUpDown>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Output Curve" Style="{StaticResource JsmccLabelText}"/>

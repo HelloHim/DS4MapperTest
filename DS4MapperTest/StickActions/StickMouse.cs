@@ -86,6 +86,7 @@ namespace DS4MapperTest.StickActions
             public const string OUTPUT_CURVE = "OutputCurve";
             public const string MOUSE_SPEED = "MouseSpeed";
             public const string DELTA_SETTINGS = "DeltaSettings";
+            public const string VERTICAL_SCALE = "VerticalScale";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -96,12 +97,15 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.OUTPUT_CURVE,
             PropertyKeyStrings.MOUSE_SPEED,
             PropertyKeyStrings.DELTA_SETTINGS,
+            PropertyKeyStrings.VERTICAL_SCALE,
         };
 
         private const int MOUSESPEEDFACTOR = 20;
         private const double MOUSESTICKOFFSET = 0.0495;
         public const int DefaultMouseSpeed = 3000;
         public const int MaxMouseSpeed = 10000;
+        public const double DefaultVerticalScale = 1.0;
+        public const double MaxVerticalScale = 10.0;
         //private const double MOUSE_VELOCITY_OFFSET = 0.12;
         private const double MOUSE_VELOCITY_OFFSET = 0.013;
         public const string ACTION_TYPE_NAME = "StickMouseAction";
@@ -117,6 +121,13 @@ namespace DS4MapperTest.StickActions
         {
             get => mouseSpeed;
             set => mouseSpeed = Math.Clamp(value, 0, MaxMouseSpeed);
+        }
+
+        private double verticalScale = DefaultVerticalScale;
+        public double VerticalScale
+        {
+            get => verticalScale;
+            set => verticalScale = Math.Clamp(value, 0.0, MaxVerticalScale);
         }
 
         public StickDeadZone DeadMod { get => deadMod; }
@@ -159,6 +170,7 @@ namespace DS4MapperTest.StickActions
             this.stickDefinition = new StickDefinition(parentAction.stickDefinition);
             deadMod = new StickDeadZone(parentAction.deadMod);
             mouseSpeed = parentAction.mouseSpeed;
+            verticalScale = parentAction.verticalScale;
         }
 
         double previousPointerX = 0.0;
@@ -377,16 +389,18 @@ namespace DS4MapperTest.StickActions
                 timeDelta = timeDelta - (mapper.remainderCutoff(timeDelta * 10000.0, 1.0) / 10000.0);
                 int mouseVelocity = mouseSpeed * MOUSESPEEDFACTOR;
                 double mouseOffset = MOUSE_VELOCITY_OFFSET * mouseVelocity;
+                int verticalMouseVelocity = (int)Math.Round(mouseVelocity * verticalScale);
+                double verticalMouseOffset = MOUSE_VELOCITY_OFFSET * verticalMouseVelocity;
 
                 double xSign = xNorm >= 0.0 ? 1.0 : -1.0;
                 double ySign = yNorm >= 0.0 ? 1.0 : -1.0;
                 double absXNorm = Math.Abs(outXNorm);
                 double absYNorm = Math.Abs(outYNorm);
                 double tempMouseOffsetX = unitXRatio * mouseOffset;
-                double tempMouseOffsetY = unitYRatio * mouseOffset;
+                double tempMouseOffsetY = unitYRatio * verticalMouseOffset;
 
                 xMotion = ((mouseVelocity - tempMouseOffsetX) * timeDelta * absXNorm + (tempMouseOffsetX * timeDelta)) * xSign;
-                yMotion = ((mouseVelocity - tempMouseOffsetY) * timeDelta * absYNorm + (tempMouseOffsetY * timeDelta)) * -ySign;
+                yMotion = ((verticalMouseVelocity - tempMouseOffsetY) * timeDelta * absYNorm + (tempMouseOffsetY * timeDelta)) * -ySign;
 
                 active = true;
                 activeEvent = true;
@@ -475,6 +489,9 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.DELTA_SETTINGS:
                             mouseDeltaSettings = new DeltaAccelSettings(tempMouseAction.mouseDeltaSettings);
                             break;
+                        case PropertyKeyStrings.VERTICAL_SCALE:
+                            verticalScale = tempMouseAction.verticalScale;
+                            break;
                         default:
                             break;
                     }
@@ -521,6 +538,9 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.DELTA_SETTINGS:
                     mouseDeltaSettings = new DeltaAccelSettings(tempMouseAction.mouseDeltaSettings);
+                    break;
+                case PropertyKeyStrings.VERTICAL_SCALE:
+                    verticalScale = tempMouseAction.verticalScale;
                     break;
                 default:
                     break;
