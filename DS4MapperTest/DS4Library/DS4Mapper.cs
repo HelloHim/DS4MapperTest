@@ -20,6 +20,10 @@ namespace DS4MapperTest.DS4Library
         private LightbarProcessor lightProcess = new LightbarProcessor();
 
         public override InputDeviceType DeviceType => InputDeviceType.DS4;
+        public override double GetNormalisedTriggerPosition(
+            TriggerSensitivityModifierTrigger trigger) => Math.Clamp(
+                (trigger == TriggerSensitivityModifierTrigger.Left ? currentMapperState.L2 : currentMapperState.R2) / 255.0,
+                0.0, 1.0);
         public override DeviceReaderBase BaseReader
         {
             get => reader;

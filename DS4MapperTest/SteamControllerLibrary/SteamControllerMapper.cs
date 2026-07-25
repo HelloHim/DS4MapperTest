@@ -28,6 +28,10 @@ namespace DS4MapperTest.SteamControllerLibrary
 
         public override DeviceReaderBase BaseReader => reader;
         public override InputDeviceType DeviceType => InputDeviceType.SteamController;
+        public override double GetNormalisedTriggerPosition(
+            TriggerSensitivityModifierTrigger trigger) => Math.Clamp(
+                (trigger == TriggerSensitivityModifierTrigger.Left ? currentMapperState.LT : currentMapperState.RT) / 32767.0,
+                0.0, 1.0);
 
         private StickDefinition lsDefintion;
         private TouchpadDefinition leftPadDefiniton;

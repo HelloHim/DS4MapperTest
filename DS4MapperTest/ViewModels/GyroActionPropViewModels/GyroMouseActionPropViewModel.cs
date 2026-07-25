@@ -463,10 +463,102 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                         new PropertyChangedEventArgs(nameof(VerticalScale)));
                 }
                 SensitivityChanged?.Invoke(this, EventArgs.Empty);
+                RaiseTriggerModifierChanged();
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
         public event EventHandler SensitivityChanged;
+
+        public bool TriggerSensitivityModifierEnabled
+        {
+            get => action.mouseParams.triggerSensitivityModifier.enabled;
+            set { action.mouseParams.triggerSensitivityModifier.enabled = value; RaiseTriggerModifierChanged(); }
+        }
+        public TriggerSensitivityModifierTrigger TriggerSensitivityModifierTrigger
+        {
+            get => action.mouseParams.triggerSensitivityModifier.trigger;
+            set { action.mouseParams.triggerSensitivityModifier.trigger = value; RaiseTriggerModifierChanged(); }
+        }
+        public TriggerSensitivityModifierBehaviour TriggerSensitivityModifierBehaviour
+        {
+            get => action.mouseParams.triggerSensitivityModifier.behaviour;
+            set { action.mouseParams.triggerSensitivityModifier.behaviour = value; RaiseTriggerModifierChanged(); }
+        }
+        public TriggerSensitivityModifierConfigureUsing TriggerSensitivityModifierConfigureUsing
+        {
+            get => action.mouseParams.triggerSensitivityModifier.configureUsing;
+            set
+            {
+                if (action.mouseParams.triggerSensitivityModifier.configureUsing == value) return;
+                if (value == TriggerSensitivityModifierConfigureUsing.Multiplier)
+                    action.mouseParams.triggerSensitivityModifier.multiplier = TriggerSensitivityModifierBaseSensitivity > 0.0
+                        ? action.mouseParams.triggerSensitivityModifier.targetSensitivity / TriggerSensitivityModifierBaseSensitivity : 0.0;
+                else
+                    action.mouseParams.triggerSensitivityModifier.targetSensitivity = TriggerSensitivityModifierBaseSensitivity *
+                        action.mouseParams.triggerSensitivityModifier.multiplier;
+                action.mouseParams.triggerSensitivityModifier.configureUsing = value;
+                RaiseTriggerModifierChanged();
+            }
+        }
+        public TriggerSensitivityModifierResponseCurve TriggerSensitivityModifierResponseCurve
+        {
+            get => action.mouseParams.triggerSensitivityModifier.responseCurve;
+            set { action.mouseParams.triggerSensitivityModifier.responseCurve = value; RaiseTriggerModifierChanged(); }
+        }
+        public double TriggerSensitivityModifierTargetSensitivity
+        {
+            get => action.mouseParams.triggerSensitivityModifier.targetSensitivity;
+            set
+            {
+                action.mouseParams.triggerSensitivityModifier.targetSensitivity = Math.Clamp(value, 0.0, 100.0);
+                action.mouseParams.triggerSensitivityModifier.multiplier = TriggerSensitivityModifierCalculatedMultiplier;
+                RaiseTriggerModifierChanged();
+            }
+        }
+        public double TriggerSensitivityModifierMultiplier
+        {
+            get => action.mouseParams.triggerSensitivityModifier.multiplier;
+            set
+            {
+                action.mouseParams.triggerSensitivityModifier.multiplier = Math.Clamp(value, 0.0, 100.0);
+                action.mouseParams.triggerSensitivityModifier.targetSensitivity = TriggerSensitivityModifierCalculatedTarget;
+                RaiseTriggerModifierChanged();
+            }
+        }
+        public bool TriggerSensitivityModifierModifyVerticalSensitivity
+        {
+            get => action.mouseParams.triggerSensitivityModifier.modifyVerticalSensitivity;
+            set { action.mouseParams.triggerSensitivityModifier.modifyVerticalSensitivity = value; RaiseTriggerModifierChanged(); }
+        }
+        public double TriggerSensitivityModifierBaseSensitivity => action.mouseParams.sensitivity;
+        public double TriggerSensitivityModifierBaseVerticalSensitivity => action.mouseParams.verticalScale;
+        public double TriggerSensitivityModifierCalculatedTarget => TriggerSensitivityModifier.ResolveTarget(
+            action.mouseParams.triggerSensitivityModifier, TriggerSensitivityModifierBaseSensitivity);
+        public double TriggerSensitivityModifierCalculatedMultiplier => TriggerSensitivityModifierBaseSensitivity > 0.0
+            ? TriggerSensitivityModifierTargetSensitivity / TriggerSensitivityModifierBaseSensitivity : 0.0;
+        public bool TriggerSensitivityModifierTargetEditable => TriggerSensitivityModifierConfigureUsing == TriggerSensitivityModifierConfigureUsing.AbsoluteSensitivity;
+        public bool TriggerSensitivityModifierMultiplierEditable => TriggerSensitivityModifierConfigureUsing == TriggerSensitivityModifierConfigureUsing.Multiplier;
+        public bool TriggerSensitivityModifierIsValid => TriggerSensitivityModifier.IsValid(
+            action.mouseParams.triggerSensitivityModifier, TriggerSensitivityModifierBaseSensitivity);
+        public string TriggerSensitivityModifierValidationMessage =>
+            TriggerSensitivityModifierBehaviour == TriggerSensitivityModifierBehaviour.DecreaseWithPull
+                ? "For Decrease with Pull, target sensitivity must not be greater than base sensitivity."
+                : "For Increase with Pull, target sensitivity must not be lower than base sensitivity.";
+        public List<EnumChoiceSelection<TriggerSensitivityModifierTrigger>> TriggerSensitivityModifierTriggerItems { get; } = new()
+        { new("Left Trigger", TriggerSensitivityModifierTrigger.Left), new("Right Trigger", TriggerSensitivityModifierTrigger.Right) };
+        public List<EnumChoiceSelection<TriggerSensitivityModifierBehaviour>> TriggerSensitivityModifierBehaviourItems { get; } = new()
+        { new("Decrease with Pull", TriggerSensitivityModifierBehaviour.DecreaseWithPull), new("Increase with Pull", TriggerSensitivityModifierBehaviour.IncreaseWithPull) };
+        public List<EnumChoiceSelection<TriggerSensitivityModifierConfigureUsing>> TriggerSensitivityModifierConfigureUsingItems { get; } = new()
+        { new("Absolute Sensitivity", TriggerSensitivityModifierConfigureUsing.AbsoluteSensitivity), new("Multiplier", TriggerSensitivityModifierConfigureUsing.Multiplier) };
+        public List<EnumChoiceSelection<TriggerSensitivityModifierResponseCurve>> TriggerSensitivityModifierResponseCurveItems { get; } = new()
+        { new("Linear", TriggerSensitivityModifierResponseCurve.Linear), new("Quadratic", TriggerSensitivityModifierResponseCurve.Quadratic), new("Cubic", TriggerSensitivityModifierResponseCurve.Cubic) };
+        private void RaiseTriggerModifierChanged()
+        {
+            action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.TRIGGER_SENSITIVITY_MODIFIER);
+            foreach (string name in new[] { nameof(TriggerSensitivityModifierEnabled), nameof(TriggerSensitivityModifierModifyVerticalSensitivity), nameof(TriggerSensitivityModifierTargetSensitivity), nameof(TriggerSensitivityModifierMultiplier), nameof(TriggerSensitivityModifierCalculatedTarget), nameof(TriggerSensitivityModifierCalculatedMultiplier), nameof(TriggerSensitivityModifierTargetEditable), nameof(TriggerSensitivityModifierMultiplierEditable), nameof(TriggerSensitivityModifierIsValid), nameof(TriggerSensitivityModifierValidationMessage), nameof(TriggerSensitivityModifierBaseSensitivity), nameof(TriggerSensitivityModifierBaseVerticalSensitivity) })
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         public double VerticalScale
         {

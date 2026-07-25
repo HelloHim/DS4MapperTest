@@ -9137,6 +9137,70 @@ namespace DS4MapperTest
                 return gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.SMOOTHING_FILTER);
             }
 
+            public bool TriggerSensitivityModifierEnabled
+            {
+                get => gyroMouseAction.mouseParams.triggerSensitivityModifier.enabled;
+                set => gyroMouseAction.mouseParams.triggerSensitivityModifier.enabled = value;
+            }
+            [JsonConverter(typeof(StringEnumConverter))]
+            public TriggerSensitivityModifierTrigger TriggerSensitivityModifierTrigger
+            {
+                get => gyroMouseAction.mouseParams.triggerSensitivityModifier.trigger;
+                set => gyroMouseAction.mouseParams.triggerSensitivityModifier.trigger = value;
+            }
+            [JsonConverter(typeof(StringEnumConverter))]
+            public TriggerSensitivityModifierBehaviour TriggerSensitivityModifierBehaviour
+            {
+                get => gyroMouseAction.mouseParams.triggerSensitivityModifier.behaviour;
+                set => gyroMouseAction.mouseParams.triggerSensitivityModifier.behaviour = value;
+            }
+            [JsonConverter(typeof(StringEnumConverter))]
+            public TriggerSensitivityModifierConfigureUsing TriggerSensitivityModifierConfigureUsing
+            {
+                get => gyroMouseAction.mouseParams.triggerSensitivityModifier.configureUsing;
+                set => gyroMouseAction.mouseParams.triggerSensitivityModifier.configureUsing = value;
+            }
+            [JsonConverter(typeof(StringEnumConverter))]
+            public TriggerSensitivityModifierResponseCurve TriggerSensitivityModifierResponseCurve
+            {
+                get => gyroMouseAction.mouseParams.triggerSensitivityModifier.responseCurve;
+                set => gyroMouseAction.mouseParams.triggerSensitivityModifier.responseCurve = value;
+            }
+            public double TriggerSensitivityModifierTargetSensitivity
+            {
+                get => gyroMouseAction.mouseParams.triggerSensitivityModifier.targetSensitivity;
+                set => gyroMouseAction.mouseParams.triggerSensitivityModifier.targetSensitivity = Math.Clamp(value, 0.0, 100.0);
+            }
+            public double TriggerSensitivityModifierMultiplier
+            {
+                get => gyroMouseAction.mouseParams.triggerSensitivityModifier.multiplier;
+                set => gyroMouseAction.mouseParams.triggerSensitivityModifier.multiplier = Math.Clamp(value, 0.0, 100.0);
+            }
+            public bool TriggerSensitivityModifierModifyVerticalSensitivity
+            {
+                get => gyroMouseAction.mouseParams.triggerSensitivityModifier.modifyVerticalSensitivity;
+                set => gyroMouseAction.mouseParams.triggerSensitivityModifier.modifyVerticalSensitivity = value;
+            }
+            private bool ShouldSerializeTriggerSensitivityModifier() =>
+                gyroMouseAction.mouseParams.triggerSensitivityModifier.enabled ||
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.TRIGGER_SENSITIVITY_MODIFIER);
+            public bool ShouldSerializeTriggerSensitivityModifierEnabled() =>
+                ShouldSerializeTriggerSensitivityModifier();
+            public bool ShouldSerializeTriggerSensitivityModifierTrigger() =>
+                ShouldSerializeTriggerSensitivityModifier();
+            public bool ShouldSerializeTriggerSensitivityModifierBehaviour() =>
+                ShouldSerializeTriggerSensitivityModifier();
+            public bool ShouldSerializeTriggerSensitivityModifierConfigureUsing() =>
+                ShouldSerializeTriggerSensitivityModifier();
+            public bool ShouldSerializeTriggerSensitivityModifierResponseCurve() =>
+                ShouldSerializeTriggerSensitivityModifier();
+            public bool ShouldSerializeTriggerSensitivityModifierTargetSensitivity() =>
+                ShouldSerializeTriggerSensitivityModifier();
+            public bool ShouldSerializeTriggerSensitivityModifierMultiplier() =>
+                ShouldSerializeTriggerSensitivityModifier();
+            public bool ShouldSerializeTriggerSensitivityModifierModifyVerticalSensitivity() =>
+                ShouldSerializeTriggerSensitivityModifier();
+
             public GyroMouseSettings(GyroMouse mouseAction)
             {
                 gyroMouseAction = mouseAction;

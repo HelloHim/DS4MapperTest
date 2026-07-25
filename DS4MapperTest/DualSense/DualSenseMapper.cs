@@ -23,6 +23,10 @@ namespace DS4MapperTest.DualSense
         private DualSenseReader reader;
         private LightbarProcessor lightProcess = new LightbarProcessor();
         public override InputDeviceType DeviceType => InputDeviceType.DualSense;
+        public override double GetNormalisedTriggerPosition(
+            TriggerSensitivityModifierTrigger trigger) => Math.Clamp(
+                (trigger == TriggerSensitivityModifierTrigger.Left ? currentMapperState.L2 : currentMapperState.R2) / 255.0,
+                0.0, 1.0);
 
         public override DeviceReaderBase BaseReader
         {

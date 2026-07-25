@@ -177,6 +177,8 @@ namespace DS4MapperTest
         }
 
         public virtual InputDeviceType DeviceType => InputDeviceType.None;
+        public virtual double GetNormalisedTriggerPosition(
+            TriggerSensitivityModifierTrigger trigger) => 0.0;
         public abstract DeviceReaderBase BaseReader
         {
             get;
