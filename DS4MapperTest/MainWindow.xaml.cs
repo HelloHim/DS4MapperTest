@@ -1046,7 +1046,6 @@ namespace DS4MapperTest
             ProfileEditorTestViewModel activeVM = editorTestVM;
             saveProfileButton.Content = "Saving...";
             saveProfileButton.IsEnabled = false;
-            discardProfileChangesButton.IsEnabled = false;
             IsEnabled = false;
 
             Exception saveException = null;
@@ -1061,7 +1060,6 @@ namespace DS4MapperTest
 
             IsEnabled = true;
             saveProfileButton.IsEnabled = true;
-            discardProfileChangesButton.IsEnabled = editorTestVM?.IsProfileDirty == true;
             isSavingProfile = false;
 
             if (saveException == null)
