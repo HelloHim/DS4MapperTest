@@ -563,6 +563,136 @@
                                     </WrapPanel>
                                 </Border>
                             </StackPanel>
+
+                            <StackPanel Visibility="{Binding IsTriggerMouseMode, Converter={StaticResource BoolToVis}}">
+                                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                    <WrapPanel>
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
+                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                         Width="160"
+                                                         Style="{StaticResource JsmccTextBoxStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Dead Zone" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                  Increment="0.01" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding MouseDeadZone, UpdateSourceTrigger=PropertyChanged}"
+                                                                  ValueFormat="0.00"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Mouse Speed" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="10000" DecimalPlaces="0"
+                                                                  Increment="500" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding MouseSpeed, UpdateSourceTrigger=LostFocus}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Output Curve" Style="{StaticResource TriggerControlLabel}"/>
+                                                <ComboBox ItemsSource="{Binding MouseOutputCurveChoiceItems}"
+                                                          DisplayMemberPath="DisplayName"
+                                                          SelectedValuePath="ChoiceValue"
+                                                          SelectedValue="{Binding MouseOutputCurveChoice}"
+                                                          Width="168"
+                                                          Style="{StaticResource JsmccComboBoxStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Direction" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="-180" Maximum="180" DecimalPlaces="0"
+                                                                  Increment="1" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding MouseDirectionDegrees, UpdateSourceTrigger=LostFocus}"/>
+                                                <TextBlock Text="&#xb0;"
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="4,0,0,0"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                    <WrapPanel>
+                                        <Border Style="{StaticResource TriggerChipBorder}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Delta Acceleration" Style="{StaticResource TriggerControlLabel}"/>
+                                                <CheckBox IsChecked="{Binding MouseDeltaEnabled}"
+                                                          Style="{StaticResource JsmccToggleStyle}"
+                                                          VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                Visibility="{Binding MouseDeltaEnabled, Converter={StaticResource BoolToVis}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Multiplier" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="20" DecimalPlaces="2"
+                                                                  Increment="0.1" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding MouseDeltaMultiplier, UpdateSourceTrigger=LostFocus}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                Visibility="{Binding MouseDeltaEnabled, Converter={StaticResource BoolToVis}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Min Travel" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                  Increment="0.02" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding MouseDeltaMinTravel, UpdateSourceTrigger=LostFocus}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                Visibility="{Binding MouseDeltaEnabled, Converter={StaticResource BoolToVis}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Max Travel" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
+                                                                  Increment="0.02" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding MouseDeltaMaxTravel, UpdateSourceTrigger=LostFocus}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                Visibility="{Binding MouseDeltaEnabled, Converter={StaticResource BoolToVis}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Easing Duration" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="5000" DecimalPlaces="0"
+                                                                  Increment="10" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding MouseDeltaEasingDuration, UpdateSourceTrigger=LostFocus}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Style="{StaticResource TriggerChipBorder}"
+                                                Visibility="{Binding MouseDeltaEnabled, Converter={StaticResource BoolToVis}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Min Factor" Style="{StaticResource TriggerControlLabel}"/>
+                                                <hc:NumericUpDown Minimum="0" Maximum="10" DecimalPlaces="2"
+                                                                  Increment="0.1" Width="92"
+                                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding MouseDeltaMinFactor, UpdateSourceTrigger=LostFocus}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </Border>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
                 </DataTemplate>

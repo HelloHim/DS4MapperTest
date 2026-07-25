@@ -7,6 +7,7 @@ using DS4MapperTest.MapperUtil;
 using DS4MapperTest.AxisModifiers;
 using DS4MapperTest.StickModifiers;
 using DS4MapperTest.ActionUtil;
+using DS4MapperTest.MouseModifiers;
 using System.Diagnostics;
 
 namespace DS4MapperTest.StickActions
@@ -18,66 +19,6 @@ namespace DS4MapperTest.StickActions
 
     public class StickMouse : StickMapAction
     {
-        public class DeltaAccelSettings
-        {
-            public bool enabled = false;
-            public double multiplier = 4.0;
-            public double maxTravel = 0.2;
-            public double minTravel = 0.01;
-            public double easingDuration = 0.2;
-            public double minfactor = 1.0;
-
-            public bool Enabled
-            {
-                get => enabled;
-                set => enabled = value;
-            }
-
-            public double Multiplier
-            {
-                get => multiplier;
-                set => multiplier = value;
-            }
-
-            public double MaxTravel
-            {
-                get => maxTravel;
-                set => maxTravel = value;
-            }
-
-            public double MinTravel
-            {
-                get => minTravel;
-                set => minTravel = value;
-            }
-
-            public double EasingDuration
-            {
-                get => easingDuration;
-                set => easingDuration = value;
-            }
-
-            public double MinFactor
-            {
-                get => minfactor;
-                set => minfactor = value;
-            }
-
-            public DeltaAccelSettings()
-            {
-            }
-
-            public DeltaAccelSettings(DeltaAccelSettings source)
-            {
-                enabled = source.enabled;
-                multiplier = source.multiplier;
-                maxTravel = source.maxTravel;
-                minTravel = source.minTravel;
-                easingDuration = source.easingDuration;
-                minfactor = source.minfactor;
-            }
-        }
-
         public class PropertyKeyStrings
         {
             public const string NAME = "Name";
@@ -102,46 +43,43 @@ namespace DS4MapperTest.StickActions
 
         private const int MOUSESPEEDFACTOR = 20;
         private const double MOUSESTICKOFFSET = 0.0495;
-        public const int DefaultMouseSpeed = 3000;
-        public const int MaxMouseSpeed = 10000;
-        public const double DefaultVerticalScale = 1.0;
-        public const double MaxVerticalScale = 10.0;
+        public const int DefaultMouseSpeed = MouseMotionSettings.DefaultMouseSpeed;
+        public const int MaxMouseSpeed = MouseMotionSettings.MaxMouseSpeed;
+        public const double DefaultVerticalScale = MouseMotionSettings.DefaultVerticalScale;
+        public const double MaxVerticalScale = MouseMotionSettings.MaxVerticalScale;
         //private const double MOUSE_VELOCITY_OFFSET = 0.12;
         private const double MOUSE_VELOCITY_OFFSET = 0.013;
         public const string ACTION_TYPE_NAME = "StickMouseAction";
 
         private StickDeadZone deadMod;
-        private StickOutCurve.Curve outputCurve = StickOutCurve.Curve.Linear;
+        private MouseMotionSettings motion = new MouseMotionSettings();
         //private StickDefinition stickDefinition;
         private double xNorm = 0.0, yNorm = 0.0;
         private double xMotion;
         private double yMotion;
-        private int mouseSpeed = DefaultMouseSpeed;
         public int MouseSpeed
         {
-            get => mouseSpeed;
-            set => mouseSpeed = Math.Clamp(value, 0, MaxMouseSpeed);
+            get => motion.MouseSpeed;
+            set => motion.MouseSpeed = value;
         }
 
-        private double verticalScale = DefaultVerticalScale;
         public double VerticalScale
         {
-            get => verticalScale;
-            set => verticalScale = Math.Clamp(value, 0.0, MaxVerticalScale);
+            get => motion.VerticalScale;
+            set => motion.VerticalScale = value;
         }
 
         public StickDeadZone DeadMod { get => deadMod; }
         public StickOutCurve.Curve OutputCurve
         {
-            get => outputCurve;
-            set => outputCurve = value;
+            get => motion.OutputCurve;
+            set => motion.OutputCurve = value;
         }
 
-        private DeltaAccelSettings mouseDeltaSettings = new DeltaAccelSettings();
-        public DeltaAccelSettings MouseDeltaSettings
+        public MouseMotionSettings.DeltaAccelSettings MouseDeltaSettings
         {
-            get => mouseDeltaSettings;
-            set => mouseDeltaSettings = value;
+            get => motion.DeltaSettings;
+            set => motion.DeltaSettings = value;
         }
 
         public StickMouse()
@@ -169,8 +107,7 @@ namespace DS4MapperTest.StickActions
             mappingId = parentAction.mappingId;
             this.stickDefinition = new StickDefinition(parentAction.stickDefinition);
             deadMod = new StickDeadZone(parentAction.deadMod);
-            mouseSpeed = parentAction.mouseSpeed;
-            verticalScale = parentAction.verticalScale;
+            motion = new MouseMotionSettings(parentAction.motion);
         }
 
         double previousPointerX = 0.0;
@@ -212,9 +149,9 @@ namespace DS4MapperTest.StickActions
 
             if (xNorm != 0.0 || yNorm != 0.0)
             {
-                if (outputCurve != StickOutCurve.Curve.Linear)
+                if (motion.OutputCurve != StickOutCurve.Curve.Linear)
                 {
-                    StickOutCurve.CalcOutValue(outputCurve, xNorm, yNorm,
+                    StickOutCurve.CalcOutValue(motion.OutputCurve, xNorm, yNorm,
                         out xNorm, out yNorm);
                     //StickOutCurve.CalcOutValue(StickOutCurve.Curve.EnhancedPrecision, xNorm, yNorm,
                     //    out xNorm, out yNorm);
@@ -237,12 +174,12 @@ namespace DS4MapperTest.StickActions
                 double tempRatioY = capY > 0 ? rawYNorm / capY : 0;
 
                 // Calculate delta acceleration slope and offset.
-                bool testDeltaAccel = mouseDeltaSettings.enabled;
-                double testAccelMulti = mouseDeltaSettings.multiplier;
-                double testAccelMaxTravel = mouseDeltaSettings.maxTravel;
-                double testAccelMinTravel = mouseDeltaSettings.minTravel;
-                double testAccelEasingDuration = mouseDeltaSettings.easingDuration;
-                double minfactor = Math.Max(1.0, mouseDeltaSettings.minfactor); // default 1.0
+                bool testDeltaAccel = motion.DeltaSettings.Enabled;
+                double testAccelMulti = motion.DeltaSettings.Multiplier;
+                double testAccelMaxTravel = motion.DeltaSettings.MaxTravel;
+                double testAccelMinTravel = motion.DeltaSettings.MinTravel;
+                double testAccelEasingDuration = motion.DeltaSettings.EasingDuration;
+                double minfactor = Math.Max(1.0, motion.DeltaSettings.MinFactor); // default 1.0
                 double minTravelStop = Math.Max(0.1, testAccelMinTravel);
 
                 double accelSlope = (testAccelMulti - minfactor) / (testAccelMaxTravel - testAccelMinTravel);
@@ -387,9 +324,9 @@ namespace DS4MapperTest.StickActions
 
                 double timeDelta = mapper.CurrentLatency;
                 timeDelta = timeDelta - (mapper.remainderCutoff(timeDelta * 10000.0, 1.0) / 10000.0);
-                int mouseVelocity = mouseSpeed * MOUSESPEEDFACTOR;
+                int mouseVelocity = motion.MouseSpeed * MOUSESPEEDFACTOR;
                 double mouseOffset = MOUSE_VELOCITY_OFFSET * mouseVelocity;
-                int verticalMouseVelocity = (int)Math.Round(mouseVelocity * verticalScale);
+                int verticalMouseVelocity = (int)Math.Round(mouseVelocity * motion.VerticalScale);
                 double verticalMouseOffset = MOUSE_VELOCITY_OFFSET * verticalMouseVelocity;
 
                 double xSign = xNorm >= 0.0 ? 1.0 : -1.0;
@@ -481,16 +418,16 @@ namespace DS4MapperTest.StickActions
                             deadMod.MaxZone = tempMouseAction.deadMod.MaxZone;
                             break;
                         case PropertyKeyStrings.OUTPUT_CURVE:
-                            outputCurve = tempMouseAction.outputCurve;
+                            motion.OutputCurve = tempMouseAction.motion.OutputCurve;
                             break;
                         case PropertyKeyStrings.MOUSE_SPEED:
-                            mouseSpeed = tempMouseAction.mouseSpeed;
+                            motion.MouseSpeed = tempMouseAction.motion.MouseSpeed;
                             break;
                         case PropertyKeyStrings.DELTA_SETTINGS:
-                            mouseDeltaSettings = new DeltaAccelSettings(tempMouseAction.mouseDeltaSettings);
+                            motion.DeltaSettings = new MouseMotionSettings.DeltaAccelSettings(tempMouseAction.motion.DeltaSettings);
                             break;
                         case PropertyKeyStrings.VERTICAL_SCALE:
-                            verticalScale = tempMouseAction.verticalScale;
+                            motion.VerticalScale = tempMouseAction.motion.VerticalScale;
                             break;
                         default:
                             break;
@@ -531,16 +468,16 @@ namespace DS4MapperTest.StickActions
                     deadMod.MaxZone = tempMouseAction.deadMod.MaxZone;
                     break;
                 case PropertyKeyStrings.OUTPUT_CURVE:
-                    outputCurve = tempMouseAction.outputCurve;
+                    motion.OutputCurve = tempMouseAction.motion.OutputCurve;
                     break;
                 case PropertyKeyStrings.MOUSE_SPEED:
-                    mouseSpeed = tempMouseAction.mouseSpeed;
+                    motion.MouseSpeed = tempMouseAction.motion.MouseSpeed;
                     break;
                 case PropertyKeyStrings.DELTA_SETTINGS:
-                    mouseDeltaSettings = new DeltaAccelSettings(tempMouseAction.mouseDeltaSettings);
+                    motion.DeltaSettings = new MouseMotionSettings.DeltaAccelSettings(tempMouseAction.motion.DeltaSettings);
                     break;
                 case PropertyKeyStrings.VERTICAL_SCALE:
-                    verticalScale = tempMouseAction.verticalScale;
+                    motion.VerticalScale = tempMouseAction.motion.VerticalScale;
                     break;
                 default:
                     break;

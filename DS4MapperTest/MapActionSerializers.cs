@@ -687,6 +687,203 @@ namespace DS4MapperTest
         }
     }
 
+    public class TriggerMouseActionSerializer : MapActionSerializer
+    {
+        public class DeltaAccelSettingsSerializer
+        {
+            private TriggerMouse triggerMouseAction;
+
+            public bool Enabled
+            {
+                get => triggerMouseAction.MouseDeltaSettings.Enabled;
+                set => triggerMouseAction.MouseDeltaSettings.Enabled = value;
+            }
+
+            public double Multiplier
+            {
+                get => triggerMouseAction.MouseDeltaSettings.Multiplier;
+                set => triggerMouseAction.MouseDeltaSettings.Multiplier = value;
+            }
+
+            public double MaxTravel
+            {
+                get => triggerMouseAction.MouseDeltaSettings.MaxTravel;
+                set => triggerMouseAction.MouseDeltaSettings.MaxTravel = value;
+            }
+
+            public double MinTravel
+            {
+                get => triggerMouseAction.MouseDeltaSettings.MinTravel;
+                set => triggerMouseAction.MouseDeltaSettings.MinTravel = value;
+            }
+
+            public double EasingDuration
+            {
+                get => triggerMouseAction.MouseDeltaSettings.EasingDuration;
+                set => triggerMouseAction.MouseDeltaSettings.EasingDuration = value;
+            }
+
+            public double MinFactor
+            {
+                get => triggerMouseAction.MouseDeltaSettings.MinFactor;
+                set => triggerMouseAction.MouseDeltaSettings.MinFactor = value;
+            }
+
+            public DeltaAccelSettingsSerializer(TriggerMouse mouseAction)
+            {
+                this.triggerMouseAction = mouseAction;
+            }
+        }
+
+        public class TriggerMouseSettings
+        {
+            private TriggerMouse triggerMouseAction;
+            private DeltaAccelSettingsSerializer mouseDeltaSettingsSerializer;
+
+            public double DeadZone
+            {
+                get => triggerMouseAction.DeadMod.DeadZone;
+                set
+                {
+                    triggerMouseAction.DeadMod.DeadZone = Math.Clamp(value, 0.0, 1.0);
+                    DeadZoneChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DeadZoneChanged;
+
+            public double MaxZone
+            {
+                get => triggerMouseAction.DeadMod.MaxZone;
+                set
+                {
+                    triggerMouseAction.DeadMod.MaxZone = Math.Clamp(value, 0.0, 1.0);
+                    MaxZoneChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MaxZoneChanged;
+
+            public int MouseSpeed
+            {
+                get => triggerMouseAction.MouseSpeed;
+                set
+                {
+                    triggerMouseAction.MouseSpeed = value;
+                    MouseSpeedChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MouseSpeedChanged;
+
+            [JsonConverter(typeof(SafeStringEnumConverter),
+                StickOutCurve.Curve.Linear)]
+            public StickOutCurve.Curve OutputCurve
+            {
+                get => triggerMouseAction.OutputCurve;
+                set
+                {
+                    triggerMouseAction.OutputCurve = value;
+                    OutputCurveChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OutputCurveChanged;
+
+            public double DirectionDegrees
+            {
+                get => triggerMouseAction.DirectionDegrees;
+                set
+                {
+                    triggerMouseAction.DirectionDegrees = value;
+                    DirectionDegreesChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DirectionDegreesChanged;
+
+            public DeltaAccelSettingsSerializer DeltaSettings
+            {
+                get => mouseDeltaSettingsSerializer;
+                set
+                {
+                    mouseDeltaSettingsSerializer = value;
+                    DeltaSettingsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DeltaSettingsChanged;
+
+            public TriggerMouseSettings(TriggerMouse mouseAction)
+            {
+                triggerMouseAction = mouseAction;
+                mouseDeltaSettingsSerializer = new DeltaAccelSettingsSerializer(mouseAction);
+            }
+        }
+
+        private TriggerMouse triggerMouseAction =
+            new TriggerMouse();
+
+        private TriggerMouseSettings settings;
+        public TriggerMouseSettings Settings { get => settings; set => settings = value; }
+
+        // Deserialize
+        public TriggerMouseActionSerializer() : base()
+        {
+            mapAction = triggerMouseAction;
+            settings = new TriggerMouseSettings(triggerMouseAction);
+
+            NameChanged += TriggerMouseActionSerializer_NameChanged;
+            settings.DeadZoneChanged += Settings_DeadZoneChanged;
+            settings.MaxZoneChanged += Settings_MaxZoneChanged;
+            settings.MouseSpeedChanged += Settings_MouseSpeedChanged;
+            settings.OutputCurveChanged += Settings_OutputCurveChanged;
+            settings.DirectionDegreesChanged += Settings_DirectionDegreesChanged;
+            settings.DeltaSettingsChanged += Settings_DeltaSettingsChanged;
+        }
+
+        private void TriggerMouseActionSerializer_NameChanged(object sender, EventArgs e)
+        {
+            triggerMouseAction.ChangedProperties.Add(TriggerMouse.PropertyKeyStrings.NAME);
+        }
+
+        private void Settings_DeadZoneChanged(object sender, EventArgs e)
+        {
+            triggerMouseAction.ChangedProperties.Add(TriggerMouse.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_MaxZoneChanged(object sender, EventArgs e)
+        {
+            triggerMouseAction.ChangedProperties.Add(TriggerMouse.PropertyKeyStrings.MAX_ZONE);
+        }
+
+        private void Settings_MouseSpeedChanged(object sender, EventArgs e)
+        {
+            triggerMouseAction.ChangedProperties.Add(TriggerMouse.PropertyKeyStrings.MOUSE_SPEED);
+        }
+
+        private void Settings_OutputCurveChanged(object sender, EventArgs e)
+        {
+            triggerMouseAction.ChangedProperties.Add(TriggerMouse.PropertyKeyStrings.OUTPUT_CURVE);
+        }
+
+        private void Settings_DirectionDegreesChanged(object sender, EventArgs e)
+        {
+            triggerMouseAction.ChangedProperties.Add(TriggerMouse.PropertyKeyStrings.DIRECTION_DEGREES);
+        }
+
+        private void Settings_DeltaSettingsChanged(object sender, EventArgs e)
+        {
+            triggerMouseAction.ChangedProperties.Add(TriggerMouse.PropertyKeyStrings.DELTA_SETTINGS);
+        }
+
+        // Serialize
+        public TriggerMouseActionSerializer(ActionLayer tempLayer, MapAction mapAction) :
+            base(tempLayer, mapAction)
+        {
+            if (mapAction is TriggerMouse temp)
+            {
+                triggerMouseAction = temp;
+                this.mapAction = triggerMouseAction;
+                settings = new TriggerMouseSettings(triggerMouseAction);
+            }
+        }
+    }
+
     public class TriggerDualStageActionSerializer : MapActionSerializer
     {
         public class TriggerDualStageSettings
@@ -10395,6 +10592,11 @@ namespace DS4MapperTest
                         TriggerDualStageActionSerializer triggerDualActInstance = new TriggerDualStageActionSerializer();
                         JsonConvert.PopulateObject(j.ToString(), triggerDualActInstance);
                         resultInstance = triggerDualActInstance;
+                        break;
+                    case "TriggerMouseAction":
+                        TriggerMouseActionSerializer triggerMouseActInstance = new TriggerMouseActionSerializer();
+                        JsonConvert.PopulateObject(j.ToString(), triggerMouseActInstance);
+                        resultInstance = triggerMouseActInstance;
                         break;
                     case "TouchStickTranslateAction":
                         TouchpadStickActionSerializer touchStickActInstance = new TouchpadStickActionSerializer();
