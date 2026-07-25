@@ -38,6 +38,24 @@ namespace DS4MapperTest.GyroActions
             settings.configureUsing == TriggerSensitivityModifierConfigureUsing.Multiplier
                 ? baseSensitivity * settings.multiplier : settings.targetSensitivity;
 
+        public static void SwapEndpoints(ref TriggerSensitivityModifierSettings settings,
+            ref double baseSensitivity)
+        {
+            double previousBaseSensitivity = baseSensitivity;
+            double previousTargetSensitivity = ResolveTarget(settings, previousBaseSensitivity);
+
+            baseSensitivity = previousTargetSensitivity;
+            if (settings.configureUsing == TriggerSensitivityModifierConfigureUsing.Multiplier)
+            {
+                settings.multiplier = Math.Abs(previousTargetSensitivity) < double.Epsilon
+                    ? 0.0 : previousBaseSensitivity / previousTargetSensitivity;
+            }
+            else
+            {
+                settings.targetSensitivity = previousBaseSensitivity;
+            }
+        }
+
         public static bool IsValid(in TriggerSensitivityModifierSettings settings, double baseSensitivity) =>
             settings.behaviour == TriggerSensitivityModifierBehaviour.DecreaseWithPull
                 ? ResolveTarget(settings, baseSensitivity) <= baseSensitivity

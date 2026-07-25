@@ -482,7 +482,18 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         public TriggerSensitivityModifierBehaviour TriggerSensitivityModifierBehaviour
         {
             get => action.mouseParams.triggerSensitivityModifier.behaviour;
-            set { action.mouseParams.triggerSensitivityModifier.behaviour = value; RaiseTriggerModifierChanged(); }
+            set
+            {
+                if (action.mouseParams.triggerSensitivityModifier.behaviour == value) return;
+
+                TriggerSensitivityModifierSettings settings = action.mouseParams.triggerSensitivityModifier;
+                double baseSensitivity = Sensitivity;
+                TriggerSensitivityModifier.SwapEndpoints(ref settings, ref baseSensitivity);
+                settings.behaviour = value;
+                action.mouseParams.triggerSensitivityModifier = settings;
+                Sensitivity = baseSensitivity;
+                RaiseTriggerModifierChanged();
+            }
         }
         public TriggerSensitivityModifierConfigureUsing TriggerSensitivityModifierConfigureUsing
         {
@@ -507,7 +518,9 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public double TriggerSensitivityModifierTargetSensitivity
         {
-            get => action.mouseParams.triggerSensitivityModifier.targetSensitivity;
+            get => TriggerSensitivityModifierConfigureUsing == TriggerSensitivityModifierConfigureUsing.Multiplier
+                ? TriggerSensitivityModifierCalculatedTarget
+                : action.mouseParams.triggerSensitivityModifier.targetSensitivity;
             set
             {
                 action.mouseParams.triggerSensitivityModifier.targetSensitivity = Math.Clamp(value, 0.0, 100.0);
