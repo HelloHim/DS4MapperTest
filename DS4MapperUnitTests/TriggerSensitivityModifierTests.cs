@@ -56,6 +56,33 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void SwappingEndpointsReversesAbsoluteAndMultiplierConfigurations()
+        {
+            var absoluteSettings = new TriggerSensitivityModifierSettings(5.0)
+            { targetSensitivity = 2.0 };
+            double absoluteBaseSensitivity = 5.0;
+            TriggerSensitivityModifier.SwapEndpoints(ref absoluteSettings,
+                ref absoluteBaseSensitivity);
+            Assert.AreEqual(2.0, absoluteBaseSensitivity, 0.000001);
+            Assert.AreEqual(5.0, absoluteSettings.targetSensitivity, 0.000001);
+
+            var multiplierSettings = new TriggerSensitivityModifierSettings(5.0)
+            {
+                configureUsing = TriggerSensitivityModifierConfigureUsing.Multiplier,
+                multiplier = 1.6,
+            };
+            double multiplierBaseSensitivity = 5.0;
+            TriggerSensitivityModifier.SwapEndpoints(ref multiplierSettings,
+                ref multiplierBaseSensitivity);
+            Assert.AreEqual(8.0, multiplierBaseSensitivity, 0.000001);
+            Assert.AreEqual(0.625, multiplierSettings.multiplier, 0.000001);
+            Assert.AreEqual(TriggerSensitivityModifierConfigureUsing.Multiplier,
+                multiplierSettings.configureUsing);
+            Assert.AreEqual(5.0, TriggerSensitivityModifier.ResolveTarget(
+                multiplierSettings, multiplierBaseSensitivity), 0.000001);
+        }
+
+        [TestMethod]
         public void VerticalModificationDefaultsToOff()
         {
             var settings = new TriggerSensitivityModifierSettings(5.0);
