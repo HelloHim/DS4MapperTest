@@ -108,7 +108,7 @@
                                     <CheckBox Content="Enable Trigger Sensitivity Modifier" Style="{StaticResource JsmccToggleStyle}"
                                               IsChecked="{Binding TriggerSensitivityModifierEnabled}" Margin="12,0,0,0"/>
                                 </StackPanel>
-                                <StackPanel IsEnabled="{Binding TriggerSensitivityModifierEnabled}">
+                                <StackPanel Visibility="{Binding TriggerSensitivityModifierEnabled, Converter={StaticResource Boolean2VisibilityConverter}}">
                                     <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                         <TextBlock Text="Trigger" Style="{StaticResource SensRowLabel}"/><ComboBox Grid.Column="1" ItemsSource="{Binding TriggerSensitivityModifierTriggerItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerSensitivityModifierTrigger}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
                                     </Grid></Border>
