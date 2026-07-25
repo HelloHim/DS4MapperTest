@@ -101,6 +101,21 @@
                                 HorizontalAlignment="Left"
                                 Margin="0,6,0,0"/>
 
+                        <Border Style="{StaticResource SensRowBorder}" Margin="0,12,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Multiplier Compensation"
+                                           Style="{StaticResource SensRowLabel}"
+                                           ToolTip="Keeps aim speed consistent when acceleration curves change your effective sensitivity."/>
+                                <CheckBox Grid.Column="1" Content="Enable"
+                                          Style="{StaticResource JsmccToggleStyle}"
+                                          IsChecked="{Binding MultiplierCompensation}"/>
+                            </Grid>
+                        </Border>
+
                         <Border Style="{StaticResource JsmccCardBorder}" Margin="0,12,0,0">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
