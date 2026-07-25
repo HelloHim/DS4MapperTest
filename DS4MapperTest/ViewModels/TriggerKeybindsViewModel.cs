@@ -6,6 +6,7 @@ using System.Linq;
 using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
 using DS4MapperTest.MapperUtil;
+using DS4MapperTest.StickModifiers;
 using DS4MapperTest.TriggerActions;
 using DS4MapperTest.ViewModels.Common;
 using DS4MapperTest.ViewModels.TriggerActionPropViewModels;
@@ -18,6 +19,7 @@ namespace DS4MapperTest.ViewModels
         Button,
         DualStage,
         TriggerTranslate,
+        TriggerMouse,
     }
 
     public class TriggerKeybindItem : INotifyPropertyChanged
@@ -35,6 +37,7 @@ namespace DS4MapperTest.ViewModels
                 new EnumChoiceSelection<TriggerBindingMode>("Button", TriggerBindingMode.Button),
                 new EnumChoiceSelection<TriggerBindingMode>("Dual Stage", TriggerBindingMode.DualStage),
                 new EnumChoiceSelection<TriggerBindingMode>("Trigger Translate", TriggerBindingMode.TriggerTranslate),
+                new EnumChoiceSelection<TriggerBindingMode>("Trigger Mouse", TriggerBindingMode.TriggerMouse),
             };
         private readonly List<OutputTriggerItem> outputTriggerItems =
             new List<OutputTriggerItem>
@@ -69,10 +72,12 @@ namespace DS4MapperTest.ViewModels
         public TriggerButtonAction ButtonAction => mappedAction as TriggerButtonAction;
         public TriggerDualStageAction DualStageAction => mappedAction as TriggerDualStageAction;
         public TriggerTranslate TranslateAction => mappedAction as TriggerTranslate;
+        public TriggerMouse MouseAction => mappedAction as TriggerMouse;
 
         public bool IsButtonMode => mappedAction is TriggerButtonAction;
         public bool IsDualStageMode => mappedAction is TriggerDualStageAction;
         public bool IsTriggerTranslateMode => mappedAction is TriggerTranslate;
+        public bool IsTriggerMouseMode => mappedAction is TriggerMouse;
         public bool IsNoActionMode => mappedAction is TriggerNoAction;
         public bool HasHoldPress => HasFunc<HoldPressFunc>();
         public bool HasDoublePress => HasFunc<DoublePressFunc>();
@@ -95,6 +100,7 @@ namespace DS4MapperTest.ViewModels
                 {
                     TriggerDualStageAction => TriggerBindingMode.DualStage,
                     TriggerTranslate => TriggerBindingMode.TriggerTranslate,
+                    TriggerMouse => TriggerBindingMode.TriggerMouse,
                     TriggerNoAction => TriggerBindingMode.NoAction,
                     _ => TriggerBindingMode.Button,
                 };
@@ -107,12 +113,19 @@ namespace DS4MapperTest.ViewModels
                 {
                     TriggerBindingMode.DualStage => new TriggerDualStageAction(),
                     TriggerBindingMode.TriggerTranslate => new TriggerTranslate(),
+                    TriggerBindingMode.TriggerMouse => new TriggerMouse(),
                     TriggerBindingMode.NoAction => new TriggerNoAction(),
                     _ => new TriggerButtonAction(),
                 };
 
                 newAction.CopyBaseMapProps(mappedAction);
                 newAction.Id = owner.GetNextTriggerActionId(mappedAction);
+
+                if (newAction is TriggerMouse mouseAction)
+                {
+                    mouseAction.DirectionDegrees = TriggerMouse.DefaultDirectionForSide(mouseAction.TriggerDef.trigCode);
+                }
+
                 owner.UpdateTriggerKeybindAction(this, newAction);
             }
         }
@@ -272,6 +285,88 @@ namespace DS4MapperTest.ViewModels
             get => TranslateAction?.DeadMod.MaxZone ?? 0.0;
             set => UpdateTranslateZone(value, TriggerTranslate.PropertyKeyStrings.MAX_ZONE, nameof(TranslateMaxZone),
                 action => action.DeadMod.MaxZone = Math.Clamp(value, 0.0, 1.0));
+        }
+
+        private readonly List<EnumChoiceSelection<StickOutCurve.Curve>> mouseOutputCurveChoiceItems =
+            new List<EnumChoiceSelection<StickOutCurve.Curve>>
+            {
+                new EnumChoiceSelection<StickOutCurve.Curve>("Linear", StickOutCurve.Curve.Linear),
+                new EnumChoiceSelection<StickOutCurve.Curve>("Enhanced Precision", StickOutCurve.Curve.EnhancedPrecision),
+                new EnumChoiceSelection<StickOutCurve.Curve>("Quadratic", StickOutCurve.Curve.Quadratic),
+                new EnumChoiceSelection<StickOutCurve.Curve>("Cubic", StickOutCurve.Curve.Cubic),
+                new EnumChoiceSelection<StickOutCurve.Curve>("EaseOut Quadratic", StickOutCurve.Curve.EaseoutQuad),
+                new EnumChoiceSelection<StickOutCurve.Curve>("EaseOut Cubic", StickOutCurve.Curve.EaseoutCubic),
+            };
+        public List<EnumChoiceSelection<StickOutCurve.Curve>> MouseOutputCurveChoiceItems => mouseOutputCurveChoiceItems;
+
+        public double MouseDeadZone
+        {
+            get => MouseAction?.DeadMod.DeadZone ?? 0.0;
+            set => UpdateMouseAction(TriggerMouse.PropertyKeyStrings.DEAD_ZONE, nameof(MouseDeadZone),
+                action => action.DeadMod.DeadZone = Math.Clamp(value, 0.0, 1.0));
+        }
+
+        public int MouseSpeed
+        {
+            get => MouseAction?.MouseSpeed ?? TriggerMouse.DefaultMouseSpeed;
+            set => UpdateMouseAction(TriggerMouse.PropertyKeyStrings.MOUSE_SPEED, nameof(MouseSpeed),
+                action => action.MouseSpeed = value);
+        }
+
+        public StickOutCurve.Curve MouseOutputCurveChoice
+        {
+            get => MouseAction?.OutputCurve ?? StickOutCurve.Curve.Linear;
+            set => UpdateMouseAction(TriggerMouse.PropertyKeyStrings.OUTPUT_CURVE, nameof(MouseOutputCurveChoice),
+                action => action.OutputCurve = value);
+        }
+
+        public double MouseDirectionDegrees
+        {
+            get => MouseAction?.DirectionDegrees ?? 0.0;
+            set => UpdateMouseAction(TriggerMouse.PropertyKeyStrings.DIRECTION_DEGREES, nameof(MouseDirectionDegrees),
+                action => action.DirectionDegrees = value);
+        }
+
+        public bool MouseDeltaEnabled
+        {
+            get => MouseAction?.MouseDeltaSettings.Enabled ?? false;
+            set => UpdateMouseAction(TriggerMouse.PropertyKeyStrings.DELTA_SETTINGS, nameof(MouseDeltaEnabled),
+                action => action.MouseDeltaSettings.Enabled = value);
+        }
+
+        public double MouseDeltaMultiplier
+        {
+            get => MouseAction?.MouseDeltaSettings.Multiplier ?? 4.0;
+            set => UpdateMouseAction(TriggerMouse.PropertyKeyStrings.DELTA_SETTINGS, nameof(MouseDeltaMultiplier),
+                action => action.MouseDeltaSettings.Multiplier = value);
+        }
+
+        public double MouseDeltaMinTravel
+        {
+            get => MouseAction?.MouseDeltaSettings.MinTravel ?? 0.01;
+            set => UpdateMouseAction(TriggerMouse.PropertyKeyStrings.DELTA_SETTINGS, nameof(MouseDeltaMinTravel),
+                action => action.MouseDeltaSettings.MinTravel = value);
+        }
+
+        public double MouseDeltaMaxTravel
+        {
+            get => MouseAction?.MouseDeltaSettings.MaxTravel ?? 0.2;
+            set => UpdateMouseAction(TriggerMouse.PropertyKeyStrings.DELTA_SETTINGS, nameof(MouseDeltaMaxTravel),
+                action => action.MouseDeltaSettings.MaxTravel = value);
+        }
+
+        public double MouseDeltaEasingDuration
+        {
+            get => MouseAction?.MouseDeltaSettings.EasingDuration ?? 0.2;
+            set => UpdateMouseAction(TriggerMouse.PropertyKeyStrings.DELTA_SETTINGS, nameof(MouseDeltaEasingDuration),
+                action => action.MouseDeltaSettings.EasingDuration = value);
+        }
+
+        public double MouseDeltaMinFactor
+        {
+            get => MouseAction?.MouseDeltaSettings.MinFactor ?? 1.0;
+            set => UpdateMouseAction(TriggerMouse.PropertyKeyStrings.DELTA_SETTINGS, nameof(MouseDeltaMinFactor),
+                action => action.MouseDeltaSettings.MinFactor = value);
         }
 
         public TriggerKeybindItem(ProfileEditorTestViewModel owner,
@@ -549,6 +644,20 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(notifyName);
         }
 
+        private void UpdateMouseAction(string propertyName, string notifyName,
+            Action<TriggerMouse> update, string alsoNotify = null)
+        {
+            if (MouseAction == null) return;
+            TriggerMouse action = EnsureEditableAction() as TriggerMouse;
+            owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                update(action);
+                MarkChanged(action, propertyName);
+            });
+            OnPropertyChanged(notifyName);
+            if (alsoNotify != null) OnPropertyChanged(alsoNotify);
+        }
+
         private bool HasKind(FaceBindingFuncKind kind)
         {
             return kind switch
@@ -613,6 +722,7 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(IsButtonMode));
             OnPropertyChanged(nameof(IsDualStageMode));
             OnPropertyChanged(nameof(IsTriggerTranslateMode));
+            OnPropertyChanged(nameof(IsTriggerMouseMode));
             OnPropertyChanged(nameof(IsNoActionMode));
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(ButtonDeadZone));
@@ -631,6 +741,16 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(TranslateDeadZone));
             OnPropertyChanged(nameof(TranslateAntiDeadZone));
             OnPropertyChanged(nameof(TranslateMaxZone));
+            OnPropertyChanged(nameof(MouseDeadZone));
+            OnPropertyChanged(nameof(MouseSpeed));
+            OnPropertyChanged(nameof(MouseOutputCurveChoice));
+            OnPropertyChanged(nameof(MouseDirectionDegrees));
+            OnPropertyChanged(nameof(MouseDeltaEnabled));
+            OnPropertyChanged(nameof(MouseDeltaMultiplier));
+            OnPropertyChanged(nameof(MouseDeltaMinTravel));
+            OnPropertyChanged(nameof(MouseDeltaMaxTravel));
+            OnPropertyChanged(nameof(MouseDeltaEasingDuration));
+            OnPropertyChanged(nameof(MouseDeltaMinFactor));
         }
 
         private void RaiseAvailabilityChanged()

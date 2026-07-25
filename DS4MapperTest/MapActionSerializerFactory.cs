@@ -52,6 +52,9 @@ namespace DS4MapperTest
                 case "TriggerDualStageAction":
                     serializer = new TriggerDualStageActionSerializer(layer, action);
                     break;
+                case "TriggerMouseAction":
+                    serializer = new TriggerMouseActionSerializer(layer, action);
+                    break;
                 case "TouchStickTranslateAction":
                     serializer = new TouchpadStickActionSerializer(layer, action);
                     break;
