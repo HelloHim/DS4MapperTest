@@ -23,6 +23,20 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void InstantResponseCurveUsesTargetForAnyNonZeroPull()
+        {
+            var settings = new TriggerSensitivityModifierSettings(5.0)
+            {
+                enabled = true,
+                targetSensitivity = 2.0,
+                responseCurve = TriggerSensitivityModifierResponseCurve.Instant,
+            };
+            Assert.AreEqual(5.0, TriggerSensitivityModifier.Evaluate(settings, 5.0, 0.0), 0.000001);
+            Assert.AreEqual(2.0, TriggerSensitivityModifier.Evaluate(settings, 5.0, 0.01), 0.000001);
+            Assert.AreEqual(2.0, TriggerSensitivityModifier.Evaluate(settings, 5.0, 1.0), 0.000001);
+        }
+
+        [TestMethod]
         public void IncreaseWithPullInterpolatesAndClampsInvalidEndpoint()
         {
             var settings = new TriggerSensitivityModifierSettings(5.0)
