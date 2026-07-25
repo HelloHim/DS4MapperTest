@@ -260,7 +260,7 @@
               "Id": 8,
               "ActionMode": "StickMouseAction",
               "Settings": {
-                "MouseSpeed": 100,
+                "MouseSpeed": 3000,
                 "DeadZone": 0.1,
                 "MaxZone": 1.0,
                 "OutputCurve": "EnhancedPrecision",

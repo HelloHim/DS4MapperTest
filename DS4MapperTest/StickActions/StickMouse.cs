@@ -100,7 +100,8 @@ namespace DS4MapperTest.StickActions
 
         private const int MOUSESPEEDFACTOR = 20;
         private const double MOUSESTICKOFFSET = 0.0495;
-        private const int MOUSESPEED = 100;
+        public const int DefaultMouseSpeed = 3000;
+        public const int MaxMouseSpeed = 10000;
         //private const double MOUSE_VELOCITY_OFFSET = 0.12;
         private const double MOUSE_VELOCITY_OFFSET = 0.013;
         public const string ACTION_TYPE_NAME = "StickMouseAction";
@@ -111,8 +112,12 @@ namespace DS4MapperTest.StickActions
         private double xNorm = 0.0, yNorm = 0.0;
         private double xMotion;
         private double yMotion;
-        private int mouseSpeed = MOUSESPEED;
-        public int MouseSpeed { get => mouseSpeed; set => mouseSpeed = value; }
+        private int mouseSpeed = DefaultMouseSpeed;
+        public int MouseSpeed
+        {
+            get => mouseSpeed;
+            set => mouseSpeed = Math.Clamp(value, 0, MaxMouseSpeed);
+        }
 
         public StickDeadZone DeadMod { get => deadMod; }
         public StickOutCurve.Curve OutputCurve

@@ -32,7 +32,7 @@ namespace DS4MapperTest.ViewModels
             new StickModeItem("Stick", 1),
             new StickModeItem("DPad", 2),
             new StickModeItem("Analog Emulation", 7),
-            new StickModeItem("Mouse", 3),
+            new StickModeItem("Joystick Mouse", 3),
             new StickModeItem("Flick Stick", 6),
             new StickModeItem("Circular", 4),
             new StickModeItem("Absolute Mouse", 5),
