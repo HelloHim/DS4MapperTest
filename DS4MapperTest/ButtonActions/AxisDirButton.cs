@@ -81,8 +81,16 @@ namespace DS4MapperTest.ButtonActions
 
             //base.Prepare(mapper, currentValue != 0.0);
             if (previousStatus != status && status)
-            //if (previousStatus != status)
             {
+                // AxisDirButton drives the soft/full stages of a dual-stage
+                // trigger.  Delayed activators (Hold Press, Start Press and
+                // Release Press) use this timer to measure the stage press,
+                // just as they do for a regular ButtonAction.
+                if (alterState)
+                {
+                    stateData.elapsed.Restart();
+                }
+
                 if (useParentActions)
                 {
                     actionFuncCandidates.AddRange(parentButtonAct.ActionFuncs);
