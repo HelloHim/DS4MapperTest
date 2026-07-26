@@ -1177,8 +1177,15 @@ namespace DS4MapperTest.ViewModels
             get => func is ChordedPressFunc chordedPress ? chordedPress.TriggerButton : JoypadActionCodes.Empty;
             set
             {
+                // Check the item currently displayed by the selector before cloning an
+                // inherited binding. EnsureEditableButtonActionForFunctionEdits can
+                // rebuild FunctionItems; doing that first invalidates this item's WPF
+                // binding while SelectedValue is still being updated.
+                if (func is not ChordedPressFunc currentChord || currentChord.TriggerButton == value)
+                    return;
+
                 TriggerButtonAction triggerAction = owner.EnsureEditableButtonActionForFunctionEdits();
-                if ((owner.FindButtonFunc(Kind) ?? func) is not ChordedPressFunc chordedPress ||
+                if (owner.FindButtonFunc(Kind) is not ChordedPressFunc chordedPress ||
                     chordedPress.TriggerButton == value) return;
 
                 owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
@@ -1187,7 +1194,12 @@ namespace DS4MapperTest.ViewModels
                     chordedPress.TriggerButton = value;
                     MarkButtonChanged();
                 });
-                OnPropertyChanged(nameof(ChordTrigger));
+
+                // The editable action may be a newly detached copy of an inherited
+                // action. Refresh after the transaction so WPF binds to that copy,
+                // rather than notifying the old function item and re-entering the
+                // ComboBox selection update.
+                owner.RefreshAfterEdit();
             }
         }
 
