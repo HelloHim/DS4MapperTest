@@ -29,7 +29,7 @@ namespace DS4MapperTest.Views
                 menuItem.Tag is not string tag ||
                 menuItem.Parent is not ContextMenu menu ||
                 menu.PlacementTarget is not FrameworkElement target ||
-                target.DataContext is not TriggerKeybindItem triggerItem)
+                target.DataContext is not object bindingOwner)
             {
                 return;
             }
@@ -47,7 +47,15 @@ namespace DS4MapperTest.Views
 
             if (kind == null) return;
 
-            triggerItem.AddExtraBinding(kind.Value);
+            switch (bindingOwner)
+            {
+                case TriggerKeybindItem triggerItem:
+                    triggerItem.AddExtraBinding(kind.Value);
+                    break;
+                case TriggerDualStageBindItem stageItem:
+                    stageItem.AddExtraBinding(kind.Value);
+                    break;
+            }
         }
 
         private void RemoveBinding_Click(object sender, RoutedEventArgs e)
@@ -55,6 +63,10 @@ namespace DS4MapperTest.Views
             if (sender is Button { Tag: TriggerButtonFuncItem item })
             {
                 item.Owner.RemoveBinding(item);
+            }
+            else if (sender is Button { Tag: TriggerDualStageFuncItem stageItem })
+            {
+                stageItem.Remove();
             }
         }
 

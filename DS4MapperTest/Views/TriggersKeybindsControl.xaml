@@ -417,18 +417,56 @@
                                             <Border Style="{StaticResource TriggerChipBorder}">
                                                 <StackPanel>
                                                     <TextBlock Text="Full Pull" Style="{StaticResource TriggerControlLabel}"/>
-                                                    <views:ActionOutputListControl DataContext="{Binding FullPullBindItem}"
-                                                                                   MinWidth="240"
-                                                                                   Margin="0,4,0,0"/>
+                                                    <Button DataContext="{Binding FullPullBindItem}" Content="+ Add Extra Command" Click="AddExtraBindingButton_Click"
+                                                            Style="{StaticResource JsmccButtonStyle}" HorizontalAlignment="Left">
+                                                        <Button.ContextMenu><ContextMenu>
+                                                            <MenuItem Header="Hold Press" Tag="Hold" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddHoldPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                            <MenuItem Header="Double Press" Tag="Double" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddDoublePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                            <MenuItem Header="Chorded Press" Tag="Chorded" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                            <MenuItem Header="Start Press" Tag="Start" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                            <MenuItem Header="Release Press" Tag="Release" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                        </ContextMenu></Button.ContextMenu>
+                                                    </Button>
+                                                    <ItemsControl ItemsSource="{Binding FullPullBindItem.FunctionItems}" Margin="0,4,0,0">
+                                                        <ItemsControl.ItemTemplate><DataTemplate>
+                                                            <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,2,0,2">
+                                                                <StackPanel>
+                                                                    <DockPanel LastChildFill="False"><TextBlock Text="{Binding DisplayName}" Style="{StaticResource JsmccLabelText}"/>
+                                                                        <Button DockPanel.Dock="Right" Content="Remove Binding" Tag="{Binding}" Click="RemoveBinding_Click" Style="{StaticResource JsmccDangerButtonStyle}" Visibility="{Binding CanRemove, Converter={StaticResource BoolToVis}}"/>
+                                                                    </DockPanel>
+                                                                    <views:ActionOutputListControl Margin="0,4,0,0"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate></ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
                                                 </StackPanel>
                                             </Border>
 
                                             <Border Style="{StaticResource TriggerChipBorder}">
                                                 <StackPanel>
                                                     <TextBlock Text="Soft Pull" Style="{StaticResource TriggerControlLabel}"/>
-                                                    <views:ActionOutputListControl DataContext="{Binding SoftPullBindItem}"
-                                                                                   MinWidth="240"
-                                                                                   Margin="0,4,0,0"/>
+                                                    <Button DataContext="{Binding SoftPullBindItem}" Content="+ Add Extra Command" Click="AddExtraBindingButton_Click"
+                                                            Style="{StaticResource JsmccButtonStyle}" HorizontalAlignment="Left">
+                                                        <Button.ContextMenu><ContextMenu>
+                                                            <MenuItem Header="Hold Press" Tag="Hold" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddHoldPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                            <MenuItem Header="Double Press" Tag="Double" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddDoublePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                            <MenuItem Header="Chorded Press" Tag="Chorded" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                            <MenuItem Header="Start Press" Tag="Start" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                            <MenuItem Header="Release Press" Tag="Release" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                        </ContextMenu></Button.ContextMenu>
+                                                    </Button>
+                                                    <ItemsControl ItemsSource="{Binding SoftPullBindItem.FunctionItems}" Margin="0,4,0,0">
+                                                        <ItemsControl.ItemTemplate><DataTemplate>
+                                                            <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,2,0,2">
+                                                                <StackPanel>
+                                                                    <DockPanel LastChildFill="False"><TextBlock Text="{Binding DisplayName}" Style="{StaticResource JsmccLabelText}"/>
+                                                                        <Button DockPanel.Dock="Right" Content="Remove Binding" Tag="{Binding}" Click="RemoveBinding_Click" Style="{StaticResource JsmccDangerButtonStyle}" Visibility="{Binding CanRemove, Converter={StaticResource BoolToVis}}"/>
+                                                                    </DockPanel>
+                                                                    <views:ActionOutputListControl Margin="0,4,0,0"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate></ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
                                                 </StackPanel>
                                             </Border>
 

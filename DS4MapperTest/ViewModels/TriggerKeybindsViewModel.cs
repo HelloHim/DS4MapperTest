@@ -693,7 +693,7 @@ namespace DS4MapperTest.ViewModels
             return ButtonAction?.EventButton.ActionFuncs.OfType<TFunc>().Any() == true;
         }
 
-        private static ActionFunc CreateFunc(FaceBindingFuncKind kind)
+        internal static ActionFunc CreateFunc(FaceBindingFuncKind kind)
         {
             OutputActionData emptyOutput =
                 new OutputActionData(OutputActionData.ActionType.Empty, 0);
@@ -799,6 +799,8 @@ namespace DS4MapperTest.ViewModels
         private readonly bool fullPull;
         private readonly ObservableCollection<ActionOutputItem> outputItems =
             new ObservableCollection<ActionOutputItem>();
+        private readonly ObservableCollection<TriggerDualStageFuncItem> functionItems =
+            new ObservableCollection<TriggerDualStageFuncItem>();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -807,9 +809,18 @@ namespace DS4MapperTest.ViewModels
             this.owner = owner;
             this.fullPull = fullPull;
             RefreshOutputItems();
+            RefreshFunctions();
         }
 
         public ObservableCollection<ActionOutputItem> OutputItems => outputItems;
+        public ObservableCollection<TriggerDualStageFuncItem> FunctionItems => functionItems;
+        internal Mapper Mapper => owner.Owner.DeviceMapper;
+        internal string RowLabel => owner.DisplayName;
+        public bool CanAddHoldPress => !HasFunc<HoldPressFunc>();
+        public bool CanAddDoublePress => !HasFunc<DoublePressFunc>();
+        public bool CanAddChordedPress => !HasFunc<ChordedPressFunc>();
+        public bool CanAddStartPress => !HasFunc<StartPressFunc>();
+        public bool CanAddReleasePress => !HasFunc<ReleaseFunc>();
 
         public string DisplayBind
         {
@@ -898,8 +909,107 @@ namespace DS4MapperTest.ViewModels
         public void Refresh()
         {
             RefreshOutputItems();
+            RefreshFunctions();
             OnPropertyChanged(nameof(DisplayBind));
             OnPropertyChanged(nameof(OutputItems));
+            OnPropertyChanged(nameof(FunctionItems));
+            OnPropertyChanged(nameof(CanAddHoldPress));
+            OnPropertyChanged(nameof(CanAddDoublePress));
+            OnPropertyChanged(nameof(CanAddChordedPress));
+            OnPropertyChanged(nameof(CanAddStartPress));
+            OnPropertyChanged(nameof(CanAddReleasePress));
+        }
+
+        public void AddExtraBinding(FaceBindingFuncKind kind)
+        {
+            if (kind == FaceBindingFuncKind.Regular || FindFunc(kind) != null) return;
+            ActionFunc func = TriggerKeybindItem.CreateFunc(kind);
+            AxisDirButton action = StageAction;
+            if (func == null || action == null) return;
+            owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                action.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                action.ActionFuncs.Add(func);
+                MarkStageChanged(action);
+            });
+            owner.RefreshAfterEdit();
+        }
+
+        public void RemoveBinding(TriggerDualStageFuncItem item)
+        {
+            if (item?.Func == null || item.Kind == FaceBindingFuncKind.Regular) return;
+            AxisDirButton action = StageAction;
+            if (action == null || !action.ActionFuncs.Contains(item.Func)) return;
+            owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+            {
+                action.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                action.ActionFuncs.Remove(item.Func);
+                MarkStageChanged(action);
+            });
+            owner.RefreshAfterEdit();
+        }
+
+        internal ActionFunc FindFunc(FaceBindingFuncKind kind) => kind switch
+        {
+            FaceBindingFuncKind.Regular => FindNormalPressFunc(StageAction),
+            FaceBindingFuncKind.Hold => StageAction?.ActionFuncs.OfType<HoldPressFunc>().FirstOrDefault(),
+            FaceBindingFuncKind.Double => StageAction?.ActionFuncs.OfType<DoublePressFunc>().FirstOrDefault(),
+            FaceBindingFuncKind.Chorded => StageAction?.ActionFuncs.OfType<ChordedPressFunc>().FirstOrDefault(),
+            FaceBindingFuncKind.Start => StageAction?.ActionFuncs.OfType<StartPressFunc>().FirstOrDefault(),
+            FaceBindingFuncKind.Release => StageAction?.ActionFuncs.OfType<ReleaseFunc>().FirstOrDefault(),
+            _ => null,
+        };
+
+        internal EditFaceBindingContext PrepareFunctionEdit(TriggerDualStageFuncItem item, int? outputIndex = null)
+        {
+            AxisDirButton action = StageAction;
+            ActionFunc func = item?.Func ?? FindNormalPressFunc(action);
+            if (action == null) return null;
+            if (func == null && item?.Kind == FaceBindingFuncKind.Regular)
+            {
+                func = new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    action.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
+                    action.ActionFuncs.Insert(0, func);
+                    MarkStageChanged(action);
+                });
+            }
+            if (func == null) return null;
+            if (outputIndex.HasValue)
+            {
+                while (func.OutputActions.Count <= outputIndex.Value)
+                    func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            }
+            return new EditFaceBindingContext(owner.Owner.DeviceMapper, action, func, outputIndex);
+        }
+
+        internal void MarkFunctionChanged()
+        {
+            MarkStageChanged(StageAction);
+            owner.RefreshAfterEdit();
+        }
+
+        private bool HasFunc<T>() where T : ActionFunc => StageAction?.ActionFuncs.OfType<T>().Any() == true;
+
+        private void RefreshFunctions()
+        {
+            functionItems.Clear();
+            functionItems.Add(new TriggerDualStageFuncItem(this, FaceBindingFuncKind.Regular,
+                FindNormalPressFunc(StageAction)));
+            foreach (ActionFunc func in StageAction?.ActionFuncs ?? Enumerable.Empty<ActionFunc>())
+            {
+                FaceBindingFuncKind? kind = func switch
+                {
+                    HoldPressFunc => FaceBindingFuncKind.Hold,
+                    DoublePressFunc => FaceBindingFuncKind.Double,
+                    ChordedPressFunc => FaceBindingFuncKind.Chorded,
+                    StartPressFunc => FaceBindingFuncKind.Start,
+                    ReleaseFunc => FaceBindingFuncKind.Release,
+                    _ => null,
+                };
+                if (kind.HasValue) functionItems.Add(new TriggerDualStageFuncItem(this, kind.Value, func));
+            }
         }
 
         private EditFaceBindingContext PrepareEdit(ActionOutputItem item)
@@ -984,6 +1094,102 @@ namespace DS4MapperTest.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
+
+    /// <summary>
+    /// An activator belonging to one logical side of a dual-stage trigger.  The
+    /// stage remains an AxisDirButton, so this deliberately uses the same
+    /// ActionFunc implementations as an ordinary button binding.
+    /// </summary>
+    public class TriggerDualStageFuncItem : IQuickBindTarget, IActionOutputListOwner
+    {
+        private readonly TriggerDualStageBindItem owner;
+        public FaceBindingFuncKind Kind { get; }
+        public ActionFunc Func { get; }
+        private readonly ObservableCollection<ActionOutputItem> outputItems = new();
+
+        public TriggerDualStageFuncItem(TriggerDualStageBindItem owner,
+            FaceBindingFuncKind kind, ActionFunc func)
+        {
+            this.owner = owner;
+            Kind = kind;
+            Func = func;
+            RefreshOutputs();
+        }
+
+        public ObservableCollection<ActionOutputItem> OutputItems => outputItems;
+        public bool CanRemove => Kind != FaceBindingFuncKind.Regular && Func != null;
+        public string DisplayBind
+        {
+            get
+            {
+                string value = Func?.DescribeOutputActions(owner.Mapper);
+                return string.IsNullOrWhiteSpace(value) ? "Unbound" : value;
+            }
+        }
+        public string DisplayName => Kind switch
+        {
+            FaceBindingFuncKind.Regular => "Regular Press",
+            FaceBindingFuncKind.Hold => "Hold Press",
+            FaceBindingFuncKind.Double => "Double Press",
+            FaceBindingFuncKind.Chorded => "Chorded Press",
+            FaceBindingFuncKind.Start => "Start Press",
+            FaceBindingFuncKind.Release => "Release Press",
+            _ => "Binding",
+        };
+
+        private EditFaceBindingContext Context(ActionOutputItem item = null) =>
+            owner.PrepareFunctionEdit(this, item?.Index);
+
+        public void AddOutputAction()
+        {
+            EditFaceBindingContext ctx = Context();
+            if (ctx?.Func == null) return;
+            ctx.Mapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(ctx.Mapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                owner.MarkFunctionChanged();
+            });
+        }
+
+        public void Remove() => owner.RemoveBinding(this);
+
+        public void RemoveOutputAction(ActionOutputItem item)
+        {
+            EditFaceBindingContext ctx = Context(item);
+            if (ctx?.Func == null || item == null || item.Index <= 0 ||
+                item.Index >= ctx.Func.OutputActions.Count) return;
+            ctx.Mapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(ctx.Mapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.RemoveAt(item.Index);
+                owner.MarkFunctionChanged();
+            });
+        }
+
+        private void RefreshOutputs()
+        {
+            outputItems.Clear();
+            for (int i = 0; i < Math.Max(1, Func?.OutputActions.Count ?? 0); i++)
+                outputItems.Add(new ActionOutputItem(this, i));
+        }
+
+        Mapper IQuickBindTarget.Mapper => ((IActionOutputListOwner)this).Mapper;
+        string IQuickBindTarget.RowLabel => ((IActionOutputListOwner)this).RowLabel;
+        string IQuickBindTarget.SlotLabel => DisplayName;
+        bool IQuickBindTarget.IsComplexBinding => !QuickBindActionApplier.IsSimpleFunc(Func);
+        EditFaceBindingContext IQuickBindTarget.GetEditContext() => Context();
+        void IQuickBindTarget.NotifyBindingChanged() => owner.MarkFunctionChanged();
+
+        Mapper IActionOutputListOwner.Mapper => owner.Mapper;
+        string IActionOutputListOwner.RowLabel => owner.RowLabel;
+        string IActionOutputListOwner.SlotLabel => DisplayName;
+        ActionFunc IActionOutputListOwner.Func => Func;
+        EditFaceBindingContext IActionOutputListOwner.PrepareEdit(ActionOutputItem item) => Context(item);
+        void IActionOutputListOwner.AddOutputAction() => AddOutputAction();
+        void IActionOutputListOwner.RemoveOutputAction(ActionOutputItem item) => RemoveOutputAction(item);
+        void IActionOutputListOwner.NotifyBindingChanged() => owner.MarkFunctionChanged();
     }
 
     public class TriggerButtonFuncItem : INotifyPropertyChanged, IQuickBindTarget,
