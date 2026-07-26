@@ -60,5 +60,30 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(MapAction.HapticsIntensity.Medium,
                 child.SoftPullActionHapticsIntensity);
         }
+
+        [TestMethod]
+        public void FullPull_StartsTheExtraActivatorHoldTimer()
+        {
+            TestMapper mapper = new TestMapper();
+            TriggerDualStageAction action = new TriggerDualStageAction
+            {
+                MappingId = "LT",
+                TriggerDef = mapper.KnownTriggerDefinitions["LT"],
+                TriggerStateMode = TriggerDualStageAction.DualStageMode.Threshold,
+            };
+            action.FullPullActButton.ActionFuncs.Add(new DS4MapperTest.ActionUtil.HoldPressFunc());
+
+            TriggerEventFrame eventFrame = new TriggerEventFrame
+            {
+                axisValue = 255,
+                fullClick = true,
+            };
+
+            action.Prepare(mapper, ref eventFrame);
+            action.Event(mapper);
+
+            Assert.IsTrue(action.FullPullActButton.StateData.elapsed.IsRunning,
+                "The full-pull button must start its hold timer when the stage activates.");
+        }
     }
 }
