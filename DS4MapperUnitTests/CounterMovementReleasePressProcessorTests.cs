@@ -27,6 +27,10 @@ namespace DS4MapperUnitTests
         private const uint VK_A = 0x41;
         private const uint VK_S = 0x53;
         private const uint VK_D = 0x44;
+        private const uint VK_LEFT = 0x25;
+        private const uint VK_UP = 0x26;
+        private const uint VK_RIGHT = 0x27;
+        private const uint VK_DOWN = 0x28;
 
         private VirtualKBMMapping eventInputMapping;
 
@@ -490,6 +494,56 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void ArrowKeyMode_UsesFixedOppositeArrowsWithoutChangingMovementBinds()
+        {
+            var (mapper, padAction) = LoadMapper();
+            padAction.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses = true;
+
+            Neutral(mapper);
+            HoldUp(mapper, 20);
+            Assert.IsTrue(KeyDown(VK_W), "Normal Up movement must keep using W.");
+            Report(mapper, 0, 0);
+
+            Assert.IsTrue(KeyDown(VK_DOWN));
+            Assert.IsFalse(KeyDown(VK_S));
+        }
+
+        [TestMethod]
+        public void ArrowKeyMode_DiagonalReleaseOwnsBothArrowComponents()
+        {
+            var (mapper, padAction) = LoadMapper();
+            padAction.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses = true;
+
+            Neutral(mapper);
+            HoldUpRight(mapper, 20);
+            Report(mapper, 0, 0);
+
+            Assert.IsTrue(KeyDown(VK_DOWN));
+            Assert.IsTrue(KeyDown(VK_LEFT));
+            Assert.IsFalse(KeyDown(VK_S));
+            Assert.IsFalse(KeyDown(VK_A));
+        }
+
+        [TestMethod]
+        public void ArrowKeyMode_ChangeDuringPulseCancelsOwnedArrowOutput()
+        {
+            var (mapper, padAction) = LoadMapper();
+            padAction.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses = true;
+
+            Neutral(mapper);
+            HoldUp(mapper, 20);
+            Report(mapper, 0, 0);
+            Assert.IsTrue(KeyDown(VK_DOWN));
+
+            padAction.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses = false;
+            Report(mapper, 0, 0);
+
+            Assert.IsFalse(KeyDown(VK_DOWN));
+            Assert.AreNotEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive,
+                padAction.CounterMovementReleasePress.State);
+        }
+
+        [TestMethod]
         public void AllEightZones_MapToCorrectOpposite()
         {
             (int lx, int ly, uint origKey1, uint origKey2, uint oppKey1, uint oppKey2)[] cases = new[]
@@ -835,6 +889,29 @@ namespace DS4MapperUnitTests
 
             child.CounterMovementReleasePress.ArmingThreshold = CounterMovementReleasePressProcessor.DEFAULT_ARMING_THRESHOLD;
             Assert.AreEqual(CounterMovementReleasePressProcessor.DEFAULT_ARMING_THRESHOLD, child.CounterMovementReleasePress.ArmingThreshold);
+        }
+
+        [TestMethod]
+        public void ArrowKeyMode_DefaultSerialisationAndInheritanceArePreserved()
+        {
+            CounterMovementReleasePressProcessor defaults = new CounterMovementReleasePressProcessor();
+            Assert.IsFalse(defaults.UseArrowKeysForCounterMovementPresses);
+
+            StickPadAction action = new StickPadAction();
+            action.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses = true;
+            action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS);
+            string json = JsonConvert.SerializeObject(new StickPadActionSerializer(null, action));
+            Assert.IsTrue(JObject.Parse(json)["Settings"]?["UseArrowKeysForCounterMovementPresses"]?.Value<bool>());
+
+            StickPadAction parent = new StickPadAction();
+            parent.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses = true;
+            StickPadAction child = new StickPadAction();
+            child.SoftCopyFromParent(parent);
+            Assert.IsTrue(child.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses);
+
+            parent.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses = false;
+            parent.RaiseNotifyPropertyChange(null, StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS);
+            Assert.IsFalse(child.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses);
         }
 
         [TestMethod]

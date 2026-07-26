@@ -323,6 +323,24 @@
                                                Margin="170,4,0,0"/>
                                 </StackPanel>
                             </Border>
+
+                            <Border Style="{StaticResource ModeRowBorder}">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="260"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Use Arrow Keys for Counter-Movement Presses" Style="{StaticResource JsmccLabelText}" TextWrapping="Wrap"/>
+                                        <CheckBox Grid.Column="1" IsChecked="{Binding UseArrowKeysForCounterMovementPresses}"
+                                                  Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <TextBlock Text="When enabled, generated counter-movement presses use the arrow keys instead of the normal directional binds."
+                                               Style="{StaticResource JsmccMutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="260,4,0,0"/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </Expander>
                 </StackPanel>

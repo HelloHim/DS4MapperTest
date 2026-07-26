@@ -40,6 +40,7 @@ namespace DS4MapperTest.StickActions
             public const string FULL_SPEED_THRESHOLD_PERCENT = "FullSpeedThresholdPercent";
 
             public const string COUNTER_MOVEMENT_ENABLED = "CounterMovementReleasePressEnabled";
+            public const string COUNTER_MOVEMENT_USE_ARROW_KEYS = "UseArrowKeysForCounterMovementPresses";
             public const string COUNTER_MOVEMENT_TAP_LENGTH_PRESET = "CounterMovementTapLengthPreset";
             public const string COUNTER_MOVEMENT_TAP_LENGTH_MODE = "OppositeTapLengthMode";
             public const string COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS = "OppositeTapLengthMs";
@@ -75,6 +76,7 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.SPEED_PULSE_TIME_MS,
             PropertyKeyStrings.FULL_SPEED_THRESHOLD_PERCENT,
             PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED,
+            PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS,
             PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET,
             PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE,
             PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS,
@@ -238,6 +240,7 @@ namespace DS4MapperTest.StickActions
                 fullSpeedThresholdPercent = parentAction.fullSpeedThresholdPercent;
 
                 counterMovementReleasePress.Enabled = parentAction.counterMovementReleasePress.Enabled;
+                counterMovementReleasePress.UseArrowKeysForCounterMovementPresses = parentAction.counterMovementReleasePress.UseArrowKeysForCounterMovementPresses;
                 counterMovementReleasePress.TapLengthPreset = parentAction.counterMovementReleasePress.TapLengthPreset;
                 counterMovementReleasePress.OppositeTapLengthMinimumMs = parentAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
                 counterMovementReleasePress.OppositeTapLengthMaximumMs = parentAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
@@ -606,6 +609,9 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED:
                     counterMovementReleasePress.Enabled = tempAction.counterMovementReleasePress.Enabled;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS:
+                    counterMovementReleasePress.UseArrowKeysForCounterMovementPresses = tempAction.counterMovementReleasePress.UseArrowKeysForCounterMovementPresses;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET:
                     counterMovementReleasePress.TapLengthPreset = tempAction.counterMovementReleasePress.TapLengthPreset;

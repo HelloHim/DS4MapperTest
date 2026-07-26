@@ -344,6 +344,19 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler CounterMovementReleasePressEnabledChanged;
 
+        public bool UseArrowKeysForCounterMovementPresses
+        {
+            get => action.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses;
+            set
+            {
+                if (action.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses == value) return;
+                action.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses = value;
+                UseArrowKeysForCounterMovementPressesChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler UseArrowKeysForCounterMovementPressesChanged;
+
         private List<EnumChoiceSelection<OppositeTapLengthMode>> tapLengthModeItems =
             new List<EnumChoiceSelection<OppositeTapLengthMode>>()
             {
@@ -585,6 +598,11 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler HighlightCounterMovementReleasePressEnabledChanged;
 
+        public bool HighlightUseArrowKeysForCounterMovementPresses =>
+            action.ParentAction == null || action.ChangedProperties.Contains(
+                StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS);
+        public event EventHandler HighlightUseArrowKeysForCounterMovementPressesChanged;
+
         public bool HighlightTapLengthPreset
         {
             get => action.ParentAction == null ||
@@ -702,6 +720,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             SelectedPadModeIndexChanged += ChangeStickPadMode;
             SelectedPadModeIndexChanged += StickPadActionPropViewModel_SelectedPadModeIndexChanged;
             CounterMovementReleasePressEnabledChanged += StickPadActionPropViewModel_CounterMovementReleasePressEnabledChanged;
+            UseArrowKeysForCounterMovementPressesChanged += StickPadActionPropViewModel_UseArrowKeysForCounterMovementPressesChanged;
             TapLengthPresetChanged += StickPadActionPropViewModel_TapLengthPresetChanged;
             OppositeTapLengthModeChanged += StickPadActionPropViewModel_OppositeTapLengthModeChanged;
             OppositeTapLengthMsChanged += StickPadActionPropViewModel_OppositeTapLengthMsChanged;
@@ -719,6 +738,13 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             HighlightCounterMovementReleasePressEnabledChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickPadActionPropViewModel_UseArrowKeysForCounterMovementPressesChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS);
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS);
+            HighlightUseArrowKeysForCounterMovementPressesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickPadActionPropViewModel_TapLengthPresetChanged(object sender, EventArgs e)
