@@ -154,6 +154,17 @@ namespace DS4MapperTest.ViewModels.TriggerActionPropViewModels
         }
         public event EventHandler HapticsChoiceChanged;
 
+        public MapAction.HapticsIntensity SoftPullHapticsChoice
+        {
+            get => action.SoftPullActionHapticsIntensity;
+            set
+            {
+                action.SoftPullActionHapticsIntensity = value;
+                SoftPullHapticsChoiceChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler SoftPullHapticsChoiceChanged;
+
         public bool HighlightName
         {
             get => action.ParentAction == null ||
@@ -210,6 +221,13 @@ namespace DS4MapperTest.ViewModels.TriggerActionPropViewModels
         }
         public event EventHandler HighlightHapticsIntensityChanged;
 
+        public bool HighlightSoftPullHapticsIntensity
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TriggerDualStageAction.PropertyKeyStrings.SOFT_PULL_HAPTICS_INTENSITY);
+        }
+        public event EventHandler HighlightSoftPullHapticsIntensityChanged;
+
         public event EventHandler ActionPropertyChanged;
 
         public event EventHandler<TriggerMapAction> ActionChanged;
@@ -251,7 +269,19 @@ namespace DS4MapperTest.ViewModels.TriggerActionPropViewModels
             HipFireDelayChanged += TriggerDualStagePropViewModel_HipFireDelayChanged;
             ForceHipFireDelayChanged += TriggerDualStagePropViewModel_ForceHipFireDelayChanged;
             HapticsChoiceChanged += TriggerDualStagePropViewModel_HapticsChoiceChanged;
+            SoftPullHapticsChoiceChanged += TriggerDualStagePropViewModel_SoftPullHapticsChoiceChanged;
             SelectedDSModeIndexChanged += TriggerDualStagePropViewModel_SelectedDSModeIndexChanged;
+        }
+
+        private void TriggerDualStagePropViewModel_SoftPullHapticsChoiceChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TriggerDualStageAction.PropertyKeyStrings.SOFT_PULL_HAPTICS_INTENSITY))
+            {
+                action.ChangedProperties.Add(TriggerDualStageAction.PropertyKeyStrings.SOFT_PULL_HAPTICS_INTENSITY);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TriggerDualStageAction.PropertyKeyStrings.SOFT_PULL_HAPTICS_INTENSITY);
+            HighlightSoftPullHapticsIntensityChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TriggerDualStagePropViewModel_HapticsChoiceChanged(object sender, EventArgs e)

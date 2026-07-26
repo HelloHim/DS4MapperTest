@@ -22,6 +22,7 @@ namespace DS4MapperTest.TriggerActions
             public const string HIPFIRE_DELAY = "HipFireDelay";
             public const string ANTIDEAD_ZONE = "AntiDeadZone";
             public const string FORCE_HIP_FIRE_TIME = "ForceHipFireTime";
+            public const string SOFT_PULL_HAPTICS_INTENSITY = "SoftPullHapticsIntensity";
             public const string FULL_PULL_HAPTICS_INTENSITY = "FullPullHapticsIntensity";
             //public const string OUTPUT_TRIGGER = "OutputTrigger";
         }
@@ -37,6 +38,7 @@ namespace DS4MapperTest.TriggerActions
             PropertyKeyStrings.HIPFIRE_DELAY,
             PropertyKeyStrings.ANTIDEAD_ZONE,
             PropertyKeyStrings.FORCE_HIP_FIRE_TIME,
+            PropertyKeyStrings.SOFT_PULL_HAPTICS_INTENSITY,
             PropertyKeyStrings.FULL_PULL_HAPTICS_INTENSITY,
             //PropertyKeyStrings.OUTPUT_TRIGGER,
         };
@@ -133,6 +135,20 @@ namespace DS4MapperTest.TriggerActions
 
         private bool feedbackActive;
         private bool wasFeedbackActive;
+        private bool softPullFeedbackActive;
+        private bool wasSoftPullFeedbackActive;
+        private HapticsIntensity softPullActionHapticsIntensity;
+        private double softPullHapticsIntensityRatio;
+        public HapticsIntensity SoftPullActionHapticsIntensity
+        {
+            get => softPullActionHapticsIntensity;
+            set
+            {
+                softPullActionHapticsIntensity = value;
+                softPullHapticsIntensityRatio = GetHapticsIntensityRatio(value);
+            }
+        }
+
         private HapticsIntensity fullPullActionHapticsIntensity;
         public HapticsIntensity FullPullActionHapticsIntensity
         {
@@ -205,6 +221,14 @@ namespace DS4MapperTest.TriggerActions
             {
                 softPullActButton.PrepareAnalog(mapper, 0.0, 0.0);
                 softPullActButton.Event(mapper);
+
+                if (softPullFeedbackActive)
+                {
+                    mapper.SetFeedback(mappingId, OFF_HAPTICS_INTENSITY_RATIO);
+                    softPullFeedbackActive = false;
+                }
+
+                wasSoftPullFeedbackActive = false;
             }
 
             bool wasFullPullActive = !fullPullActActive &&
@@ -227,6 +251,18 @@ namespace DS4MapperTest.TriggerActions
             {
                 softPullActButton.PrepareAnalog(mapper, axisNorm, 1.0);
                 if (softPullActButton.active) softPullActButton.Event(mapper);
+
+                if (!wasSoftPullFeedbackActive)
+                {
+                    mapper.SetFeedback(mappingId, softPullHapticsIntensityRatio);
+                    wasSoftPullFeedbackActive = true;
+                    softPullFeedbackActive = true;
+                }
+                else if (softPullFeedbackActive)
+                {
+                    mapper.SetFeedback(mappingId, OFF_HAPTICS_INTENSITY_RATIO);
+                    softPullFeedbackActive = false;
+                }
             }
 
             if (fullPullActActive)
@@ -255,6 +291,13 @@ namespace DS4MapperTest.TriggerActions
             if (softPullActActive)
             {
                 softPullActButton.Release(mapper, resetState, ignoreReleaseActions);
+
+                if (softPullFeedbackActive)
+                {
+                    mapper.SetFeedback(mappingId, OFF_HAPTICS_INTENSITY_RATIO);
+                    softPullFeedbackActive = false;
+                    wasSoftPullFeedbackActive = false;
+                }
             }
 
             if (fullPullActActive)
@@ -276,6 +319,7 @@ namespace DS4MapperTest.TriggerActions
             ResetStageState();
             feedbackActive = wasFeedbackActive = false;
             outputActive = false;
+            softPullFeedbackActive = wasSoftPullFeedbackActive = false;
             active = activeEvent = false;
         }
 
@@ -284,6 +328,12 @@ namespace DS4MapperTest.TriggerActions
             if (softPullActActive && !useParentSoftPullBtn)
             {
                 softPullActButton.Release(mapper, resetState);
+
+                if (softPullFeedbackActive)
+                {
+                    mapper.SetFeedback(mappingId, OFF_HAPTICS_INTENSITY_RATIO);
+                    softPullFeedbackActive = false;
+                }
             }
 
             if (fullPullActActive && !useParentFullPullBtn)
@@ -304,6 +354,7 @@ namespace DS4MapperTest.TriggerActions
             ResetStageState();
             feedbackActive = wasFeedbackActive = false;
             outputActive = false;
+            softPullFeedbackActive = wasSoftPullFeedbackActive = false;
             active = activeEvent = false;
         }
 
@@ -357,6 +408,9 @@ namespace DS4MapperTest.TriggerActions
                             break;
                         case PropertyKeyStrings.FORCE_HIP_FIRE_TIME:
                             forceHipTime = tempDualTrigAction.forceHipTime;
+                            break;
+                        case PropertyKeyStrings.SOFT_PULL_HAPTICS_INTENSITY:
+                            SoftPullActionHapticsIntensity = tempDualTrigAction.softPullActionHapticsIntensity;
                             break;
                         case PropertyKeyStrings.FULL_PULL_HAPTICS_INTENSITY:
                             FullPullActionHapticsIntensity = tempDualTrigAction.fullPullActionHapticsIntensity;
@@ -656,6 +710,9 @@ namespace DS4MapperTest.TriggerActions
                     break;
                 case PropertyKeyStrings.FORCE_HIP_FIRE_TIME:
                     forceHipTime = tempDualTrigAction.forceHipTime;
+                    break;
+                case PropertyKeyStrings.SOFT_PULL_HAPTICS_INTENSITY:
+                    SoftPullActionHapticsIntensity = tempDualTrigAction.softPullActionHapticsIntensity;
                     break;
                 case PropertyKeyStrings.FULL_PULL_HAPTICS_INTENSITY:
                     FullPullActionHapticsIntensity = tempDualTrigAction.fullPullActionHapticsIntensity;

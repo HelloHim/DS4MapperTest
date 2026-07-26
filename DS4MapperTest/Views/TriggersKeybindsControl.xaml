@@ -487,6 +487,18 @@
 
                                             <Border Style="{StaticResource TriggerChipBorder}">
                                                 <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Soft Pull Haptics" Style="{StaticResource TriggerControlLabel}"/>
+                                                    <ComboBox ItemsSource="{Binding HapticsIntensityItems}"
+                                                              DisplayMemberPath="DisplayName"
+                                                              SelectedValuePath="ChoiceValue"
+                                                              SelectedValue="{Binding SoftPullHapticsChoice}"
+                                                              Width="116"
+                                                              Style="{StaticResource JsmccComboBoxStyle}"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Style="{StaticResource TriggerChipBorder}">
+                                                <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="Full Pull Haptics" Style="{StaticResource TriggerControlLabel}"/>
                                                     <ComboBox ItemsSource="{Binding HapticsIntensityItems}"
                                                               DisplayMemberPath="DisplayName"
