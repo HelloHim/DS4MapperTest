@@ -121,6 +121,11 @@ namespace DS4MapperTest.ViewModels
                 case 6:
                     {
                         StickFlickStick tempAction = new StickFlickStick();
+                        // Flick stick uses profile-wide calibration at runtime. Keep a
+                        // newly selected stick action in step with gyro, touchpad flick
+                        // stick, and camera-turn calibration from its first frame.
+                        tempAction.RealWorldCalibration = mapper.ActionProfile.CalibRwc;
+                        tempAction.InGameSens = mapper.ActionProfile.CalibInGameSens;
                         result = tempAction;
                     }
 
