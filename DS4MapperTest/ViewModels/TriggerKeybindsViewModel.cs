@@ -1101,12 +1101,15 @@ namespace DS4MapperTest.ViewModels
     /// stage remains an AxisDirButton, so this deliberately uses the same
     /// ActionFunc implementations as an ordinary button binding.
     /// </summary>
-    public class TriggerDualStageFuncItem : IQuickBindTarget, IActionOutputListOwner
+    public class TriggerDualStageFuncItem : INotifyPropertyChanged, IQuickBindTarget,
+        IActionOutputListOwner
     {
         private readonly TriggerDualStageBindItem owner;
         public FaceBindingFuncKind Kind { get; }
         public ActionFunc Func { get; }
         private readonly ObservableCollection<ActionOutputItem> outputItems = new();
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public TriggerDualStageFuncItem(TriggerDualStageBindItem owner,
             FaceBindingFuncKind kind, ActionFunc func)
@@ -1119,6 +1122,16 @@ namespace DS4MapperTest.ViewModels
 
         public ObservableCollection<ActionOutputItem> OutputItems => outputItems;
         public bool CanRemove => Kind != FaceBindingFuncKind.Regular && Func != null;
+        public bool IsTurboEnabled => SupportsTurbo && TurboEnabled;
+        public bool SupportsToggle => Func is NormalPressFunc || Func is HoldPressFunc ||
+            Func is DoublePressFunc || Func is StartPressFunc || Func is ReleaseFunc;
+        public bool SupportsTurbo => Func is NormalPressFunc || Func is HoldPressFunc;
+        public bool SupportsFireDelay => Func is NormalPressFunc;
+        public bool SupportsHoldTime => Func is HoldPressFunc;
+        public bool SupportsTapWindow => Func is DoublePressFunc;
+        public bool SupportsStartWindow => Func is StartPressFunc;
+        public bool SupportsReleaseOptions => Func is ReleaseFunc;
+        public bool SupportsChordOptions => Func is ChordedPressFunc;
         public string DisplayBind
         {
             get
@@ -1140,6 +1153,131 @@ namespace DS4MapperTest.ViewModels
 
         private EditFaceBindingContext Context(ActionOutputItem item = null) =>
             owner.PrepareFunctionEdit(this, item?.Index);
+
+        public bool ToggleEnabled
+        {
+            get => Func?.toggleEnabled ?? false;
+            set => UpdateFunc(func => func.toggleEnabled = value, nameof(ToggleEnabled));
+        }
+
+        public bool TurboEnabled
+        {
+            get => Func switch
+            {
+                NormalPressFunc normal => normal.TurboEnabled,
+                HoldPressFunc hold => hold.TurboEnabled,
+                _ => false,
+            };
+            set => UpdateFunc(func =>
+            {
+                switch (func)
+                {
+                    case NormalPressFunc normal:
+                        normal.TurboEnabled = value;
+                        break;
+                    case HoldPressFunc hold:
+                        hold.TurboEnabled = value;
+                        break;
+                }
+            }, nameof(TurboEnabled), nameof(IsTurboEnabled));
+        }
+
+        public int TurboDurationMs
+        {
+            get => Func switch
+            {
+                NormalPressFunc normal => normal.TurboDurationMs,
+                HoldPressFunc hold => hold.TurboDurationMs,
+                _ => 0,
+            };
+            set => UpdateFunc(func =>
+            {
+                switch (func)
+                {
+                    case NormalPressFunc normal:
+                        normal.TurboDurationMs = value;
+                        break;
+                    case HoldPressFunc hold:
+                        hold.TurboDurationMs = value;
+                        break;
+                }
+            }, nameof(TurboDurationMs));
+        }
+
+        public int FireDelayMs
+        {
+            get => Func is NormalPressFunc normal ? normal.FireDelayMs : 0;
+            set => UpdateFunc(func =>
+            {
+                if (func is NormalPressFunc normal) normal.FireDelayMs = value;
+            }, nameof(FireDelayMs));
+        }
+
+        public int HoldMs
+        {
+            get => Func is HoldPressFunc hold ? hold.DurationMs : 0;
+            set => UpdateFunc(func =>
+            {
+                if (func is HoldPressFunc hold) hold.DurationMs = value;
+            }, nameof(HoldMs));
+        }
+
+        public int TapWindowMs
+        {
+            get => Func is DoublePressFunc doublePress ? doublePress.DurationMs : 0;
+            set => UpdateFunc(func =>
+            {
+                if (func is DoublePressFunc doublePress) doublePress.DurationMs = value;
+            }, nameof(TapWindowMs));
+        }
+
+        public int StartWindowMs
+        {
+            get => Func is StartPressFunc start ? start.DurationMs : 0;
+            set => UpdateFunc(func =>
+            {
+                if (func is StartPressFunc start) start.DurationMs = value;
+            }, nameof(StartWindowMs));
+        }
+
+        public int ReleaseDelayMs
+        {
+            get => Func is ReleaseFunc release ? release.DelayDurationMs : 0;
+            set => UpdateFunc(func =>
+            {
+                if (func is ReleaseFunc release) release.DelayDurationMs = value;
+            }, nameof(ReleaseDelayMs));
+        }
+
+        public bool MaxHoldTimeEnabled
+        {
+            get => Func is ReleaseFunc release && release.MaxHoldTimeEnabled;
+            set => UpdateFunc(func =>
+            {
+                if (func is ReleaseFunc release) release.MaxHoldTimeEnabled = value;
+            }, nameof(MaxHoldTimeEnabled));
+        }
+
+        public int MaxHoldTimeMs
+        {
+            get => Func is ReleaseFunc release ? release.MaxHoldTimeMs : 0;
+            set => UpdateFunc(func =>
+            {
+                if (func is ReleaseFunc release) release.MaxHoldTimeMs = value;
+            }, nameof(MaxHoldTimeMs));
+        }
+
+        public List<ActionTriggerItem> ChordTriggerItems =>
+            ChordedPressFuncUi.BuildTriggerItems(owner.Mapper);
+
+        public JoypadActionCodes ChordTrigger
+        {
+            get => Func is ChordedPressFunc chord ? chord.TriggerButton : JoypadActionCodes.Empty;
+            set => UpdateFunc(func =>
+            {
+                if (func is ChordedPressFunc chord) chord.TriggerButton = value;
+            }, nameof(ChordTrigger));
+        }
 
         public void AddOutputAction()
         {
@@ -1173,6 +1311,24 @@ namespace DS4MapperTest.ViewModels
             outputItems.Clear();
             for (int i = 0; i < Math.Max(1, Func?.OutputActions.Count ?? 0); i++)
                 outputItems.Add(new ActionOutputItem(this, i));
+        }
+
+        private void UpdateFunc(Action<ActionFunc> update, params string[] propertyNames)
+        {
+            EditFaceBindingContext ctx = Context();
+            if (ctx?.Func == null) return;
+
+            ctx.Mapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(ctx.Mapper, ignoreReleaseActions: true);
+                update(ctx.Func);
+                owner.MarkFunctionChanged();
+            });
+
+            foreach (string propertyName in propertyNames)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         Mapper IQuickBindTarget.Mapper => ((IActionOutputListOwner)this).Mapper;
