@@ -958,6 +958,22 @@ namespace DS4MapperTest
             public event EventHandler ForceHipFireDelayChanged;
 
             [JsonConverter(typeof(StringEnumConverter))]
+            public MapAction.HapticsIntensity SoftPullHapticsIntensity
+            {
+                get => triggerDualAction.SoftPullActionHapticsIntensity;
+                set
+                {
+                    triggerDualAction.SoftPullActionHapticsIntensity = value;
+                    SoftPullHapticsIntensityChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SoftPullHapticsIntensityChanged;
+            public bool ShouldSerializeSoftPullHapticsIntensity()
+            {
+                return triggerDualAction.ChangedProperties.Contains(TriggerDualStageAction.PropertyKeyStrings.SOFT_PULL_HAPTICS_INTENSITY);
+            }
+
+            [JsonConverter(typeof(StringEnumConverter))]
             public MapAction.HapticsIntensity FullPullHapticsIntensity
             {
                 get => triggerDualAction.FullPullActionHapticsIntensity;
@@ -1066,7 +1082,13 @@ namespace DS4MapperTest
             settings.DualStageModeChanged += Settings_DualStageModeChanged;
             settings.HipFireDelayChanged += Settings_HipFireDelayChanged;
             settings.ForceHipFireDelayChanged += Settings_ForceHipFireDelayChanged;
+            settings.SoftPullHapticsIntensityChanged += Settings_SoftPullHapticsIntensityChanged;
             settings.FullPullHapticsIntensityChanged += Settings_FullPullHapticsIntensityChanged;
+        }
+
+        private void Settings_SoftPullHapticsIntensityChanged(object sender, EventArgs e)
+        {
+            triggerDualAction.ChangedProperties.Add(TriggerDualStageAction.PropertyKeyStrings.SOFT_PULL_HAPTICS_INTENSITY);
         }
 
         private void Settings_FullPullHapticsIntensityChanged(object sender, EventArgs e)

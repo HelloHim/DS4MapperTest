@@ -247,6 +247,22 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        public MapAction.HapticsIntensity SoftPullHapticsChoice
+        {
+            get => DualStageAction?.SoftPullActionHapticsIntensity ?? MapAction.HapticsIntensity.Off;
+            set
+            {
+                if (DualStageAction == null) return;
+                TriggerDualStageAction action = EnsureEditableAction() as TriggerDualStageAction;
+                owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    action.SoftPullActionHapticsIntensity = value;
+                    MarkChanged(action, TriggerDualStageAction.PropertyKeyStrings.SOFT_PULL_HAPTICS_INTENSITY);
+                });
+                OnPropertyChanged(nameof(SoftPullHapticsChoice));
+            }
+        }
+
         public string FullPullDisplayBind => DualStageAction?.FullPullActButton.DescribeActions(owner.DeviceMapper) ?? "Unbound";
         public string SoftPullDisplayBind => DualStageAction?.SoftPullActButton.DescribeActions(owner.DeviceMapper) ?? "Unbound";
 
@@ -733,6 +749,7 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(ForceHipFireDelay));
             OnPropertyChanged(nameof(SelectedDualStageModeIndex));
             OnPropertyChanged(nameof(HapticsChoice));
+            OnPropertyChanged(nameof(SoftPullHapticsChoice));
             OnPropertyChanged(nameof(FullPullDisplayBind));
             OnPropertyChanged(nameof(SoftPullDisplayBind));
             fullPullBindItem.Refresh();
