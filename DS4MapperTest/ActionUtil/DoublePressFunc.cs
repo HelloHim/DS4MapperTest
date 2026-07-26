@@ -20,6 +20,17 @@ namespace DS4MapperTest.ActionUtil
         private int durationMs = DEFAULT_TAP_WINDOW_MS;
         public int DurationMs { get => durationMs; set => durationMs = value; }
 
+        private bool interruptRegularPress = true;
+        public bool InterruptRegularPress
+        {
+            get => interruptRegularPress;
+            set
+            {
+                interruptRegularPress = value;
+                canPressInterrupt = value;
+            }
+        }
+
         // The window begins on the first release, so a longer first tap does
         // not steal time from the configured second-tap window.
         private readonly Stopwatch elapsed = new Stopwatch();
@@ -27,6 +38,7 @@ namespace DS4MapperTest.ActionUtil
 
         public DoublePressFunc()
         {
+            InterruptRegularPress = true;
         }
 
         public DoublePressFunc(DoublePressFunc srcFunc)
@@ -34,6 +46,7 @@ namespace DS4MapperTest.ActionUtil
             srcFunc.CopyTo(this);
             durationMs = srcFunc.durationMs;
             toggleEnabled = srcFunc.toggleEnabled;
+            InterruptRegularPress = srcFunc.InterruptRegularPress;
         }
 
         public override void PrepareState(Mapper mapper, ActionFunc secondFunc)

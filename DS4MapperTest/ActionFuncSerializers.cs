@@ -76,6 +76,7 @@ namespace DS4MapperTest
                 get => pressFunc.toggleEnabled;
                 set => pressFunc.toggleEnabled = value;
             }
+
             public bool ShouldSerializeToggle()
             {
                 return pressFunc.toggleEnabled == true;
@@ -186,6 +187,12 @@ namespace DS4MapperTest
                 get => holdPressFunc.toggleEnabled;
                 set => holdPressFunc.toggleEnabled = value;
             }
+            public bool Interruptable
+            {
+                get => holdPressFunc.InterruptRegularPress;
+                set => holdPressFunc.InterruptRegularPress = value;
+            }
+            public bool ShouldSerializeInterruptable() => !holdPressFunc.InterruptRegularPress;
             public bool ShouldSerializeToggle()
             {
                 return holdPressFunc.toggleEnabled == true;
@@ -215,6 +222,7 @@ namespace DS4MapperTest
             {
                 return holdPressFunc.DurationMs == 30 &&
                     holdPressFunc.toggleEnabled == false &&
+                    holdPressFunc.InterruptRegularPress == true &&
                     holdPressFunc.TurboEnabled == false &&
                     holdPressFunc.TurboDurationMs == NormalPressFunc.DEFAULT_TURBO_DURATION_MS;
             }
@@ -287,6 +295,13 @@ namespace DS4MapperTest
                 get => doublePressFunc.toggleEnabled;
                 set => doublePressFunc.toggleEnabled = value;
             }
+
+            public bool Interruptable
+            {
+                get => doublePressFunc.InterruptRegularPress;
+                set => doublePressFunc.InterruptRegularPress = value;
+            }
+            public bool ShouldSerializeInterruptable() => !doublePressFunc.InterruptRegularPress;
             public bool ShouldSerializeToggle()
             {
                 return doublePressFunc.toggleEnabled == true;
@@ -295,7 +310,8 @@ namespace DS4MapperTest
             public bool IsDefault()
             {
                 return doublePressFunc.DurationMs == 0 &&
-                    doublePressFunc.toggleEnabled == false;
+                    doublePressFunc.toggleEnabled == false &&
+                    doublePressFunc.InterruptRegularPress == true;
             }
 
             public DoublePressSettings(DoublePressFunc actionFunc)

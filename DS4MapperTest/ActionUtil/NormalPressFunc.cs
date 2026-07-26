@@ -30,6 +30,24 @@ namespace DS4MapperTest.ActionUtil
         private Stopwatch fireDelaySw = new Stopwatch();
         private bool fireDelayPassed;
 
+        // A per-press delay supplied by ButtonAction when an interruptable
+        // Hold/Double Press shares this input. It deliberately produces a
+        // short tap after an early release instead of dropping the regular
+        // binding altogether.
+        private int interruptDelayMs;
+        private readonly Stopwatch interruptDelaySw = new Stopwatch();
+        private bool interruptDelayPassed;
+        private bool releaseDeferredTap;
+        private bool releaseTapSent;
+        private readonly Stopwatch deferredTapSw = new Stopwatch();
+        private const int DEFERRED_TAP_DURATION_MS = 30;
+        public bool IsInterruptDelayPending => interruptDelayMs > 0 && active;
+
+        public void ConfigureInterruptDelay(int durationMs)
+        {
+            interruptDelayMs = Math.Max(0, durationMs);
+        }
+
         /*private bool cycleEnabled;
         public bool CycleEnabled
         {
@@ -87,6 +105,10 @@ namespace DS4MapperTest.ActionUtil
                 activeEvent = true;
                 if (inputStatus)
                 {
+                    interruptDelayPassed = false;
+                    releaseDeferredTap = false;
+                    releaseTapSent = false;
+                    deferredTapSw.Reset();
                     bool fireDelayEnabled = fireDelayMs > FIRE_DELAY_MS_DEFAULT;
                     if (!toggleEnabled)
                     {
@@ -102,6 +124,12 @@ namespace DS4MapperTest.ActionUtil
                         {
                             outputActive = false;
                             fireDelaySw.Restart();
+                        }
+
+                        if (interruptDelayMs > 0)
+                        {
+                            outputActive = false;
+                            interruptDelaySw.Restart();
                         }
                     }
                     else
@@ -123,6 +151,17 @@ namespace DS4MapperTest.ActionUtil
                 }
                 else
                 {
+                    if (interruptDelayMs > 0 && !interruptDelayPassed)
+                    {
+                        // Keep the func alive after an early release. Event()
+                        // will emit one automatic regular-press tap once the
+                        // shared decision window expires.
+                        active = true;
+                        outputActive = false;
+                        finished = false;
+                        releaseDeferredTap = true;
+                        return;
+                    }
                     bool fireDelayEnabled = fireDelayMs > FIRE_DELAY_MS_DEFAULT;
                     if (!toggleEnabled)
                     {
@@ -170,6 +209,38 @@ namespace DS4MapperTest.ActionUtil
 
         public override void Event(Mapper mapper, ActionFuncStateData stateData)
         {
+            if (interruptDelayMs > 0)
+            {
+                if (!interruptDelayPassed && interruptDelaySw.ElapsedMilliseconds >= interruptDelayMs)
+                {
+                    interruptDelayPassed = true;
+                    outputActive = true;
+                    if (releaseDeferredTap)
+                    {
+                        // Keep the synthetic tap down long enough for the
+                        // virtual-input backend and games to observe it.
+                        deferredTapSw.Restart();
+                    }
+                }
+                else if (releaseDeferredTap && interruptDelayPassed && !releaseTapSent &&
+                    deferredTapSw.ElapsedMilliseconds >= DEFERRED_TAP_DURATION_MS)
+                {
+                    // The preceding outputActive=true pass is the tap down;
+                    // this pass releases it and retires the function.
+                    releaseTapSent = true;
+                    outputActive = false;
+                    active = false;
+                    finished = true;
+                    interruptDelaySw.Reset();
+                }
+
+                if (!interruptDelayPassed || releaseDeferredTap || !inputStatus)
+                {
+                    activeEvent = false;
+                    return;
+                }
+            }
+
             if (!turboEnabled)
             {
                 if (fireDelayMs == FIRE_DELAY_MS_DEFAULT)
@@ -225,6 +296,11 @@ namespace DS4MapperTest.ActionUtil
             finished = true;
             inToggleState = false;
             fireDelayPassed = false;
+            interruptDelayPassed = false;
+            releaseDeferredTap = false;
+            releaseTapSent = false;
+            interruptDelaySw.Reset();
+            deferredTapSw.Reset();
 
             if (turboEnabled && turboStopwatch.IsRunning)
             {

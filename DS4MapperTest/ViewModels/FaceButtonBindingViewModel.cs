@@ -279,6 +279,7 @@ namespace DS4MapperTest.ViewModels
         public bool SupportsFireDelay => func is NormalPressFunc;
         public bool SupportsHoldTime => func is HoldPressFunc;
         public bool SupportsTapWindow => func is DoublePressFunc;
+        public bool SupportsInterruptable => func is HoldPressFunc || func is DoublePressFunc;
         public bool SupportsReleaseOptions => func is ReleaseFunc;
         public bool SupportsDistanceOptions => func is DistanceFunc;
         public bool SupportsChordOptions => func is ChordedPressFunc;
@@ -468,6 +469,32 @@ namespace DS4MapperTest.ViewModels
                 {
                     owner.Owner.ReleaseFaceAction(owner);
                     targetFunc.DurationMs = value;
+                    FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
+                });
+                owner.RefreshAfterEdit();
+            }
+        }
+
+        public bool Interruptable
+        {
+            get => func switch
+            {
+                HoldPressFunc hold => hold.InterruptRegularPress,
+                DoublePressFunc doublePress => doublePress.InterruptRegularPress,
+                _ => false,
+            };
+            set
+            {
+                if (!SupportsInterruptable || Interruptable == value) return;
+                var (buttonAction, target) = BeginEdit();
+                owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    owner.Owner.ReleaseFaceAction(owner);
+                    switch (target)
+                    {
+                        case HoldPressFunc hold: hold.InterruptRegularPress = value; break;
+                        case DoublePressFunc doublePress: doublePress.InterruptRegularPress = value; break;
+                    }
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
                 owner.RefreshAfterEdit();

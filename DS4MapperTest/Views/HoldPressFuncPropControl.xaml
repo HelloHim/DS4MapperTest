@@ -30,6 +30,12 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <Label Content="Interruptable" />
+                <CheckBox IsChecked="{Binding Interruptable}" Margin="8,0,0,0"
+                          ToolTip="Delay Regular Press until the Hold Press can no longer activate" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Turbo" />
                 <CheckBox IsChecked="{Binding TurboEnabled}" Margin="8,0,0,0"
               ToolTip="Activate turbo on hold">

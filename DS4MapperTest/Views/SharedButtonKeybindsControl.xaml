@@ -262,6 +262,22 @@
                                                             CornerRadius="4"
                                                             Padding="6,4"
                                                             Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsInterruptable, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Interruptable" Style="{StaticResource SharedControlLabel}"/>
+                                                            <CheckBox IsChecked="{Binding Interruptable}"
+                                                                      Style="{StaticResource JsmccToggleStyle}"
+                                                                      ToolTip="Delay Regular Press until Hold/Double Press cannot activate"
+                                                                      VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
                                                             Visibility="{Binding SupportsTurbo, Converter={StaticResource BoolToVis}}">
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock Text="Turbo" Style="{StaticResource SharedControlLabel}"/>
