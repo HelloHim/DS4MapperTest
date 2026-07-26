@@ -1,9 +1,5 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DS4MapperTest.MapperUtil;
 
 namespace DS4MapperTest.ActionUtil
@@ -15,19 +11,18 @@ namespace DS4MapperTest.ActionUtil
         private enum TapStatus : uint
         {
             Inactive,
-            FirstTap,
-            SecondTap,
-            Failed,
+            FirstPress,
+            WaitingForSecondPress,
+            SecondPress,
         }
 
         private bool status;
-
-        private int durationMs;
+        private int durationMs = DEFAULT_TAP_WINDOW_MS;
         public int DurationMs { get => durationMs; set => durationMs = value; }
 
-        private Stopwatch elapsed = new Stopwatch();
-        //private bool firstPress;
-        //private bool secondPress;
+        // The window begins on the first release, so a longer first tap does
+        // not steal time from the configured second-tap window.
+        private readonly Stopwatch elapsed = new Stopwatch();
         private TapStatus currentTapStatus;
 
         public DoublePressFunc()
@@ -38,12 +33,12 @@ namespace DS4MapperTest.ActionUtil
         {
             srcFunc.CopyTo(this);
             durationMs = srcFunc.durationMs;
+            toggleEnabled = srcFunc.toggleEnabled;
         }
 
         public override void PrepareState(Mapper mapper, ActionFunc secondFunc)
         {
             base.PrepareState(mapper, secondFunc);
-
             if (secondFunc is DoublePressFunc tempFunc)
             {
                 currentTapStatus = tempFunc.currentTapStatus;
@@ -52,100 +47,64 @@ namespace DS4MapperTest.ActionUtil
 
         public override void Prepare(Mapper mapper, bool state, ActionFuncStateData stateData)
         {
-            if (this.status != state)
+            if (status == state) return;
+
+            status = state;
+            activeEvent = true;
+            if (status) HandlePress();
+            else HandleRelease();
+        }
+
+        private void HandlePress()
+        {
+            if (toggleEnabled && active)
             {
-                this.status = state;
-                activeEvent = true;
+                active = outputActive = false;
+                finished = true;
+                elapsed.Reset();
+                currentTapStatus = TapStatus.Inactive;
+            }
+            else if (currentTapStatus == TapStatus.WaitingForSecondPress &&
+                elapsed.ElapsedMilliseconds <= durationMs)
+            {
+                currentTapStatus = TapStatus.SecondPress;
+                elapsed.Reset();
+                active = outputActive = true;
+                finished = false;
+            }
+            else
+            {
+                // This is a first press, or the old window expired and this
+                // press must become the new first tap.
+                currentTapStatus = TapStatus.FirstPress;
+                elapsed.Reset();
+                active = outputActive = false;
+                finished = false;
+            }
+        }
 
-                if (status)
-                {
-                    if (toggleEnabled && active)
+        private void HandleRelease()
+        {
+            switch (currentTapStatus)
+            {
+                case TapStatus.FirstPress:
+                    currentTapStatus = TapStatus.WaitingForSecondPress;
+                    elapsed.Restart();
+                    active = outputActive = false;
+                    finished = false;
+                    break;
+                case TapStatus.SecondPress:
+                    elapsed.Reset();
+                    currentTapStatus = TapStatus.Inactive;
+                    if (!toggleEnabled)
                     {
-                        active = false;
-                        outputActive = active;
-                        currentTapStatus = TapStatus.Inactive;
+                        active = outputActive = false;
+                        finished = true;
                     }
-
-                    if (currentTapStatus == TapStatus.Inactive)
-                    {
-                        active = false;
-                        outputActive = active;
-                        //finished = false;
-                        elapsed.Restart();
-                    }
-                    else if (currentTapStatus == TapStatus.FirstTap)
-                    {
-                        if (elapsed.ElapsedMilliseconds <= durationMs)
-                        {
-                            //Console.WriteLine("DOUBLE TAP");
-                            currentTapStatus = TapStatus.SecondTap;
-                            active = true;
-                            outputActive = active;
-                            elapsed.Stop();
-                            //finished = true;
-                        }
-                        else
-                        {
-                            //Console.WriteLine("DOUBLE TAP FAIL");
-                            active = false;
-                            outputActive = active;
-                            //finished = true;
-                            elapsed.Stop();
-                            currentTapStatus = TapStatus.Failed;
-                        }
-                    }
-                    else
-                    {
-                        //Console.WriteLine("MADE IT HERE: {0}", currentTapStatus.ToString());
-                        active = false;
-                        outputActive = active;
-                        //finished = false;
-                        elapsed.Stop();
-                        currentTapStatus = TapStatus.Failed;
-                    }
-                }
-                else
-                {
-                    if (currentTapStatus == TapStatus.Inactive)
-                    {
-                        if (elapsed.ElapsedMilliseconds <= durationMs)
-                        {
-                            //Console.WriteLine("SINGLE TAP");
-                            currentTapStatus = TapStatus.FirstTap;
-                            active = false;
-                            outputActive = active;
-                            //finished = false;
-                        }
-                        else
-                        {
-                            //Console.WriteLine("SINGLE TAP FAIL");
-                            elapsed.Stop();
-                            active = false;
-                            outputActive = active;
-                            //finished = true;
-                            currentTapStatus = TapStatus.Inactive;
-                        }
-                    }
-                    else if (currentTapStatus == TapStatus.SecondTap)
-                    {
-                        //Console.WriteLine("SECOND TAP PASS");
-                        if (!toggleEnabled)
-                        {
-                            active = false;
-                            outputActive = active;
-                            currentTapStatus = TapStatus.Inactive;
-                        }
-
-                        //finished = true;
-                    }
-                    else if (currentTapStatus == TapStatus.Failed)
-                    {
-                        currentTapStatus = TapStatus.Inactive;
-                        active = false;
-                        outputActive = active;
-                        //finished = true;
-                    }
-                }
+                    break;
+                default:
+                    active = outputActive = false;
+                    break;
             }
         }
 
@@ -156,17 +115,11 @@ namespace DS4MapperTest.ActionUtil
         public override void Release(Mapper mapper)
         {
             status = false;
-            active = false;
-            outputActive = active;
+            active = outputActive = false;
             activeEvent = false;
             finished = false;
-            if (currentTapStatus != TapStatus.FirstTap)
-            {
-                elapsed.Stop();
-                currentTapStatus = TapStatus.Inactive;
-            }
-            //currentTapStatus = TapStatus.Inactive;
-            //elapsed.Reset();
+            elapsed.Reset();
+            currentTapStatus = TapStatus.Inactive;
         }
 
         public void Reset()
@@ -177,40 +130,24 @@ namespace DS4MapperTest.ActionUtil
 
         public override string Describe(Mapper mapper)
         {
-            string result = "";
-            List<string> tempList = new List<string>();
+            List<string> descriptions = new List<string>();
             foreach (OutputActionData data in outputActions)
             {
-                tempList.Add(data.Describe(mapper));
+                descriptions.Add(data.Describe(mapper));
             }
 
-            if (tempList.Count > 0)
-            {
-                result = $"DP({string.Join(", ", tempList)})";
-            }
-
-            return result;
+            return descriptions.Count > 0 ? $"DP({string.Join(", ", descriptions)})" : "";
         }
 
         public override string DescribeOutputActions(Mapper mapper)
         {
-            string result = "";
-            List<string> tempList = new List<string>();
+            List<string> descriptions = new List<string>();
             foreach (OutputActionData data in outputActions)
             {
-                tempList.Add(data.Describe(mapper));
+                descriptions.Add(data.Describe(mapper));
             }
 
-            if (tempList.Count > 0)
-            {
-                result = $"{string.Join(", ", tempList)}";
-            }
-            else
-            {
-                result = "Unbound";
-            }
-
-            return result;
+            return descriptions.Count > 0 ? string.Join(", ", descriptions) : "Unbound";
         }
     }
 }
