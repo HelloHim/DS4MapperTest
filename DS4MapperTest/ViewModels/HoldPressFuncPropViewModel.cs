@@ -43,6 +43,12 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        public bool Interruptable
+        {
+            get => func.InterruptRegularPress;
+            set => func.InterruptRegularPress = value;
+        }
+
         public bool TurboEnabled
         {
             get => func.TurboEnabled;

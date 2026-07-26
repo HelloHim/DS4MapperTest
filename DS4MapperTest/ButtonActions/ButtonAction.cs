@@ -156,6 +156,7 @@ namespace DS4MapperTest.ButtonActions
                         usedFuncList = actionFuncs;
                     }
 
+                    ConfigureRegularPressInterruptDelay(usedFuncList);
                     actionFuncCandidates.AddRange(usedFuncList);
                     //actionFuncCandidates.AddRange(actionFuncs);
                     if (alterState)
@@ -185,6 +186,37 @@ namespace DS4MapperTest.ButtonActions
         }
 
         private bool interruptFound = false;
+
+        // Steam Input delays the regular press whenever an enabled Hold or
+        // Double Press can still claim the input. With both present, the
+        // longest configured interval is the single decision window.
+        protected static void ConfigureRegularPressInterruptDelay(IEnumerable<ActionFunc> funcs)
+        {
+            int decisionWindowMs = 0;
+            foreach (ActionFunc func in funcs)
+            {
+                if (func is HoldPressFunc hold && hold.InterruptRegularPress)
+                {
+                    decisionWindowMs = Math.Max(decisionWindowMs, hold.DurationMs);
+                }
+                else if (func is DoublePressFunc doublePress && doublePress.InterruptRegularPress)
+                {
+                    decisionWindowMs = Math.Max(decisionWindowMs, doublePress.DurationMs);
+                }
+            }
+
+            foreach (ActionFunc func in funcs)
+            {
+                if (func is NormalPressFunc regularPress)
+                {
+                    regularPress.ConfigureInterruptDelay(decisionWindowMs);
+                    // The existing output path already knows how to cancel an
+                    // active normal func when a press activator wins.
+                    regularPress.interruptable = decisionWindowMs > 0;
+                }
+            }
+        }
+
         public override void Event(Mapper mapper)
         {
             if (active)
@@ -603,6 +635,48 @@ namespace DS4MapperTest.ButtonActions
                     {
                         activeFuns.AddRange(actionFuncCandidates);
                         actionFuncCandidates.Clear();
+                    }
+
+                    // A deferred regular press remains alive after an early
+                    // release so it can emit the Steam-style automatic tap at
+                    // the end of the decision window.
+                    for (int pendingIndex = activeFuns.Count - 1; pendingIndex >= 0; pendingIndex--)
+                    {
+                        if (activeFuns[pendingIndex] is not NormalPressFunc regularPress ||
+                            !regularPress.IsInterruptDelayPending)
+                        {
+                            continue;
+                        }
+
+                        regularPress.Event(mapper, stateData);
+                        foreach (OutputActionData action in regularPress.OutputActions)
+                        {
+                            if (processAction)
+                            {
+                                ProcessAction(mapper, regularPress.outputActive, action);
+                            }
+                            else if (analog)
+                            {
+                                mapper.RunEventFromAnalog(action, regularPress.outputActive,
+                                    ButtonDistance, AxisUnit);
+                            }
+                            else
+                            {
+                                mapper.RunEventFromButton(action, regularPress.outputActive);
+                            }
+
+                            action.firstRun = false;
+                        }
+
+                        if (regularPress.finished)
+                        {
+                            foreach (OutputActionData action in regularPress.OutputActions)
+                            {
+                                action.Release();
+                                action.firstRun = true;
+                            }
+                            activeFuns.RemoveAt(pendingIndex);
+                        }
                     }
 
                     OutputActionDataEnumerator activeActionsEnumerator =

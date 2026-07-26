@@ -18,6 +18,19 @@ namespace DS4MapperTest.ActionUtil
         private int durationMs = DEFAULT_DURATION_MS;
         public int DurationMs { get => durationMs; set => durationMs = value; }
 
+        // When enabled, the regular press waits for this hold to either win or
+        // time out. This is Steam Input's "Interruptable" behaviour.
+        private bool interruptRegularPress = true;
+        public bool InterruptRegularPress
+        {
+            get => interruptRegularPress;
+            set
+            {
+                interruptRegularPress = value;
+                canPressInterrupt = value;
+            }
+        }
+
         private bool waited;
 
         private bool turboEnabled;
@@ -30,14 +43,14 @@ namespace DS4MapperTest.ActionUtil
 
         public HoldPressFunc()
         {
-            canPressInterrupt = true;
+            InterruptRegularPress = true;
         }
 
         public HoldPressFunc(HoldPressFunc srcFunc)
         {
             srcFunc.CopyTo(this);
 
-            canPressInterrupt = srcFunc.canPressInterrupt;
+            InterruptRegularPress = srcFunc.InterruptRegularPress;
             durationMs = srcFunc.durationMs;
         }
 
