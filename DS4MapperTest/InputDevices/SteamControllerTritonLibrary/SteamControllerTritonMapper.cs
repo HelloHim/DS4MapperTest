@@ -311,6 +311,11 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
             reader.StartUpdate();
         }
 
+        public static short NormaliseStickAxis(short axisValue)
+        {
+            return Math.Max(axisValue, (short)-32767);
+        }
+
         private void Reader_Report(SteamControllerTritonReader sender, SteamControllerTritonDevice device)
         {
             while (pauseMapper)
@@ -373,7 +378,8 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
                 //if ((currentMapperState.LX != previousMapperState.LX) || (currentMapperState.LY != previousMapperState.LY))
                 {
                     //Trace.WriteLine($"{currentMapperState.LX} {currentMapperState.LY}");
-                    mapAction.Prepare(this, currentMapperState.LX, currentMapperState.LY);
+                    mapAction.Prepare(this, NormaliseStickAxis(currentMapperState.LX),
+                        NormaliseStickAxis(currentMapperState.LY));
                 }
 
                 if (mapAction.active)
@@ -385,7 +391,8 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
                 //if ((currentMapperState.RX != previousMapperState.RX) || (currentMapperState.RY != previousMapperState.RY))
                 {
                     //Trace.WriteLine($"{currentMapperState.RX} {currentMapperState.RY}");
-                    mapAction.Prepare(this, currentMapperState.RX, currentMapperState.RY);
+                    mapAction.Prepare(this, NormaliseStickAxis(currentMapperState.RX),
+                        NormaliseStickAxis(currentMapperState.RY));
                 }
 
                 if (mapAction.active)
