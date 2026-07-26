@@ -39,5 +39,19 @@ namespace DS4MapperUnitTests
             Assert.IsFalse(viewModel.IsProfileDirty);
             Assert.IsFalse(profile.Dirty);
         }
+
+        [TestMethod]
+        public void StaleProfileDirtyFlagDoesNotMarkANewEditorSessionUnsaved()
+        {
+            Profile profile = new Profile { Name = "Original", Dirty = true };
+            profile.ActionSets[0].ActionLayers[0].Name = "Layer 1";
+            TestMapper mapper = new TestMapper(profile);
+
+            var viewModel = new ProfileEditorTestViewModel(mapper,
+                new ProfileEntity(string.Empty, "Original", InputDeviceType.None), profile);
+
+            Assert.IsFalse(viewModel.IsProfileDirty);
+            Assert.IsFalse(profile.Dirty);
+        }
     }
 }

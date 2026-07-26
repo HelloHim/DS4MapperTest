@@ -722,6 +722,7 @@ namespace DS4MapperTest.ViewModels
             savedProfileFingerprint = CreateProfileFingerprint();
 
             tempProfile.DirtyChanged += TempProfile_DirtyChanged;
+            RefreshProfileDirtyState();
             mapper.ProfileEditCommitted += Mapper_ProfileEditCommitted;
             CurrentLightbarModeChanged += ProfileEditorTestViewModel_CurrentLightbarModeChanged;
         }
