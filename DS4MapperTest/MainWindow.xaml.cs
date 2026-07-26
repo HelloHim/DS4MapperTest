@@ -1082,7 +1082,7 @@ namespace DS4MapperTest
 
         private async Task<bool> DiscardCurrentProfileChangesAsync()
         {
-            if (editorTestVM?.CurrentProfile?.Dirty != true || currentDeviceItem == null) return true;
+            if (editorTestVM?.IsProfileDirty != true || currentDeviceItem == null) return true;
 
             DirtySwitchDecision decision = ShowDirtySwitchDialog(
                 allowSave: false,
@@ -1129,7 +1129,7 @@ namespace DS4MapperTest
 
         private async Task<bool> ConfirmDiscardProfileChangesAsync()
         {
-            if (editorTestVM?.CurrentProfile?.Dirty != true) return true;
+            if (editorTestVM?.IsProfileDirty != true) return true;
 
             DirtySwitchDecision decision = ShowDirtySwitchDialog();
             switch (decision)
@@ -1311,7 +1311,7 @@ namespace DS4MapperTest
                 return;
             }
 
-            if (editorTestVM?.CurrentProfile?.Dirty != true) return;
+            if (editorTestVM?.IsProfileDirty != true) return;
 
             e.Cancel = true;
             isDirtyClosePromptActive = true;
