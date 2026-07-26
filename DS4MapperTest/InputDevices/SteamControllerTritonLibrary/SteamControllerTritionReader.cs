@@ -99,6 +99,14 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
             started = false;
         }
 
+        public static bool IsFirstControllerStateReport(bool firstReport,
+            byte reportId)
+        {
+            return firstReport &&
+                (reportId == SteamControllerTritonDevice.ID_TRITON_CONTROLLER_STATE ||
+                reportId == SteamControllerTritonDevice.ID_TRITON_CONTROLLER_STATE_BLE);
+        }
+
         protected virtual void ReadInput()
         {
             activeInputLoop = true;
@@ -199,8 +207,7 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
                             continue;
                         }
                         */
-                        else if (firstReport && (tempByte == SteamControllerTritonDevice.ID_TRITON_CONTROLLER_STATE ||
-                            tempByte == SteamControllerTritonDevice.ID_TRITON_CONTROLLER_STATE_BLE))
+                        else if (IsFirstControllerStateReport(firstReport, tempByte))
                         {
                             Console.WriteLine("CAN READ REPORTS. NICE");
 
