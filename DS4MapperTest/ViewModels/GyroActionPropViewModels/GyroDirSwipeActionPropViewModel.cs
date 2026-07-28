@@ -143,6 +143,20 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler GyroTriggerActivatesChanged;
 
+        public int GyroActivationHoldMs
+        {
+            get => action.swipeParams.activationHoldMs;
+            set
+            {
+                int clampedValue = Math.Clamp(value, 0, 60000);
+                if (action.swipeParams.activationHoldMs == clampedValue) return;
+                action.swipeParams.activationHoldMs = clampedValue;
+                GyroActivationHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler GyroActivationHoldMsChanged;
+
         public double DeadZoneX
         {
             get => action.swipeParams.deadzoneX;
@@ -292,6 +306,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             DelayTimeChanged += GyroDirSwipeActionPropViewModel_DelayTimeChanged;
             GyroTriggerCondChoiceChanged += GyroDirSwipeActionPropViewModel_GyroTriggerCondChoiceChanged;
             GyroTriggerActivatesChanged += GyroDirSwipeActionPropViewModel_TriggerActivatesChanged;
+            GyroActivationHoldMsChanged += GyroDirSwipeActionPropViewModel_GyroActivationHoldMsChanged;
         }
 
         private void GyroDirSwipeActionPropViewModel_GyroTriggerCondChoiceChanged(object sender, EventArgs e)
@@ -314,6 +329,14 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, GyroDirectionalSwipe.PropertyKeyStrings.TRIGGER_ACTIVATE);
             HighlightGyroTriggerActivatesChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void GyroDirSwipeActionPropViewModel_GyroActivationHoldMsChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(GyroDirectionalSwipe.PropertyKeyStrings.ACTIVATION_HOLD_MS))
+                action.ChangedProperties.Add(GyroDirectionalSwipe.PropertyKeyStrings.ACTIVATION_HOLD_MS);
+            action.RaiseNotifyPropertyChange(mapper,
+                GyroDirectionalSwipe.PropertyKeyStrings.ACTIVATION_HOLD_MS);
         }
 
         private void GyroDirSwipeActionPropViewModel_DelayTimeChanged(object sender, EventArgs e)

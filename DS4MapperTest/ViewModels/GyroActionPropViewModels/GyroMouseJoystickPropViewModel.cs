@@ -189,6 +189,20 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler GyroTriggerActivatesChanged;
 
+        public int GyroActivationHoldMs
+        {
+            get => action.mStickParams.activationHoldMs;
+            set
+            {
+                int clampedValue = Math.Clamp(value, 0, 60000);
+                if (action.mStickParams.activationHoldMs == clampedValue) return;
+                action.mStickParams.activationHoldMs = clampedValue;
+                GyroActivationHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler GyroActivationHoldMsChanged;
+
         public string AntiDeadZoneX
         {
             get => action.mStickParams.antiDeadzoneX.ToString("N2");
@@ -560,6 +574,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             MaxZoneChanged += GyroMouseJoystickPropViewModel_MaxZoneChanged;
             GyroTriggerCondChoiceChanged += GyroMouseJoystickPropViewModel_GyroTriggerCondChoiceChanged;
             GyroTriggerActivatesChanged += GyroMouseJoystickPropViewModel_TriggerActivatesChanged;
+            GyroActivationHoldMsChanged += GyroMouseJoystickPropViewModel_GyroActivationHoldMsChanged;
             AntiDeadZoneXChanged += GyroMouseJoystickPropViewModel_AntiDeadZoneXChanged;
             AntiDeadZoneYChanged += GyroMouseJoystickPropViewModel_AntiDeadZoneYChanged;
             VerticalScaleChanged += GyroMouseJoystickPropViewModel_VerticalScaleChanged;
@@ -764,6 +779,14 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             });
             
             HighlightGyroTriggerActivatesChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void GyroMouseJoystickPropViewModel_GyroActivationHoldMsChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(GyroMouseJoystick.PropertyKeyStrings.ACTIVATION_HOLD_MS))
+                action.ChangedProperties.Add(GyroMouseJoystick.PropertyKeyStrings.ACTIVATION_HOLD_MS);
+            ExecuteInMapperThread(() => action.RaiseNotifyPropertyChange(mapper,
+                GyroMouseJoystick.PropertyKeyStrings.ACTIVATION_HOLD_MS));
         }
 
         private void PopulateModel()
