@@ -85,7 +85,7 @@
                                         <Border Style="{StaticResource TriggerChipBorder}">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
-                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
                                                          Width="160"
                                                          Style="{StaticResource JsmccTextBoxStyle}"/>
                                             </StackPanel>
@@ -308,7 +308,7 @@
                                                                 Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
                                                             <StackPanel Orientation="Horizontal">
                                                                 <TextBlock Text="End Delay" Style="{StaticResource TriggerControlLabel}"/>
-                                                                <TextBox Text="{Binding ReleaseDelayMs, UpdateSourceTrigger=PropertyChanged}"
+                                                                <TextBox Text="{Binding ReleaseDelayMs, UpdateSourceTrigger=LostFocus}"
                                                                          Width="72"
                                                                          Style="{StaticResource JsmccTextBoxStyle}"/>
                                                                 <TextBlock Text="ms"
@@ -333,7 +333,7 @@
                                                                 Visibility="{Binding MaxHoldTimeEnabled, Converter={StaticResource BoolToVis}}">
                                                             <StackPanel Orientation="Horizontal">
                                                                 <TextBlock Text="Max Hold Duration" Style="{StaticResource TriggerControlLabel}"/>
-                                                                <TextBox Text="{Binding MaxHoldTimeMs, UpdateSourceTrigger=PropertyChanged}"
+                                                                <TextBox Text="{Binding MaxHoldTimeMs, UpdateSourceTrigger=LostFocus}"
                                                                          Width="72"
                                                                          Style="{StaticResource JsmccTextBoxStyle}"/>
                                                                 <TextBlock Text="ms"
@@ -367,7 +367,7 @@
                                                                   Increment="0.01"
                                                                   Width="92"
                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                  Value="{Binding ButtonDeadZone, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Value="{Binding ButtonDeadZone, UpdateSourceTrigger=LostFocus}"
                                                                   ValueFormat="0.00"/>
                                                 <TextBlock Text="0-1"
                                                            Style="{StaticResource JsmccMutedText}"
@@ -394,7 +394,7 @@
                                             <Border Style="{StaticResource TriggerChipBorder}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
-                                                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                    <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
                                                              Width="160"
                                                              Style="{StaticResource JsmccTextBoxStyle}"/>
                                                 </StackPanel>
@@ -435,7 +435,7 @@
                                                     <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
                                                                       Increment="0.01" Width="92"
                                                                       Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                      Value="{Binding DualDeadZone, UpdateSourceTrigger=PropertyChanged}"
+                                                                      Value="{Binding DualDeadZone, UpdateSourceTrigger=LostFocus}"
                                                                       ValueFormat="0.00"/>
                                                 </StackPanel>
                                             </Border>
@@ -446,7 +446,7 @@
                                                     <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
                                                                       Increment="0.01" Width="92"
                                                                       Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                      Value="{Binding DualAntiDeadZone, UpdateSourceTrigger=PropertyChanged}"
+                                                                      Value="{Binding DualAntiDeadZone, UpdateSourceTrigger=LostFocus}"
                                                                       ValueFormat="0.00"/>
                                                 </StackPanel>
                                             </Border>
@@ -457,7 +457,7 @@
                                                     <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
                                                                       Increment="0.01" Width="92"
                                                                       Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                      Value="{Binding DualMaxZone, UpdateSourceTrigger=PropertyChanged}"
+                                                                      Value="{Binding DualMaxZone, UpdateSourceTrigger=LostFocus}"
                                                                       ValueFormat="0.00"/>
                                                 </StackPanel>
                                             </Border>
@@ -522,7 +522,7 @@
                                         <Border Style="{StaticResource TriggerChipBorder}">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
-                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
                                                          Width="160"
                                                          Style="{StaticResource JsmccTextBoxStyle}"/>
                                             </StackPanel>
@@ -546,7 +546,7 @@
                                                 <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
                                                                   Increment="0.01" Width="92"
                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                  Value="{Binding TranslateDeadZone, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Value="{Binding TranslateDeadZone, UpdateSourceTrigger=LostFocus}"
                                                                   ValueFormat="0.00"/>
                                             </StackPanel>
                                         </Border>
@@ -557,7 +557,7 @@
                                                 <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
                                                                   Increment="0.01" Width="92"
                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                  Value="{Binding TranslateAntiDeadZone, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Value="{Binding TranslateAntiDeadZone, UpdateSourceTrigger=LostFocus}"
                                                                   ValueFormat="0.00"/>
                                             </StackPanel>
                                         </Border>
@@ -568,7 +568,7 @@
                                                 <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
                                                                   Increment="0.01" Width="92"
                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                  Value="{Binding TranslateMaxZone, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Value="{Binding TranslateMaxZone, UpdateSourceTrigger=LostFocus}"
                                                                   ValueFormat="0.00"/>
                                             </StackPanel>
                                         </Border>
@@ -582,7 +582,7 @@
                                         <Border Style="{StaticResource TriggerChipBorder}">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="Name" Style="{StaticResource TriggerControlLabel}"/>
-                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
                                                          Width="160"
                                                          Style="{StaticResource JsmccTextBoxStyle}"/>
                                             </StackPanel>
@@ -594,7 +594,7 @@
                                                 <hc:NumericUpDown Minimum="0" Maximum="1" DecimalPlaces="2"
                                                                   Increment="0.01" Width="92"
                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                  Value="{Binding MouseDeadZone, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Value="{Binding MouseDeadZone, UpdateSourceTrigger=LostFocus}"
                                                                   ValueFormat="0.00"/>
                                             </StackPanel>
                                         </Border>

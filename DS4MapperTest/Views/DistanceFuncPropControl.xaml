@@ -12,7 +12,7 @@
             <local:ButtonActionFuncSelectControl x:Name="funcTypeControl" Margin="0,8,0,0" />
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Name" />
-                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="300" Margin="8,0,0,0" />
+                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}" Width="300" Margin="8,0,0,0" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
