@@ -40,7 +40,7 @@
                                       Maximum="180"
                                       DecimalPlaces="0"
                                       Increment="1"
-                                      Value="{Binding LeftPadRotation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Value="{Binding LeftPadRotation, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                       Style="{StaticResource JsmccNumericUpDownStyle}"/>
                 </Grid>
             </Border>
@@ -70,7 +70,7 @@
                                       Maximum="180"
                                       DecimalPlaces="0"
                                       Increment="1"
-                                      Value="{Binding RightPadRotation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Value="{Binding RightPadRotation, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                       Style="{StaticResource JsmccNumericUpDownStyle}"/>
                 </Grid>
             </Border>
