@@ -243,12 +243,53 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler ReleaseDampeningSpeedChanged;
 
+        public bool MultiplierCompensation
+        {
+            get => action.MultiplierCompensation;
+            set
+            {
+                if (action.MultiplierCompensation == value) return;
+                action.MultiplierCompensation = value;
+                MultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MultiplierCompensation)));
+            }
+        }
+        public event EventHandler MultiplierCompensationChanged;
+
+        public double AccelerationMultiplier
+        {
+            get => action.AccelerationMultiplier;
+            set
+            {
+                if (action.AccelerationMultiplier == value) return;
+                action.AccelerationMultiplier = value;
+                AccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler AccelerationMultiplierChanged;
+
         public bool HighlightReleaseDampeningSpeed
         {
             get => action.ParentAction == null ||
                 action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
         }
         public event EventHandler HighlightReleaseDampeningSpeedChanged;
+
+        public bool HighlightMultiplierCompensation
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+        }
+        public event EventHandler HighlightMultiplierCompensationChanged;
+
+        public bool HighlightAccelerationMultiplier
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+        }
+        public event EventHandler HighlightAccelerationMultiplierChanged;
 
         public bool HighlightName
         {
@@ -327,6 +368,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             FlickTimeExponentChanged += TouchpadFlickStickPropViewModel_FlickTimeExponentChanged;
             MinAngleThresholdChanged += TouchpadFlickStickPropViewModel_MinAngleThresholdChanged;
             ReleaseDampeningSpeedChanged += TouchpadFlickStickPropViewModel_ReleaseDampeningSpeedChanged;
+            MultiplierCompensationChanged += TouchpadFlickStickPropViewModel_MultiplierCompensationChanged;
+            AccelerationMultiplierChanged += TouchpadFlickStickPropViewModel_AccelerationMultiplierChanged;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
 
             double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
@@ -518,6 +561,28 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
             HighlightReleaseDampeningSpeedChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadFlickStickPropViewModel_MultiplierCompensationChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION))
+            {
+                action.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            HighlightMultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadFlickStickPropViewModel_AccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER))
+            {
+                action.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            HighlightAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

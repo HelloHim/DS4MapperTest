@@ -20,6 +20,8 @@ namespace DS4MapperTest.TouchpadActions
             public const string MIN_ANGLE_THRESHOLD = "MinAngleThreshold";
             public const string IN_GAME_SENS = "InGameSens";
             public const string RELEASE_DAMPENING_SPEED = "ReleaseDampeningSpeed";
+            public const string MULTIPLIER_COMPENSATION = "MultiplierCompensation";
+            public const string ACCELERATION_MULTIPLIER = "AccelerationMultiplier";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -32,6 +34,8 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.MIN_ANGLE_THRESHOLD,
             PropertyKeyStrings.IN_GAME_SENS,
             PropertyKeyStrings.RELEASE_DAMPENING_SPEED,
+            PropertyKeyStrings.MULTIPLIER_COMPENSATION,
+            PropertyKeyStrings.ACCELERATION_MULTIPLIER,
         };
 
         public class FlickStickMappingData
@@ -61,6 +65,10 @@ namespace DS4MapperTest.TouchpadActions
         }
 
         private const double IN_GAME_SENS_DEFAULT = 1.0;
+        public const bool MULTIPLIER_COMPENSATION_DEFAULT = false;
+        public const double ACCELERATION_MULTIPLIER_DEFAULT = 1.0;
+        public const double ACCELERATION_MULTIPLIER_MIN = 0.01;
+        public const double ACCELERATION_MULTIPLIER_MAX = 100.0;
 
         private double realWorldCalibration = 5.00;
         public double RealWorldCalibration
@@ -105,6 +113,20 @@ namespace DS4MapperTest.TouchpadActions
         {
             get => releaseDampeningSpeed;
             set => releaseDampeningSpeed = Math.Clamp(value, 0.0, 10.0);
+        }
+
+        private bool multiplierCompensation = MULTIPLIER_COMPENSATION_DEFAULT;
+        public bool MultiplierCompensation
+        {
+            get => multiplierCompensation; set => multiplierCompensation = value;
+        }
+
+        private double accelerationMultiplier = ACCELERATION_MULTIPLIER_DEFAULT;
+        public double AccelerationMultiplier
+        {
+            get => accelerationMultiplier;
+            set => accelerationMultiplier = Math.Clamp(value,
+                ACCELERATION_MULTIPLIER_MIN, ACCELERATION_MULTIPLIER_MAX);
         }
 
         private FlickStickMappingData tempFlickData;
@@ -159,6 +181,13 @@ namespace DS4MapperTest.TouchpadActions
             else
             {
                 tempFlickData.flickAngleRemainder = lsangle;
+            }
+
+            if (multiplierCompensation && tempMouseDeltaX != 0.0)
+            {
+                double accelMultiplier = Math.Clamp(accelerationMultiplier,
+                    ACCELERATION_MULTIPLIER_MIN, ACCELERATION_MULTIPLIER_MAX);
+                tempMouseDeltaX /= accelMultiplier;
             }
 
             if (tempMouseDeltaX != 0.0)
@@ -249,6 +278,12 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.RELEASE_DAMPENING_SPEED:
                             releaseDampeningSpeed = tempFlickAction.releaseDampeningSpeed;
                             break;
+                        case PropertyKeyStrings.MULTIPLIER_COMPENSATION:
+                            multiplierCompensation = tempFlickAction.multiplierCompensation;
+                            break;
+                        case PropertyKeyStrings.ACCELERATION_MULTIPLIER:
+                            accelerationMultiplier = tempFlickAction.accelerationMultiplier;
+                            break;
                         default:
                             break;
                     }
@@ -301,6 +336,12 @@ namespace DS4MapperTest.TouchpadActions
                     break;
                 case PropertyKeyStrings.RELEASE_DAMPENING_SPEED:
                     releaseDampeningSpeed = tempFlickAction.releaseDampeningSpeed;
+                    break;
+                case PropertyKeyStrings.MULTIPLIER_COMPENSATION:
+                    multiplierCompensation = tempFlickAction.multiplierCompensation;
+                    break;
+                case PropertyKeyStrings.ACCELERATION_MULTIPLIER:
+                    accelerationMultiplier = tempFlickAction.accelerationMultiplier;
                     break;
                 default:
                     break;

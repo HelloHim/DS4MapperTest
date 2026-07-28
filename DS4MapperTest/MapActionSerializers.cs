@@ -5664,6 +5664,39 @@ namespace DS4MapperTest
                 return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
             }
 
+            public bool MultiplierCompensation
+            {
+                get => flickAction.MultiplierCompensation;
+                set
+                {
+                    flickAction.MultiplierCompensation = value;
+                    MultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MultiplierCompensationChanged;
+
+            public bool ShouldSerializeMultiplierCompensation()
+            {
+                return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            }
+
+            public double AccelerationMultiplier
+            {
+                get => flickAction.AccelerationMultiplier;
+                set
+                {
+                    flickAction.AccelerationMultiplier = value;
+                    AccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler AccelerationMultiplierChanged;
+
+            public bool ShouldSerializeAccelerationMultiplier()
+            {
+                return flickAction.MultiplierCompensation ||
+                    flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            }
+
             public FlickStickSettings(TouchpadFlickStick flickAction)
             {
                 this.flickAction = flickAction;
@@ -5690,6 +5723,8 @@ namespace DS4MapperTest
             settings.MinAngleThresholdChanged += Settings_MinAngleThresholdChanged;
             settings.InGameSensChanged += Settings_InGameSensChanged;
             settings.ReleaseDampeningSpeedChanged += Settings_ReleaseDampeningSpeedChanged;
+            settings.MultiplierCompensationChanged += Settings_MultiplierCompensationChanged;
+            settings.AccelerationMultiplierChanged += Settings_AccelerationMultiplierChanged;
         }
 
         public TouchpadFlickStickActionSerializer(ActionLayer tempLayer, MapAction action) :
@@ -5741,6 +5776,16 @@ namespace DS4MapperTest
         private void Settings_ReleaseDampeningSpeedChanged(object sender, EventArgs e)
         {
             flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
+        }
+
+        private void Settings_MultiplierCompensationChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+        }
+
+        private void Settings_AccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
         }
     }
 
@@ -5909,6 +5954,39 @@ namespace DS4MapperTest
                 return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
             }
 
+            public bool MultiplierCompensation
+            {
+                get => flickAction.MultiplierCompensation;
+                set
+                {
+                    flickAction.MultiplierCompensation = value;
+                    MultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MultiplierCompensationChanged;
+
+            public bool ShouldSerializeMultiplierCompensation()
+            {
+                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            }
+
+            public double AccelerationMultiplier
+            {
+                get => flickAction.AccelerationMultiplier;
+                set
+                {
+                    flickAction.AccelerationMultiplier = value;
+                    AccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler AccelerationMultiplierChanged;
+
+            public bool ShouldSerializeAccelerationMultiplier()
+            {
+                return flickAction.MultiplierCompensation ||
+                    flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            }
+
             public FlickStickSettings(StickFlickStick flickAction)
             {
                 this.flickAction = flickAction;
@@ -5934,6 +6012,8 @@ namespace DS4MapperTest
             settings.MinAngleThresholdChanged += Settings_MinAngleThresholdChanged;
             settings.InGameSensChanged += Settings_InGameSensChanged;
             settings.ReleaseDampeningSpeedChanged += Settings_ReleaseDampeningSpeedChanged;
+            settings.MultiplierCompensationChanged += Settings_MultiplierCompensationChanged;
+            settings.AccelerationMultiplierChanged += Settings_AccelerationMultiplierChanged;
         }
 
         public StickFlickStickActionSerializer(ActionLayer tempLayer, MapAction action) :
@@ -5985,6 +6065,16 @@ namespace DS4MapperTest
         private void Settings_ReleaseDampeningSpeedChanged(object sender, EventArgs e)
         {
             flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
+        }
+
+        private void Settings_MultiplierCompensationChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+        }
+
+        private void Settings_AccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
         }
     }
 

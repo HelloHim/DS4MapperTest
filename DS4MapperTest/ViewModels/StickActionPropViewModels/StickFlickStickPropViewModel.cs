@@ -259,12 +259,53 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler ReleaseDampeningSpeedChanged;
 
+        public bool MultiplierCompensation
+        {
+            get => action.MultiplierCompensation;
+            set
+            {
+                if (action.MultiplierCompensation == value) return;
+                action.MultiplierCompensation = value;
+                MultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MultiplierCompensation)));
+            }
+        }
+        public event EventHandler MultiplierCompensationChanged;
+
+        public double AccelerationMultiplier
+        {
+            get => action.AccelerationMultiplier;
+            set
+            {
+                if (action.AccelerationMultiplier == value) return;
+                action.AccelerationMultiplier = value;
+                AccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler AccelerationMultiplierChanged;
+
         public bool HighlightReleaseDampeningSpeed
         {
             get => action.ParentAction == null ||
                 action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
         }
         public event EventHandler HighlightReleaseDampeningSpeedChanged;
+
+        public bool HighlightMultiplierCompensation
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+        }
+        public event EventHandler HighlightMultiplierCompensationChanged;
+
+        public bool HighlightAccelerationMultiplier
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+        }
+        public event EventHandler HighlightAccelerationMultiplierChanged;
 
         public bool HighlightName
         {
@@ -344,6 +385,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             FlickTimeExponentChanged += StickFlickStickPropViewModel_FlickTimeExponentChanged;
             MinAngleThresholdChanged += StickFlickStickPropViewModel_MinAngleThresholdChanged;
             ReleaseDampeningSpeedChanged += StickFlickStickPropViewModel_ReleaseDampeningSpeedChanged;
+            MultiplierCompensationChanged += StickFlickStickPropViewModel_MultiplierCompensationChanged;
+            AccelerationMultiplierChanged += StickFlickStickPropViewModel_AccelerationMultiplierChanged;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
 
             double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
@@ -491,6 +534,28 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.RELEASE_DAMPENING_SPEED);
             HighlightReleaseDampeningSpeedChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickFlickStickPropViewModel_MultiplierCompensationChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION))
+            {
+                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            HighlightMultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickFlickStickPropViewModel_AccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER))
+            {
+                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            HighlightAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickFlickStickPropViewModel_FlickTimeChanged(object sender, EventArgs e)
