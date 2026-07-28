@@ -146,6 +146,8 @@ namespace DS4MapperTest
             {
                 navPopup.IsOpen = false;
             }
+
+            mainContentScrollViewer?.ScrollToTop();
         }
 
         public async void StartCheckProcess()
