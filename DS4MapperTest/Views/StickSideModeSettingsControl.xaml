@@ -728,6 +728,36 @@
 
                 <Border Style="{StaticResource ModeRowBorder}">
                     <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Multiplier Compensation" Style="{StaticResource JsmccLabelText}"/>
+                            <CheckBox Grid.Column="1" IsChecked="{Binding MultiplierCompensation}"
+                                      Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <TextBlock Text="Divides out an in-game sensitivity multiplier so flick angles stay accurate."
+                                   Style="{StaticResource JsmccMutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+
+                        <Grid Margin="0,6,0,0" IsEnabled="{Binding MultiplierCompensation}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Acceleration Multiplier" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100" DecimalPlaces="3" Increment="0.01"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding AccelerationMultiplier, UpdateSourceTrigger=LostFocus}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <StackPanel>
                         <TextBlock Text="Sensitivity Mode" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,6"/>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                             <RadioButton Content="Real World Calibration" GroupName="FlickStickCalibMode"
