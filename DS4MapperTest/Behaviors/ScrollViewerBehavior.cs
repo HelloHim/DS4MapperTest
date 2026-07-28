@@ -42,6 +42,19 @@ namespace DS4MapperTest.Behaviors
         public static void SetScrollComboBoxDropDownOnWheel(DependencyObject obj, bool value) =>
             obj.SetValue(ScrollComboBoxDropDownOnWheelProperty, value);
 
+        public static readonly DependencyProperty ResetScrollOnSelectionProperty =
+            DependencyProperty.RegisterAttached(
+                "ResetScrollOnSelection",
+                typeof(bool),
+                typeof(ScrollViewerBehavior),
+                new PropertyMetadata(false, OnResetScrollOnSelectionChanged));
+
+        public static bool GetResetScrollOnSelection(DependencyObject obj) =>
+            (bool)obj.GetValue(ResetScrollOnSelectionProperty);
+
+        public static void SetResetScrollOnSelection(DependencyObject obj, bool value) =>
+            obj.SetValue(ResetScrollOnSelectionProperty, value);
+
         private static void OnBubbleWheelToParentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is not ScrollViewer scrollViewer)
@@ -69,6 +82,55 @@ namespace DS4MapperTest.Behaviors
             {
                 comboBox.DropDownOpened += ComboBox_DropDownOpened;
                 comboBox.DropDownClosed += ComboBox_DropDownClosed;
+            }
+        }
+
+        private static void OnResetScrollOnSelectionChanged(DependencyObject d,
+            DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not TabControl tabControl) return;
+
+            tabControl.SelectionChanged -= TabControl_SelectionChanged;
+            if ((bool)e.NewValue)
+            {
+                tabControl.SelectionChanged += TabControl_SelectionChanged;
+            }
+        }
+
+        private static void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not TabControl tabControl || e.Source != tabControl ||
+                tabControl.SelectedItem is not TabItem selectedTab)
+            {
+                return;
+            }
+
+            tabControl.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                // Reset both the page-level ScrollViewer that contains this tab
+                // control and any scroll viewers belonging to the selected tab.
+                for (DependencyObject current = tabControl; current != null;
+                    current = GetParent(current))
+                {
+                    if (current is ScrollViewer scrollViewer)
+                    {
+                        scrollViewer.ScrollToTop();
+                    }
+                }
+
+                ResetDescendantScrollViewers(selectedTab);
+            }), DispatcherPriority.Loaded);
+        }
+
+        private static void ResetDescendantScrollViewers(DependencyObject parent)
+        {
+            if (parent == null) return;
+            if (parent is ScrollViewer scrollViewer) scrollViewer.ScrollToTop();
+
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                ResetDescendantScrollViewers(VisualTreeHelper.GetChild(parent, i));
             }
         }
 

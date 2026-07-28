@@ -405,7 +405,8 @@
                     </WrapPanel>
                 </Border>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                <ScrollViewer x:Name="mainContentScrollViewer"
+                              VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <Grid Margin="{StaticResource JsmccShellPadding}">
                         <Border Visibility="{Binding IsChecked, ElementName=navGyroSensitivity, Converter={StaticResource BoolToVis}}"
