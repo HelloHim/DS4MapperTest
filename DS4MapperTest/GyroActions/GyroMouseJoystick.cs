@@ -27,6 +27,7 @@ namespace DS4MapperTest.GyroActions
         public JoypadActionCodes[] gyroTriggerButtons;
         public bool andCond;
         public bool triggerActivates;
+        public int activationHoldMs;
         public double verticalScale;
         public GyroMouseXAxisChoice useForXAxis;
         public bool invertX;
@@ -75,6 +76,7 @@ namespace DS4MapperTest.GyroActions
 
             public const string TRIGGER_BUTTONS = "Triggers";
             public const string TRIGGER_ACTIVATE = "TriggersActivate";
+            public const string ACTIVATION_HOLD_MS = "ActivationHoldMs";
             public const string TRIGGER_EVAL_COND = "TriggersEvalCond";
             public const string TOGGLE_ACTION = "ToggleAction";
             public const string JITTER_COMPENSATION = "JitterCompensation";
@@ -101,6 +103,7 @@ namespace DS4MapperTest.GyroActions
             PropertyKeyStrings.MAX_OUTPUT_ENABLED,
             PropertyKeyStrings.TRIGGER_BUTTONS,
             PropertyKeyStrings.TRIGGER_ACTIVATE,
+            PropertyKeyStrings.ACTIVATION_HOLD_MS,
             PropertyKeyStrings.TRIGGER_EVAL_COND,
             PropertyKeyStrings.TOGGLE_ACTION,
             PropertyKeyStrings.JITTER_COMPENSATION,
@@ -121,6 +124,7 @@ namespace DS4MapperTest.GyroActions
         private OutputActionData actionData = new OutputActionData(OutputActionData.ActionType.GamepadControl, StickActionCodes.RS);
         private bool previousTriggerActivated;
         private bool toggleActiveState;
+        private readonly GyroActivationHold activationHold = new GyroActivationHold();
         private bool useParentSmoothingFilter;
         //private OneEuroFilter smoothFilter = new OneEuroFilter(1.0, 1.0);
 
@@ -140,6 +144,7 @@ namespace DS4MapperTest.GyroActions
                 outputStick = StickActionCodes.RS,
                 maxOutput = 1.0,
                 triggerActivates = true,
+                activationHoldMs = 0,
                 andCond = false,
                 gyroTriggerButtons = new JoypadActionCodes[1]
                 {
@@ -223,6 +228,9 @@ namespace DS4MapperTest.GyroActions
             {
                 previousTriggerActivated = triggerActivated;
             }
+
+            triggerActivated = activationHold.Update(triggerActivated,
+                mStickParams.activationHoldMs, gyroFrame.timeElapsed);
 
             if (!triggerActivated)
             {
@@ -578,6 +586,9 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.TRIGGER_ACTIVATE:
                             mStickParams.triggerActivates = tempGyroStickAction.mStickParams.triggerActivates;
                             break;
+                        case PropertyKeyStrings.ACTIVATION_HOLD_MS:
+                            mStickParams.activationHoldMs = tempGyroStickAction.mStickParams.activationHoldMs;
+                            break;
                         case PropertyKeyStrings.TRIGGER_EVAL_COND:
                             mStickParams.andCond = tempGyroStickAction.mStickParams.andCond;
                             break;
@@ -685,6 +696,9 @@ namespace DS4MapperTest.GyroActions
                     break;
                 case PropertyKeyStrings.TRIGGER_ACTIVATE:
                     mStickParams.triggerActivates = tempGyroStickAction.mStickParams.triggerActivates;
+                    break;
+                case PropertyKeyStrings.ACTIVATION_HOLD_MS:
+                    mStickParams.activationHoldMs = tempGyroStickAction.mStickParams.activationHoldMs;
                     break;
                 case PropertyKeyStrings.TRIGGER_EVAL_COND:
                     mStickParams.andCond = tempGyroStickAction.mStickParams.andCond;

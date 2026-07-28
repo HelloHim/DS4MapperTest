@@ -100,6 +100,7 @@ namespace DS4MapperTest.GyroActions
         public JoypadActionCodes[] gyroTriggerButtons;
         public bool andCond;
         public bool triggerActivates;
+        public int activationHoldMs;
         public double realWorldCalibration;
         public double inGameSens;
         public GyroMouseAccelCurveChoice accelCurve;
@@ -161,6 +162,7 @@ namespace DS4MapperTest.GyroActions
 
             public const string TRIGGER_BUTTONS = "Triggers";
             public const string TRIGGER_ACTIVATE = "TriggersActivate";
+            public const string ACTIVATION_HOLD_MS = "ActivationHoldMs";
             public const string TRIGGER_EVAL_COND = "TriggersEvalCond";
             public const string TOGGLE_ACTION = "ToggleAction";
             public const string JITTER_COMPENSATION = "JitterCompensation";
@@ -202,6 +204,7 @@ namespace DS4MapperTest.GyroActions
             PropertyKeyStrings.NATURAL_CURVE_VHALF,
             PropertyKeyStrings.TRIGGER_BUTTONS,
             PropertyKeyStrings.TRIGGER_ACTIVATE,
+            PropertyKeyStrings.ACTIVATION_HOLD_MS,
             PropertyKeyStrings.TRIGGER_EVAL_COND,
             PropertyKeyStrings.TOGGLE_ACTION,
             PropertyKeyStrings.SMOOTHING_ENABLED,
@@ -223,6 +226,7 @@ namespace DS4MapperTest.GyroActions
         public GyroMouseParams mouseParams;
         private bool previousTriggerActivated;
         private bool toggleActiveState;
+        private readonly GyroActivationHold activationHold = new GyroActivationHold();
         private bool useParentSmoothingFilter;
 
         //private OneEuroFilter smoothFilter = new OneEuroFilter(1.0, 1.0);
@@ -251,6 +255,7 @@ namespace DS4MapperTest.GyroActions
                 naturalVHalf = GyroMouseParams.NATURAL_VHALF_DEFAULT,
                 verticalScale = GyroMouseParams.VERTICAL_SCALE_DEFAULT,
                 triggerActivates = true,
+                activationHoldMs = 0,
                 andCond = false,
                 gyroTriggerButtons = new JoypadActionCodes[1]
                 {
@@ -327,6 +332,9 @@ namespace DS4MapperTest.GyroActions
             {
                 previousTriggerActivated = triggerActivated;
             }
+
+            triggerActivated = activationHold.Update(triggerActivated,
+                mouseParams.activationHoldMs, gyroFrame.timeElapsed);
 
             if (!triggerActivated)
             {
@@ -797,6 +805,9 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.TRIGGER_ACTIVATE:
                             mouseParams.triggerActivates = tempMouseAction.mouseParams.triggerActivates;
                             break;
+                        case PropertyKeyStrings.ACTIVATION_HOLD_MS:
+                            mouseParams.activationHoldMs = tempMouseAction.mouseParams.activationHoldMs;
+                            break;
                         case PropertyKeyStrings.TRIGGER_EVAL_COND:
                             mouseParams.andCond = tempMouseAction.mouseParams.andCond;
                             break;
@@ -945,6 +956,9 @@ namespace DS4MapperTest.GyroActions
                     break;
                 case PropertyKeyStrings.TRIGGER_ACTIVATE:
                     mouseParams.triggerActivates = tempMouseAction.mouseParams.triggerActivates;
+                    break;
+                case PropertyKeyStrings.ACTIVATION_HOLD_MS:
+                    mouseParams.activationHoldMs = tempMouseAction.mouseParams.activationHoldMs;
                     break;
                 case PropertyKeyStrings.TRIGGER_EVAL_COND:
                     mouseParams.andCond = tempMouseAction.mouseParams.andCond;

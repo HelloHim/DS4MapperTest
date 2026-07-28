@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:local="clr-namespace:DS4MapperTest.Views.GyroActionPropControls"
              xmlns:local1="clr-namespace:DS4MapperTest.Views"
              mc:Ignorable="d"
@@ -77,6 +78,24 @@
                                 <RadioButton Content="All selected"
                                              IsChecked="{Binding GyroTriggerAllSelected, Mode=TwoWay}"
                                              Style="{StaticResource CalibModeToggleStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Border Style="{StaticResource JsmccSettingRowBorder}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Activation Hold Time"
+                                       Style="{StaticResource JsmccLabelText}" Margin="0,0,14,0"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <hc:NumericUpDown Minimum="0" Maximum="60000" Increment="10"
+                                                  DecimalPlaces="0" Width="108"
+                                                  Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Value="{Binding GyroActivationHoldMs, UpdateSourceTrigger=LostFocus}"/>
+                                <TextBlock Text="ms" Style="{StaticResource JsmccMutedText}"
+                                           Margin="6,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Grid>
                     </Border>

@@ -15,6 +15,7 @@ namespace DS4MapperTest.GyroActions
         public JoypadActionCodes[] gyroTriggerButtons;
         public bool andCond;
         public bool triggerActivates;
+        public int activationHoldMs;
         public int delayTime;
     }
 
@@ -48,6 +49,7 @@ namespace DS4MapperTest.GyroActions
 
             public const string TRIGGER_BUTTONS = "Triggers";
             public const string TRIGGER_ACTIVATE = "TriggersActivate";
+            public const string ACTIVATION_HOLD_MS = "ActivationHoldMs";
             public const string TRIGGER_EVAL_COND = "TriggersEvalCond";
         }
 
@@ -65,6 +67,7 @@ namespace DS4MapperTest.GyroActions
 
             PropertyKeyStrings.TRIGGER_BUTTONS,
             PropertyKeyStrings.TRIGGER_ACTIVATE,
+            PropertyKeyStrings.ACTIVATION_HOLD_MS,
             PropertyKeyStrings.TRIGGER_EVAL_COND,
         };
 
@@ -105,6 +108,7 @@ namespace DS4MapperTest.GyroActions
         private double xMotion;
         private double yMotion;
         public GyroDirectionalSwipeParams swipeParams;
+        private readonly GyroActivationHold activationHold = new GyroActivationHold();
         //public GyroDirectionalSwipeParams SwipeParams
         //{
         //    get => swipeParams;
@@ -167,6 +171,9 @@ namespace DS4MapperTest.GyroActions
                 triggerActivated = false;
                 //previousTriggerActivated = triggerActivated;
             }
+
+            triggerActivated = activationHold.Update(triggerActivated,
+                swipeParams.activationHoldMs, gyroFrame.timeElapsed);
 
             if (!triggerActivated)
             {
@@ -564,6 +571,9 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.TRIGGER_ACTIVATE:
                             swipeParams.triggerActivates = tempSwipeAction.swipeParams.triggerActivates;
                             break;
+                        case PropertyKeyStrings.ACTIVATION_HOLD_MS:
+                            swipeParams.activationHoldMs = tempSwipeAction.swipeParams.activationHoldMs;
+                            break;
                         case PropertyKeyStrings.TRIGGER_BUTTONS:
                             swipeParams.gyroTriggerButtons = tempSwipeAction.swipeParams.gyroTriggerButtons;
                             break;
@@ -649,6 +659,9 @@ namespace DS4MapperTest.GyroActions
                     break;
                 case PropertyKeyStrings.TRIGGER_ACTIVATE:
                     swipeParams.triggerActivates = tempSwipeAction.swipeParams.triggerActivates;
+                    break;
+                case PropertyKeyStrings.ACTIVATION_HOLD_MS:
+                    swipeParams.activationHoldMs = tempSwipeAction.swipeParams.activationHoldMs;
                     break;
                 case PropertyKeyStrings.TRIGGER_BUTTONS:
                     swipeParams.gyroTriggerButtons = tempSwipeAction.swipeParams.gyroTriggerButtons;

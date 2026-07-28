@@ -198,6 +198,20 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler GyroTriggerActivatesChanged;
 
+        public int GyroActivationHoldMs
+        {
+            get => action.mouseParams.activationHoldMs;
+            set
+            {
+                int clampedValue = Math.Clamp(value, 0, 60000);
+                if (action.mouseParams.activationHoldMs == clampedValue) return;
+                action.mouseParams.activationHoldMs = clampedValue;
+                GyroActivationHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler GyroActivationHoldMsChanged;
+
         public double RealWorldCalibration
         {
             get => action.mouseParams.realWorldCalibration;
@@ -1395,6 +1409,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             GyroSmoothAngleSnapChanged += GyroMouseActionPropViewModel_GyroSmoothAngleSnapChanged;
             GyroTriggerCondChoiceChanged += GyroMouseActionPropViewModel_GyroTriggerCondChoiceChanged;
             GyroTriggerActivatesChanged += GyroMouseActionPropViewModel_TriggerActivatesChanged;
+            GyroActivationHoldMsChanged += GyroMouseActionPropViewModel_GyroActivationHoldMsChanged;
             RealWorldCalibrationChanged += GyroMouseActionPropViewModel_RealWorldCalibrationChanged;
             InGameSensChanged += GyroMouseActionPropViewModel_InGameSensChanged;
             AccelCurveChoiceChanged += GyroMouseActionPropViewModel_AccelCurveChoiceChanged;
@@ -2052,6 +2067,14 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             });
 
             HighlightGyroTriggerActivatesChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void GyroMouseActionPropViewModel_GyroActivationHoldMsChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.ACTIVATION_HOLD_MS))
+                action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.ACTIVATION_HOLD_MS);
+            ExecuteInMapperThread(() => action.RaiseNotifyPropertyChange(mapper,
+                GyroMouse.PropertyKeyStrings.ACTIVATION_HOLD_MS));
         }
 
         private void GyroMouseActionPropViewModel_DeadZoneChanged(object sender, EventArgs e)

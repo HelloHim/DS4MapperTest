@@ -7,6 +7,46 @@ using System.Threading.Tasks;
 
 namespace DS4MapperTest.GyroActions
 {
+    internal sealed class GyroActivationHold
+    {
+        private bool initialized;
+        private bool appliedState;
+        private bool pendingState;
+        private double pendingElapsedMs;
+
+        public bool Update(bool requestedState, int holdMs, double elapsedSeconds)
+        {
+            if (!initialized)
+            {
+                initialized = true;
+                appliedState = pendingState = requestedState;
+                return appliedState;
+            }
+
+            if (requestedState == appliedState)
+            {
+                pendingState = requestedState;
+                pendingElapsedMs = 0.0;
+                return appliedState;
+            }
+
+            if (pendingState != requestedState)
+            {
+                pendingState = requestedState;
+                pendingElapsedMs = 0.0;
+            }
+
+            pendingElapsedMs += Math.Max(0.0, elapsedSeconds) * 1000.0;
+            if (pendingElapsedMs >= Math.Max(0, holdMs))
+            {
+                appliedState = requestedState;
+                pendingElapsedMs = 0.0;
+            }
+
+            return appliedState;
+        }
+    }
+
     public struct GyroEventFrame
     {
         public short GyroYaw;

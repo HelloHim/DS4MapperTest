@@ -9136,6 +9136,14 @@ namespace DS4MapperTest
             }
             public event EventHandler TriggerActivatesChanged;
 
+            public int ActivationHoldMs
+            {
+                get => gyroMouseAction.mouseParams.activationHoldMs;
+                set => gyroMouseAction.mouseParams.activationHoldMs = Math.Clamp(value, 0, 60000);
+            }
+            public bool ShouldSerializeActivationHoldMs() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.ACTIVATION_HOLD_MS);
+
             [JsonConverter(typeof(StringEnumConverter))]
             public GyroActionsUtils.GyroTriggerEvalCond EvalCond
             {
@@ -9719,6 +9727,14 @@ namespace DS4MapperTest
             }
             public event EventHandler TriggerActivatesChanged;
 
+            public int ActivationHoldMs
+            {
+                get => gyroDirSwipeAction.swipeParams.activationHoldMs;
+                set => gyroDirSwipeAction.swipeParams.activationHoldMs = Math.Clamp(value, 0, 60000);
+            }
+            public bool ShouldSerializeActivationHoldMs() =>
+                gyroDirSwipeAction.ChangedProperties.Contains(GyroDirectionalSwipe.PropertyKeyStrings.ACTIVATION_HOLD_MS);
+
             [JsonConverter(typeof(StringEnumConverter))]
             public GyroActionsUtils.GyroTriggerEvalCond EvalCond
             {
@@ -10064,6 +10080,14 @@ namespace DS4MapperTest
                 }
             }
             public event EventHandler TriggerActivatesChanged;
+
+            public int ActivationHoldMs
+            {
+                get => gyroMouseStickAction.mStickParams.activationHoldMs;
+                set => gyroMouseStickAction.mStickParams.activationHoldMs = Math.Clamp(value, 0, 60000);
+            }
+            public bool ShouldSerializeActivationHoldMs() =>
+                gyroMouseStickAction.ChangedProperties.Contains(GyroMouseJoystick.PropertyKeyStrings.ACTIVATION_HOLD_MS);
 
             [JsonConverter(typeof(StringEnumConverter))]
             public GyroActionsUtils.GyroTriggerEvalCond EvalCond
