@@ -566,7 +566,11 @@
                                 <TextBlock Text="Configure output controller, vibration, and lightbar options."
                                            Style="{StaticResource JsmccBodyText}"
                                            Margin="0,0,0,12"/>
-
+                                <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
+                                    <TabItem Header="General">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled">
+                                            <StackPanel>
                                 <Border Style="{StaticResource JsmccCardBorder}">
                                     <StackPanel>
                                         <TextBlock Text="Output Controller" Style="{StaticResource JsmccSectionTitle}"/>
@@ -824,6 +828,58 @@
                                         </ItemsControl>
                                     </StackPanel>
                                 </Border>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </TabItem>
+                                    <TabItem Header="Unified Virtual Mouse">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled">
+                                            <StackPanel Margin="0,4,0,0">
+                                                <TextBlock Text="Unified Virtual Mouse" Style="{StaticResource JsmccSectionTitle}"/>
+                                                <TextBlock Text="Route a selected physical mouse and controller mouse output through the same FakerInput virtual mouse."
+                                                           Style="{StaticResource JsmccBodyText}" TextWrapping="Wrap" Margin="0,4,0,14"/>
+                                                <Border Style="{StaticResource JsmccCardBorder}">
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Enable forwarding" Style="{StaticResource OtherSettingLabel}"/>
+                                                <TextBlock Text="Forward the selected mouse through FakerInput alongside controller mouse output."
+                                                           Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,3,16,0"/>
+                                            </StackPanel>
+                                            <CheckBox x:Name="physicalMouseEnabledCheckBox" Grid.Column="1"
+                                                      Content="Enable Physical Mouse Forwarding"
+                                                      Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                        <TextBlock Text="Physical Mouse" Style="{StaticResource OtherSettingLabel}" Margin="0,18,0,4"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <ComboBox x:Name="physicalMouseComboBox" MinWidth="260" Style="{StaticResource JsmccComboBoxStyle}"
+                                                      DisplayMemberPath="DisplayName" SelectedValuePath="StableId"
+                                                      ToolTip="The stable device identifier is retained when the mouse is unavailable."/>
+                                            <Button Grid.Column="1" Content="Refresh" Click="RefreshPhysicalMiceButton_Click"
+                                                    Style="{StaticResource JsmccButtonStyle}" Margin="8,0,0,0"/>
+                                        </Grid>
+                                        <TextBlock Text="Choose the physical mouse to forward. Virtual output devices are not listed."
+                                                   Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                        <Border BorderBrush="{DynamicResource JsmccBorderBrush}" BorderThickness="0,1,0,0" Margin="0,16,0,0" Padding="0,12,0,0">
+                                            <TextBlock x:Name="physicalMouseStatusText" Style="{StaticResource JsmccBodyText}" TextWrapping="Wrap"/>
+                                        </Border>
+                                        <TextBlock x:Name="physicalMouseValidationText" Foreground="{DynamicResource JsmccDangerTextBrush}"
+                                                   TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                        <TextBlock Text="The physical mouse will still send its normal Windows input while forwarding is enabled. Suppression is not currently implemented."
+                                                   Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,12,0,0"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                                            <Button Content="Discard" Click="DiscardPhysicalMouseSettingsButton_Click" Style="{StaticResource JsmccDangerButtonStyle}"/>
+                                            <Button Content="Reset to default" Click="ResetPhysicalMouseSettingsButton_Click" Style="{StaticResource JsmccButtonStyle}" Margin="8,0,0,0"/>
+                                            <Button Content="Apply" Click="ApplyPhysicalMouseSettingsButton_Click" Style="{StaticResource JsmccPrimaryButtonStyle}" Margin="8,0,0,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </TabItem>
+                                </TabControl>
                             </StackPanel>
                         </Border>
                     </Grid>

@@ -53,6 +53,7 @@ namespace DS4MapperTest.PhysicalMouse
 
         public bool IsCapturing => running;
         public string SelectedDevicePath => selectedDevicePath;
+        public bool IsSelectedDeviceAvailable => selectedHDevice != IntPtr.Zero;
 
         private readonly object lifecycleLock = new object();
 

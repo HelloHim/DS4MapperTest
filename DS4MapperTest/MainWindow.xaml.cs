@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel;
 using System.Collections.Specialized;
+using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -19,6 +21,7 @@ using HidLibrary;
 using DS4MapperTest.Views;
 using DS4MapperTest.ViewModels;
 using NLog;
+using DS4MapperTest.PhysicalMouse;
 
 namespace DS4MapperTest
 {
@@ -51,6 +54,8 @@ namespace DS4MapperTest
         private bool isDirtyClosePromptActive;
         private DispatcherTimer saveStatusHideTimer;
         private static readonly Logger saveProfileLogger = LogManager.GetCurrentClassLogger();
+        private readonly ObservableCollection<PhysicalMouseSettingsItem> physicalMouseItems =
+            new ObservableCollection<PhysicalMouseSettingsItem>();
 
         private const double NavCompactWidthThreshold = 820;
         private bool isNavCompact;
@@ -97,6 +102,10 @@ namespace DS4MapperTest
             controlListVM.ReadProfileFailure += ControlListVM_ReadProfileFailure;
             controlListVM.ControllerList.CollectionChanged += ControllerList_CollectionChanged;
             deviceComboBox.ItemsSource = controlListVM.ControllerList;
+            physicalMouseComboBox.ItemsSource = physicalMouseItems;
+            manager.PhysicalMouseStatusChanged += BackendManager_PhysicalMouseStatusChanged;
+            LoadPhysicalMouseSettings();
+            _ = RefreshPhysicalMouseListAsync();
             noDeviceHint.Visibility = Visibility.Visible;
             gyroCalibrationStatusTimer = new DispatcherTimer
             {
@@ -155,6 +164,77 @@ namespace DS4MapperTest
             }
 
             mainContentScrollViewer?.ScrollToTop();
+        }
+
+        private async void RefreshPhysicalMiceButton_Click(object sender, RoutedEventArgs e) =>
+            await RefreshPhysicalMouseListAsync();
+
+        private async Task RefreshPhysicalMouseListAsync()
+        {
+            if (appGlobal == null) return;
+            string selection = physicalMouseComboBox.SelectedValue as string
+                ?? appGlobal.appSettings.SelectedPhysicalMouseId;
+            try
+            {
+                List<PhysicalMouseDevice> devices = await Task.Run(() => PhysicalMouseEnumerator.EnumerateMice());
+                List<PhysicalMouseSettingsItem> items = PhysicalMouseSettingsItems.Create(devices, selection);
+                physicalMouseItems.Clear();
+                foreach (PhysicalMouseSettingsItem item in items) physicalMouseItems.Add(item);
+                physicalMouseComboBox.SelectedValue = selection;
+                UpdatePhysicalMouseStatus();
+            }
+            catch (Exception ex)
+            {
+                physicalMouseValidationText.Text = $"Unable to enumerate physical mice: {ex.Message}";
+            }
+        }
+
+        private void LoadPhysicalMouseSettings()
+        {
+            physicalMouseEnabledCheckBox.IsChecked = appGlobal.appSettings.PhysicalMouseForwardingEnabled;
+            physicalMouseComboBox.SelectedValue = appGlobal.appSettings.SelectedPhysicalMouseId;
+            UpdatePhysicalMouseStatus();
+        }
+
+        private void DiscardPhysicalMouseSettingsButton_Click(object sender, RoutedEventArgs e) => LoadPhysicalMouseSettings();
+
+        private void ResetPhysicalMouseSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            physicalMouseEnabledCheckBox.IsChecked = false;
+            physicalMouseComboBox.SelectedValue = null;
+            physicalMouseValidationText.Text = string.Empty;
+        }
+
+        private void ApplyPhysicalMouseSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            BackendManager manager = (App.Current as App).Manager;
+            bool enabled = physicalMouseEnabledCheckBox.IsChecked == true;
+            string selectedId = physicalMouseComboBox.SelectedValue as string;
+            if (!manager.ApplyPhysicalMouseSettings(enabled, selectedId, out string validation))
+            {
+                physicalMouseValidationText.Text = validation;
+                return;
+            }
+            physicalMouseValidationText.Text = string.Empty;
+            UpdatePhysicalMouseStatus();
+        }
+
+        private void BackendManager_PhysicalMouseStatusChanged(object sender, EventArgs e) =>
+            Dispatcher.BeginInvoke((Action)UpdatePhysicalMouseStatus);
+
+        private void UpdatePhysicalMouseStatus()
+        {
+            BackendManager manager = (App.Current as App).Manager;
+            string status = manager?.PhysicalMouseStatus switch
+            {
+                PhysicalMouseServiceStatus.Capturing => "Status: Active",
+                PhysicalMouseServiceStatus.WaitingForSelectedDevice => "Status: Waiting for selected mouse",
+                PhysicalMouseServiceStatus.NoDeviceSelected => "Status: No mouse selected",
+                PhysicalMouseServiceStatus.SelectedDeviceVirtual => "Status: Selected device is virtual or invalid",
+                PhysicalMouseServiceStatus.RegistrationFailed => "Status: Unable to start Raw Input capture",
+                _ => manager?.IsRunning == true ? "Status: Disabled" : "Status: Capture stopped",
+            };
+            physicalMouseStatusText.Text = status;
         }
 
         public async void StartCheckProcess()
@@ -1381,6 +1461,7 @@ namespace DS4MapperTest
             {
                 manager.ServiceStarted -= BackendManager_ServiceStateChanged;
                 manager.ServiceStopped -= BackendManager_ServiceStateChanged;
+                manager.PhysicalMouseStatusChanged -= BackendManager_PhysicalMouseStatusChanged;
             }
 
             DataContext = null;
