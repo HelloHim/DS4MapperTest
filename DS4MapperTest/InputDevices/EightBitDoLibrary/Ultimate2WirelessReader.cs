@@ -24,6 +24,9 @@ namespace DS4MapperTest.InputDevices.EightBitDoLibrary
             Ultimate2WirelessDevice device);
         public event Ultimate2WirelessDeviceReportDelegate Report;
 
+        public override GyroCalibrationStatus GyroCalibrationStatus => gyroCalibrationUtil.Status;
+        public override void RequestGyroCalibration() => gyroCalibrationUtil.RequestCalibrationAfterDelay(1000);
+
         public Ultimate2WirelessReader(Ultimate2WirelessDevice device)
         {
             this.device = device;
@@ -201,11 +204,8 @@ namespace DS4MapperTest.InputDevices.EightBitDoLibrary
                     //Trace.WriteLine($"P: {currentPitch} | Y: {currentYaw} | R: {currentRoll}");
                     //Trace.WriteLine("");
 
-                    if (gyroCalibrationUtil.gyroAverageTimer.IsRunning)
-                    {
-                        gyroCalibrationUtil.CalcSensorCamples(ref currentYaw, ref currentPitch, ref currentRoll,
-                            ref AccelX, ref AccelY, ref AccelZ);
-                    }
+                    gyroCalibrationUtil.Update(ref currentYaw, ref currentPitch, ref currentRoll,
+                        ref AccelX, ref AccelY, ref AccelZ);
 
                     currentYaw -= gyroCalibrationUtil.gyro_offset_x;
                     currentPitch -= gyroCalibrationUtil.gyro_offset_y;

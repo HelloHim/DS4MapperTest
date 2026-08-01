@@ -245,6 +245,19 @@
                                     MinWidth="64"
                                     Style="{StaticResource JsmccButtonStyle}"/>
 
+                            <Button x:Name="gyroCalibrateButton"
+                                    Content="Calibrate Gyro"
+                                    Click="GyroCalibrateButton_Click"
+                                    Margin="8,0,0,0"
+                                    Style="{StaticResource JsmccButtonStyle}"/>
+
+                            <TextBlock x:Name="gyroCalibrationStatusText"
+                                       Visibility="Collapsed"
+                                       Margin="8,0,0,0"
+                                       Style="{StaticResource JsmccMutedText}"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"/>
+
                             <Border x:Name="unsavedStatusPill"
                                     Visibility="{Binding IsProfileDirty, Converter={StaticResource BoolToVis}}"
                                     Style="{StaticResource SaveStatusPillWarningStyle}">

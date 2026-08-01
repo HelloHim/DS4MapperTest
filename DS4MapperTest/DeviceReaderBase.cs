@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DS4MapperTest.Common;
 
 namespace DS4MapperTest
 {
@@ -17,6 +18,13 @@ namespace DS4MapperTest
         public abstract void StartUpdate();
         public abstract void StopUpdate();
         public abstract void WriteRumbleReport();
+
+        public virtual GyroCalibrationStatus GyroCalibrationStatus =>
+            new GyroCalibrationStatus(false, false, 0);
+
+        public virtual void RequestGyroCalibration()
+        {
+        }
 
         /// <summary>
         /// Must not be run from input thread. Waits for input thread to be in a wait state
