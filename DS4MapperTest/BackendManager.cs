@@ -582,6 +582,8 @@ namespace DS4MapperTest
         {
             if (!isRunning || changingService) return;
 
+            using WriteLocker locker = new WriteLocker(_hotplugLock);
+
             changingService = true;
             isRunning = false;
 
