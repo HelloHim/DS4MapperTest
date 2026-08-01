@@ -70,5 +70,36 @@ namespace DS4MapperUnitTests
             Mapper.ReleaseSharedMouseButton(handler, mapping, MouseButtonCodes.MOUSE_MIDDLE_BUTTON); // physical mouse releases
             Assert.IsFalse(handler.MouseButtonHeldForTest(mapping.MOUSEEVENTF_MIDDLEDOWN));
         }
+
+        [TestMethod]
+        [DataRow(MouseButtonCodes.MOUSE_XBUTTON1, true)]
+        [DataRow(MouseButtonCodes.MOUSE_XBUTTON1, false)]
+        [DataRow(MouseButtonCodes.MOUSE_XBUTTON2, true)]
+        [DataRow(MouseButtonCodes.MOUSE_XBUTTON2, false)]
+        public void EitherSourceReleasingSideButtonLeavesOtherHoldIntact(int mouseCode,
+            bool physicalReleasesFirst)
+        {
+            TestFakerInputHandler handler = new TestFakerInputHandler();
+            FakerInputMapping mapping = CreateMapping();
+            uint button = mouseCode == MouseButtonCodes.MOUSE_XBUTTON1
+                ? mapping.MOUSEEVENTF_XBUTTON1DOWN
+                : mapping.MOUSEEVENTF_XBUTTON2DOWN;
+
+            Mapper.AcquireSharedMouseButton(handler, mapping, mouseCode); // controller
+            Mapper.AcquireSharedMouseButton(handler, mapping, mouseCode); // physical mouse
+            if (physicalReleasesFirst)
+            {
+                Mapper.ReleaseSharedMouseButton(handler, mapping, mouseCode); // physical mouse
+            }
+            else
+            {
+                Mapper.ReleaseSharedMouseButton(handler, mapping, mouseCode); // controller
+            }
+
+            Assert.IsTrue(handler.MouseButtonHeldForTest(button));
+
+            Mapper.ReleaseSharedMouseButton(handler, mapping, mouseCode);
+            Assert.IsFalse(handler.MouseButtonHeldForTest(button));
+        }
     }
 }
