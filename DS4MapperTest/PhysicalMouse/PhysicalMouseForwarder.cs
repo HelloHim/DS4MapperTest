@@ -23,13 +23,6 @@ namespace DS4MapperTest.PhysicalMouse
     /// controller hold and a physical-mouse press/release on the same button
     /// can never desync each other.
     ///
-    /// Mouse buttons 4/5 are intentionally not forwarded: FakerInput's
-    /// underlying vmulti driver has no X-button support (see
-    /// FakerInputMapping.PopulateConstants(), which hard-wires
-    /// MOUSEEVENTF_XBUTTONDOWN/UP to 0) and Mapper.MouseButtonCodes has no
-    /// side-button entries for controller bindings either, so there is
-    /// nowhere to send them today.
-    ///
     /// Wheel deltas are converted from Raw Input's WHEEL_DELTA-scaled units
     /// into the "notch count" currency PerformMouseWheelEvent expects (see
     /// VirtualKBMMapping.WHEEL_TICK_BASE), carrying any fractional notch
@@ -116,7 +109,6 @@ namespace DS4MapperTest.PhysicalMouse
             int mouseCode = ToMouseCode(button);
             if (mouseCode == 0)
             {
-                // Button4/Button5 - unsupported by the FakerInput backend, see class remarks.
                 return;
             }
 
@@ -225,6 +217,8 @@ namespace DS4MapperTest.PhysicalMouse
                 case RawMouseButton.Left: return MouseButtonCodes.MOUSE_LEFT_BUTTON;
                 case RawMouseButton.Right: return MouseButtonCodes.MOUSE_RIGHT_BUTTON;
                 case RawMouseButton.Middle: return MouseButtonCodes.MOUSE_MIDDLE_BUTTON;
+                case RawMouseButton.Button4: return MouseButtonCodes.MOUSE_XBUTTON1;
+                case RawMouseButton.Button5: return MouseButtonCodes.MOUSE_XBUTTON2;
                 default: return 0;
             }
         }

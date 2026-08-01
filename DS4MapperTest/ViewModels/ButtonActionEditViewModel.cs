@@ -1599,8 +1599,8 @@ namespace DS4MapperTest.ViewModels
                 new MouseButtonCodeItem("Left Button", MouseButtonCodes.MOUSE_LEFT_BUTTON, tempInd++),
                 new MouseButtonCodeItem("Right Button", MouseButtonCodes.MOUSE_RIGHT_BUTTON, tempInd++),
                 new MouseButtonCodeItem("Middle Button", MouseButtonCodes.MOUSE_MIDDLE_BUTTON, tempInd++),
-                new MouseButtonCodeItem("XButton1", MouseButtonCodes.MOUSE_XBUTTON1, tempInd++),
-                new MouseButtonCodeItem("XButton2", MouseButtonCodes.MOUSE_XBUTTON2, tempInd++),
+                new MouseButtonCodeItem("Mouse 4", MouseButtonCodes.MOUSE_XBUTTON1, tempInd++),
+                new MouseButtonCodeItem("Mouse 5", MouseButtonCodes.MOUSE_XBUTTON2, tempInd++),
             });
 
             tempInd = 0;

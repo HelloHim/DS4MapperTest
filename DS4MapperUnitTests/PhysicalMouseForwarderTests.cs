@@ -117,15 +117,32 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void Button4And5AreNotForwarded()
+        public void Button4And5ForwardToTheirDistinctVirtualButtons()
+        {
+            PhysicalMouseForwarder forwarder = CreateAttachedForwarder(out TestFakerInputHandler handler, out FakerInputMapping mapping);
+
+            forwarder.HandleMouseButton(RawMouseButton.Button4, true);
+            Assert.IsTrue(handler.MouseButtonHeldForTest(mapping.MOUSEEVENTF_XBUTTON1DOWN));
+            Assert.IsFalse(handler.MouseButtonHeldForTest(mapping.MOUSEEVENTF_XBUTTON2DOWN));
+
+            forwarder.HandleMouseButton(RawMouseButton.Button5, true);
+            Assert.IsTrue(handler.MouseButtonHeldForTest(mapping.MOUSEEVENTF_XBUTTON1DOWN));
+            Assert.IsTrue(handler.MouseButtonHeldForTest(mapping.MOUSEEVENTF_XBUTTON2DOWN));
+
+            forwarder.HandleMouseButton(RawMouseButton.Button4, false);
+            forwarder.HandleMouseButton(RawMouseButton.Button5, false);
+
+            Assert.IsFalse(handler.MouseButtonHeldForTest(mapping.MOUSEEVENTF_XBUTTON1UP));
+            Assert.IsFalse(handler.MouseButtonHeldForTest(mapping.MOUSEEVENTF_XBUTTON2UP));
+        }
+
+        [TestMethod]
+        public void UnknownMouseButtonIsIgnored()
         {
             PhysicalMouseForwarder forwarder = CreateAttachedForwarder(out TestFakerInputHandler handler, out _);
 
-            forwarder.HandleMouseButton(RawMouseButton.Button4, true);
-            forwarder.HandleMouseButton(RawMouseButton.Button5, true);
+            forwarder.HandleMouseButton((RawMouseButton)999, true);
 
-            // FakerInput's vmulti backend has no X-button support; nothing
-            // should have been sent for either.
             Assert.AreEqual(0, handler.RelativeMouseReportCount);
         }
 
@@ -147,6 +164,23 @@ namespace DS4MapperUnitTests
                 "right was only held by the disconnected physical mouse");
             Assert.IsTrue(handler.MouseButtonHeldForTest(mapping.MOUSEEVENTF_LEFTDOWN),
                 "left is still held by the controller");
+        }
+
+        [TestMethod]
+        public void DeviceRemovedReleasesOnlyPhysicalSideButtonOwnership()
+        {
+            PhysicalMouseForwarder forwarder = CreateAttachedForwarder(out TestFakerInputHandler handler, out FakerInputMapping mapping);
+
+            Mapper.AcquireSharedMouseButton(handler, mapping, DS4MapperTest.MapperUtil.MouseButtonCodes.MOUSE_XBUTTON1);
+            forwarder.HandleMouseButton(RawMouseButton.Button4, true);
+            forwarder.HandleMouseButton(RawMouseButton.Button5, true);
+
+            forwarder.HandleDeviceRemoved();
+
+            Assert.IsTrue(handler.MouseButtonHeldForTest(mapping.MOUSEEVENTF_XBUTTON1DOWN),
+                "XButton1 is still held by the controller");
+            Assert.IsFalse(handler.MouseButtonHeldForTest(mapping.MOUSEEVENTF_XBUTTON2DOWN),
+                "XButton2 was held only by the disconnected physical mouse");
         }
 
         [TestMethod]

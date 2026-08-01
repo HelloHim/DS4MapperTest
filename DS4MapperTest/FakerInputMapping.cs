@@ -23,8 +23,18 @@ namespace DS4MapperTest
             MOUSEEVENTF_LEFTDOWN = (uint)MouseButton.LeftButton; MOUSEEVENTF_LEFTUP = (uint)MouseButton.LeftButton;
             MOUSEEVENTF_RIGHTDOWN = (uint)MouseButton.RightButton; MOUSEEVENTF_RIGHTUP = (uint)MouseButton.RightButton;
             MOUSEEVENTF_MIDDLEDOWN = (uint)MouseButton.MiddleButton; MOUSEEVENTF_MIDDLEUP = (uint)MouseButton.MiddleButton;
-            // Buttons not supported in vanilla VMulti driver
-            MOUSEEVENTF_XBUTTONDOWN = 0; MOUSEEVENTF_XBUTTONUP = 0;
+            // FakerInput's mouse report has distinct persistent bits for the
+            // two side buttons. Press/release is selected by the handler
+            // method, so each down/up pair intentionally uses the same bit.
+            MOUSEEVENTF_XBUTTON1DOWN = (uint)MouseButton.XButton1;
+            MOUSEEVENTF_XBUTTON1UP = (uint)MouseButton.XButton1;
+            MOUSEEVENTF_XBUTTON2DOWN = (uint)MouseButton.XButton2;
+            MOUSEEVENTF_XBUTTON2UP = (uint)MouseButton.XButton2;
+
+            // Retain the legacy generic X-button fields as XButton1 for any
+            // older caller. New code must use the explicit fields above.
+            MOUSEEVENTF_XBUTTONDOWN = MOUSEEVENTF_XBUTTON1DOWN;
+            MOUSEEVENTF_XBUTTONUP = MOUSEEVENTF_XBUTTON1UP;
 
             MOUSEEVENTF_WHEEL = 0x0800; MOUSEEVENTF_HWHEEL = 0x1000;
 
