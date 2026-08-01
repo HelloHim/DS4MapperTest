@@ -79,6 +79,13 @@ namespace DS4MapperTest
             get => controllerList;
         }
 
+        public DeviceReaderBase GetDeviceReader(InputDeviceBase device)
+        {
+            if (device == null) return null;
+            deviceReadersMap.TryGetValue(device, out DeviceReaderBase reader);
+            return reader;
+        }
+
         private Dictionary<InputDeviceType, ProfileList> deviceProfileListDict;
         public Dictionary<InputDeviceType, ProfileList> DeviceProfileListDict
         {

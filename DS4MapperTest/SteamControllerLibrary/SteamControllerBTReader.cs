@@ -344,13 +344,10 @@ namespace DS4MapperTest.SteamControllerLibrary
                             current.Motion.GyroYaw = (short)(-1 * ((inputReportBuffer[dataIdx + 11] << 8) | inputReportBuffer[dataIdx + 10]));
                             current.Motion.GyroYaw = (short)(current.Motion.GyroYaw - device.gyroCalibOffsets[SteamControllerDevice.IMU_YAW_IDX]);
 
-                            if (gyroCalibrationUtil.gyroAverageTimer.IsRunning)
-                            {
-                                int currentYaw = current.Motion.GyroPitch, currentPitch = current.Motion.GyroRoll, currentRoll = current.Motion.GyroYaw;
-                                int AccelX = current.Motion.AccelX, AccelY = current.Motion.AccelY, AccelZ = current.Motion.AccelZ;
-                                gyroCalibrationUtil.CalcSensorCamples(ref currentYaw, ref currentPitch, ref currentRoll,
-                                    ref AccelX, ref AccelY, ref AccelZ);
-                            }
+                            int currentYaw = current.Motion.GyroPitch, currentPitch = current.Motion.GyroRoll, currentRoll = current.Motion.GyroYaw;
+                            int AccelX = current.Motion.AccelX, AccelY = current.Motion.AccelY, AccelZ = current.Motion.AccelZ;
+                            gyroCalibrationUtil.Update(ref currentYaw, ref currentPitch, ref currentRoll,
+                                ref AccelX, ref AccelY, ref AccelZ);
 
                             current.Motion.GyroYaw -= (short)gyroCalibrationUtil.gyro_offset_x;
                             current.Motion.GyroPitch -= (short)gyroCalibrationUtil.gyro_offset_y;

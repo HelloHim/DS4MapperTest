@@ -38,6 +38,9 @@ namespace DS4MapperTest.JoyConLibrary
         public delegate void JoyConReportDelegate(JoyConReader sender,
             JoyConDevice device);
         public event JoyConReportDelegate Report;
+
+        public override GyroCalibrationStatus GyroCalibrationStatus => gyroCalibrationUtil.Status;
+        public override void RequestGyroCalibration() => gyroCalibrationUtil.RequestCalibrationAfterDelay(1000);
         public event EventHandler<JoyConDevice> LeftStickCalibUpdated;
         public event EventHandler<JoyConDevice> RightStickCalibUpdated;
 
@@ -425,13 +428,10 @@ namespace DS4MapperTest.JoyConLibrary
                         gyroRoll += (short)(gyro_out[3 + IMU_ROLL_IDX] - device.gyroBias[IMU_ROLL_IDX] - device.gyroCalibOffsets[IMU_ROLL_IDX]);
                         gyroRoll += (short)(gyro_out[6 + IMU_ROLL_IDX] - device.gyroBias[IMU_ROLL_IDX] - device.gyroCalibOffsets[IMU_ROLL_IDX]);
 
-                        if (gyroCalibrationUtil.gyroAverageTimer.IsRunning)
-                        {
-                            int currentYaw = gyroYaw, currentPitch = gyroPitch, currentRoll = gyroRoll;
-                            int AccelX = accelX, AccelY = accelY, AccelZ = accelZ;
-                            gyroCalibrationUtil.CalcSensorCamples(ref currentYaw, ref currentPitch, ref currentRoll,
-                                ref AccelX, ref AccelY, ref AccelZ);
-                        }
+                        int currentYaw = gyroYaw, currentPitch = gyroPitch, currentRoll = gyroRoll;
+                        int AccelX = accelX, AccelY = accelY, AccelZ = accelZ;
+                        gyroCalibrationUtil.Update(ref currentYaw, ref currentPitch, ref currentRoll,
+                            ref AccelX, ref AccelY, ref AccelZ);
 
                         gyroYaw -= (short)gyroCalibrationUtil.gyro_offset_x;
                         gyroPitch -= (short)gyroCalibrationUtil.gyro_offset_y;

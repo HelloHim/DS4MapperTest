@@ -27,6 +27,9 @@ namespace DS4MapperTest.SteamControllerLibrary
             SteamControllerDevice device);
         public virtual event SteamControllerReportDelegate Report;
 
+        public override GyroCalibrationStatus GyroCalibrationStatus => gyroCalibrationUtil.Status;
+        public override void RequestGyroCalibration() => gyroCalibrationUtil.RequestCalibrationAfterDelay(1000);
+
         public SteamControllerReader(SteamControllerDevice inputDevice)
         {
             this.device = inputDevice;
@@ -338,13 +341,10 @@ namespace DS4MapperTest.SteamControllerLibrary
                         current.Motion.GyroYaw = (short)(-1 * ((inputReportBuffer[40] << 8) | inputReportBuffer[39]));
                         current.Motion.GyroYaw = (short)(current.Motion.GyroYaw - device.gyroCalibOffsets[SteamControllerDevice.IMU_YAW_IDX]);
 
-                        if (gyroCalibrationUtil.gyroAverageTimer.IsRunning)
-                        {
-                            int currentYaw = current.Motion.GyroYaw, currentPitch = current.Motion.GyroPitch, currentRoll = current.Motion.GyroRoll;
-                            int AccelX = current.Motion.AccelX, AccelY = current.Motion.AccelY, AccelZ = current.Motion.AccelZ;
-                            gyroCalibrationUtil.CalcSensorCamples(ref currentYaw, ref currentPitch, ref currentRoll,
-                                ref AccelX, ref AccelY, ref AccelZ);
-                        }
+                        int currentYaw = current.Motion.GyroYaw, currentPitch = current.Motion.GyroPitch, currentRoll = current.Motion.GyroRoll;
+                        int AccelX = current.Motion.AccelX, AccelY = current.Motion.AccelY, AccelZ = current.Motion.AccelZ;
+                        gyroCalibrationUtil.Update(ref currentYaw, ref currentPitch, ref currentRoll,
+                            ref AccelX, ref AccelY, ref AccelZ);
 
                         current.Motion.GyroYaw -= (short)gyroCalibrationUtil.gyro_offset_x;
                         current.Motion.GyroPitch -= (short)gyroCalibrationUtil.gyro_offset_y;

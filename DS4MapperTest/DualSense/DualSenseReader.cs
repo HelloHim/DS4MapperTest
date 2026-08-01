@@ -29,6 +29,9 @@ namespace DS4MapperTest.DualSense
             DualSenseDevice device);
         public event DualSenseDeviceReportDelegate Report;
 
+        public override GyroCalibrationStatus GyroCalibrationStatus => gyroCalibrationUtil.Status;
+        public override void RequestGyroCalibration() => gyroCalibrationUtil.RequestCalibrationAfterDelay(1000);
+
         public DualSenseReader(DualSenseDevice device)
         {
             this.device = device;
@@ -241,11 +244,8 @@ namespace DS4MapperTest.DualSense
                             ref AccelX, ref AccelY, ref AccelZ);
                     }
 
-                    if (gyroCalibrationUtil.gyroAverageTimer.IsRunning)
-                    {
-                        gyroCalibrationUtil.CalcSensorCamples(ref currentYaw, ref currentPitch, ref currentRoll,
-                            ref AccelX, ref AccelY, ref AccelZ);
-                    }
+                    gyroCalibrationUtil.Update(ref currentYaw, ref currentPitch, ref currentRoll,
+                        ref AccelX, ref AccelY, ref AccelZ);
 
                     currentYaw -= gyroCalibrationUtil.gyro_offset_x;
                     currentPitch -= gyroCalibrationUtil.gyro_offset_y;

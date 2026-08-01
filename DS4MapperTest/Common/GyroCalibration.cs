@@ -7,6 +7,21 @@ using System.Threading.Tasks;
 
 namespace DS4MapperTest.Common
 {
+    public sealed class GyroCalibrationStatus
+    {
+        public bool IsWaitingToStart { get; }
+        public bool IsCalibrating { get; }
+        public long RemainingMilliseconds { get; }
+
+        public GyroCalibrationStatus(bool isWaitingToStart, bool isCalibrating,
+            long remainingMilliseconds)
+        {
+            IsWaitingToStart = isWaitingToStart;
+            IsCalibrating = isCalibrating;
+            RemainingMilliseconds = remainingMilliseconds;
+        }
+    }
+
     public class GyroCalibration
     {
         // for continuous calibration (JoyShockLibrary)
@@ -19,12 +34,37 @@ namespace DS4MapperTest.Common
         public int gyro_offset_z = 0;
         public double gyro_accel_magnitude = 1.0f;
         public Stopwatch gyroAverageTimer = new Stopwatch();
+        private readonly object calibrationLock = new object();
+        private DateTime? delayedCalibrationStartUtc;
 
         public long CntCalibrating
         {
             get
             {
                 return gyroAverageTimer.IsRunning ? gyroAverageTimer.ElapsedMilliseconds : 0;
+            }
+        }
+
+        public GyroCalibrationStatus Status
+        {
+            get
+            {
+                lock (calibrationLock)
+                {
+                    if (delayedCalibrationStartUtc.HasValue)
+                    {
+                        long remaining = Math.Max(0, (long)(delayedCalibrationStartUtc.Value - DateTime.UtcNow).TotalMilliseconds);
+                        return new GyroCalibrationStatus(true, false, remaining);
+                    }
+
+                    if (gyroAverageTimer.IsRunning)
+                    {
+                        long remaining = Math.Max(0, 5000L - gyroAverageTimer.ElapsedMilliseconds);
+                        return new GyroCalibrationStatus(false, true, remaining);
+                    }
+
+                    return new GyroCalibrationStatus(false, false, 0);
+                }
             }
         }
 
@@ -50,7 +90,47 @@ namespace DS4MapperTest.Common
             }
         }
 
+        /// <summary>
+        /// Samples a report when calibration is active, or begins a requested delayed
+        /// calibration as soon as the delay has elapsed. Called by the input thread.
+        /// </summary>
+        public void Update(ref int currentYaw, ref int currentPitch, ref int currentRoll,
+            ref int accelX, ref int accelY, ref int accelZ)
+        {
+            lock (calibrationLock)
+            {
+                if (delayedCalibrationStartUtc.HasValue && DateTime.UtcNow >= delayedCalibrationStartUtc.Value)
+                {
+                    delayedCalibrationStartUtc = null;
+                    ResetContinuousCalibrationInternal();
+                }
+
+                if (gyroAverageTimer.IsRunning)
+                {
+                    CalcSensorCamples(ref currentYaw, ref currentPitch, ref currentRoll,
+                        ref accelX, ref accelY, ref accelZ);
+                }
+            }
+        }
+
+        /// <summary>Begins a fresh five-second gyro offset average after the requested delay.</summary>
+        public void RequestCalibrationAfterDelay(int delayMilliseconds)
+        {
+            lock (calibrationLock)
+            {
+                delayedCalibrationStartUtc = DateTime.UtcNow.AddMilliseconds(delayMilliseconds);
+            }
+        }
+
         public void StartContinuousCalibration()
+        {
+            lock (calibrationLock)
+            {
+                StartContinuousCalibrationInternal();
+            }
+        }
+
+        private void StartContinuousCalibrationInternal()
         {
             for (int i = 0; i < gyro_average_window.Length; i++) gyro_average_window[i] = new GyroAverageWindow();
             gyroAverageTimer.Start();
@@ -58,6 +138,15 @@ namespace DS4MapperTest.Common
 
         public void StopContinuousCalibration()
         {
+            lock (calibrationLock)
+            {
+                StopContinuousCalibrationInternal();
+            }
+        }
+
+        private void StopContinuousCalibrationInternal()
+        {
+            delayedCalibrationStartUtc = null;
             gyroAverageTimer.Stop();
             gyroAverageTimer.Reset();
             for (int i = 0; i < gyro_average_window.Length; i++) gyro_average_window[i].Reset();
@@ -65,9 +154,16 @@ namespace DS4MapperTest.Common
 
         public void ResetContinuousCalibration()
         {
-            // Potential race condition with CalcSensorCamples() since this method is called after checking gyroAverageTimer.IsRunning == true
-            StopContinuousCalibration();
-            StartContinuousCalibration();
+            lock (calibrationLock)
+            {
+                ResetContinuousCalibrationInternal();
+            }
+        }
+
+        private void ResetContinuousCalibrationInternal()
+        {
+            StopContinuousCalibrationInternal();
+            StartContinuousCalibrationInternal();
         }
 
         public unsafe void PushSensorSamples(int x, int y, int z, double accelMagnitude)

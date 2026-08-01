@@ -46,6 +46,7 @@ namespace DS4MapperTest
 
         private bool isSavingProfile;
         private bool isTogglingService;
+        private DispatcherTimer gyroCalibrationStatusTimer;
         private bool isClosingAfterDirtyPrompt;
         private bool isDirtyClosePromptActive;
         private DispatcherTimer saveStatusHideTimer;
@@ -97,6 +98,12 @@ namespace DS4MapperTest
             controlListVM.ControllerList.CollectionChanged += ControllerList_CollectionChanged;
             deviceComboBox.ItemsSource = controlListVM.ControllerList;
             noDeviceHint.Visibility = Visibility.Visible;
+            gyroCalibrationStatusTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(100),
+            };
+            gyroCalibrationStatusTimer.Tick += GyroCalibrationStatusTimer_Tick;
+            gyroCalibrationStatusTimer.Start();
             UpdateServiceControls(manager);
         }
 
@@ -224,6 +231,39 @@ namespace DS4MapperTest
             serviceStatusText.Text = changing
                 ? (running ? "Stopping..." : "Starting...")
                 : (running ? "Running" : "Stopped");
+            UpdateGyroCalibrationControls(manager);
+        }
+
+        private void GyroCalibrateButton_Click(object sender, RoutedEventArgs e)
+        {
+            BackendManager manager = (Application.Current as App).Manager;
+            DeviceReaderBase reader = manager?.GetDeviceReader(currentDeviceItem?.Device);
+            reader?.RequestGyroCalibration();
+            UpdateGyroCalibrationControls(manager);
+        }
+
+        private void GyroCalibrationStatusTimer_Tick(object sender, EventArgs e)
+        {
+            UpdateGyroCalibrationControls((Application.Current as App).Manager);
+        }
+
+        private void UpdateGyroCalibrationControls(BackendManager manager)
+        {
+            if (gyroCalibrateButton == null || gyroCalibrationStatusText == null) return;
+
+            DeviceReaderBase reader = manager?.GetDeviceReader(currentDeviceItem?.Device);
+            Common.GyroCalibrationStatus status = reader?.GyroCalibrationStatus;
+            bool active = status != null && (status.IsWaitingToStart || status.IsCalibrating);
+
+            gyroCalibrateButton.IsEnabled = manager?.IsRunning == true && reader != null && !active;
+            gyroCalibrationStatusText.Visibility = active ? Visibility.Visible : Visibility.Collapsed;
+            if (active)
+            {
+                double seconds = status.RemainingMilliseconds / 1000.0;
+                gyroCalibrationStatusText.Text = status.IsWaitingToStart
+                    ? $"Gyro calibration starts in {seconds:F1}s"
+                    : $"Keep controller still; gyro calibration: {seconds:F1}s";
+            }
         }
 
         private void ControllerList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
