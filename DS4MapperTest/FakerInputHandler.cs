@@ -17,11 +17,25 @@ namespace DS4MapperTest
 
         private const double ABSOLUTE_MOUSE_COOR_MAX = 32767.0;
 
+        // RelativeMouseReport.MouseX/MouseY are shorts, so a single report can
+        // only carry [MOUSE_MIN, MOUSE_MAX] of movement per Sync(). Anything
+        // beyond that is carried over in pendingMouseX/Y rather than dropped.
+        private const long MOUSE_MIN = -32767;
+        private const long MOUSE_MAX = 32767;
+
         private FakerInput fakerInput = null;
         private RelativeMouseReport mouseReport = new RelativeMouseReport();
         private AbsoluteMouseReport absoluteMouseReport = new AbsoluteMouseReport();
         private KeyboardReport keyReport = new KeyboardReport();
         private KeyboardEnhancedReport mediaKeyReport = new KeyboardEnhancedReport();
+
+        // Accumulates relative movement from multiple MoveRelativeMouse() calls
+        // received before the next Sync(). Kept separate from mouseReport so a
+        // value exceeding one report's range can be split across Sync() calls
+        // instead of clobbering/clipping earlier movement. Protected so a test
+        // double can observe pending state without driving the native output.
+        protected long pendingMouseX;
+        protected long pendingMouseY;
 
         private HashSet<KeyboardModifier> modifiers = new HashSet<KeyboardModifier>();
         private HashSet<KeyboardKey> pressedKeys = new HashSet<KeyboardKey>();
@@ -29,7 +43,7 @@ namespace DS4MapperTest
         // Flags that will dictate which output report methods to call in Sync method
         private bool syncKeyboard;
         private bool syncEnhancedKeyboard;
-        private bool syncRelativeMouse;
+        protected bool syncRelativeMouse;
         private bool syncAbsoluteMouse;
 
         // Used to guard reports and attempt to keep methods thread safe
@@ -58,6 +72,8 @@ namespace DS4MapperTest
 
             //mouseReport.ResetMousePos();
             mouseReport.Reset();
+            pendingMouseX = 0;
+            pendingMouseY = 0;
             syncRelativeMouse = true;
             //fakerInput.UpdateRelativeMouse(mouseReport);
 
@@ -92,19 +108,16 @@ namespace DS4MapperTest
 
         public override void MoveRelativeMouse(int x, int y)
         {
-            const int MOUSE_MIN = -32767;
-            const int MOUSE_MAX = 32767;
             //Console.WriteLine("RAW MOUSE {0} {1}", x, y);
             eventLock.EnterWriteLock();
 
-            //mouseReport.ResetMousePos();
-
-            mouseReport.MouseX = (short)(x < MOUSE_MIN ? MOUSE_MIN : (x > MOUSE_MAX) ? MOUSE_MAX : x);
-            mouseReport.MouseY = (short)(y < MOUSE_MIN ? MOUSE_MIN : (y > MOUSE_MAX) ? MOUSE_MAX : y);
-            //Console.WriteLine("LKJDFSLKJDFSLKJS {0} {1}", mouseReport.MouseX, mouseReport.MouseY);
+            // Accumulate rather than overwrite so multiple independently timed
+            // callers landing between Sync() calls add up instead of the last
+            // caller clobbering earlier movement.
+            pendingMouseX += x;
+            pendingMouseY += y;
 
             syncRelativeMouse = true;
-            //fakerInput.UpdateRelativeMouse(mouseReport);
 
             eventLock.ExitWriteLock();
         }
@@ -381,15 +394,39 @@ namespace DS4MapperTest
             eventLock.ExitWriteLock();
         }
 
+        // Isolated so tests can verify accumulation/carry-over without driving
+        // the native FakerInput output.
+        protected virtual void SendRelativeMouseReport()
+        {
+            fakerInput.UpdateRelativeMouse(mouseReport);
+        }
+
         public override void Sync()
         {
             eventLock.EnterWriteLock();
 
             if (syncRelativeMouse)
             {
-                fakerInput.UpdateRelativeMouse(mouseReport);
+                // A single report can only carry a short's worth of movement.
+                // Clamp what goes out this Sync() and keep whatever doesn't
+                // fit pending, so it drains on the next Sync() instead of
+                // being permanently clipped.
+                long clampedX = pendingMouseX < MOUSE_MIN ? MOUSE_MIN : (pendingMouseX > MOUSE_MAX ? MOUSE_MAX : pendingMouseX);
+                long clampedY = pendingMouseY < MOUSE_MIN ? MOUSE_MIN : (pendingMouseY > MOUSE_MAX ? MOUSE_MAX : pendingMouseY);
+
+                mouseReport.MouseX = (short)clampedX;
+                mouseReport.MouseY = (short)clampedY;
+
+                SendRelativeMouseReport();
                 mouseReport.ResetMousePos();
-                syncRelativeMouse = false;
+
+                pendingMouseX -= clampedX;
+                pendingMouseY -= clampedY;
+
+                // Keep flagging for sync while a remainder is still pending so
+                // it gets flushed on a subsequent Sync() even without a new
+                // MoveRelativeMouse() call in between.
+                syncRelativeMouse = pendingMouseX != 0 || pendingMouseY != 0;
             }
 
             if (syncAbsoluteMouse)
