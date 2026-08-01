@@ -56,6 +56,11 @@ namespace DS4MapperTest
         private static readonly Logger saveProfileLogger = LogManager.GetCurrentClassLogger();
         private readonly ObservableCollection<PhysicalMouseSettingsItem> physicalMouseItems =
             new ObservableCollection<PhysicalMouseSettingsItem>();
+        private bool updatingPhysicalMouseSettings;
+        private bool stagedPhysicalMouseForwardingEnabled;
+        private string stagedPhysicalMouseId;
+        private bool appliedPhysicalMouseForwardingEnabled;
+        private string appliedPhysicalMouseId;
 
         private const double NavCompactWidthThreshold = 820;
         private bool isNavCompact;
@@ -172,15 +177,23 @@ namespace DS4MapperTest
         private async Task RefreshPhysicalMouseListAsync()
         {
             if (appGlobal == null) return;
-            string selection = physicalMouseComboBox.SelectedValue as string
-                ?? appGlobal.appSettings.SelectedPhysicalMouseId;
             try
             {
                 List<PhysicalMouseDevice> devices = await Task.Run(() => PhysicalMouseEnumerator.EnumerateMice());
+                string selection = stagedPhysicalMouseId;
                 List<PhysicalMouseSettingsItem> items = PhysicalMouseSettingsItems.Create(devices, selection);
-                physicalMouseItems.Clear();
-                foreach (PhysicalMouseSettingsItem item in items) physicalMouseItems.Add(item);
-                physicalMouseComboBox.SelectedValue = selection;
+                updatingPhysicalMouseSettings = true;
+                try
+                {
+                    physicalMouseItems.Clear();
+                    foreach (PhysicalMouseSettingsItem item in items) physicalMouseItems.Add(item);
+                    physicalMouseComboBox.SelectedValue = selection;
+                }
+                finally
+                {
+                    updatingPhysicalMouseSettings = false;
+                }
+                UpdatePhysicalMouseSettingsButtons();
                 UpdatePhysicalMouseStatus();
             }
             catch (Exception ex)
@@ -191,8 +204,22 @@ namespace DS4MapperTest
 
         private void LoadPhysicalMouseSettings()
         {
-            physicalMouseEnabledCheckBox.IsChecked = appGlobal.appSettings.PhysicalMouseForwardingEnabled;
-            physicalMouseComboBox.SelectedValue = appGlobal.appSettings.SelectedPhysicalMouseId;
+            appliedPhysicalMouseForwardingEnabled = appGlobal.appSettings.PhysicalMouseForwardingEnabled;
+            appliedPhysicalMouseId = appGlobal.appSettings.SelectedPhysicalMouseId ?? string.Empty;
+            stagedPhysicalMouseForwardingEnabled = appliedPhysicalMouseForwardingEnabled;
+            stagedPhysicalMouseId = appliedPhysicalMouseId;
+
+            updatingPhysicalMouseSettings = true;
+            try
+            {
+                physicalMouseEnabledCheckBox.IsChecked = stagedPhysicalMouseForwardingEnabled;
+                physicalMouseComboBox.SelectedValue = stagedPhysicalMouseId;
+            }
+            finally
+            {
+                updatingPhysicalMouseSettings = false;
+            }
+            UpdatePhysicalMouseSettingsButtons();
             UpdatePhysicalMouseStatus();
         }
 
@@ -200,23 +227,62 @@ namespace DS4MapperTest
 
         private void ResetPhysicalMouseSettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            physicalMouseEnabledCheckBox.IsChecked = false;
-            physicalMouseComboBox.SelectedValue = null;
+            stagedPhysicalMouseForwardingEnabled = false;
+            stagedPhysicalMouseId = string.Empty;
+            updatingPhysicalMouseSettings = true;
+            try
+            {
+                physicalMouseEnabledCheckBox.IsChecked = false;
+                physicalMouseComboBox.SelectedValue = null;
+            }
+            finally
+            {
+                updatingPhysicalMouseSettings = false;
+            }
             physicalMouseValidationText.Text = string.Empty;
+            UpdatePhysicalMouseSettingsButtons();
         }
 
         private void ApplyPhysicalMouseSettingsButton_Click(object sender, RoutedEventArgs e)
         {
             BackendManager manager = (App.Current as App).Manager;
-            bool enabled = physicalMouseEnabledCheckBox.IsChecked == true;
-            string selectedId = physicalMouseComboBox.SelectedValue as string;
+            bool enabled = stagedPhysicalMouseForwardingEnabled;
+            string selectedId = stagedPhysicalMouseId;
             if (!manager.ApplyPhysicalMouseSettings(enabled, selectedId, out string validation))
             {
                 physicalMouseValidationText.Text = validation;
                 return;
             }
+            appliedPhysicalMouseForwardingEnabled = enabled;
+            appliedPhysicalMouseId = selectedId ?? string.Empty;
             physicalMouseValidationText.Text = string.Empty;
+            UpdatePhysicalMouseSettingsButtons();
             UpdatePhysicalMouseStatus();
+        }
+
+        private void PhysicalMouseEnabledCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (updatingPhysicalMouseSettings) return;
+            stagedPhysicalMouseForwardingEnabled = physicalMouseEnabledCheckBox.IsChecked == true;
+            physicalMouseValidationText.Text = string.Empty;
+            UpdatePhysicalMouseSettingsButtons();
+        }
+
+        private void PhysicalMouseComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (updatingPhysicalMouseSettings) return;
+            stagedPhysicalMouseId = physicalMouseComboBox.SelectedValue as string ?? string.Empty;
+            physicalMouseValidationText.Text = string.Empty;
+            UpdatePhysicalMouseSettingsButtons();
+        }
+
+        private void UpdatePhysicalMouseSettingsButtons()
+        {
+            bool settingsChanged = stagedPhysicalMouseForwardingEnabled != appliedPhysicalMouseForwardingEnabled ||
+                !string.Equals(stagedPhysicalMouseId ?? string.Empty, appliedPhysicalMouseId ?? string.Empty,
+                    StringComparison.OrdinalIgnoreCase);
+            applyPhysicalMouseSettingsButton.IsEnabled = settingsChanged;
+            discardPhysicalMouseSettingsButton.IsEnabled = settingsChanged;
         }
 
         private void BackendManager_PhysicalMouseStatusChanged(object sender, EventArgs e) =>
