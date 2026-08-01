@@ -19,7 +19,7 @@ namespace DS4MapperUnitTests
             List<PhysicalMouseSettingsItem> items = PhysicalMouseSettingsItems.Create(devices, "mouse-a");
 
             Assert.AreEqual(1, items.Count);
-            Assert.AreEqual("USB Optical Mouse", items[0].DisplayName);
+            Assert.AreEqual("USB Optical Mouse - VID 1234, PID 0001", items[0].DisplayName);
             Assert.AreEqual("mouse-a", items[0].StableId);
         }
 
@@ -39,6 +39,59 @@ namespace DS4MapperUnitTests
             PhysicalMouseSettingsItem unavailable = items.Single(i => i.StableId == "saved-mouse");
             Assert.IsFalse(unavailable.IsAvailable);
             Assert.IsTrue(unavailable.DisplayName.Contains("unavailable"));
+        }
+
+        [TestMethod]
+        public void ParentDeviceNameReplacesGenericHidMouseName()
+        {
+            var names = new Dictionary<string, string>
+            {
+                ["hid-mouse"] = "HID-compliant mouse",
+                ["usb-receiver"] = "Logitech G Pro X Superlight",
+            };
+            var parents = new Dictionary<string, string>
+            {
+                ["hid-mouse"] = "usb-receiver",
+                ["usb-receiver"] = @"HTREE\ROOT\0",
+            };
+
+            string result = PhysicalMouseEnumerator.FindFriendlyNameFromAncestorChain(
+                "hid-mouse",
+                instanceId => names.TryGetValue(instanceId, out string name) ? name : null,
+                instanceId => parents.TryGetValue(instanceId, out string parent) ? parent : null);
+
+            Assert.AreEqual("Logitech G Pro X Superlight", result);
+        }
+
+        [TestMethod]
+        public void GenericAncestorNamesDoNotReplaceTheOriginalFallback()
+        {
+            var names = new Dictionary<string, string>
+            {
+                ["hid-mouse"] = "HID-compliant mouse",
+                ["usb-parent"] = "USB Input Device",
+            };
+            var parents = new Dictionary<string, string>
+            {
+                ["hid-mouse"] = "usb-parent",
+                ["usb-parent"] = @"HTREE\ROOT\0",
+            };
+
+            string result = PhysicalMouseEnumerator.FindFriendlyNameFromAncestorChain(
+                "hid-mouse",
+                instanceId => names.TryGetValue(instanceId, out string name) ? name : null,
+                instanceId => parents.TryGetValue(instanceId, out string parent) ? parent : null);
+
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void SpecificBusDescriptionBeatsGenericFriendlyName()
+        {
+            string result = PhysicalMouseEnumerator.SelectPreferredDeviceName(
+                "HID-compliant mouse", "Razer Viper 8K Hz", "HID-compliant device");
+
+            Assert.AreEqual("Razer Viper 8K Hz", result);
         }
     }
 }
