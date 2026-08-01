@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using HidLibrary;
@@ -29,6 +30,23 @@ namespace DS4MapperTest.PhysicalMouse
 
         private static readonly Regex VidPidRegex = new Regex(
             @"VID_([0-9A-Fa-f]{4})&PID_([0-9A-Fa-f]{4})", RegexOptions.Compiled);
+
+        private static readonly HashSet<string> GenericDeviceNames = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase)
+        {
+            "HID-compliant mouse",
+            "HID-compliant device",
+            "HID Keyboard Device",
+            "HID-compliant consumer control device",
+            "USB Input Device",
+            "USB Composite Device",
+            "USB Root Hub",
+            "Generic USB Hub",
+            "PS/2 Compatible Mouse",
+            "Unknown device",
+        };
+
+        private const int MaxParentLookupDepth = 8;
 
         public static List<PhysicalMouseDevice> EnumerateMice()
         {
@@ -161,15 +179,88 @@ namespace DS4MapperTest.PhysicalMouse
 
         private static string GetFriendlyName(string devicePath)
         {
-            string instanceId = Util.GetInstanceIdFromDevicePath(devicePath);
-            if (string.IsNullOrEmpty(instanceId))
+            try
+            {
+                string instanceId = Util.GetInstanceIdFromDevicePath(devicePath);
+                if (string.IsNullOrEmpty(instanceId))
+                {
+                    return null;
+                }
+
+                // Raw Input identifies the HID mouse interface. Windows often calls
+                // that child interface "HID-compliant mouse", while the parent USB
+                // receiver/device has the useful vendor product name.
+                string fallbackName = GetDeviceDisplayName(instanceId);
+                return FindFriendlyNameFromAncestorChain(instanceId,
+                    GetDeviceDisplayName, GetParentInstanceId) ?? fallbackName;
+            }
+            catch
+            {
+                // Names are presentation-only. Enumeration and the stable Raw Input
+                // identity must remain usable if a SetupAPI lookup fails.
+                return null;
+            }
+        }
+
+        private static string GetDeviceDisplayName(string deviceInstanceId)
+        {
+            return SelectPreferredDeviceName(
+                GetStringDeviceProperty(deviceInstanceId, DEVPKEY_Device_FriendlyName),
+                GetStringDeviceProperty(deviceInstanceId, NativeMethods.DEVPKEY_Device_BusReportedDeviceDesc),
+                GetStringDeviceProperty(deviceInstanceId, NativeMethods.DEVPKEY_Device_DeviceDesc));
+        }
+
+        internal static string SelectPreferredDeviceName(params string[] names)
+        {
+            return names.FirstOrDefault(IsUsefulDeviceName) ?? names.FirstOrDefault(name =>
+                !string.IsNullOrWhiteSpace(name));
+        }
+
+        private static string GetParentInstanceId(string deviceInstanceId)
+        {
+            return GetStringDeviceProperty(deviceInstanceId, NativeMethods.DEVPKEY_Device_Parent);
+        }
+
+        internal static string FindFriendlyNameFromAncestorChain(string initialInstanceId,
+            Func<string, string> getDisplayName, Func<string, string> getParentInstanceId)
+        {
+            if (string.IsNullOrWhiteSpace(initialInstanceId))
             {
                 return null;
             }
 
-            return GetStringDeviceProperty(instanceId, DEVPKEY_Device_FriendlyName)
-                ?? GetStringDeviceProperty(instanceId, NativeMethods.DEVPKEY_Device_BusReportedDeviceDesc)
-                ?? GetStringDeviceProperty(instanceId, NativeMethods.DEVPKEY_Device_DeviceDesc);
+            HashSet<string> visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            string currentInstanceId = initialInstanceId;
+            for (int depth = 0; depth < MaxParentLookupDepth &&
+                !string.IsNullOrEmpty(currentInstanceId) && visited.Add(currentInstanceId); depth++)
+            {
+                string displayName = getDisplayName(currentInstanceId);
+                if (IsUsefulDeviceName(displayName))
+                {
+                    return displayName.Trim();
+                }
+
+                string parentInstanceId = getParentInstanceId(currentInstanceId);
+                if (string.IsNullOrEmpty(parentInstanceId) ||
+                    parentInstanceId.Equals(@"HTREE\ROOT\0", StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+
+                currentInstanceId = parentInstanceId;
+            }
+
+            return null;
+        }
+
+        internal static bool IsUsefulDeviceName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return false;
+            }
+
+            return !GenericDeviceNames.Contains(name.Trim());
         }
 
         private static string GetStringDeviceProperty(string deviceInstanceId, NativeMethods.DEVPROPKEY prop)
