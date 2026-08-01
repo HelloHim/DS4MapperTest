@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using DS4MapperTest.JoyConLibrary;
+using DS4MapperTest.PhysicalMouse;
 
 namespace DS4MapperTest
 {
@@ -62,6 +63,13 @@ namespace DS4MapperTest
 
         private VirtualKBMMapping eventInputMapping;// = new FakerInputMapping();
         public VirtualKBMMapping EventInputMapping => eventInputMapping;
+
+        // Phase-2 physical-mouse forwarding. Owned here (not by the WPF UI)
+        // so it starts/stops with the backend service regardless of which
+        // window, if any, is open. See PhysicalMouseService for the actual
+        // capture -> FakerInput wiring.
+        private readonly PhysicalMouseService physicalMouseService = new PhysicalMouseService();
+        public PhysicalMouseServiceStatus PhysicalMouseStatus => physicalMouseService.Status;
 
         private Dictionary<int, Mapper> mapperDict;
         public Dictionary<int, Mapper> MapperDict
@@ -189,6 +197,11 @@ namespace DS4MapperTest
             changingService = true;
 
             InitOutputKBMHandler();
+
+            bool physicalMouseEnabled = appGlobal.appSettings?.PhysicalMouseForwardingEnabled ?? false;
+            string selectedPhysicalMouseId = appGlobal.appSettings?.SelectedPhysicalMouseId;
+            physicalMouseService.Start(physicalMouseEnabled, selectedPhysicalMouseId, virtualEventHandler, eventInputMapping);
+            LogDebug($"Physical mouse forwarding: {physicalMouseService.Status}");
 
             // Change thread affinity of bus object to not be tied
             // to GUI thread
@@ -587,6 +600,10 @@ namespace DS4MapperTest
             changingService = true;
             isRunning = false;
 
+            // Stop physical-mouse capture/forwarding first: it must not
+            // outlive or race the virtualEventHandler teardown below.
+            physicalMouseService.Stop();
+
             PreServiceStop?.Invoke(this, EventArgs.Empty);
 
             foreach (Mapper mapper in mapperDict.Values)
@@ -651,6 +668,7 @@ namespace DS4MapperTest
 
         public void ShutDown()
         {
+            physicalMouseService.Dispose();
         }
 
         public void Hotplug()

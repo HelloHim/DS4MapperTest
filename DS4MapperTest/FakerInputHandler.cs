@@ -401,6 +401,27 @@ namespace DS4MapperTest
             fakerInput.UpdateRelativeMouse(mouseReport);
         }
 
+        // Test seam: lets a test double inspect held-button state without
+        // exposing the FakerInputWrapper.MouseButton type across the
+        // assembly boundary (callers pass the same uint flag PerformMouseButtonPress/
+        // PerformMouseButtonRelease accept).
+        protected bool IsMouseButtonHeld(uint mouseButtonFlag)
+        {
+            return mouseReport.HeldButtons.Contains((MouseButton)mouseButtonFlag);
+        }
+
+        // Test seam: the values just written into the outgoing report,
+        // readable from within an overridden SendRelativeMouseReport() before
+        // Sync() calls ResetMousePos() and zeroes them.
+        protected short LastReportMouseX => mouseReport.MouseX;
+        protected short LastReportMouseY => mouseReport.MouseY;
+
+        // Test seam: wheel deltas set by PerformMouseWheelEvent(). Reinterpret
+        // as sbyte to recover the signed delta (matches how the underlying
+        // driver reads this field).
+        protected byte MouseReportWheelPosition => mouseReport.WheelPosition;
+        protected byte MouseReportHWheelPosition => mouseReport.HWheelPosition;
+
         public override void Sync()
         {
             eventLock.EnterWriteLock();
