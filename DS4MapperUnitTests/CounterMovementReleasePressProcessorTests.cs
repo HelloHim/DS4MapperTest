@@ -926,5 +926,29 @@ namespace DS4MapperUnitTests
             // With a 0% default arming threshold, any digital direction activation arms immediately.
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.Armed, padAction.CounterMovementReleasePress.State);
         }
+
+        [TestMethod]
+        public void ArrowKeyMode_ReverseIntoBrakeDirection_ReleasesTheOwnedArrow()
+        {
+            var (mapper, padAction) = LoadMapper();
+            padAction.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses = true;
+            Neutral(mapper);
+
+            // Push Up and release: the brake owns the Down arrow.
+            HoldUp(mapper, 20);
+            Report(mapper, 0, 0);
+            Assert.IsTrue(KeyDown(VK_DOWN));
+
+            // Reverse into the brake's own direction while it is still pulsing. With the
+            // normal (movement bind) output the brake silently hands the key over to the
+            // masked normal path; with arrow output the normal path presses S instead, so
+            // the arrow the brake owns has to be released rather than just disowned.
+            for (int i = 0; i < 40; i++) Report(mapper, 0, -FULL);
+            Assert.IsTrue(KeyDown(VK_S), "Reversing into the brake direction must press the normal Down bind.");
+            Assert.IsFalse(KeyDown(VK_DOWN), "The handed-off arrow must not stay held once the normal bind takes over.");
+
+            for (int i = 0; i < 40; i++) Report(mapper, 0, 0);
+            Assert.IsFalse(KeyDown(VK_DOWN), "The Down arrow must not be left stuck after the stick recentres.");
+        }
     }
 }
