@@ -42,6 +42,13 @@
     <None Remove="libs\x86\**" Condition="'$(Platform)' != 'x86'" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Lets the unit test project call a small number of internal test
+         hooks (e.g. Mapper.AcquireSharedMouseButton/ReleaseSharedMouseButton)
+         directly instead of widening them to public. -->
+    <InternalsVisibleTo Include="DS4MapperUnitTests" />
+  </ItemGroup>
+
   <!-- Apparently the None tags are needed as well as the Resource tags.
        Without the None, app slowdown occurs for me. Why?!!! -->
   <ItemGroup>
