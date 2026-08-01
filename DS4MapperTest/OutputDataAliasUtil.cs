@@ -432,10 +432,10 @@ namespace DS4MapperTest
                     result = "RMB";
                     break;
                 case MouseButtonCodes.MOUSE_XBUTTON1:
-                    result = "XButton1";
+                    result = "Mouse 4";
                     break;
                 case MouseButtonCodes.MOUSE_XBUTTON2:
-                    result = "XButton2";
+                    result = "Mouse 5";
                     break;
                 default:
                     break;

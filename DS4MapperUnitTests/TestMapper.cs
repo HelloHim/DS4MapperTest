@@ -45,6 +45,12 @@ namespace DS4MapperUnitTests
         public static Dictionary<uint, int> KeyReferenceCountDict => keyReferenceCountDict;
         public static Dictionary<int, int> MouseButtonReferenceCountDict => mouseButtonReferenceCountDict;
 
+        public void AttachVirtualOutputForTest(VirtualKBMBase handler, VirtualKBMMapping mapping)
+        {
+            eventInputHandler = handler;
+            eventInputMapping = mapping;
+        }
+
         private const short STICK_MAX = 30000;
         private const short STICK_MIN = -30000;
 
