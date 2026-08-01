@@ -20,19 +20,15 @@ namespace DS4MapperTest.PhysicalMouse
 
     public static class PhysicalMouseSettingsItems
     {
-        public static List<PhysicalMouseSettingsItem> Create(IEnumerable<PhysicalMouseDevice> devices,
-            string savedStableId)
+        public static List<PhysicalMouseSettingsItem> Create(
+            IEnumerable<PhysicalMouseDevice> devices, string savedStableId)
         {
             List<PhysicalMouseDevice> usable = devices.Where(d => !d.IsLikelyVirtual).ToList();
-            Dictionary<string, int> names = usable.GroupBy(d => d.FriendlyName)
-                .ToDictionary(g => g.Key, g => g.Count());
             List<PhysicalMouseSettingsItem> items = usable.Select((d, index) =>
             {
-                string label = d.FriendlyName;
-                if (names[d.FriendlyName] > 1)
-                    label += d.HasVendorProductId
-                        ? $" — VID {d.VendorId:X4}, PID {d.ProductId:X4}"
-                        : $" — device {index + 1}";
+                string label = d.HasVendorProductId
+                    ? $"{d.FriendlyName} - VID {d.VendorId:X4}, PID {d.ProductId:X4}"
+                    : $"{d.FriendlyName} - device {index + 1}";
                 return new PhysicalMouseSettingsItem(d.StableId, label, true);
             }).ToList();
 
@@ -40,8 +36,9 @@ namespace DS4MapperTest.PhysicalMouse
                 string.Equals(i.StableId, savedStableId, StringComparison.OrdinalIgnoreCase)))
             {
                 items.Add(new PhysicalMouseSettingsItem(savedStableId,
-                    "Saved physical mouse — unavailable", false));
+                    "Saved physical mouse - unavailable", false));
             }
+
             return items;
         }
     }
