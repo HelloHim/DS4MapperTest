@@ -93,5 +93,20 @@ namespace DS4MapperUnitTests
 
             Assert.AreEqual("Razer Viper 8K Hz", result);
         }
+
+        [TestMethod]
+        public void SteamControllerPuckInterfacesAreLabelledByControllerSlot()
+        {
+            var devices = new List<PhysicalMouseDevice>
+            {
+                new PhysicalMouseDevice(@"\\?\HID#VID_28DE&PID_1304&MI_02#slot-one", "Steam Controller Puck", 0x28DE, 0x1304, true, false),
+                new PhysicalMouseDevice(@"\\?\HID#VID_28DE&PID_1304&REV_0002&MI_05#slot-four", "Steam Controller Puck", 0x28DE, 0x1304, true, false),
+            };
+
+            List<PhysicalMouseSettingsItem> items = PhysicalMouseSettingsItems.Create(devices, string.Empty);
+
+            Assert.AreEqual("Steam Controller Puck - controller slot 1 - VID 28DE, PID 1304", items[0].DisplayName);
+            Assert.AreEqual("Steam Controller Puck - controller slot 4 - VID 28DE, PID 1304", items[1].DisplayName);
+        }
     }
 }
