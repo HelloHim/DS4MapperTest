@@ -849,13 +849,16 @@
                                             </StackPanel>
                                             <CheckBox x:Name="physicalMouseEnabledCheckBox" Grid.Column="1"
                                                       Content="Enable Physical Mouse Forwarding"
-                                                      Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                                                      Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"
+                                                      Checked="PhysicalMouseEnabledCheckBox_Changed"
+                                                      Unchecked="PhysicalMouseEnabledCheckBox_Changed"/>
                                         </Grid>
                                         <TextBlock Text="Physical Mouse" Style="{StaticResource OtherSettingLabel}" Margin="0,18,0,4"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <ComboBox x:Name="physicalMouseComboBox" MinWidth="260" Style="{StaticResource JsmccComboBoxStyle}"
                                                       DisplayMemberPath="DisplayName" SelectedValuePath="StableId"
+                                                      SelectionChanged="PhysicalMouseComboBox_SelectionChanged"
                                                       ToolTip="{Binding SelectedValue, ElementName=physicalMouseComboBox}"/>
                                             <Button Grid.Column="1" Content="Refresh" Click="RefreshPhysicalMiceButton_Click"
                                                     Style="{StaticResource JsmccButtonStyle}" Margin="8,0,0,0"/>
@@ -870,9 +873,9 @@
                                         <TextBlock Text="The physical mouse will still send its normal Windows input while forwarding is enabled. Suppression is not currently implemented."
                                                    Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,12,0,0"/>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-                                            <Button Content="Discard" Click="DiscardPhysicalMouseSettingsButton_Click" Style="{StaticResource JsmccDangerButtonStyle}"/>
+                                            <Button x:Name="discardPhysicalMouseSettingsButton" Content="Discard" Click="DiscardPhysicalMouseSettingsButton_Click" Style="{StaticResource JsmccDangerButtonStyle}" IsEnabled="False"/>
                                             <Button Content="Reset to default" Click="ResetPhysicalMouseSettingsButton_Click" Style="{StaticResource JsmccButtonStyle}" Margin="8,0,0,0"/>
-                                            <Button Content="Apply" Click="ApplyPhysicalMouseSettingsButton_Click" Style="{StaticResource JsmccPrimaryButtonStyle}" Margin="8,0,0,0"/>
+                                            <Button x:Name="applyPhysicalMouseSettingsButton" Content="Apply" Click="ApplyPhysicalMouseSettingsButton_Click" Style="{StaticResource JsmccPrimaryButtonStyle}" Margin="8,0,0,0" IsEnabled="False"/>
                                         </StackPanel>
                                     </StackPanel>
                                                 </Border>
