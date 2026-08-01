@@ -754,13 +754,22 @@ namespace DS4MapperTest.StickActions
             else if (touchesPulse)
             {
                 // Reverse into brake direction: hand the key over to the normal masked path
-                // without an intervening release, so it stays continuously held.
+                // without an intervening release, so it stays continuously held. That silent
+                // hand-off is only correct when the pulse was driving the action's own
+                // direction binding, i.e. the very same AxisDirButton the normal path is
+                // about to press. With arrow-key output the pulse owns a different key from
+                // the movement bind, so nothing downstream ever takes ownership of it and it
+                // must be released explicitly or it stays held indefinitely.
                 for (int i = 0; i < CardinalComponents.Length; i++)
                 {
                     StickPadAction.DpadDirections c = CardinalComponents[i];
                     if (Has(rawCurrentDir, c) && Has(pulseOwnedComponents, c))
                     {
                         pulseOwnedComponents &= ~c;
+                        if (pulseUsesArrowKeys)
+                        {
+                            MarkPulseForRelease(c);
+                        }
                     }
                 }
                 if (pulseOwnedComponents == StickPadAction.DpadDirections.Centered)
