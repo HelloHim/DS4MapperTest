@@ -16,6 +16,8 @@ namespace DS4MapperTest.PhysicalMouse
         SelectedDeviceVirtual,
         /// <summary>Capture thread/window failed to initialise.</summary>
         RegistrationFailed,
+        /// <summary>Capture is running, but the saved mouse is unplugged.</summary>
+        WaitingForSelectedDevice,
         /// <summary>Running normally. The configured device may or may not currently be plugged in.</summary>
         Capturing,
     }
@@ -34,6 +36,7 @@ namespace DS4MapperTest.PhysicalMouse
     public sealed class PhysicalMouseService : IDisposable
     {
         public PhysicalMouseServiceStatus Status { get; private set; } = PhysicalMouseServiceStatus.Disabled;
+        public event EventHandler StatusChanged;
 
         private readonly RawMouseCaptureDevice capture = new RawMouseCaptureDevice();
         private readonly PhysicalMouseForwarder forwarder;
@@ -41,6 +44,8 @@ namespace DS4MapperTest.PhysicalMouse
         public PhysicalMouseService()
         {
             forwarder = new PhysicalMouseForwarder(capture);
+            capture.SelectedDeviceArrived += Capture_SelectedDeviceArrived;
+            capture.SelectedDeviceRemoved += Capture_SelectedDeviceRemoved;
         }
 
         public bool DiagnosticLoggingEnabled
@@ -63,19 +68,19 @@ namespace DS4MapperTest.PhysicalMouse
 
             if (!enabled)
             {
-                Status = PhysicalMouseServiceStatus.Disabled;
+                SetStatus(PhysicalMouseServiceStatus.Disabled);
                 return;
             }
 
             if (string.IsNullOrEmpty(stableDeviceId))
             {
-                Status = PhysicalMouseServiceStatus.NoDeviceSelected;
+                SetStatus(PhysicalMouseServiceStatus.NoDeviceSelected);
                 return;
             }
 
             if (LooksLikeVirtualDevice(stableDeviceId))
             {
-                Status = PhysicalMouseServiceStatus.SelectedDeviceVirtual;
+                SetStatus(PhysicalMouseServiceStatus.SelectedDeviceVirtual);
                 System.Diagnostics.Debug.WriteLine(
                     $"[PhysicalMouseService] refusing to capture '{stableDeviceId}': " +
                     "resolves to a known virtual output device");
@@ -88,7 +93,9 @@ namespace DS4MapperTest.PhysicalMouse
             forwarder.AttachOutput(handler, mapping);
 
             bool started = capture.Start(stableDeviceId);
-            Status = started ? PhysicalMouseServiceStatus.Capturing : PhysicalMouseServiceStatus.RegistrationFailed;
+            SetStatus(!started ? PhysicalMouseServiceStatus.RegistrationFailed
+                : capture.IsSelectedDeviceAvailable ? PhysicalMouseServiceStatus.Capturing
+                : PhysicalMouseServiceStatus.WaitingForSelectedDevice);
 
             if (!started)
             {
@@ -104,7 +111,7 @@ namespace DS4MapperTest.PhysicalMouse
         {
             capture.Stop();
             forwarder.DetachOutput();
-            Status = PhysicalMouseServiceStatus.Disabled;
+            SetStatus(PhysicalMouseServiceStatus.Disabled);
         }
 
         public void Dispose()
@@ -112,6 +119,23 @@ namespace DS4MapperTest.PhysicalMouse
             Stop();
             forwarder.Dispose();
             capture.Dispose();
+        }
+
+        public void Reconfigure(bool enabled, string stableDeviceId,
+            VirtualKBMBase handler, VirtualKBMMapping mapping) =>
+            Start(enabled, stableDeviceId, handler, mapping);
+
+        private void Capture_SelectedDeviceArrived(object sender, EventArgs e) =>
+            SetStatus(PhysicalMouseServiceStatus.Capturing);
+
+        private void Capture_SelectedDeviceRemoved(object sender, EventArgs e) =>
+            SetStatus(PhysicalMouseServiceStatus.WaitingForSelectedDevice);
+
+        private void SetStatus(PhysicalMouseServiceStatus status)
+        {
+            if (Status == status) return;
+            Status = status;
+            StatusChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private static bool LooksLikeVirtualDevice(string stableDeviceId)
