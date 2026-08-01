@@ -56,6 +56,7 @@ namespace DS4MapperTest
         public event EventHandler ServiceStarted;
         public event EventHandler PreServiceStop;
         public event EventHandler ServiceStopped;
+        public event EventHandler PhysicalMouseStatusChanged;
         //public event EventHandler HotplugFinished;
 
         private VirtualKBMBase virtualEventHandler;// = new FakerInputHandler();
@@ -126,6 +127,7 @@ namespace DS4MapperTest
         {
             _argParser = argParse;
             this.appGlobal = appGlobal;
+            physicalMouseService.StatusChanged += (_, _) => PhysicalMouseStatusChanged?.Invoke(this, EventArgs.Empty);
 
             mapperDict = new Dictionary<int, Mapper>();
             deviceReadersMap = new Dictionary<InputDeviceBase, DeviceReaderBase>();
@@ -189,6 +191,44 @@ namespace DS4MapperTest
         nuint serverHandle = 0;
         private readonly VIIPERLogCallbackDelegate _logCb;
         private readonly Xbox360RumbleCallbackDelegate _rumbleCb;
+
+        public bool ApplyPhysicalMouseSettings(bool enabled, string stableDeviceId, out string validationMessage)
+        {
+            validationMessage = null;
+            if (enabled && string.IsNullOrEmpty(stableDeviceId))
+            {
+                validationMessage = "Select a physical mouse before enabling forwarding.";
+                return false;
+            }
+
+            bool isVirtual = false;
+            try
+            {
+                isVirtual = enabled && Util.CheckIfVirtualDevice(stableDeviceId);
+            }
+            catch
+            {
+                // The service repeats this best-effort guard. A lookup
+                // failure must not destabilise controller/gyro output.
+            }
+            if (isVirtual)
+            {
+                validationMessage = "The selected device is virtual and cannot be captured.";
+                return false;
+            }
+
+            appGlobal.appSettings.PhysicalMouseForwardingEnabled = enabled;
+            appGlobal.appSettings.SelectedPhysicalMouseId = stableDeviceId ?? string.Empty;
+            appGlobal.SaveAppSettings();
+
+            if (isRunning)
+            {
+                physicalMouseService.Reconfigure(enabled, stableDeviceId,
+                    virtualEventHandler, eventInputMapping);
+            }
+            return true;
+        }
+
         public void Start()
         {
             if (isRunning || changingService) return;
