@@ -116,7 +116,10 @@ namespace DS4MapperTest.PhysicalMouse
         // GetRawInputDeviceInfo has been observed to return the NT-namespace
         // form (\??\...) rather than the Win32 device-interface form
         // (\\?\...) that SetupAPI/CM_* functions expect.
-        internal static string NormalizeDevicePath(string devicePath)
+        // Public: pure string normalisation, no native calls - also used
+        // directly by RawMouseCaptureDevice's device-resolution logic and
+        // covered by DS4MapperUnitTests.
+        public static string NormalizeDevicePath(string devicePath)
         {
             if (devicePath.StartsWith(@"\??\", StringComparison.Ordinal))
             {

@@ -14,6 +14,13 @@ namespace DS4MapperTest
         private int configVersion = AppGlobalData.CONFIG_VERSION;
         private string themeMode = ThemeService.DEFAULT_THEME_MODE;
 
+        // Phase-2 physical-mouse forwarding. Disabled by default; phase 3's
+        // device-picker UI will read/write these same two properties, so the
+        // stored shape shouldn't need to change - see
+        // DS4MapperTest.PhysicalMouse.PhysicalMouseService.
+        private bool physicalMouseForwardingEnabled = false;
+        private string selectedPhysicalMouseId = string.Empty;
+
         public int ConfigVersion
         {
             get => configVersion;
@@ -24,6 +31,22 @@ namespace DS4MapperTest
         {
             get => themeMode;
             set => themeMode = value;
+        }
+
+        public bool PhysicalMouseForwardingEnabled
+        {
+            get => physicalMouseForwardingEnabled;
+            set => physicalMouseForwardingEnabled = value;
+        }
+
+        /// <summary>
+        /// Stable Raw Input device path (PhysicalMouseDevice.StableId), not a
+        /// transient hDevice. Empty/null means no device configured.
+        /// </summary>
+        public string SelectedPhysicalMouseId
+        {
+            get => selectedPhysicalMouseId;
+            set => selectedPhysicalMouseId = value;
         }
 
         public AppSettingsStore()
@@ -103,6 +126,18 @@ namespace DS4MapperTest
         {
             get => settings.ThemeMode;
             set => settings.ThemeMode = value;
+        }
+
+        public bool PhysicalMouseForwardingEnabled
+        {
+            get => settings.PhysicalMouseForwardingEnabled;
+            set => settings.PhysicalMouseForwardingEnabled = value;
+        }
+
+        public string SelectedPhysicalMouseId
+        {
+            get => settings.SelectedPhysicalMouseId;
+            set => settings.SelectedPhysicalMouseId = value;
         }
 
         public AppSettingsSerializer(AppSettingsStore appStore)
