@@ -272,6 +272,11 @@ namespace DS4MapperTest
         {
             if (updatingPhysicalMouseSettings) return;
             stagedPhysicalMouseId = physicalMouseComboBox.SelectedValue as string ?? string.Empty;
+            if (!string.IsNullOrEmpty(stagedPhysicalMouseId) && !stagedPhysicalMouseForwardingEnabled)
+            {
+                stagedPhysicalMouseForwardingEnabled = true;
+                physicalMouseEnabledCheckBox.IsChecked = true;
+            }
             physicalMouseValidationText.Text = string.Empty;
             UpdatePhysicalMouseSettingsButtons();
         }
