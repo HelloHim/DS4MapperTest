@@ -856,7 +856,7 @@
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <ComboBox x:Name="physicalMouseComboBox" MinWidth="260" Style="{StaticResource JsmccComboBoxStyle}"
                                                       DisplayMemberPath="DisplayName" SelectedValuePath="StableId"
-                                                      ToolTip="The stable device identifier is retained when the mouse is unavailable."/>
+                                                      ToolTip="{Binding SelectedValue, ElementName=physicalMouseComboBox}"/>
                                             <Button Grid.Column="1" Content="Refresh" Click="RefreshPhysicalMiceButton_Click"
                                                     Style="{StaticResource JsmccButtonStyle}" Margin="8,0,0,0"/>
                                         </Grid>
