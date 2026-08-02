@@ -1561,6 +1561,135 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        // Resolves the JoypadActionCodes a binding corresponds to, via the DisplayName/
+        // BindingName convention ActionTriggerItem and BindingItemsTest already share per
+        // device mapper (e.g. DS4Mapper's ActionTriggerItem("Cross", BtnSouth) lines up with
+        // a BindingItemsTest whose BindingName is "Cross"). Empty means no match, which
+        // callers treat as "mirroring unavailable for this button" rather than an error.
+        internal JoypadActionCodes FindTriggerCodeForBindingName(string bindingName)
+        {
+            if (string.IsNullOrEmpty(bindingName)) return JoypadActionCodes.Empty;
+
+            foreach (ActionTriggerItem item in mapper.ActionTriggerItems)
+            {
+                if (string.Equals(item.DisplayName, bindingName, StringComparison.Ordinal))
+                {
+                    return item.Code;
+                }
+            }
+
+            return JoypadActionCodes.Empty;
+        }
+
+        internal FaceButtonBindingItem FindBindingItemForTriggerCode(JoypadActionCodes code)
+        {
+            if (code == JoypadActionCodes.Empty) return null;
+
+            ActionTriggerItem triggerItem = mapper.ActionTriggerItems
+                .FirstOrDefault(item => item.Code == code);
+            if (triggerItem == null) return null;
+
+            return AllFaceButtonBindingItems()
+                .FirstOrDefault(item => string.Equals(item.BindingName, triggerItem.DisplayName, StringComparison.Ordinal));
+        }
+
+        private IEnumerable<FaceButtonBindingItem> AllFaceButtonBindingItems()
+        {
+            return faceButtonBindings
+                .Concat(bumperButtonBindings)
+                .Concat(centerButtonBindings)
+                .Concat(paddleButtonBindings)
+                .Concat(leftStickClickBinding)
+                .Concat(rightStickClickBinding)
+                .Concat(extraButtonBindings)
+                .Concat(touchpadButtonBindings);
+        }
+
+        // Full JSM-style mirroring for Sim Press: writing the pairing on one button
+        // auto-registers the same combined output and window on the trigger button too, so
+        // pressing either one first produces the same result. Called from the Sim Press
+        // trigger/time/output setters on FaceButtonFuncItem.
+        internal void ApplySimPressMirror(FaceButtonBindingItem sourceItem, ActionUtil.SimPressFunc sourceFunc)
+        {
+            if (sourceItem == null || sourceFunc == null) return;
+
+            JoypadActionCodes sourceCode = FindTriggerCodeForBindingName(sourceItem.BindingName);
+            JoypadActionCodes targetCode = sourceFunc.TriggerButton;
+            if (targetCode == JoypadActionCodes.Empty || sourceCode == JoypadActionCodes.Empty ||
+                targetCode == sourceCode)
+            {
+                return;
+            }
+
+            FaceButtonBindingItem targetItem = FindBindingItemForTriggerCode(targetCode);
+            if (targetItem == null || targetItem == sourceItem) return;
+
+            ButtonAction targetAction = targetItem.EnsureEditableHostButtonAction(FaceBindingFuncKind.SimPress);
+            if (targetAction == null) return;
+
+            ActionUtil.SimPressFunc targetFunc = targetAction.ActionFuncs
+                .OfType<ActionUtil.SimPressFunc>().FirstOrDefault();
+            bool isNewFunc = targetFunc == null;
+            if (isNewFunc)
+            {
+                targetFunc = new ActionUtil.SimPressFunc();
+            }
+
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                targetAction.Release(mapper, ignoreReleaseActions: true);
+
+                if (isNewFunc)
+                {
+                    targetAction.ActionFuncs.Add(targetFunc);
+                }
+
+                targetFunc.TriggerButton = sourceCode;
+                targetFunc.SimPressTimeMs = sourceFunc.SimPressTimeMs;
+                targetFunc.OutputActions.Clear();
+                foreach (OutputActionData data in sourceFunc.OutputActions)
+                {
+                    targetFunc.OutputActions.Add(new OutputActionData(data));
+                }
+
+                FaceButtonBindingItem.MarkFunctionsChanged(targetAction);
+            });
+
+            targetItem.RefreshFunctions();
+        }
+
+        // Removes a previously-mirrored Sim Press func from the old trigger button when the
+        // source button's trigger changes or is cleared - but only if that button's Sim
+        // Press still points back at the source, so a target the user has since repointed
+        // elsewhere independently is left alone.
+        internal void RemoveSimPressMirror(FaceButtonBindingItem sourceItem, JoypadActionCodes oldTriggerCode)
+        {
+            if (sourceItem == null || oldTriggerCode == JoypadActionCodes.Empty) return;
+
+            JoypadActionCodes sourceCode = FindTriggerCodeForBindingName(sourceItem.BindingName);
+            if (sourceCode == JoypadActionCodes.Empty) return;
+
+            FaceButtonBindingItem targetItem = FindBindingItemForTriggerCode(oldTriggerCode);
+            if (targetItem == null || targetItem == sourceItem) return;
+
+            ButtonAction targetAction = targetItem.MappedAction as ButtonAction;
+            ActionUtil.SimPressFunc targetFunc = targetAction?.ActionFuncs
+                .OfType<ActionUtil.SimPressFunc>().FirstOrDefault();
+            if (targetFunc == null || targetFunc.TriggerButton != sourceCode) return;
+
+            int index = targetAction.ActionFuncs.IndexOf(targetFunc);
+            if (index < 0) return;
+
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                targetAction.Release(mapper, ignoreReleaseActions: true);
+                targetAction.ActionFuncs.RemoveAt(index);
+                FaceButtonBindingItem.MarkFunctionsChanged(targetAction);
+            });
+
+            targetItem.RefreshFunctions();
+        }
+
         internal ButtonMapAction GetCurrentAlwaysOnAction()
         {
             ActionSet editSet = actionSetItems[selectedActionSetIndex].Set;
