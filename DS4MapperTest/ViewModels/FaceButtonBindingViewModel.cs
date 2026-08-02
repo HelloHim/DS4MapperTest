@@ -16,6 +16,7 @@ namespace DS4MapperTest.ViewModels
         Double,
         Distance,
         Chorded,
+        SimPress,
         Start,
         Release,
     }
