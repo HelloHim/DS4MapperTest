@@ -53,6 +53,32 @@ namespace DS4MapperTest.JoyConLibrary
             rumbleReportBuffer = new byte[device.RumbleReportLen];
         }
 
+        // Shift the calibration circle to the true rest position reported by the
+        // stick and reduce the range by the offset, rather than only pushing out
+        // the far side while leaving the assumed mid value untouched.
+        internal static bool AdjustStickAxisCalibration(ref JoyConDevice.StickAxisData axisData, int axisValue)
+        {
+            bool calibUpdated = false;
+            if (axisValue > axisData.mid)
+            {
+                uint diff = (uint)(axisValue - axisData.mid);
+                axisData.mid = (ushort)axisValue;
+                axisData.min = (ushort)(axisData.min + diff + (diff / 2));
+                axisData.max = (ushort)(axisData.max + diff - (diff / 2));
+                calibUpdated = true;
+            }
+            else if (axisValue < axisData.mid)
+            {
+                uint diff = (uint)(axisData.mid - axisValue);
+                axisData.mid = (ushort)axisValue;
+                axisData.min = (ushort)(axisData.min - diff + (diff / 2));
+                axisData.max = (ushort)(axisData.max - diff - (diff / 2));
+                calibUpdated = true;
+            }
+
+            return calibUpdated;
+        }
+
         private void PrepareDevice()
         {
             device.SetOperational();
@@ -240,47 +266,8 @@ namespace DS4MapperTest.JoyConLibrary
                             if (firstReport && !device.foundLeftStickCalib)
                             {
                                 bool calibUpdated = false;
-                                if (tempAxisX > device.leftStickXData.mid)
-                                {
-                                    uint diff = (uint)(tempAxisX - device.leftStickXData.mid);
-                                    //device.leftStickXData.min = (ushort)(device.leftStickXData.min + diff);
-
-                                    device.leftStickXData.mid = (ushort)(tempAxisX);
-                                    device.leftStickXData.min = (ushort)(device.leftStickXData.min + diff + (diff / 2));
-                                    device.leftStickXData.max = (ushort)(device.leftStickXData.max + diff - (diff / 2));
-                                    calibUpdated = true;
-                                }
-                                else if (tempAxisX < device.leftStickXData.mid)
-                                {
-                                    uint diff = (uint)(device.leftStickXData.mid - tempAxisX);
-                                    //device.leftStickXData.max = (ushort)(device.leftStickXData.max - diff);
-
-                                    device.leftStickXData.mid = (ushort)(tempAxisX);
-                                    device.leftStickXData.min = (ushort)(device.leftStickXData.min - diff + (diff / 2));
-                                    device.leftStickXData.max = (ushort)(device.leftStickXData.max - diff - (diff / 2));
-                                    calibUpdated = true;
-                                }
-
-                                if (tempAxisY > device.leftStickYData.mid)
-                                {
-                                    uint diff = (uint)(tempAxisY - device.leftStickYData.mid);
-                                    //device.leftStickYData.min = (ushort)(device.leftStickYData.min + diff);
-
-                                    device.leftStickYData.mid = (ushort)tempAxisY;
-                                    device.leftStickYData.min = (ushort)(device.leftStickYData.min + diff + (diff / 2));
-                                    device.leftStickYData.max = (ushort)(device.leftStickYData.max + diff - (diff / 2));
-                                    calibUpdated = true;
-                                }
-                                else if (tempAxisY < device.leftStickYData.mid)
-                                {
-                                    uint diff = (uint)(device.leftStickYData.mid - tempAxisY);
-                                    //device.leftStickYData.max = (ushort)(device.leftStickYData.max - diff);
-
-                                    device.leftStickYData.mid = (ushort)tempAxisY;
-                                    device.leftStickYData.min = (ushort)(device.leftStickYData.min - diff + (diff / 2));
-                                    device.leftStickYData.max = (ushort)(device.leftStickYData.max - diff - (diff / 2));
-                                    calibUpdated = true;
-                                }
+                                calibUpdated |= AdjustStickAxisCalibration(ref device.leftStickXData, tempAxisX);
+                                calibUpdated |= AdjustStickAxisCalibration(ref device.leftStickYData, tempAxisY);
 
                                 if (calibUpdated)
                                 {
@@ -325,47 +312,8 @@ namespace DS4MapperTest.JoyConLibrary
                             if (firstReport && !device.foundRightStickCalib)
                             {
                                 bool calibUpdated = false;
-                                if (tempAxisX > device.rightStickXData.mid)
-                                {
-                                    uint diff = (uint)(tempAxisX - device.rightStickXData.mid);
-                                    //device.rightStickXData.min = (ushort)(device.rightStickXData.min + diff);
-
-                                    device.rightStickXData.mid = (ushort)tempAxisX;
-                                    device.rightStickXData.min = (ushort)(device.rightStickXData.min + diff + (diff / 2));
-                                    device.rightStickXData.max = (ushort)(device.rightStickXData.max + diff - (diff / 2));
-                                    calibUpdated = true;
-                                }
-                                else if (tempAxisX < device.rightStickXData.mid)
-                                {
-                                    uint diff = (uint)(device.rightStickXData.mid - tempAxisX);
-                                    //device.rightStickXData.max = (ushort)(device.rightStickXData.max - diff);
-
-                                    device.rightStickXData.mid = (ushort)tempAxisX;
-                                    device.rightStickXData.min = (ushort)(device.rightStickXData.min - diff + (diff / 2));
-                                    device.rightStickXData.max = (ushort)(device.rightStickXData.max - diff - (diff / 2));
-                                    calibUpdated = true;
-                                }
-
-                                if (tempAxisY > device.rightStickYData.mid)
-                                {
-                                    uint diff = (uint)(tempAxisY - device.rightStickYData.mid);
-                                    //device.rightStickYData.min = (ushort)(device.rightStickYData.min + diff);
-
-                                    device.rightStickYData.mid = (ushort)tempAxisY;
-                                    device.rightStickYData.min = (ushort)(device.rightStickYData.min + diff + (diff / 2));
-                                    device.rightStickYData.max = (ushort)(device.rightStickYData.max + diff - (diff / 2));
-                                    calibUpdated = true;
-                                }
-                                else if (tempAxisY < device.rightStickYData.mid)
-                                {
-                                    uint diff = (uint)(device.rightStickYData.mid - tempAxisY);
-                                    //device.rightStickYData.max = (ushort)(device.rightStickYData.max - diff);
-
-                                    device.rightStickYData.mid = (ushort)tempAxisY;
-                                    device.rightStickYData.min = (ushort)(device.rightStickYData.min - diff + (diff / 2));
-                                    device.rightStickYData.max = (ushort)(device.rightStickYData.max - diff - (diff / 2));
-                                    calibUpdated = true;
-                                }
+                                calibUpdated |= AdjustStickAxisCalibration(ref device.rightStickXData, tempAxisX);
+                                calibUpdated |= AdjustStickAxisCalibration(ref device.rightStickYData, tempAxisY);
 
                                 if (calibUpdated)
                                 {
