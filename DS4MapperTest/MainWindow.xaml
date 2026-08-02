@@ -49,7 +49,6 @@
             <Setter Property="CornerRadius" Value="{StaticResource JsmccButtonRadius}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,5"/>
-            <Setter Property="Margin" Value="12,0,0,0"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
@@ -169,126 +168,161 @@
                         BorderThickness="0,0,0,1"
                         Padding="28,13">
                     <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                        <WrapPanel Grid.Column="0"
-                                   Orientation="Horizontal"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,16,0">
-                            <Button x:Name="navHamburgerButton"
-                                    Content="&#9776;"
-                                    ToolTip="Menu"
-                                    Click="NavHamburgerButton_Click"
-                                    Style="{StaticResource JsmccOutputButtonStyle}"
-                                    Width="46"
-                                    Height="40"
-                                    Padding="0"
-                                    FontSize="20"
-                                    Visibility="Collapsed"
-                                    Margin="0,4,16,4"/>
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,4,20,4">
-                                <TextBlock Text="Device"
-                                           Style="{StaticResource JsmccLabelText}"
-                                           Margin="0,0,10,0"/>
-
-                                <ComboBox x:Name="deviceComboBox"
-                                          Width="280"
-                                          ItemTemplate="{StaticResource DeviceComboBoxItemTemplate}"
-                                          Style="{StaticResource JsmccComboBoxStyle}"
-                                          SelectionChanged="DeviceComboBox_SelectionChanged"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,4,0,4">
-                                <TextBlock Text="Profile"
-                                           Style="{StaticResource JsmccLabelText}"
-                                           Margin="0,0,10,0"/>
-
-                                <ComboBox x:Name="profileComboBox"
-                                          Width="230"
-                                          DisplayMemberPath="Name"
-                                          Style="{StaticResource JsmccComboBoxStyle}"
-                                          SelectionChanged="ProfileComboBox_SelectionChanged"/>
-                            </StackPanel>
-
-                            <Button Content="Manage"
-                                    Click="ManageProfilesBtn_Click"
-                                    Margin="8,4,0,4"
-                                    Style="{StaticResource JsmccButtonStyle}"/>
-
-                            <TextBlock x:Name="noDeviceHint"
-                                       Text="connect a controller to begin"
+                            <WrapPanel Grid.Column="0"
+                                       Orientation="Horizontal"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource JsmccTextMutedBrush}"
-                                       FontSize="12"
-                                       FontStyle="Italic"
-                                       Margin="14,4,0,4"
-                                       Visibility="Collapsed"/>
-                        </WrapPanel>
+                                       Margin="0,0,16,0">
+                                <Button x:Name="navHamburgerButton"
+                                        Content="&#9776;"
+                                        ToolTip="Menu"
+                                        Click="NavHamburgerButton_Click"
+                                        Style="{StaticResource JsmccOutputButtonStyle}"
+                                        Width="46"
+                                        Height="40"
+                                        Padding="0"
+                                        FontSize="20"
+                                        Visibility="Collapsed"
+                                        Margin="0,4,12,4"/>
 
-                        <StackPanel Grid.Column="1"
-                                    Orientation="Horizontal"
-                                    VerticalAlignment="Center">
-                            <TextBlock x:Name="serviceStatusText"
-                                       Text="Stopped"
-                                       Style="{StaticResource JsmccMutedText}"
-                                       FontSize="12"
-                                       VerticalAlignment="Center"/>
+                                <StackPanel Orientation="Horizontal"
+                                            VerticalAlignment="Center"
+                                            Margin="0,4,12,4">
+                                    <TextBlock Text="Device"
+                                               Style="{StaticResource JsmccLabelText}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,10,0"/>
 
-                            <Button x:Name="serviceToggleButton"
-                                    Content="Start"
-                                    Click="ServiceToggleButton_Click"
-                                    Margin="8,0,0,0"
-                                    MinWidth="64"
-                                    Style="{StaticResource JsmccButtonStyle}"/>
+                                    <ComboBox x:Name="deviceComboBox"
+                                              Width="220"
+                                              ItemTemplate="{StaticResource DeviceComboBoxItemTemplate}"
+                                              Style="{StaticResource JsmccComboBoxStyle}"
+                                              SelectionChanged="DeviceComboBox_SelectionChanged"/>
+                                </StackPanel>
 
-                            <Button x:Name="gyroCalibrateButton"
-                                    Content="Calibrate Gyro"
-                                    Click="GyroCalibrateButton_Click"
-                                    Margin="8,0,0,0"
-                                    Style="{StaticResource JsmccButtonStyle}"/>
+                                <StackPanel Orientation="Horizontal"
+                                            VerticalAlignment="Center"
+                                            Margin="0,4,12,4">
+                                    <TextBlock Text="Profile"
+                                               Style="{StaticResource JsmccLabelText}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,10,0"/>
 
-                            <TextBlock x:Name="gyroCalibrationStatusText"
-                                       Visibility="Collapsed"
-                                       Margin="8,0,0,0"
-                                       Style="{StaticResource JsmccMutedText}"
-                                       FontSize="12"
-                                       VerticalAlignment="Center"/>
+                                    <ComboBox x:Name="profileComboBox"
+                                              Width="180"
+                                              Style="{StaticResource JsmccComboBoxStyle}"
+                                              SelectionChanged="ProfileComboBox_SelectionChanged">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           VerticalAlignment="Center"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
 
-                            <Border x:Name="unsavedStatusPill"
-                                    Visibility="{Binding IsProfileDirty, Converter={StaticResource BoolToVis}}"
-                                    Style="{StaticResource SaveStatusPillWarningStyle}">
-                                <TextBlock Text="Unsaved changes"
-                                           Style="{StaticResource SaveStatusPillTextWarningStyle}"/>
-                            </Border>
+                                <Button Content="Manage"
+                                        Click="ManageProfilesBtn_Click"
+                                        Margin="0,4,12,4"
+                                        Style="{StaticResource JsmccButtonStyle}"/>
 
-                            <Border x:Name="saveStatusPill"
-                                    Visibility="Collapsed"
-                                    Style="{StaticResource SaveStatusPillSuccessStyle}">
-                                <TextBlock x:Name="saveStatusPillText"
-                                           Text="Saved &#x2713;"
-                                           Style="{StaticResource SaveStatusPillTextSuccessStyle}"/>
-                            </Border>
+                                <TextBlock x:Name="noDeviceHint"
+                                           Text="Connect a controller to begin"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource JsmccTextMutedBrush}"
+                                           FontSize="12"
+                                           FontStyle="Italic"
+                                           Margin="0,4,0,4"
+                                           Visibility="Collapsed"/>
+                            </WrapPanel>
 
-                            <Button x:Name="discardProfileChangesButton"
-                                    Content="Discard Changes"
-                                    Click="DiscardProfileChangesButton_Click"
-                                    IsEnabled="{Binding IsProfileDirty, TargetNullValue=False, FallbackValue=False}"
-                                    Margin="12,0,0,0"
-                                    Style="{StaticResource JsmccDangerButtonStyle}"/>
-
-                            <Button x:Name="saveProfileButton"
-                                    Content="Save Profile"
-                                    Click="SaveProfileButton_Click"
-                                    Margin="12,0,0,0"
-                                    Style="{StaticResource JsmccPrimaryButtonStyle}"/>
-
-                            <views:ThemeToggleControl Margin="12,0,0,0"
+                            <views:ThemeToggleControl Grid.Column="1"
                                                        VerticalAlignment="Center"/>
-                        </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <WrapPanel Grid.Column="0"
+                                       Orientation="Horizontal"
+                                       VerticalAlignment="Center">
+                                <TextBlock x:Name="serviceStatusText"
+                                           Text="Stopped"
+                                           Style="{StaticResource JsmccMutedText}"
+                                           FontSize="12"
+                                           VerticalAlignment="Center"
+                                           Margin="0,4,12,4"/>
+
+                                <Button x:Name="serviceToggleButton"
+                                        Content="Start"
+                                        Click="ServiceToggleButton_Click"
+                                        Margin="0,4,12,4"
+                                        MinWidth="64"
+                                        Style="{StaticResource JsmccButtonStyle}"/>
+
+                                <Button x:Name="gyroCalibrateButton"
+                                        Content="Calibrate Gyro"
+                                        Click="GyroCalibrateButton_Click"
+                                        Margin="0,4,12,4"
+                                        Style="{StaticResource JsmccButtonStyle}"/>
+
+                                <TextBlock x:Name="gyroCalibrationStatusText"
+                                           Visibility="Collapsed"
+                                           Margin="0,4,0,4"
+                                           Style="{StaticResource JsmccMutedText}"
+                                           FontSize="12"
+                                           VerticalAlignment="Center"/>
+                            </WrapPanel>
+
+                            <WrapPanel Grid.Column="2"
+                                       Orientation="Horizontal"
+                                       VerticalAlignment="Center">
+                                <Border x:Name="unsavedStatusPill"
+                                        Visibility="{Binding IsProfileDirty, Converter={StaticResource BoolToVis}}"
+                                        Margin="0,4,12,4"
+                                        Style="{StaticResource SaveStatusPillWarningStyle}">
+                                    <TextBlock Text="Unsaved changes"
+                                               Style="{StaticResource SaveStatusPillTextWarningStyle}"/>
+                                </Border>
+
+                                <Border x:Name="saveStatusPill"
+                                        Visibility="Collapsed"
+                                        Margin="0,4,12,4"
+                                        Style="{StaticResource SaveStatusPillSuccessStyle}">
+                                    <TextBlock x:Name="saveStatusPillText"
+                                               Text="Saved &#x2713;"
+                                               Style="{StaticResource SaveStatusPillTextSuccessStyle}"/>
+                                </Border>
+
+                                <Button x:Name="discardProfileChangesButton"
+                                        Content="Discard Changes"
+                                        Click="DiscardProfileChangesButton_Click"
+                                        IsEnabled="{Binding IsProfileDirty, TargetNullValue=False, FallbackValue=False}"
+                                        Margin="0,4,12,4"
+                                        Style="{StaticResource JsmccDangerButtonStyle}"/>
+
+                                <Button x:Name="saveProfileButton"
+                                        Content="Save Profile"
+                                        Click="SaveProfileButton_Click"
+                                        Margin="0,4,0,4"
+                                        Style="{StaticResource JsmccPrimaryButtonStyle}"/>
+                            </WrapPanel>
+                        </Grid>
                     </Grid>
                 </Border>
 
@@ -298,123 +332,129 @@
                         BorderBrush="{DynamicResource JsmccBorderBrush}"
                         BorderThickness="0,0,0,1"
                         Padding="28,8"
-                        Visibility="Collapsed">
+                        IsEnabled="False">
                     <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" Margin="0,4,0,4">
-                            <TextBlock Text="Action Set"
-                                       Style="{StaticResource JsmccLabelText}"
-                                       Margin="0,0,8,0"/>
+                        <StackPanel x:Name="actionSetGroup" Orientation="Horizontal" Margin="0,0,28,0">
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,4">
+                                <TextBlock Text="Action Set"
+                                           Style="{StaticResource JsmccLabelText}"
+                                           Width="66"
+                                           Margin="0,0,8,0"/>
 
-                            <ComboBox x:Name="actionSetComboBox"
-                                      Width="140"
-                                      DisplayMemberPath="DisplayName"
-                                      Style="{StaticResource JsmccComboBoxStyle}"
-                                      SelectionChanged="ActionSetComboBox_SelectionChanged"/>
+                                <ComboBox x:Name="actionSetComboBox"
+                                          Width="140"
+                                          DisplayMemberPath="DisplayName"
+                                          Style="{StaticResource JsmccComboBoxStyle}"
+                                          SelectionChanged="ActionSetComboBox_SelectionChanged"/>
+                            </StackPanel>
+
+                            <Button x:Name="addSetButton"
+                                    Content="+"
+                                    ToolTip="Add Action Set"
+                                    Click="AddSetBtn_Click"
+                                    Style="{StaticResource JsmccOutputButtonStyle}"
+                                    MinWidth="30"
+                                    Margin="6,4,0,4"/>
+                            <Button x:Name="renameSetButton"
+                                    Content="Rename"
+                                    ToolTip="Rename Action Set"
+                                    Click="RenameSetBtn_Click"
+                                    Style="{StaticResource JsmccOutputButtonStyle}"
+                                    Margin="6,4,0,4"/>
+                            <Button x:Name="removeSetButton"
+                                    Content="Remove"
+                                    ToolTip="Remove Action Set"
+                                    Click="RemoveSetBtn_Click"
+                                    Style="{StaticResource JsmccDangerButtonStyle}"
+                                    Padding="10,6"
+                                    MinHeight="30"
+                                    FontSize="12"
+                                    Margin="6,4,0,4"/>
+
+                            <TextBox x:Name="renameSetTextBox"
+                                     Width="140"
+                                     Visibility="Collapsed"
+                                     Style="{StaticResource JsmccTextBoxStyle}"
+                                     KeyDown="RenameSetTextBox_KeyDown"
+                                     Margin="0,4,0,4"/>
+                            <Button x:Name="confirmRenameSetButton"
+                                    Content="&#x2713;"
+                                    ToolTip="Save name"
+                                    Visibility="Collapsed"
+                                    Click="ConfirmRenameSetBtn_Click"
+                                    Style="{StaticResource JsmccOutputButtonStyle}"
+                                    MinWidth="30"
+                                    Margin="6,4,0,4"/>
+                            <Button x:Name="cancelRenameSetButton"
+                                    Content="&#x2715;"
+                                    ToolTip="Cancel"
+                                    Visibility="Collapsed"
+                                    Click="CancelRenameSetBtn_Click"
+                                    Style="{StaticResource JsmccOutputButtonStyle}"
+                                    MinWidth="30"
+                                    Margin="4,4,0,4"/>
                         </StackPanel>
 
-                        <Button x:Name="addSetButton"
-                                Content="+"
-                                ToolTip="Add Action Set"
-                                Click="AddSetBtn_Click"
-                                Style="{StaticResource JsmccOutputButtonStyle}"
-                                MinWidth="30"
-                                Margin="6,4,0,4"/>
-                        <Button x:Name="renameSetButton"
-                                Content="Rename"
-                                ToolTip="Rename Action Set"
-                                Click="RenameSetBtn_Click"
-                                Style="{StaticResource JsmccOutputButtonStyle}"
-                                Margin="6,4,0,4"/>
-                        <Button x:Name="removeSetButton"
-                                Content="Remove"
-                                ToolTip="Remove Action Set"
-                                Click="RemoveSetBtn_Click"
-                                Style="{StaticResource JsmccDangerButtonStyle}"
-                                Padding="10,6"
-                                MinHeight="30"
-                                FontSize="12"
-                                Margin="6,4,0,4"/>
+                        <StackPanel x:Name="actionLayerGroup" Orientation="Horizontal" Margin="0,0,0,0">
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,4">
+                                <TextBlock Text="Layer"
+                                           Style="{StaticResource JsmccLabelText}"
+                                           Width="66"
+                                           Margin="0,0,8,0"/>
 
-                        <TextBox x:Name="renameSetTextBox"
-                                 Width="140"
-                                 Visibility="Collapsed"
-                                 Style="{StaticResource JsmccTextBoxStyle}"
-                                 KeyDown="RenameSetTextBox_KeyDown"
-                                 Margin="0,4,0,4"/>
-                        <Button x:Name="confirmRenameSetButton"
-                                Content="&#x2713;"
-                                ToolTip="Save name"
-                                Visibility="Collapsed"
-                                Click="ConfirmRenameSetBtn_Click"
-                                Style="{StaticResource JsmccOutputButtonStyle}"
-                                MinWidth="30"
-                                Margin="6,4,0,4"/>
-                        <Button x:Name="cancelRenameSetButton"
-                                Content="&#x2715;"
-                                ToolTip="Cancel"
-                                Visibility="Collapsed"
-                                Click="CancelRenameSetBtn_Click"
-                                Style="{StaticResource JsmccOutputButtonStyle}"
-                                MinWidth="30"
-                                Margin="4,4,0,4"/>
+                                <ComboBox x:Name="actionLayerComboBox"
+                                          Width="140"
+                                          DisplayMemberPath="DisplayName"
+                                          Style="{StaticResource JsmccComboBoxStyle}"
+                                          SelectionChanged="ActionLayerComboBox_SelectionChanged"/>
+                            </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="28,4,0,4">
-                            <TextBlock Text="Layer"
-                                       Style="{StaticResource JsmccLabelText}"
-                                       Margin="0,0,8,0"/>
+                            <Button x:Name="addLayerButton"
+                                    Content="+"
+                                    ToolTip="Add Action Layer"
+                                    Click="AddLayerBtn_Click"
+                                    Style="{StaticResource JsmccOutputButtonStyle}"
+                                    MinWidth="30"
+                                    Margin="6,4,0,4"/>
+                            <Button x:Name="renameLayerButton"
+                                    Content="Rename"
+                                    ToolTip="Rename Action Layer"
+                                    Click="RenameLayerBtn_Click"
+                                    Style="{StaticResource JsmccOutputButtonStyle}"
+                                    Margin="6,4,0,4"/>
+                            <Button x:Name="removeLayerButton"
+                                    Content="Remove"
+                                    ToolTip="Remove Action Layer"
+                                    Click="RemoveLayerBtn_Click"
+                                    Style="{StaticResource JsmccDangerButtonStyle}"
+                                    Padding="10,6"
+                                    MinHeight="30"
+                                    FontSize="12"
+                                    Margin="6,4,0,4"/>
 
-                            <ComboBox x:Name="actionLayerComboBox"
-                                      Width="140"
-                                      DisplayMemberPath="DisplayName"
-                                      Style="{StaticResource JsmccComboBoxStyle}"
-                                      SelectionChanged="ActionLayerComboBox_SelectionChanged"/>
+                            <TextBox x:Name="renameLayerTextBox"
+                                     Width="140"
+                                     Visibility="Collapsed"
+                                     Style="{StaticResource JsmccTextBoxStyle}"
+                                     KeyDown="RenameLayerTextBox_KeyDown"
+                                     Margin="0,4,0,4"/>
+                            <Button x:Name="confirmRenameLayerButton"
+                                    Content="&#x2713;"
+                                    ToolTip="Save name"
+                                    Visibility="Collapsed"
+                                    Click="ConfirmRenameLayerBtn_Click"
+                                    Style="{StaticResource JsmccOutputButtonStyle}"
+                                    MinWidth="30"
+                                    Margin="6,4,0,4"/>
+                            <Button x:Name="cancelRenameLayerButton"
+                                    Content="&#x2715;"
+                                    ToolTip="Cancel"
+                                    Visibility="Collapsed"
+                                    Click="CancelRenameLayerBtn_Click"
+                                    Style="{StaticResource JsmccOutputButtonStyle}"
+                                    MinWidth="30"
+                                    Margin="4,4,0,4"/>
                         </StackPanel>
-
-                        <Button x:Name="addLayerButton"
-                                Content="+"
-                                ToolTip="Add Action Layer"
-                                Click="AddLayerBtn_Click"
-                                Style="{StaticResource JsmccOutputButtonStyle}"
-                                MinWidth="30"
-                                Margin="6,4,0,4"/>
-                        <Button x:Name="renameLayerButton"
-                                Content="Rename"
-                                ToolTip="Rename Action Layer"
-                                Click="RenameLayerBtn_Click"
-                                Style="{StaticResource JsmccOutputButtonStyle}"
-                                Margin="6,4,0,4"/>
-                        <Button x:Name="removeLayerButton"
-                                Content="Remove"
-                                ToolTip="Remove Action Layer"
-                                Click="RemoveLayerBtn_Click"
-                                Style="{StaticResource JsmccDangerButtonStyle}"
-                                Padding="10,6"
-                                MinHeight="30"
-                                FontSize="12"
-                                Margin="6,4,0,4"/>
-
-                        <TextBox x:Name="renameLayerTextBox"
-                                 Width="140"
-                                 Visibility="Collapsed"
-                                 Style="{StaticResource JsmccTextBoxStyle}"
-                                 KeyDown="RenameLayerTextBox_KeyDown"
-                                 Margin="0,4,0,4"/>
-                        <Button x:Name="confirmRenameLayerButton"
-                                Content="&#x2713;"
-                                ToolTip="Save name"
-                                Visibility="Collapsed"
-                                Click="ConfirmRenameLayerBtn_Click"
-                                Style="{StaticResource JsmccOutputButtonStyle}"
-                                MinWidth="30"
-                                Margin="6,4,0,4"/>
-                        <Button x:Name="cancelRenameLayerButton"
-                                Content="&#x2715;"
-                                ToolTip="Cancel"
-                                Visibility="Collapsed"
-                                Click="CancelRenameLayerBtn_Click"
-                                Style="{StaticResource JsmccOutputButtonStyle}"
-                                MinWidth="30"
-                                Margin="4,4,0,4"/>
                     </WrapPanel>
                 </Border>
 

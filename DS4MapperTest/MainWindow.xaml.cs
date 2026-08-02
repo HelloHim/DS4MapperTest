@@ -112,6 +112,7 @@ namespace DS4MapperTest
             LoadPhysicalMouseSettings();
             _ = RefreshPhysicalMouseListAsync();
             noDeviceHint.Visibility = Visibility.Visible;
+            actionContextRow.IsEnabled = false;
             gyroCalibrationStatusTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(100),
@@ -462,7 +463,7 @@ namespace DS4MapperTest
             if (!loaded)
             {
                 noDeviceHint.Visibility = Visibility.Visible;
-                actionContextRow.Visibility = Visibility.Collapsed;
+                actionContextRow.IsEnabled = false;
                 profileComboBox.ItemsSource = null;
                 profileListBox.ItemsSource = null;
                 actionSetComboBox.ItemsSource = null;
@@ -497,7 +498,7 @@ namespace DS4MapperTest
 
             currentDeviceItem = item;
             noDeviceHint.Visibility = Visibility.Collapsed;
-            actionContextRow.Visibility = Visibility.Visible;
+            actionContextRow.IsEnabled = true;
 
             RefreshDeviceCombo();
             RefreshProfileCombo();
