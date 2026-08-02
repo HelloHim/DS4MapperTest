@@ -207,6 +207,11 @@ namespace DS4MapperTest.SwitchProLibrary
         public int OutputReportLen { get => OUTPUT_REPORT_LEN; }
         public int RumbleReportLen { get => RUMBLE_REPORT_LEN; }
 
+        internal static double ResolveBaseElapsedReference(ConnectionType connectionType)
+        {
+            return connectionType == ConnectionType.USB ? USB_ELAPSED_REFERENCE : BT_ELAPSED_REFERENCE;
+        }
+
         private ushort[] leftStickCalib = new ushort[6];
         private ushort[] rightStickCalib = new ushort[6];
 
@@ -254,14 +259,7 @@ namespace DS4MapperTest.SwitchProLibrary
             //Console.WriteLine(compiledRumbleTabe[0]);
             //CalibrationData();
 
-            if (connectionType == ConnectionType.USB)
-            {
-                baseElapsedReference = USB_ELAPSED_REFERENCE;
-            }
-            else
-            {
-                baseElapsedReference = BT_ELAPSED_REFERENCE;
-            }
+            baseElapsedReference = ResolveBaseElapsedReference(connectionType);
 
             synced = true;
         }
