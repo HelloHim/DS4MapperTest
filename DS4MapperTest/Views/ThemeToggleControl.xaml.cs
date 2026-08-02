@@ -58,7 +58,7 @@ namespace DS4MapperTest.Views
                 : (Brush)FindResource("JsmccBorderBrush");
 
             SwitchThumb.HorizontalAlignment = isLight ? HorizontalAlignment.Right : HorizontalAlignment.Left;
-            SwitchThumb.Margin = isLight ? new Thickness(0, 0, 3, 0) : new Thickness(3, 0, 0, 0);
+            SwitchThumb.Margin = isLight ? new Thickness(0, 0, 2, 0) : new Thickness(2, 0, 0, 0);
             SwitchThumb.Stroke = isLight
                 ? (Brush)FindResource("JsmccAccentBrush")
                 : (Brush)FindResource("JsmccBorderBrush");
