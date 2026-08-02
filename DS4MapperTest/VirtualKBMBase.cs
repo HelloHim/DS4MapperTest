@@ -36,6 +36,15 @@ namespace DS4MapperTest
 
         public abstract void PerformMouseButtonPress(uint mouseButton);
         public abstract void PerformMouseButtonRelease(uint mouseButton);
+        public virtual void PerformMouseButtonPressAlt(uint mouseButton, int type)
+        {
+            PerformMouseButtonPress(mouseButton);
+        }
+
+        public virtual void PerformMouseButtonReleaseAlt(uint mouseButton, int type)
+        {
+            PerformMouseButtonRelease(mouseButton);
+        }
 
         public abstract void PerformKeyPress(uint key);
         public abstract void PerformKeyPressAlt(uint key);

@@ -137,6 +137,20 @@ namespace DS4MapperTest
             uint result = SendInput(1, tempInput, Marshal.SizeOf(tempInput[0]));
         }
 
+        public override void PerformMouseButtonPressAlt(uint mouseButton, int type)
+        {
+            INPUT[] tempInput = new INPUT[1];
+            ref INPUT temp = ref tempInput[0];
+            temp.Type = INPUT_MOUSE;
+            temp.Data.Mouse.ExtraInfo = IntPtr.Zero;
+            temp.Data.Mouse.Flags = mouseButton;
+            temp.Data.Mouse.MouseData = (uint)type;
+            temp.Data.Mouse.Time = 0;
+            temp.Data.Mouse.X = 0;
+            temp.Data.Mouse.Y = 0;
+            uint result = SendInput(1, tempInput, Marshal.SizeOf(tempInput[0]));
+        }
+
         public override void PerformMouseButtonRelease(uint mouseButton)
         {
             INPUT[] tempInput = new INPUT[1];
@@ -145,6 +159,20 @@ namespace DS4MapperTest
             temp.Data.Mouse.ExtraInfo = IntPtr.Zero;
             temp.Data.Mouse.Flags = mouseButton;
             temp.Data.Mouse.MouseData = 0;
+            temp.Data.Mouse.Time = 0;
+            temp.Data.Mouse.X = 0;
+            temp.Data.Mouse.Y = 0;
+            uint result = SendInput(1, tempInput, Marshal.SizeOf(tempInput[0]));
+        }
+
+        public override void PerformMouseButtonReleaseAlt(uint mouseButton, int type)
+        {
+            INPUT[] tempInput = new INPUT[1];
+            ref INPUT temp = ref tempInput[0];
+            temp.Type = INPUT_MOUSE;
+            temp.Data.Mouse.ExtraInfo = IntPtr.Zero;
+            temp.Data.Mouse.Flags = mouseButton;
+            temp.Data.Mouse.MouseData = (uint)type;
             temp.Data.Mouse.Time = 0;
             temp.Data.Mouse.X = 0;
             temp.Data.Mouse.Y = 0;
