@@ -603,7 +603,7 @@
                                 Style="{StaticResource JsmccPanelBorder}">
                             <StackPanel>
                                 <TextBlock Text="Other" Style="{StaticResource JsmccPageTitle}"/>
-                                <TextBlock Text="Configure output controller, vibration, and lightbar options."
+                                <TextBlock Text="Configure output controller, vibration, lightbar, and virtual mouse options."
                                            Style="{StaticResource JsmccBodyText}"
                                            Margin="0,0,0,12"/>
                                 <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
