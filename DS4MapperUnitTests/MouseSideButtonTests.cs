@@ -97,6 +97,29 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        [DataRow(MouseButtonCodes.MOUSE_XBUTTON1)]
+        [DataRow(MouseButtonCodes.MOUSE_XBUTTON2)]
+        public void AnalogControllerMouseBindingPressesAndReleasesSideButton(int mouseCode)
+        {
+            TestFakerInputHandler handler = new TestFakerInputHandler();
+            FakerInputMapping mapping = CreateMapping();
+            TestMapper mapper = new TestMapper();
+            mapper.AttachVirtualOutputForTest(handler, mapping);
+            uint button = mouseCode == MouseButtonCodes.MOUSE_XBUTTON1
+                ? mapping.MOUSEEVENTF_XBUTTON1DOWN
+                : mapping.MOUSEEVENTF_XBUTTON2DOWN;
+            OutputActionData action = new OutputActionData(OutputActionData.ActionType.MouseButton, mouseCode);
+
+            mapper.RunEventFromAnalog(action, true, 0.0, 0.0);
+            mapper.SyncMouseButtons();
+            Assert.IsTrue(handler.MouseButtonHeldForTest(button));
+
+            mapper.RunEventFromAnalog(action, false, 0.0, 0.0);
+            mapper.SyncMouseButtons();
+            Assert.IsFalse(handler.MouseButtonHeldForTest(button));
+        }
+
+        [TestMethod]
         public void SendInputUsesSharedFlagsAndDistinctSideButtonData()
         {
             SendInputMapping mapping = new SendInputMapping();
