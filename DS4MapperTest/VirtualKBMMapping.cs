@@ -16,6 +16,12 @@ namespace DS4MapperTest
         public uint MOUSEEVENTF_XBUTTON1DOWN, MOUSEEVENTF_XBUTTON1UP,
             MOUSEEVENTF_XBUTTON2DOWN, MOUSEEVENTF_XBUTTON2UP;
 
+        // SendInput identifies the particular side button separately from
+        // its shared X-button down/up event flags. Backends such as
+        // FakerInput leave these at zero and use their normal press/release
+        // methods with their own persistent held-button bits instead.
+        public int MOUSEEVENTF_XBUTTON1DATA, MOUSEEVENTF_XBUTTON2DATA;
+
         public uint KEY_TAB = 0x09, KEY_LALT = 0x12;
         public int WHEEL_TICK_DOWN = -120, WHEEL_TICK_UP = 120;
         public int WHEEL_TICK_BASE = 120;
