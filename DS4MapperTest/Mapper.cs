@@ -1409,18 +1409,17 @@ namespace DS4MapperTest
                 if (!mouseButtonReferenceCountDict.TryGetValue(mouseCode, out int refCount))
                 {
                     uint mouseButton = GetMouseButtonDownFlag(mapping, mouseCode);
-                    uint xbuttonCode = GetMouseXButtonCode(mouseCode);
                     if (mouseButton != 0)
                     {
-                        if (xbuttonCode == 0)
+                        int xbuttonData = GetXButtonData(mapping, mouseCode);
+                        if (xbuttonData != 0)
                         {
-                            handler.PerformMouseButtonPress(mouseButton);
+                            handler.PerformMouseButtonPressAlt(mouseButton, xbuttonData);
                         }
                         else
                         {
-                            handler.PerformMouseButtonEventAlt(mouseButton, (int)xbuttonCode);
+                            handler.PerformMouseButtonPress(mouseButton);
                         }
-
                         mouseButtonReferenceCountDict.Add(mouseCode, 1);
                         currentMouseButtons.Add(mouseCode);
                     }
@@ -1447,16 +1446,16 @@ namespace DS4MapperTest
                     if (refCount <= 0)
                     {
                         uint mouseButton = GetMouseButtonUpFlag(mapping, mouseCode);
-                        uint xbuttonCode = GetMouseXButtonCode(mouseCode);
                         if (mouseButton != 0)
                         {
-                            if (xbuttonCode == 0)
+                            int xbuttonData = GetXButtonData(mapping, mouseCode);
+                            if (xbuttonData != 0)
                             {
-                                handler.PerformMouseButtonRelease(mouseButton);
+                                handler.PerformMouseButtonReleaseAlt(mouseButton, xbuttonData);
                             }
                             else
                             {
-                                handler.PerformMouseButtonEventAlt(mouseButton, (int)xbuttonCode);
+                                handler.PerformMouseButtonRelease(mouseButton);
                             }
                         }
 
@@ -1509,14 +1508,14 @@ namespace DS4MapperTest
             }
         }
 
-        private static uint GetMouseXButtonCode(int mouseCode)
+        private static int GetXButtonData(VirtualKBMMapping mapping, int mouseCode)
         {
             switch (mouseCode)
             {
                 case MouseButtonCodes.MOUSE_XBUTTON1:
-                    return 1;
+                    return mapping.MOUSEEVENTF_XBUTTON1DATA;
                 case MouseButtonCodes.MOUSE_XBUTTON2:
-                    return 2;
+                    return mapping.MOUSEEVENTF_XBUTTON2DATA;
                 default:
                     return 0;
             }
