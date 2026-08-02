@@ -79,6 +79,28 @@ namespace DS4MapperTest.JoyConLibrary
             return calibUpdated;
         }
 
+        // Sum every gyro sample present in a report (3 IMU frames per packet)
+        // rather than only the most recent one, so integrated motion output
+        // reflects the full report instead of discarding two-thirds of it.
+        internal static short CombineGyroAxisSamples(short[] gyroOut, int axisIdx,
+            short bias, short calibOffset, bool negate, int calibOffsetSign)
+        {
+            short combined = 0;
+            for (int sample = 0; sample < 3; sample++)
+            {
+                int rawSample = gyroOut[sample * 3 + axisIdx];
+                int value = rawSample - bias + calibOffsetSign * calibOffset;
+                if (negate)
+                {
+                    value = -value;
+                }
+
+                combined += (short)value;
+            }
+
+            return combined;
+        }
+
         private void PrepareDevice()
         {
             device.SetOperational();
@@ -364,17 +386,15 @@ namespace DS4MapperTest.JoyConLibrary
                         short accelZ = accel_raw[IMU_ZAXIS_IDX];
 
                         // Combine all gyro samples for use in DPS conversion
-                        short gyroYaw = (short)(-1 * (gyro_out[0 + IMU_YAW_IDX] - device.gyroBias[IMU_YAW_IDX] + device.gyroCalibOffsets[IMU_YAW_IDX]));
-                        gyroYaw += (short)(-1 * (gyro_out[3 + IMU_YAW_IDX] - device.gyroBias[IMU_YAW_IDX] + device.gyroCalibOffsets[IMU_YAW_IDX]));
-                        gyroYaw += (short)(-1 * (gyro_out[6 + IMU_YAW_IDX] - device.gyroBias[IMU_YAW_IDX] + device.gyroCalibOffsets[IMU_YAW_IDX]));
-
-                        short gyroPitch = (short)(gyro_out[0 + IMU_PITCH_IDX] - device.gyroBias[IMU_PITCH_IDX] - device.gyroCalibOffsets[IMU_PITCH_IDX]);
-                        gyroPitch += (short)(gyro_out[3 + IMU_PITCH_IDX] - device.gyroBias[IMU_PITCH_IDX] - device.gyroCalibOffsets[IMU_PITCH_IDX]);
-                        gyroPitch += (short)(gyro_out[6 + IMU_PITCH_IDX] - device.gyroBias[IMU_PITCH_IDX] - device.gyroCalibOffsets[IMU_PITCH_IDX]);
-
-                        short gyroRoll = (short)(gyro_out[0 + IMU_ROLL_IDX] - device.gyroBias[IMU_ROLL_IDX] - device.gyroCalibOffsets[IMU_ROLL_IDX]);
-                        gyroRoll += (short)(gyro_out[3 + IMU_ROLL_IDX] - device.gyroBias[IMU_ROLL_IDX] - device.gyroCalibOffsets[IMU_ROLL_IDX]);
-                        gyroRoll += (short)(gyro_out[6 + IMU_ROLL_IDX] - device.gyroBias[IMU_ROLL_IDX] - device.gyroCalibOffsets[IMU_ROLL_IDX]);
+                        short gyroYaw = CombineGyroAxisSamples(gyro_out, IMU_YAW_IDX,
+                            device.gyroBias[IMU_YAW_IDX], device.gyroCalibOffsets[IMU_YAW_IDX],
+                            negate: true, calibOffsetSign: 1);
+                        short gyroPitch = CombineGyroAxisSamples(gyro_out, IMU_PITCH_IDX,
+                            device.gyroBias[IMU_PITCH_IDX], device.gyroCalibOffsets[IMU_PITCH_IDX],
+                            negate: false, calibOffsetSign: -1);
+                        short gyroRoll = CombineGyroAxisSamples(gyro_out, IMU_ROLL_IDX,
+                            device.gyroBias[IMU_ROLL_IDX], device.gyroCalibOffsets[IMU_ROLL_IDX],
+                            negate: false, calibOffsetSign: -1);
 
                         int currentYaw = gyroYaw, currentPitch = gyroPitch, currentRoll = gyroRoll;
                         int AccelX = accelX, AccelY = accelY, AccelZ = accelZ;
