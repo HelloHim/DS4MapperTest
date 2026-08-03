@@ -36,6 +36,17 @@ namespace DS4MapperUnitTests
             AssertBlend(30.0, AnalogEmulationMath.ResolutionMode.EightWay, 1.0);
         }
 
+        [TestMethod]
+        public void EightWay_DiagonalZoneWidth_ChangesOnlyEightWaySnapBoundary()
+        {
+            // At 30°, the default 45° zone is diagonal, 0° permits no diagonals,
+            // and 90° makes every non-cardinal angle diagonal.
+            AssertBlendWithWidth(30.0, AnalogEmulationMath.ResolutionMode.EightWay, 45, 1.0);
+            AssertBlendWithWidth(30.0, AnalogEmulationMath.ResolutionMode.EightWay, 0, 0.0);
+            AssertBlendWithWidth(1.0, AnalogEmulationMath.ResolutionMode.EightWay, 90, 1.0);
+            AssertBlendWithWidth(30.0, AnalogEmulationMath.ResolutionMode.Sixteen, 0, 0.5);
+        }
+
         // --- 16-direction mapping ------------------------------------------------
 
         [TestMethod]
@@ -214,6 +225,14 @@ namespace DS4MapperUnitTests
             AnalogEmulationMath.ComputeDirectionBlendFromAngle(angle, mode,
                 out _, out _, out double blend);
             Assert.AreEqual(expectedBlend, blend, TOL, $"angle={angle}");
+        }
+
+        private static void AssertBlendWithWidth(double angle, AnalogEmulationMath.ResolutionMode mode,
+            int width, double expectedBlend)
+        {
+            AnalogEmulationMath.ComputeDirectionBlendFromAngle(angle, mode, width,
+                out _, out _, out double blend);
+            Assert.AreEqual(expectedBlend, blend, TOL, $"angle={angle}, width={width}");
         }
 
         // --- Direction pulse timing (ComputeDutyGate) ------------------------------
