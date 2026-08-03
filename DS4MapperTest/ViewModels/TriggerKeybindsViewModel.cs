@@ -1739,17 +1739,24 @@ namespace DS4MapperTest.ViewModels
                     MarkButtonChanged();
                 });
 
-                owner.RefreshAfterEdit();
-
-                if (oldTrigger != JoypadActionCodes.Empty && oldTrigger != value)
+                // Deferred: rebuilding FunctionItems synchronously here would tear down the
+                // ComboBoxItem this very click is still being processed on (WPF's Selector
+                // throws "Can only change SelectedItems collection in multiple selection
+                // modes" and the whole app crashes). Let the click finish first.
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    owner.Owner.RemoveSimPressMirror(owner.OwnTriggerCode, oldTrigger);
-                }
+                    owner.RefreshAfterEdit();
 
-                if (value != JoypadActionCodes.Empty)
-                {
-                    owner.Owner.ApplySimPressMirror(owner.OwnTriggerCode, simPress);
-                }
+                    if (oldTrigger != JoypadActionCodes.Empty && oldTrigger != value)
+                    {
+                        owner.Owner.RemoveSimPressMirror(owner.OwnTriggerCode, oldTrigger);
+                    }
+
+                    if (value != JoypadActionCodes.Empty)
+                    {
+                        owner.Owner.ApplySimPressMirror(owner.OwnTriggerCode, simPress);
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Background);
             }
         }
 
@@ -1771,12 +1778,15 @@ namespace DS4MapperTest.ViewModels
                     MarkButtonChanged();
                 });
 
-                owner.RefreshAfterEdit();
-
-                if (simPress.TriggerButton != JoypadActionCodes.Empty)
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    owner.Owner.ApplySimPressMirror(owner.OwnTriggerCode, simPress);
-                }
+                    owner.RefreshAfterEdit();
+
+                    if (simPress.TriggerButton != JoypadActionCodes.Empty)
+                    {
+                        owner.Owner.ApplySimPressMirror(owner.OwnTriggerCode, simPress);
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Background);
             }
         }
 
