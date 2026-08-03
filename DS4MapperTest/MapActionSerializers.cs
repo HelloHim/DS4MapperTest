@@ -8274,6 +8274,100 @@ namespace DS4MapperTest
         }
     }
 
+    public class StickMouseRingActionSerializer : MapActionSerializer
+    {
+        public class StickMouseRingSettings
+        {
+            private StickMouseRing ringAction;
+
+            public double RingRadius
+            {
+                get => ringAction.RingRadius;
+                set
+                {
+                    ringAction.RingRadius = value;
+                    RingRadiusChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler RingRadiusChanged;
+
+            public double DeadZone
+            {
+                get => ringAction.DeadMod.DeadZone;
+                set
+                {
+                    ringAction.DeadMod.DeadZone = value;
+                    DeadZoneChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DeadZoneChanged;
+
+            public double MaxZone
+            {
+                get => ringAction.DeadMod.MaxZone;
+                set
+                {
+                    ringAction.DeadMod.MaxZone = value;
+                    MaxZoneChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MaxZoneChanged;
+
+            public StickMouseRingSettings(StickMouseRing ringAction)
+            {
+                this.ringAction = ringAction;
+            }
+        }
+
+        private StickMouseRing ringAction =
+            new StickMouseRing();
+
+        private StickMouseRingSettings settings;
+        public StickMouseRingSettings Settings { get => settings; set => settings = value; }
+
+        public StickMouseRingActionSerializer() : base()
+        {
+            mapAction = ringAction;
+            settings = new StickMouseRingSettings(ringAction);
+
+            NameChanged += StickMouseRingActionSerializer_NameChanged;
+            settings.RingRadiusChanged += Settings_RingRadiusChanged;
+            settings.DeadZoneChanged += Settings_DeadZoneChanged;
+            settings.MaxZoneChanged += Settings_MaxZoneChanged;
+        }
+
+        public StickMouseRingActionSerializer(ActionLayer tempLayer, MapAction action) :
+            base(tempLayer, action)
+        {
+            if (action is StickMouseRing temp)
+            {
+                ringAction = temp;
+                mapAction = ringAction;
+                settings = new StickMouseRingSettings(ringAction);
+            }
+        }
+
+        private void StickMouseRingActionSerializer_NameChanged(object sender, EventArgs e)
+        {
+            ringAction.ChangedProperties.Add(StickMouseRing.PropertyKeyStrings.NAME);
+        }
+
+        private void Settings_RingRadiusChanged(object sender, EventArgs e)
+        {
+            ringAction.ChangedProperties.Add(StickMouseRing.PropertyKeyStrings.RING_RADIUS);
+        }
+
+        private void Settings_DeadZoneChanged(object sender, EventArgs e)
+        {
+            ringAction.ChangedProperties.Add(StickMouseRing.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_MaxZoneChanged(object sender, EventArgs e)
+        {
+            ringAction.ChangedProperties.Add(StickMouseRing.PropertyKeyStrings.MAX_ZONE);
+        }
+    }
+
     public class StickTranslateSerializer : MapActionSerializer
     {
         public class StickTranslateSettings
@@ -11148,6 +11242,11 @@ namespace DS4MapperTest
                         StickHybridAimActionSerializer hybridAimInstance = new StickHybridAimActionSerializer();
                         JsonConvert.PopulateObject(j.ToString(), hybridAimInstance);
                         resultInstance = hybridAimInstance;
+                        break;
+                    case "StickMouseRingAction":
+                        StickMouseRingActionSerializer mouseRingInstance = new StickMouseRingActionSerializer();
+                        JsonConvert.PopulateObject(j.ToString(), mouseRingInstance);
+                        resultInstance = mouseRingInstance;
                         break;
                     case "StickAnalogEmulationAction":
                         AnalogEmulationActionSerializer analogEmuInstance = new AnalogEmulationActionSerializer();
