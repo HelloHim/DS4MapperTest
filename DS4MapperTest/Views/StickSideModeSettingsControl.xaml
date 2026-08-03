@@ -679,20 +679,25 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Flick Threshold" Style="{StaticResource JsmccLabelText}"/>
                         <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.05"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                           Value="{Binding FlickThreshold, UpdateSourceTrigger=LostFocus}"/>
-                        <StackPanel Grid.Column="2" Grid.ColumnSpan="2" Orientation="Horizontal"
-                                    Visibility="{Binding ShowFlickSettings, Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="Flick Time (ms)" Style="{StaticResource JsmccLabelText}"/>
-                            <hc:NumericUpDown Minimum="10" Maximum="1000" DecimalPlaces="0" Increment="10"
-                                              Width="90" Margin="8,0,0,0" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                              Value="{Binding FlickTime, UpdateSourceTrigger=LostFocus}"/>
-                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}"
+                        Visibility="{Binding ShowFlickSettings, Converter={StaticResource BoolToVis}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Flick Time (ms)" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="1000" DecimalPlaces="0" Increment="10"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding FlickTime, UpdateSourceTrigger=LostFocus}"/>
                     </Grid>
                 </Border>
 
