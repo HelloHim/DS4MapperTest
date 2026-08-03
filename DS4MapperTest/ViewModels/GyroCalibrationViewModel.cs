@@ -128,15 +128,8 @@ namespace DS4MapperTest.ViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
                 if (value == null || value.IsCustom) return;
                 _applyingPreset = true;
-                if (IsCountsMode)
-                {
-                    FullTurnCounts = value.RWC * 360.0 / InGameSens;
-                }
-                else
-                {
-                    InGameSens = value.InGameSens;
-                    RealWorldCalibration = value.RWC;
-                }
+                InGameSens = value.RWC * 360.0 / FullTurnCounts;
+                RealWorldCalibration = value.RWC;
                 _applyingPreset = false;
             }
         }
@@ -197,11 +190,9 @@ namespace DS4MapperTest.ViewModels
         private void TryMatchPreset()
         {
             double rwc = mapper.ActionProfile.CalibRwc;
-            double sens = mapper.ActionProfile.CalibInGameSens;
             GameCalibPreset match = GameCalibPreset.All.FirstOrDefault(
                 p => !p.IsCustom &&
-                     Math.Abs(p.RWC - rwc) < 1e-3 &&
-                     Math.Abs(p.InGameSens - sens) < 1e-3);
+                     Math.Abs(p.RWC - rwc) < 1e-3);
             GameCalibPreset next = match ?? GameCalibPreset.Custom;
             if (_selectedPreset == next) return;
             _selectedPreset = next;

@@ -401,9 +401,9 @@ namespace DS4MapperTest.ViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
                 if (value == null || value.IsCustom || !_cameraTurnReady) return;
                 _applyingCameraTurnPreset = true;
-                CameraTurnInGameSens = value.InGameSens;
+                double preservedCounts = CameraTurnCounts360;
+                CameraTurnInGameSens = value.RWC * 360.0 / preservedCounts;
                 CameraTurnRWC = value.RWC;
-                CameraTurnCounts360 = value.Counts;
                 _applyingCameraTurnPreset = false;
             }
         }
@@ -417,12 +417,10 @@ namespace DS4MapperTest.ViewModels
 
         private void TryMatchCameraTurnPreset()
         {
-            double rwc = cameraTurnRWC;
-            double sens = cameraTurnInGameSens;
+            double rwc = IsCountsMode ? cameraTurnCalculatedRWC : cameraTurnRWC;
             GameCalibPreset match = GameCalibPreset.All.FirstOrDefault(
                 p => !p.IsCustom &&
-                     Math.Abs(p.RWC - rwc) < 1e-3 &&
-                     Math.Abs(p.InGameSens - sens) < 1e-3);
+                     Math.Abs(p.RWC - rwc) < 1e-3);
             GameCalibPreset next = match ?? GameCalibPreset.Custom;
             if (_selectedCameraTurnPreset == next) return;
             _selectedCameraTurnPreset = next;
