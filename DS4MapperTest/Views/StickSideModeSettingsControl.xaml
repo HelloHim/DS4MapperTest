@@ -906,6 +906,48 @@
             </StackPanel>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type propvm:StickMouseRingPropViewModel}">
+            <StackPanel>
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding DeadZone, UpdateSourceTrigger=LostFocus}"/>
+                        <TextBlock Grid.Column="2" Text="Max Zone" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding MaxZone, UpdateSourceTrigger=LostFocus}"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Ring Radius" Style="{StaticResource JsmccLabelText}"
+                                   ToolTip="Fraction of the screen the cursor ring extends to from center."/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.01"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding RingRadius, UpdateSourceTrigger=LostFocus}"/>
+                    </Grid>
+                </Border>
+
+                <TextBlock Text="Stick angle places the cursor on a fixed ring around screen center. Releasing the stick leaves the cursor in place."
+                           Style="{StaticResource JsmccMutedText}"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type propvm:StickAnalogEmulationPropViewModel}">
             <StackPanel>
                 <Border Style="{StaticResource ModeRowBorder}">
