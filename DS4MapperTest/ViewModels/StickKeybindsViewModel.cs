@@ -35,6 +35,7 @@ namespace DS4MapperTest.ViewModels
             new StickModeItem("Joystick Mouse", 3),
             new StickModeItem("Flick Stick", 6),
             new StickModeItem("Hybrid Aim", 8),
+            new StickModeItem("Mouse Ring", 9),
             new StickModeItem("Circular", 4),
             new StickModeItem("Absolute Mouse", 5),
         };
@@ -163,6 +164,7 @@ namespace DS4MapperTest.ViewModels
                 StickFlickStick => 6,
                 StickAnalogEmulationAction => 7,
                 StickHybridAim => 8,
+                StickMouseRing => 9,
                 _ => 0,
             };
         }
@@ -289,6 +291,7 @@ namespace DS4MapperTest.ViewModels
                 StickFlickStick => new StickFlickStickPropViewModel(owner.DeviceMapper, action),
                 StickAnalogEmulationAction => new StickAnalogEmulationPropViewModel(owner.DeviceMapper, action),
                 StickHybridAim => new StickHybridAimPropViewModel(owner.DeviceMapper, action),
+                StickMouseRing => new StickMouseRingPropViewModel(owner.DeviceMapper, action),
                 _ => (object)new StickNoActionPropViewModel(),
             };
 
