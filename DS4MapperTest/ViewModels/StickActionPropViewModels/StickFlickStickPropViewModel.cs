@@ -50,9 +50,15 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 SubModeChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedSubModeIndex)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowFlickSettings)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowRotationSettings)));
             }
         }
         public event EventHandler SubModeChanged;
+
+        public bool ShowFlickSettings => action.SubMode != FlickStickSubMode.RotateOnly;
+
+        public bool ShowRotationSettings => action.SubMode != FlickStickSubMode.FlickOnly;
 
         // --- Calibration fields (profile-level, synced across all actions) ---
 
