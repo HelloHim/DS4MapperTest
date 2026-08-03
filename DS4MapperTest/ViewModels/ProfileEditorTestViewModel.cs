@@ -1566,13 +1566,22 @@ namespace DS4MapperTest.ViewModels
         // device mapper (e.g. DS4Mapper's ActionTriggerItem("Cross", BtnSouth) lines up with
         // a BindingItemsTest whose BindingName is "Cross"). Empty means no match, which
         // callers treat as "mirroring unavailable for this button" rather than an error.
+        //
+        // The two lists are authored independently per device mapper class and have drifted
+        // for at least one entry: SteamControllerTritonMapper's BindingList names the stick
+        // touch sensor "LSTouch"/"RSTouch" while its own ActionTriggerItems calls the same
+        // button "LS Touch"/"RS Touch" (with a space, for a nicer dropdown label). An exact
+        // match silently fails for that pairing - normalising away whitespace tolerates this
+        // class of drift instead of requiring every device mapper's two lists to agree on
+        // spacing exactly.
         internal JoypadActionCodes FindTriggerCodeForBindingName(string bindingName)
         {
             if (string.IsNullOrEmpty(bindingName)) return JoypadActionCodes.Empty;
 
+            string normalizedName = NormalizeBindingKey(bindingName);
             foreach (ActionTriggerItem item in mapper.ActionTriggerItems)
             {
-                if (string.Equals(item.DisplayName, bindingName, StringComparison.Ordinal))
+                if (string.Equals(NormalizeBindingKey(item.DisplayName), normalizedName, StringComparison.OrdinalIgnoreCase))
                 {
                     return item.Code;
                 }
@@ -1589,8 +1598,14 @@ namespace DS4MapperTest.ViewModels
                 .FirstOrDefault(item => item.Code == code);
             if (triggerItem == null) return null;
 
+            string normalizedName = NormalizeBindingKey(triggerItem.DisplayName);
             return AllFaceButtonBindingItems()
-                .FirstOrDefault(item => string.Equals(item.BindingName, triggerItem.DisplayName, StringComparison.Ordinal));
+                .FirstOrDefault(item => string.Equals(NormalizeBindingKey(item.BindingName), normalizedName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static string NormalizeBindingKey(string value)
+        {
+            return string.IsNullOrEmpty(value) ? value : value.Replace(" ", "");
         }
 
         private IEnumerable<FaceButtonBindingItem> AllFaceButtonBindingItems()
