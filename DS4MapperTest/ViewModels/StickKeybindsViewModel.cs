@@ -31,7 +31,6 @@ namespace DS4MapperTest.ViewModels
             new StickModeItem("Unbound", 0),
             new StickModeItem("Stick", 1),
             new StickModeItem("DPad", 2),
-            new StickModeItem("Analog Emulation", 7),
             new StickModeItem("Joystick Mouse", 3),
             new StickModeItem("Flick Stick", 6),
             new StickModeItem("Hybrid Aim", 8),
@@ -54,6 +53,7 @@ namespace DS4MapperTest.ViewModels
         private bool suppressModeChange;
         private object settingsViewModel;
         private StickPadActionPropViewModel padSettingsVM;
+        private StickAnalogEmulationPropViewModel analogSettingsVM;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -162,9 +162,10 @@ namespace DS4MapperTest.ViewModels
                 StickCircular => 4,
                 StickAbsMouse => 5,
                 StickFlickStick => 6,
-                StickAnalogEmulationAction => 7,
                 StickHybridAim => 8,
                 StickMouseRing => 9,
+                // Analogue emulation is a D-Pad sub-mode, not a separate stick mode.
+                StickAnalogEmulationAction => 2,
                 _ => 0,
             };
         }
@@ -279,6 +280,11 @@ namespace DS4MapperTest.ViewModels
                 padSettingsVM.SelectedPadModeIndexChanged -= PadSettingsVM_SelectedPadModeIndexChanged;
                 padSettingsVM = null;
             }
+            if (analogSettingsVM != null)
+            {
+                analogSettingsVM.SelectedPadModeIndexChanged -= AnalogSettingsVM_SelectedPadModeIndexChanged;
+                analogSettingsVM = null;
+            }
 
             StickMapAction action = CurrentAction;
             SettingsViewModel = action switch
@@ -303,10 +309,57 @@ namespace DS4MapperTest.ViewModels
                 padSettingsVM = padPropVM;
                 padSettingsVM.SelectedPadModeIndexChanged += PadSettingsVM_SelectedPadModeIndexChanged;
             }
+            else if (SettingsViewModel is StickAnalogEmulationPropViewModel analogPropVM)
+            {
+                analogSettingsVM = analogPropVM;
+                analogPropVM.SelectedPadModeIndexChanged += AnalogSettingsVM_SelectedPadModeIndexChanged;
+            }
         }
 
         private void PadSettingsVM_SelectedPadModeIndexChanged(object sender, EventArgs e)
         {
+            if (padSettingsVM?.Action.CurrentMode == StickPadAction.DPadMode.AnalogEmulation)
+            {
+                SwitchDigitalPadMode(StickPadAction.DPadMode.AnalogEmulation);
+                return;
+            }
+
+            RebuildExtraBindings();
+        }
+
+        private void AnalogSettingsVM_SelectedPadModeIndexChanged(object sender, EventArgs e)
+        {
+            StickAnalogEmulationPropViewModel analogVM = sender as StickAnalogEmulationPropViewModel;
+            if (analogVM != null && analogVM.SelectedPadMode != StickPadAction.DPadMode.AnalogEmulation)
+            {
+                SwitchDigitalPadMode(analogVM.SelectedPadMode);
+            }
+        }
+
+        private void SwitchDigitalPadMode(StickPadAction.DPadMode targetMode)
+        {
+            StickMapAction oldAction = CurrentAction;
+            if (oldAction == null) return;
+
+            bool useAnalogEmulation = targetMode == StickPadAction.DPadMode.AnalogEmulation;
+            if ((useAnalogEmulation && oldAction is StickAnalogEmulationAction) ||
+                (!useAnalogEmulation && oldAction is StickPadAction)) return;
+
+            StickBindEditViewModel editVM = new StickBindEditViewModel(owner.DeviceMapper, oldAction);
+            StickMapAction newAction = editVM.PrepareNewAction(useAnalogEmulation ? 7 : 2);
+            if (newAction == null) return;
+
+            newAction.CopyBaseMapProps(oldAction);
+            CarryOverSharedDigitalDirectionSettings(oldAction, newAction);
+            if (newAction is StickPadAction newPad)
+            {
+                newPad.CurrentMode = targetMode;
+            }
+
+            editVM.MigrateActionId(newAction);
+            editVM.SwitchAction(newAction);
+            BindingItem?.UpdateAction(newAction);
+            RebuildSettingsViewModel();
             RebuildExtraBindings();
         }
 

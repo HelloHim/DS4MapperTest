@@ -946,6 +946,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 new PadModeItem("Eight Way", StickPadAction.DPadMode.EightWay),
                 new PadModeItem("Four Way Cardinal", StickPadAction.DPadMode.FourWayCardinal),
                 new PadModeItem("Four Way Diagonal", StickPadAction.DPadMode.FourWayDiagonal),
+                new PadModeItem("Analogue Emulation", StickPadAction.DPadMode.AnalogEmulation),
             });
 
             int index = padModeItems.FindIndex((item) => item.DPadMode == action.CurrentMode);
