@@ -795,6 +795,117 @@
             </StackPanel>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type propvm:StickHybridAimPropViewModel}">
+            <StackPanel>
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding DeadZone, UpdateSourceTrigger=LostFocus}"/>
+                        <TextBlock Grid.Column="2" Text="Max Zone" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding MaxZone, UpdateSourceTrigger=LostFocus}"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Stick Sensitivity" Style="{StaticResource JsmccLabelText}"
+                                   ToolTip="Deflection-proportional turn rate (the classic aim-stick component)."/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10000" DecimalPlaces="0" Increment="500"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding StickSens, UpdateSourceTrigger=LostFocus}"/>
+                        <TextBlock Grid.Column="2" Text="Mouselike Factor" Style="{StaticResource JsmccLabelText}"
+                                   ToolTip="Scales the stick's own frame-to-frame movement directly into mouse movement, like a tiny touchpad."/>
+                        <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="10000" DecimalPlaces="0" Increment="100"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding MouselikeFactor, UpdateSourceTrigger=LostFocus}"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Output Curve" Style="{StaticResource JsmccLabelText}"/>
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding OutputCurveChoiceItems}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="ChoiceValue"
+                                  SelectedValue="{Binding OutputCurveChoice}"
+                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                  HorizontalAlignment="Left"
+                                  MinWidth="180"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Edge Push" Style="{StaticResource JsmccLabelText}"
+                                   ToolTip="Keeps mouselike motion going smoothly while the stick is held pinned at the outer edge."/>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding EdgePushEnabled}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Return Deadzone" Style="{StaticResource JsmccLabelText}"
+                                       ToolTip="Damps output while the stick is snapping back toward center, so releasing doesn't cause a spurious flick."/>
+                            <CheckBox Grid.Column="1" IsChecked="{Binding ReturnDeadzoneEnabled}"
+                                      Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <Grid Margin="0,6,0,0" Visibility="{Binding ReturnDeadzoneEnabled, Converter={StaticResource BoolToVis}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Deadzone Angle" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="180" DecimalPlaces="1" Increment="1"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding ReturnDeadzoneAngle, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Grid.Column="2" Text="Cutoff Angle" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="180" DecimalPlaces="1" Increment="1"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding ReturnDeadzoneCutoffAngle, UpdateSourceTrigger=LostFocus}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="Combines aim-stick turn rate near center with mouse-drag-like motion at the stick's edge."
+                           Style="{StaticResource JsmccMutedText}"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type propvm:StickAnalogEmulationPropViewModel}">
             <StackPanel>
                 <Border Style="{StaticResource ModeRowBorder}">
