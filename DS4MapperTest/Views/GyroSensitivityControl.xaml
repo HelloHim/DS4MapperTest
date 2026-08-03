@@ -122,7 +122,11 @@
                                               IsChecked="{Binding TriggerSensitivityModifierEnabled}"/>
                                 </Grid>
                             </Border>
-                                <StackPanel Visibility="{Binding TriggerSensitivityModifierEnabled, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <Expander Header="Configure Trigger Sensitivity Modifier"
+                                      IsExpanded="False"
+                                      IsEnabled="{Binding TriggerSensitivityModifierEnabled}"
+                                      Margin="0,0,0,6">
+                                <StackPanel Margin="12,8,0,0">
                                     <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                         <TextBlock Text="Trigger" Style="{StaticResource SensRowLabel}"/><ComboBox Grid.Column="1" ItemsSource="{Binding TriggerSensitivityModifierTriggerItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerSensitivityModifierTrigger}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
                                     </Grid></Border>
@@ -152,6 +156,7 @@
                                     </Grid></Border>
                                     <TextBlock Text="{Binding TriggerSensitivityModifierValidationMessage}" Foreground="IndianRed" Visibility="{Binding TriggerSensitivityModifierIsValid, Converter={StaticResource InvertBoolToVis}}"/>
                                 </StackPanel>
+                            </Expander>
                         </StackPanel>
 
                         <Button Content="Reset to Defaults"
