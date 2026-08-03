@@ -30,7 +30,7 @@ namespace DS4MapperTest.ViewModels
         {
             new StickModeItem("Unbound", 0),
             new StickModeItem("Stick", 1),
-            new StickModeItem("DPad", 2),
+            new StickModeItem("Directional Pad", 2),
             new StickModeItem("Joystick Mouse", 3),
             new StickModeItem("Flick Stick", 6),
             new StickModeItem("Hybrid Aim", 8),

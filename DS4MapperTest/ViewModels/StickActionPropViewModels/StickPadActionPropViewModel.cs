@@ -73,6 +73,9 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler ShowDiagonalPadChanged;
 
+        public bool ShowDiagonalZoneWidth => action.CurrentMode == StickPadAction.DPadMode.EightWay;
+        public event EventHandler ShowDiagonalZoneWidthChanged;
+
         public bool ShowCardinalPad
         {
             get => action.CurrentMode == StickPadAction.DPadMode.Standard ||
@@ -887,6 +890,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             ShowCardinalPadChanged?.Invoke(this, EventArgs.Empty);
             ShowDiagonalPadChanged?.Invoke(this, EventArgs.Empty);
+            ShowDiagonalZoneWidthChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickPadActionPropViewModel_SelectedPadModeIndexChanged(object sender, EventArgs e)
@@ -942,11 +946,11 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         {
             padModeItems.AddRange(new PadModeItem[]
             {
-                new PadModeItem("Standard", StickPadAction.DPadMode.Standard),
-                new PadModeItem("Eight Way", StickPadAction.DPadMode.EightWay),
-                new PadModeItem("Four Way Cardinal", StickPadAction.DPadMode.FourWayCardinal),
-                new PadModeItem("Four Way Diagonal", StickPadAction.DPadMode.FourWayDiagonal),
-                new PadModeItem("Analogue Emulation", StickPadAction.DPadMode.AnalogEmulation),
+                new PadModeItem("8 Way (Overlap)", StickPadAction.DPadMode.Standard),
+                new PadModeItem("8 Way (Separate Diagonals)", StickPadAction.DPadMode.EightWay),
+                new PadModeItem("4 Way (Cardinal)", StickPadAction.DPadMode.FourWayCardinal),
+                new PadModeItem("4 Way (Diagonal)", StickPadAction.DPadMode.FourWayDiagonal),
+                new PadModeItem("Analog Emulation", StickPadAction.DPadMode.AnalogEmulation),
             });
 
             int index = padModeItems.FindIndex((item) => item.DPadMode == action.CurrentMode);
