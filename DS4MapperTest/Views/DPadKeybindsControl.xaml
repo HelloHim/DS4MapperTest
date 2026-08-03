@@ -180,6 +180,10 @@
                                                       Tag="Chorded"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click"/>
+                                            <MenuItem Header="Sim Press"
+                                                      Tag="SimPress"
+                                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Click="AddExtraBindingMenuItem_Click"/>
                                             <MenuItem Header="Start Press"
                                                       Tag="Start"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
@@ -422,6 +426,48 @@
                                                     </Border>
 
                                                     <Border Background="{DynamicResource JsmccBgFieldGroupBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsSimPressOptions, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Sim Press Trigger" Style="{StaticResource DPadControlLabel}"/>
+                                                            <ComboBox ItemsSource="{Binding SimPressTriggerItems}"
+                                                                      SelectedValue="{Binding SimPressTrigger, UpdateSourceTrigger=PropertyChanged}"
+                                                                      SelectedValuePath="Code"
+                                                                      DisplayMemberPath="DisplayName"
+                                                                      MaxDropDownHeight="240"
+                                                                      Width="160"
+                                                                      Style="{StaticResource JsmccComboBoxStyle}"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
+                                                            BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,4"
+                                                            Margin="0,0,8,4"
+                                                            Visibility="{Binding SupportsSimPressOptions, Converter={StaticResource BoolToVis}}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Sim Press Time" Style="{StaticResource DPadControlLabel}"/>
+                                                            <hc:NumericUpDown Minimum="0"
+                                                                              Maximum="60000"
+                                                                              DecimalPlaces="0"
+                                                                              Increment="10"
+                                                                              Width="108"
+                                                                              Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                              Value="{Binding SimPressTimeMs, UpdateSourceTrigger=LostFocus}"/>
+                                                            <TextBlock Text="ms"
+                                                                       Style="{StaticResource JsmccMutedText}"
+                                                                       Margin="6,0,0,0"
+                                                                       VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Background="{DynamicResource JsmccBgInputBrush}"
                                                             BorderBrush="{DynamicResource JsmccBorderBrush}"
                                                             BorderThickness="1"
                                                             CornerRadius="4"
