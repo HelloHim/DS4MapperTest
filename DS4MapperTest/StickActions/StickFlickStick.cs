@@ -33,6 +33,7 @@ namespace DS4MapperTest.StickActions
             public const string RELEASE_DAMPENING_SPEED = "ReleaseDampeningSpeed";
             public const string MULTIPLIER_COMPENSATION = "MultiplierCompensation";
             public const string ACCELERATION_MULTIPLIER = "AccelerationMultiplier";
+            public const string ROTATE_SMOOTH_OVERRIDE = "RotateSmoothOverride";
             public const string SUB_MODE = "SubMode";
         }
 
@@ -48,6 +49,7 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.RELEASE_DAMPENING_SPEED,
             PropertyKeyStrings.MULTIPLIER_COMPENSATION,
             PropertyKeyStrings.ACCELERATION_MULTIPLIER,
+            PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE,
             PropertyKeyStrings.SUB_MODE,
         };
 
@@ -67,6 +69,44 @@ namespace DS4MapperTest.StickActions
             public double flickAngleRemainder = DEFAULT_FLICK_ANGLE_REMAINDER;
             public double flickTimeActual = DEFAULT_FLICK_TIME_ACTUAL;
 
+            // This is intentionally the same size as JoyShockMapper's flick-stick
+            // rotation buffer. The active portion is capped to a 64 ms window.
+            public const int FLICK_SMOOTH_SAMPLE_COUNT = 256;
+            private readonly double[] flickRotationSamples =
+                new double[FLICK_SMOOTH_SAMPLE_COUNT];
+            private int frontFlickRotationSample;
+
+            public void ResetRotationSmoothing()
+            {
+                Array.Clear(flickRotationSamples, 0, flickRotationSamples.Length);
+                frontFlickRotationSample = 0;
+            }
+
+            public double GetSmoothedStickRotation(double value, double bottomThreshold,
+                double topThreshold, int maxSamples)
+            {
+                frontFlickRotationSample--;
+                if (frontFlickRotationSample < 0)
+                {
+                    frontFlickRotationSample = FLICK_SMOOTH_SAMPLE_COUNT - 1;
+                }
+
+                double immediateFactor = topThreshold <= bottomThreshold ? 1.0 :
+                    (Math.Abs(value) - bottomThreshold) / (topThreshold - bottomThreshold);
+                immediateFactor = Math.Clamp(immediateFactor, 0.0, 1.0);
+                double frontSample = flickRotationSamples[frontFlickRotationSample] =
+                    value * (1.0 - immediateFactor);
+
+                double result = frontSample / maxSamples;
+                for (int i = 1; i < maxSamples; i++)
+                {
+                    int rotatedIndex = (frontFlickRotationSample + i) % FLICK_SMOOTH_SAMPLE_COUNT;
+                    result += flickRotationSamples[rotatedIndex] / maxSamples;
+                }
+
+                return result + value * immediateFactor;
+            }
+
             public void Reset()
             {
                 //flickFilter = new OneEuroFilter(DEFAULT_MINCUTOFF, DEFAULT_BETA);
@@ -74,6 +114,7 @@ namespace DS4MapperTest.StickActions
                 flickSize = DEFAULT_FLICK_SIZE;
                 flickAngleRemainder = DEFAULT_FLICK_ANGLE_REMAINDER;
                 flickTimeActual = DEFAULT_FLICK_TIME_ACTUAL;
+                ResetRotationSmoothing();
             }
         }
 
@@ -142,6 +183,16 @@ namespace DS4MapperTest.StickActions
                 ACCELERATION_MULTIPLIER_MIN, ACCELERATION_MULTIPLIER_MAX);
         }
 
+        // Matches JoyShockMapper's ROTATE_SMOOTH_OVERRIDE semantics. -1 uses its
+        // controller-resolution default, 0 disables smoothing, and positive values
+        // set the small-angle threshold in radians per mapper update.
+        private double rotateSmoothOverride = -1.0;
+        public double RotateSmoothOverride
+        {
+            get => rotateSmoothOverride;
+            set => rotateSmoothOverride = Math.Clamp(value, -1.0, 1.0);
+        }
+
         private FlickStickSubMode subMode = FlickStickSubMode.Standard;
         public FlickStickSubMode SubMode
         {
@@ -175,15 +226,9 @@ namespace DS4MapperTest.StickActions
 
             angleChange = HandleFlickStickAngle(mapper, axisXVal, axisYVal, prevAxisXVal, prevAxisYVal);
             double lsangle = angleChange * 180.0 / Math.PI;
-            if (lsangle == 0.0)
-            {
-                tempFlickData.flickAngleRemainder = 0.0;
-            }
-            else if (lsangle >= 0.0 && tempFlickData.flickAngleRemainder >= 0.0)
-            {
-                lsangle += tempFlickData.flickAngleRemainder;
-            }
-
+            // Never discard sub-threshold movement. The former implementation only
+            // accumulated positive deltas, which made thresholded rotation uneven.
+            lsangle += tempFlickData.flickAngleRemainder;
             tempFlickData.flickAngleRemainder = 0.0;
 
             if (minAngleThreshold == 0.0 && lsangle != 0.0)
@@ -277,6 +322,7 @@ namespace DS4MapperTest.StickActions
                         flickData.flickProgress = 0.0;
                         flickData.flickSize = Math.Atan2((axisXVal - axisXMid), (axisYVal - axisYMid));
                         flickData.flickTimeActual = flickTime * Math.Pow(Math.Abs(flickData.flickSize) / Math.PI, flickTimeExponent);
+                        flickData.ResetRotationSmoothing();
                         //flickData.flickFilter.Filter(0.0, mapper.CurrentLatency);
                     }
                 }
@@ -300,7 +346,25 @@ namespace DS4MapperTest.StickActions
                     // the camera rotation caused by sweeping a held stick.
                     if (subMode != FlickStickSubMode.FlickOnly)
                     {
-                        result += angleChange * sweepDampen;
+                        // JoyShockMapper's soft-tiered smoothing: only tiny stick
+                        // steps are buffered (up to 64 ms); larger rotations remain
+                        // immediate. This hides low-resolution stick quantisation
+                        // without making normal sweeping feel delayed.
+                        double outputScale = realWorldCalibration / inGameSens;
+                        if (outputScale != 0.0)
+                        {
+                            double rotationOutput = angleChange * sweepDampen * outputScale;
+                            int maxSmoothingSamples = mapper.CurrentLatency > 0.0
+                                ? Math.Clamp((int)Math.Ceiling(0.064 / mapper.CurrentLatency), 1,
+                                    FlickStickMappingData.FLICK_SMOOTH_SAMPLE_COUNT)
+                                : 1;
+                            double stepSize = rotateSmoothOverride < 0.0 ? 0.01 : rotateSmoothOverride;
+                            rotationOutput = flickData.GetSmoothedStickRotation(rotationOutput,
+                                outputScale * stepSize * 2.0,
+                                outputScale * stepSize * 4.0,
+                                maxSmoothingSamples);
+                            result += rotationOutput / outputScale;
+                        }
                     }
                 }
             }
@@ -430,6 +494,9 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.ACCELERATION_MULTIPLIER:
                             accelerationMultiplier = tempFlickAction.accelerationMultiplier;
                             break;
+                        case PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE:
+                            rotateSmoothOverride = tempFlickAction.rotateSmoothOverride;
+                            break;
                         case PropertyKeyStrings.SUB_MODE:
                             subMode = tempFlickAction.subMode;
                             break;
@@ -491,6 +558,9 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.ACCELERATION_MULTIPLIER:
                     accelerationMultiplier = tempFlickAction.accelerationMultiplier;
+                    break;
+                case PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE:
+                    rotateSmoothOverride = tempFlickAction.rotateSmoothOverride;
                     break;
                 case PropertyKeyStrings.SUB_MODE:
                     subMode = tempFlickAction.subMode;

@@ -301,6 +301,19 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler AccelerationMultiplierChanged;
 
+        public double RotateSmoothOverride
+        {
+            get => action.RotateSmoothOverride;
+            set
+            {
+                if (action.RotateSmoothOverride == value) return;
+                action.RotateSmoothOverride = value;
+                RotateSmoothOverrideChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler RotateSmoothOverrideChanged;
+
         public bool HighlightReleaseDampeningSpeed
         {
             get => action.ParentAction == null ||
@@ -357,6 +370,13 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler HighlightMinAngleThresholdChanged;
 
+        public bool HighlightRotateSmoothOverride
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
+        }
+        public event EventHandler HighlightRotateSmoothOverrideChanged;
+
         public event EventHandler ActionPropertyChanged;
         public event EventHandler<StickMapAction> ActionChanged;
 
@@ -403,6 +423,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             ReleaseDampeningSpeedChanged += StickFlickStickPropViewModel_ReleaseDampeningSpeedChanged;
             MultiplierCompensationChanged += StickFlickStickPropViewModel_MultiplierCompensationChanged;
             AccelerationMultiplierChanged += StickFlickStickPropViewModel_AccelerationMultiplierChanged;
+            RotateSmoothOverrideChanged += StickFlickStickPropViewModel_RotateSmoothOverrideChanged;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
 
             double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
@@ -572,6 +593,17 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
             HighlightAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickFlickStickPropViewModel_RotateSmoothOverrideChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE))
+            {
+                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
+            HighlightRotateSmoothOverrideChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickFlickStickPropViewModel_FlickTimeChanged(object sender, EventArgs e)
