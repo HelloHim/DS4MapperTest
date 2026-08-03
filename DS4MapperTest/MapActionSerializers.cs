@@ -5848,6 +5848,22 @@ namespace DS4MapperTest
     {
         public class FlickStickSettings
         {
+            public FlickStickSubMode SubMode
+            {
+                get => flickAction.SubMode;
+                set
+                {
+                    flickAction.SubMode = value;
+                    SubModeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SubModeChanged;
+
+            public bool ShouldSerializeSubMode()
+            {
+                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SUB_MODE);
+            }
+
             public double RealWorldCalibration
             {
                 get => flickAction.RealWorldCalibration;
@@ -6005,6 +6021,7 @@ namespace DS4MapperTest
             settings = new FlickStickSettings(flickAction);
 
             NameChanged += StickFlickStickActionSerializer_NameChanged;
+            settings.SubModeChanged += Settings_SubModeChanged;
             settings.RealWorldCalibrationChanged += Settings_RealWorldCalibrationChanged;
             settings.FlickThresholdChanged += Settings_FlickThresholdChanged;
             settings.FlickTimeChanged += Settings_FlickTimeChanged;
@@ -6030,6 +6047,11 @@ namespace DS4MapperTest
         private void StickFlickStickActionSerializer_NameChanged(object sender, EventArgs e)
         {
             flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.NAME);
+        }
+
+        private void Settings_SubModeChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.SUB_MODE);
         }
 
         private void Settings_RealWorldCalibrationChanged(object sender, EventArgs e)
