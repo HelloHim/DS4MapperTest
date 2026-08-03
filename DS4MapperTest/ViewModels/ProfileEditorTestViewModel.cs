@@ -1767,24 +1767,20 @@ namespace DS4MapperTest.ViewModels
 
         // Full JSM-style mirroring for Sim Press: writing the pairing on one button
         // auto-registers the same combined output and window on the trigger button too, so
-        // pressing either one first produces the same result. Called from the Sim Press
-        // trigger/time/output setters on FaceButtonFuncItem.
-        internal void ApplySimPressMirror(FaceButtonBindingItem sourceItem, ActionUtil.SimPressFunc sourceFunc)
+        // pressing either one first produces the same result. Reaches every binding surface
+        // that has a real JoypadActionCodes identity (Face-shared buttons, D-Pad directions,
+        // Trigger Button-mode) - anything without one (e.g. Stick Action Pad directions) can
+        // still set a Sim Press trigger pointing at another button, it just can't be mirrored
+        // back onto, the same limit the Chorded Press trigger picker already has. Called from
+        // the Sim Press trigger/time/output setters on each binding kind's func item.
+        internal void ApplySimPressMirror(JoypadActionCodes sourceCode, ActionUtil.SimPressFunc sourceFunc)
         {
-            if (sourceItem == null || sourceFunc == null) return;
+            if (sourceFunc == null || sourceCode == JoypadActionCodes.Empty) return;
 
-            JoypadActionCodes sourceCode = FindTriggerCodeForBindingName(sourceItem.BindingName);
             JoypadActionCodes targetCode = sourceFunc.TriggerButton;
-            if (targetCode == JoypadActionCodes.Empty || sourceCode == JoypadActionCodes.Empty ||
-                targetCode == sourceCode)
-            {
-                return;
-            }
+            if (targetCode == JoypadActionCodes.Empty || targetCode == sourceCode) return;
 
-            FaceButtonBindingItem targetItem = FindBindingItemForTriggerCode(targetCode);
-            if (targetItem == null || targetItem == sourceItem) return;
-
-            ButtonAction targetAction = targetItem.EnsureEditableHostButtonAction(FaceBindingFuncKind.SimPress);
+            ButtonAction targetAction = EnsureEditableSimPressMirrorAction(targetCode);
             if (targetAction == null) return;
 
             ActionUtil.SimPressFunc targetFunc = targetAction.ActionFuncs
@@ -1815,24 +1811,18 @@ namespace DS4MapperTest.ViewModels
                 FaceButtonBindingItem.MarkFunctionsChanged(targetAction);
             });
 
-            targetItem.RefreshFunctions();
+            RefreshSimPressMirrorTarget(targetCode);
         }
 
         // Removes a previously-mirrored Sim Press func from the old trigger button when the
-        // source button's trigger changes or is cleared - but only if that button's Sim
-        // Press still points back at the source, so a target the user has since repointed
-        // elsewhere independently is left alone.
-        internal void RemoveSimPressMirror(FaceButtonBindingItem sourceItem, JoypadActionCodes oldTriggerCode)
+        // source button's trigger changes, is cleared, or the binding itself is deleted - but
+        // only if that button's Sim Press still points back at the source, so a target the
+        // user has since repointed elsewhere independently is left alone.
+        internal void RemoveSimPressMirror(JoypadActionCodes sourceCode, JoypadActionCodes oldTriggerCode)
         {
-            if (sourceItem == null || oldTriggerCode == JoypadActionCodes.Empty) return;
+            if (sourceCode == JoypadActionCodes.Empty || oldTriggerCode == JoypadActionCodes.Empty) return;
 
-            JoypadActionCodes sourceCode = FindTriggerCodeForBindingName(sourceItem.BindingName);
-            if (sourceCode == JoypadActionCodes.Empty) return;
-
-            FaceButtonBindingItem targetItem = FindBindingItemForTriggerCode(oldTriggerCode);
-            if (targetItem == null || targetItem == sourceItem) return;
-
-            ButtonAction targetAction = targetItem.MappedAction as ButtonAction;
+            ButtonAction targetAction = ResolveSimPressMirrorAction(oldTriggerCode);
             ActionUtil.SimPressFunc targetFunc = targetAction?.ActionFuncs
                 .OfType<ActionUtil.SimPressFunc>().FirstOrDefault();
             if (targetFunc == null || targetFunc.TriggerButton != sourceCode) return;
@@ -1847,7 +1837,72 @@ namespace DS4MapperTest.ViewModels
                 FaceButtonBindingItem.MarkFunctionsChanged(targetAction);
             });
 
-            targetItem.RefreshFunctions();
+            RefreshSimPressMirrorTarget(oldTriggerCode);
+        }
+
+        private ButtonAction EnsureEditableSimPressMirrorAction(JoypadActionCodes code)
+        {
+            FaceButtonBindingItem faceItem = FindBindingItemForTriggerCode(code);
+            if (faceItem != null) return faceItem.EnsureEditableHostButtonAction(FaceBindingFuncKind.SimPress);
+
+            DPadDirectionKind? dpadKind = DPadDirectionKindForCode(code);
+            if (dpadKind.HasValue) return EnsureEditableDPadDirectionAction(dpadKind.Value);
+
+            TriggerKeybindItem triggerItem = FindTriggerButtonItemForCode(code);
+            if (triggerItem != null) return triggerItem.EnsureEditableButtonActionForFunctionEdits()?.EventButton;
+
+            return null;
+        }
+
+        private ButtonAction ResolveSimPressMirrorAction(JoypadActionCodes code)
+        {
+            FaceButtonBindingItem faceItem = FindBindingItemForTriggerCode(code);
+            if (faceItem != null) return faceItem.ResolveHostButtonAction(FaceBindingFuncKind.SimPress);
+
+            DPadDirectionKind? dpadKind = DPadDirectionKindForCode(code);
+            if (dpadKind.HasValue) return PeekDPadDirectionAction(dpadKind.Value);
+
+            TriggerKeybindItem triggerItem = FindTriggerButtonItemForCode(code);
+            return (triggerItem?.MappedAction as TriggerButtonAction)?.EventButton;
+        }
+
+        private void RefreshSimPressMirrorTarget(JoypadActionCodes code)
+        {
+            FaceButtonBindingItem faceItem = FindBindingItemForTriggerCode(code);
+            if (faceItem != null)
+            {
+                faceItem.RefreshFunctions();
+                return;
+            }
+
+            DPadDirectionKind? dpadKind = DPadDirectionKindForCode(code);
+            if (dpadKind.HasValue)
+            {
+                dpadKeybinds?.Directions.FirstOrDefault(item => item.Kind == dpadKind.Value)?.RefreshFunctions();
+                return;
+            }
+
+            FindTriggerButtonItemForCode(code)?.RefreshFunctions();
+        }
+
+        private static DPadDirectionKind? DPadDirectionKindForCode(JoypadActionCodes code)
+        {
+            return code switch
+            {
+                JoypadActionCodes.BtnDPadUp => DPadDirectionKind.Up,
+                JoypadActionCodes.BtnDPadDown => DPadDirectionKind.Down,
+                JoypadActionCodes.BtnDPadLeft => DPadDirectionKind.Left,
+                JoypadActionCodes.BtnDPadRight => DPadDirectionKind.Right,
+                _ => null,
+            };
+        }
+
+        private TriggerKeybindItem FindTriggerButtonItemForCode(JoypadActionCodes code)
+        {
+            if (code != JoypadActionCodes.AxisLTrigger && code != JoypadActionCodes.AxisRTrigger) return null;
+
+            return triggerKeybinds.FirstOrDefault(item => item.IsButtonMode &&
+                FindTriggerCodeForBindingName(item.BindingName) == code);
         }
 
         internal ButtonMapAction GetCurrentAlwaysOnAction()

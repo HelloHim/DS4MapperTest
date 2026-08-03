@@ -40,6 +40,12 @@ namespace DS4MapperTest.ViewModels
         public ProfileEditorTestViewModel Owner => owner;
         public string BindingName { get; }
         public string DisplayName { get; }
+
+        // This binding's own JoypadActionCodes identity, used to mirror a Sim Press pairing
+        // onto whichever button is picked as its trigger (and back). Empty for a binding
+        // with no representable code (mirroring becomes a no-op for those, same as the
+        // Chorded Press trigger picker already tolerates).
+        internal JoypadActionCodes OwnTriggerCode => owner.FindTriggerCodeForBindingName(BindingName);
         public string Subtitle { get; }
         public bool HasSubtitle => !string.IsNullOrWhiteSpace(Subtitle);
         public ObservableCollection<FaceButtonFuncItem> FunctionItems => functionItems;
@@ -368,6 +374,13 @@ namespace DS4MapperTest.ViewModels
             int index = buttonAction.ActionFuncs.IndexOf(func);
             if (index < 0) return;
 
+            // A Sim Press being deleted outright (rather than its trigger being changed/
+            // cleared) needs the same mirror cleanup as RemoveSimPressMirror already does
+            // for the trigger-change case, or the paired button is left with a stale
+            // one-sided pairing.
+            JoypadActionCodes simPressTrigger = func is SimPressFunc simPressFunc ?
+                simPressFunc.TriggerButton : JoypadActionCodes.Empty;
+
             owner.DeviceMapper.ProcessMappingChangeAction(() =>
             {
                 buttonAction.Release(owner.DeviceMapper, ignoreReleaseActions: true);
@@ -376,6 +389,11 @@ namespace DS4MapperTest.ViewModels
             });
 
             RefreshFunctions();
+
+            if (simPressTrigger != JoypadActionCodes.Empty)
+            {
+                owner.RemoveSimPressMirror(OwnTriggerCode, simPressTrigger);
+            }
         }
 
         public EditFaceBindingContext PrepareEdit(FaceButtonFuncItem item)
@@ -880,12 +898,12 @@ namespace DS4MapperTest.ViewModels
 
                 if (oldTrigger != JoypadActionCodes.Empty && oldTrigger != value)
                 {
-                    owner.Owner.RemoveSimPressMirror(owner, oldTrigger);
+                    owner.Owner.RemoveSimPressMirror(owner.OwnTriggerCode, oldTrigger);
                 }
 
                 if (value != JoypadActionCodes.Empty)
                 {
-                    owner.Owner.ApplySimPressMirror(owner, targetFunc);
+                    owner.Owner.ApplySimPressMirror(owner.OwnTriggerCode, targetFunc);
                 }
             }
         }
@@ -908,7 +926,7 @@ namespace DS4MapperTest.ViewModels
 
                 if (targetFunc.TriggerButton != JoypadActionCodes.Empty)
                 {
-                    owner.Owner.ApplySimPressMirror(owner, targetFunc);
+                    owner.Owner.ApplySimPressMirror(owner.OwnTriggerCode, targetFunc);
                 }
             }
         }
@@ -922,7 +940,7 @@ namespace DS4MapperTest.ViewModels
             if (hostAction != null && ResolveCurrentFunc(hostAction) is SimPressFunc simPressFunc &&
                 simPressFunc.TriggerButton != JoypadActionCodes.Empty)
             {
-                owner.Owner.ApplySimPressMirror(owner, simPressFunc);
+                owner.Owner.ApplySimPressMirror(owner.OwnTriggerCode, simPressFunc);
             }
         }
 
