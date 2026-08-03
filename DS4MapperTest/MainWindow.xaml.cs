@@ -491,6 +491,10 @@ namespace DS4MapperTest
             ExitRenameSetMode();
             ExitRenameLayerMode();
 
+            // Clear inherited bindings before replacing the editor.  Some child
+            // controls keep profile-list item contexts, so swapping directly can
+            // make WPF resolve a binding against its internal unset-value marker.
+            DataContext = null;
             editorTestVM?.UnregisterEvents();
             editorTestVM = new ProfileEditorTestViewModel(mapper, profileEnt, mapper.ActionProfile);
             DataContext = editorTestVM;
