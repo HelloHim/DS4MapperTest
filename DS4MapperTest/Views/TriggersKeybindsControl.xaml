@@ -60,10 +60,10 @@
                             <StackPanel Orientation="Horizontal"><TextBlock Text="Chord Trigger" Style="{StaticResource TriggerControlLabel}"/><ComboBox ItemsSource="{Binding ChordTriggerItems}" SelectedValue="{Binding ChordTrigger, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Code" DisplayMemberPath="DisplayName" MaxDropDownHeight="240" Width="160" Style="{StaticResource JsmccComboBoxStyle}"/></StackPanel>
                         </Border>
                         <Border Style="{StaticResource TriggerChipBorder}" Visibility="{Binding SupportsSimPressOptions, Converter={StaticResource BoolToVis}}">
-                            <StackPanel Orientation="Horizontal"><TextBlock Text="Sim Press Trigger" Style="{StaticResource TriggerControlLabel}"/><ComboBox ItemsSource="{Binding SimPressTriggerItems}" SelectedValue="{Binding SimPressTrigger, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Code" DisplayMemberPath="DisplayName" MaxDropDownHeight="240" Width="160" Style="{StaticResource JsmccComboBoxStyle}"/></StackPanel>
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="Simultaneous Press Trigger" Style="{StaticResource TriggerControlLabel}"/><ComboBox ItemsSource="{Binding SimPressTriggerItems}" SelectedValue="{Binding SimPressTrigger, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Code" DisplayMemberPath="DisplayName" MaxDropDownHeight="240" Width="160" Style="{StaticResource JsmccComboBoxStyle}"/></StackPanel>
                         </Border>
                         <Border Style="{StaticResource TriggerChipBorder}" Visibility="{Binding SupportsSimPressOptions, Converter={StaticResource BoolToVis}}">
-                            <StackPanel Orientation="Horizontal"><TextBlock Text="Sim Press Time" Style="{StaticResource TriggerControlLabel}"/><hc:NumericUpDown Minimum="0" Maximum="60000" DecimalPlaces="0" Increment="10" Width="108" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding SimPressTimeMs, UpdateSourceTrigger=LostFocus}"/><TextBlock Text="ms" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/></StackPanel>
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="Simultaneous Press Time" Style="{StaticResource TriggerControlLabel}"/><hc:NumericUpDown Minimum="0" Maximum="60000" DecimalPlaces="0" Increment="10" Width="108" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding SimPressTimeMs, UpdateSourceTrigger=LostFocus}"/><TextBlock Text="ms" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/></StackPanel>
                         </Border>
                         <Border Style="{StaticResource TriggerChipBorder}" Visibility="{Binding SupportsReleaseOptions, Converter={StaticResource BoolToVis}}">
                             <StackPanel Orientation="Horizontal"><TextBlock Text="End Delay" Style="{StaticResource TriggerControlLabel}"/><hc:NumericUpDown Minimum="0" Maximum="60000" DecimalPlaces="0" Increment="10" Width="108" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding ReleaseDelayMs, UpdateSourceTrigger=LostFocus}"/><TextBlock Text="ms" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/></StackPanel>
@@ -167,7 +167,7 @@
                                                           Tag="Chorded"
                                                           IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                           Click="AddExtraBindingMenuItem_Click"/>
-                                                <MenuItem Header="Sim Press"
+                                                <MenuItem Header="Simultaneous Press"
                                                           Tag="SimPress"
                                                           IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                           Click="AddExtraBindingMenuItem_Click"/>
@@ -370,7 +370,7 @@
                                                         <Border Style="{StaticResource TriggerChipBorder}"
                                                                 Visibility="{Binding SupportsSimPressOptions, Converter={StaticResource BoolToVis}}">
                                                             <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="Sim Press Trigger" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <TextBlock Text="Simultaneous Press Trigger" Style="{StaticResource TriggerControlLabel}"/>
                                                                 <ComboBox ItemsSource="{Binding SimPressTriggerItems}"
                                                                           SelectedValue="{Binding SimPressTrigger, UpdateSourceTrigger=PropertyChanged}"
                                                                           SelectedValuePath="Code"
@@ -384,7 +384,7 @@
                                                         <Border Style="{StaticResource TriggerChipBorder}"
                                                                 Visibility="{Binding SupportsSimPressOptions, Converter={StaticResource BoolToVis}}">
                                                             <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="Sim Press Time" Style="{StaticResource TriggerControlLabel}"/>
+                                                                <TextBlock Text="Simultaneous Press Time" Style="{StaticResource TriggerControlLabel}"/>
                                                                 <hc:NumericUpDown Minimum="0"
                                                                                   Maximum="60000"
                                                                                   DecimalPlaces="0"
@@ -514,7 +514,7 @@
                                                             <MenuItem Header="Hold Press" Tag="Hold" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddHoldPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                             <MenuItem Header="Double Press" Tag="Double" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddDoublePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                             <MenuItem Header="Chorded Press" Tag="Chorded" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                                            <MenuItem Header="Sim Press" Tag="SimPress" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                            <MenuItem Header="Simultaneous Press" Tag="SimPress" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                             <MenuItem Header="Start Press" Tag="Start" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                             <MenuItem Header="Release Press" Tag="Release" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                         </ContextMenu></Button.ContextMenu>
@@ -533,7 +533,7 @@
                                                             <MenuItem Header="Hold Press" Tag="Hold" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddHoldPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                             <MenuItem Header="Double Press" Tag="Double" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddDoublePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                             <MenuItem Header="Chorded Press" Tag="Chorded" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                                            <MenuItem Header="Sim Press" Tag="SimPress" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                            <MenuItem Header="Simultaneous Press" Tag="SimPress" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                             <MenuItem Header="Start Press" Tag="Start" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                             <MenuItem Header="Release Press" Tag="Release" Click="AddExtraBindingMenuItem_Click" IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                         </ContextMenu></Button.ContextMenu>
