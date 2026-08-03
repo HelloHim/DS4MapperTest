@@ -5857,6 +5857,22 @@ namespace DS4MapperTest
                     SubModeChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
+
+            public double RotateSmoothOverride
+            {
+                get => flickAction.RotateSmoothOverride;
+                set
+                {
+                    flickAction.RotateSmoothOverride = value;
+                    RotateSmoothOverrideChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler RotateSmoothOverrideChanged;
+
+            public bool ShouldSerializeRotateSmoothOverride()
+            {
+                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
+            }
             public event EventHandler SubModeChanged;
 
             public bool ShouldSerializeSubMode()
@@ -6031,6 +6047,7 @@ namespace DS4MapperTest
             settings.ReleaseDampeningSpeedChanged += Settings_ReleaseDampeningSpeedChanged;
             settings.MultiplierCompensationChanged += Settings_MultiplierCompensationChanged;
             settings.AccelerationMultiplierChanged += Settings_AccelerationMultiplierChanged;
+            settings.RotateSmoothOverrideChanged += Settings_RotateSmoothOverrideChanged;
         }
 
         public StickFlickStickActionSerializer(ActionLayer tempLayer, MapAction action) :
@@ -6097,6 +6114,11 @@ namespace DS4MapperTest
         private void Settings_AccelerationMultiplierChanged(object sender, EventArgs e)
         {
             flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+        }
+
+        private void Settings_RotateSmoothOverrideChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
         }
     }
 
