@@ -538,6 +538,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="170"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="170"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
@@ -726,6 +727,26 @@
                     </Grid>
                 </Border>
 
+                <Border Style="{StaticResource ModeRowBorder}"
+                        Visibility="{Binding ShowRotationSettings, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Rotate Smoothing" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="-1" Maximum="1" DecimalPlaces="2" Increment="0.01"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding RotateSmoothOverride, UpdateSourceTrigger=LostFocus}"/>
+                        </Grid>
+                        <TextBlock Text="-1 uses automatic smoothing; 0 turns it off. Positive values override the small-angle threshold."
+                                   Style="{StaticResource JsmccMutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
                 <Border Style="{StaticResource ModeRowBorder}">
                     <StackPanel>
                         <Grid>
@@ -773,6 +794,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="170"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="170"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
@@ -780,8 +802,16 @@
                             <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9999" DecimalPlaces="1" Increment="10"
                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                               Value="{Binding MasterCalibrationValue, UpdateSourceTrigger=LostFocus}"/>
-                            <TextBlock Grid.Column="2" Text="In-Game Sensitivity" Style="{StaticResource JsmccLabelText}"/>
-                            <hc:NumericUpDown Grid.Column="3" Minimum="0.1" Maximum="10" DecimalPlaces="2" Increment="0.05"
+                            <ComboBox Grid.Column="2"
+                                      ItemsSource="{Binding GamePresets}"
+                                      SelectedItem="{Binding SelectedPreset}"
+                                      DisplayMemberPath="Name"
+                                      Width="180"
+                                      Margin="8,0,0,0"
+                                      HorizontalAlignment="Left"
+                                      Style="{StaticResource JsmccComboBoxStyle}"/>
+                            <TextBlock Grid.Column="3" Text="In-Game Sensitivity" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="4" Minimum="0.1" Maximum="10" DecimalPlaces="2" Increment="0.05"
                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                               Value="{Binding InGameSens, UpdateSourceTrigger=LostFocus}"/>
                         </Grid>
