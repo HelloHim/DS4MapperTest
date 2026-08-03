@@ -39,6 +39,21 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler NameChanged;
 
+        public int SelectedSubModeIndex
+        {
+            get => (int)action.SubMode;
+            set
+            {
+                FlickStickSubMode subMode = (FlickStickSubMode)value;
+                if (action.SubMode == subMode) return;
+                action.SubMode = subMode;
+                SubModeChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedSubModeIndex)));
+            }
+        }
+        public event EventHandler SubModeChanged;
+
         // --- Calibration fields (profile-level, synced across all actions) ---
 
         public CalibMode CalibMode
@@ -380,6 +395,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             });
 
             NameChanged += StickFlickStickPropViewModel_NameChanged;
+            SubModeChanged += StickFlickStickPropViewModel_SubModeChanged;
             FlickThresholdChanged += StickFlickStickPropViewModel_FlickThresholdChanged;
             FlickTimeChanged += StickFlickStickPropViewModel_FlickTimeChanged;
             FlickTimeExponentChanged += StickFlickStickPropViewModel_FlickTimeExponentChanged;
@@ -600,6 +616,16 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.NAME);
             HighlightNameChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickFlickStickPropViewModel_SubModeChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SUB_MODE))
+            {
+                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.SUB_MODE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.SUB_MODE);
         }
 
         private void ReplaceExistingLayerAction(object sender, EventArgs e)
