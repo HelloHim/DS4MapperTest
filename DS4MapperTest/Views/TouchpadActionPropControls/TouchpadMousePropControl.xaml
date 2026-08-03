@@ -36,6 +36,14 @@
                 <!-- Calibration block — synced across profile -->
                 <shared:CalibrationModeControl />
 
+                <StackPanel Margin="0,12,0,6">
+                    <TextBlock Text="Sensitivity" Style="{StaticResource JsmccSectionTitle}"/>
+                    <TextBlock Text="Controls relative mouse sensitivity, vertical scaling, and acceleration for this touchpad input."
+                               Style="{StaticResource JsmccBodyText}"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Label Content="Swipes per 360° (SC2)" />
                     <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.001"

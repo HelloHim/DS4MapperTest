@@ -751,6 +751,16 @@
                     </StackPanel>
                 </Border>
 
+                <StackPanel Margin="0,6,0,6">
+                    <TextBlock Text="Flick Stick" Style="{StaticResource JsmccSectionTitle}"/>
+                    <TextBlock Text="Configure the flick, sweep rotation, and optional sensitivity compensation for this stick."
+                               Style="{StaticResource JsmccBodyText}"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
                 <Border Style="{StaticResource ModeRowBorder}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -861,6 +871,8 @@
                     </StackPanel>
                 </Border>
 
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </DataTemplate>
 
