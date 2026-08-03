@@ -6,6 +6,9 @@
     <Color x:Key="JsmccBg1Color">#25262B</Color>
     <Color x:Key="JsmccBg15Color">#232327</Color>
     <Color x:Key="JsmccBg2Color">#1E1E20</Color>
+    <Color x:Key="JsmccBgCardColor">#111111</Color>
+    <Color x:Key="JsmccBgRowColor">#1E1E20</Color>
+    <Color x:Key="JsmccBgFieldGroupColor">#111111</Color>
     <Color x:Key="JsmccBgButtonHoverColor">#23252B</Color>
     <Color x:Key="JsmccBgPrimaryColor">#262933</Color>
     <Color x:Key="JsmccBgInputColor">#111111</Color>
@@ -52,6 +55,9 @@
     <SolidColorBrush x:Key="JsmccBg1Brush" Color="{StaticResource JsmccBg1Color}"/>
     <SolidColorBrush x:Key="JsmccBg15Brush" Color="{StaticResource JsmccBg15Color}"/>
     <SolidColorBrush x:Key="JsmccBg2Brush" Color="{StaticResource JsmccBg2Color}"/>
+    <SolidColorBrush x:Key="JsmccBgCardBrush" Color="{StaticResource JsmccBgCardColor}"/>
+    <SolidColorBrush x:Key="JsmccBgRowBrush" Color="{StaticResource JsmccBgRowColor}"/>
+    <SolidColorBrush x:Key="JsmccBgFieldGroupBrush" Color="{StaticResource JsmccBgFieldGroupColor}"/>
     <SolidColorBrush x:Key="JsmccBgButtonHoverBrush" Color="{StaticResource JsmccBgButtonHoverColor}"/>
     <SolidColorBrush x:Key="JsmccBgPrimaryBrush" Color="{StaticResource JsmccBgPrimaryColor}"/>
     <SolidColorBrush x:Key="JsmccBgInputBrush" Color="{StaticResource JsmccBgInputColor}"/>

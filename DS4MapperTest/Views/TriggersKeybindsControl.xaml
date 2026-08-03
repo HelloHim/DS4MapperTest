@@ -16,7 +16,7 @@
         </Style>
 
         <Style x:Key="TriggerChipBorder" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource JsmccBgInputBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource JsmccBgFieldGroupBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="4"/>

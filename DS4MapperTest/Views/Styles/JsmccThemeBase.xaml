@@ -62,14 +62,14 @@
     </Style>
 
     <Style x:Key="JsmccCardBorder" TargetType="Border" BasedOn="{StaticResource JsmccPanelBorder}">
-        <Setter Property="Background" Value="{DynamicResource JsmccBgInputBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgCardBrush}"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="Margin" Value="0,0,0,6"/>
         <Setter Property="Effect" Value="{x:Null}"/>
     </Style>
 
     <Style x:Key="JsmccSettingRowBorder" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource JsmccBg2Brush}"/>
+        <Setter Property="Background" Value="{DynamicResource JsmccBgRowBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="{StaticResource JsmccCardRadius}"/>
