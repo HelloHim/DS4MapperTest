@@ -613,12 +613,14 @@ namespace DS4MapperTest.ViewModels
         public bool HasDoublePress => HasFunc<DoublePressFunc>();
         public bool HasDistancePress => HasFunc<DistanceFunc>();
         public bool HasChordedPress => HasFunc<ChordedPressFunc>();
+        public bool HasSimPress => HasFunc<SimPressFunc>();
         public bool HasStartPress => HasFunc<StartPressFunc>();
         public bool HasReleasePress => HasFunc<ReleaseFunc>();
         public bool CanAddHoldPress => !HasHoldPress;
         public bool CanAddDoublePress => !HasDoublePress;
         public bool CanAddDistancePress => !HasDistancePress;
         public bool CanAddChordedPress => !HasChordedPress;
+        public bool CanAddSimPress => !HasSimPress;
         public bool CanAddStartPress => !HasStartPress;
         public bool CanAddReleasePress => !HasReleasePress;
 
@@ -657,6 +659,9 @@ namespace DS4MapperTest.ViewModels
                             break;
                         case ChordedPressFunc:
                             functionItems.Add(new StickExtraFuncItem(this, FaceBindingFuncKind.Chorded));
+                            break;
+                        case SimPressFunc:
+                            functionItems.Add(new StickExtraFuncItem(this, FaceBindingFuncKind.SimPress));
                             break;
                         case StartPressFunc:
                             functionItems.Add(new StickExtraFuncItem(this, FaceBindingFuncKind.Start));
@@ -747,6 +752,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Double => HasDoublePress,
                 FaceBindingFuncKind.Distance => HasDistancePress,
                 FaceBindingFuncKind.Chorded => HasChordedPress,
+                FaceBindingFuncKind.SimPress => HasSimPress,
                 FaceBindingFuncKind.Start => HasStartPress,
                 FaceBindingFuncKind.Release => HasReleasePress,
                 _ => false,
@@ -773,6 +779,7 @@ namespace DS4MapperTest.ViewModels
                 }, emptyOutput),
                 FaceBindingFuncKind.Distance => CreateOutputFunc(new DistanceFunc(), emptyOutput),
                 FaceBindingFuncKind.Chorded => CreateOutputFunc(new ChordedPressFunc(), emptyOutput),
+                FaceBindingFuncKind.SimPress => CreateOutputFunc(new SimPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
                 _ => null,
@@ -791,12 +798,14 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(HasDoublePress));
             OnPropertyChanged(nameof(HasDistancePress));
             OnPropertyChanged(nameof(HasChordedPress));
+            OnPropertyChanged(nameof(HasSimPress));
             OnPropertyChanged(nameof(HasStartPress));
             OnPropertyChanged(nameof(HasReleasePress));
             OnPropertyChanged(nameof(CanAddHoldPress));
             OnPropertyChanged(nameof(CanAddDoublePress));
             OnPropertyChanged(nameof(CanAddDistancePress));
             OnPropertyChanged(nameof(CanAddChordedPress));
+            OnPropertyChanged(nameof(CanAddSimPress));
             OnPropertyChanged(nameof(CanAddStartPress));
             OnPropertyChanged(nameof(CanAddReleasePress));
         }
@@ -833,6 +842,7 @@ namespace DS4MapperTest.ViewModels
         public bool SupportsReleaseOptions => Func is ReleaseFunc;
         public bool SupportsDistanceOptions => Func is DistanceFunc;
         public bool SupportsChordOptions => Func is ChordedPressFunc;
+        public bool SupportsSimPressOptions => Func is SimPressFunc;
 
         public string DisplayName => Kind switch
         {
@@ -841,6 +851,7 @@ namespace DS4MapperTest.ViewModels
             FaceBindingFuncKind.Double => "Double Press",
             FaceBindingFuncKind.Distance => "Distance",
             FaceBindingFuncKind.Chorded => "Chorded Press",
+            FaceBindingFuncKind.SimPress => "Sim Press",
             FaceBindingFuncKind.Start => "Start Press",
             FaceBindingFuncKind.Release => "Release Press",
             _ => "Binding",
@@ -1130,6 +1141,54 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        // Stick Action Pad directions have no JoypadActionCodes identity of their own (they
+        // aren't in mapper.ActionTriggerItems), so unlike every other binding surface this
+        // Sim Press pairing cannot be auto-mirrored onto its trigger button - it still works
+        // standalone (the trigger button's own press is checked live), matching how Chorded
+        // Press already behaves for this same binding.
+        public List<ActionTriggerItem> SimPressTriggerItems =>
+            ChordedPressFuncUi.BuildTriggerItems(owner.Owner.Owner.DeviceMapper);
+
+        public JoypadActionCodes SimPressTrigger
+        {
+            get => Func is SimPressFunc simPress ? simPress.TriggerButton : JoypadActionCodes.Empty;
+            set
+            {
+                if (Func is not SimPressFunc || SimPressTrigger == value) return;
+
+                owner.Owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    ButtonAction editable = owner.Owner.EnsureEditableExtraButtonAction(owner.SlotKey);
+                    if (FindFunc(editable, Kind) is SimPressFunc simPress)
+                    {
+                        simPress.TriggerButton = value;
+                    }
+                    StickSideViewModel.MarkFunctionsChanged(editable);
+                });
+                OnPropertyChanged(nameof(SimPressTrigger));
+            }
+        }
+
+        public int SimPressTimeMs
+        {
+            get => Func is SimPressFunc simPress ? simPress.SimPressTimeMs : SimPressFunc.DEFAULT_SIM_PRESS_MS;
+            set
+            {
+                if (Func is not SimPressFunc) return;
+
+                owner.Owner.Owner.DeviceMapper.ProcessMappingChangeAction(() =>
+                {
+                    ButtonAction editable = owner.Owner.EnsureEditableExtraButtonAction(owner.SlotKey);
+                    if (FindFunc(editable, Kind) is SimPressFunc simPress)
+                    {
+                        simPress.SimPressTimeMs = value;
+                    }
+                    StickSideViewModel.MarkFunctionsChanged(editable);
+                });
+                OnPropertyChanged(nameof(SimPressTimeMs));
+            }
+        }
+
         public StickExtraFuncItem(StickExtraBindingItem owner, FaceBindingFuncKind kind)
         {
             this.owner = owner;
@@ -1223,6 +1282,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Double => action.ActionFuncs.OfType<DoublePressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Distance => action.ActionFuncs.OfType<DistanceFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Chorded => action.ActionFuncs.OfType<ChordedPressFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.SimPress => action.ActionFuncs.OfType<SimPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Start => action.ActionFuncs.OfType<StartPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Release => action.ActionFuncs.OfType<ReleaseFunc>().FirstOrDefault(),
                 _ => null,
