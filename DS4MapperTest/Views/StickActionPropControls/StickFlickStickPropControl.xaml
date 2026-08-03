@@ -18,7 +18,7 @@
                     <Label Content="Flick mode" />
                     <ComboBox SelectedIndex="{Binding SelectedSubModeIndex}"
                               MinWidth="140" Margin="8,0,0,0">
-                        <ComboBoxItem>Standard Flick</ComboBoxItem>
+                        <ComboBoxItem>Standard</ComboBoxItem>
                         <ComboBoxItem>Flick Only</ComboBoxItem>
                         <ComboBoxItem>Rotate Only</ComboBoxItem>
                     </ComboBox>
