@@ -109,8 +109,8 @@ namespace DS4MapperTest.ViewModels
         public bool IsFlickStickMode => settingsViewModel is StickFlickStickPropViewModel;
 
         public string CurrentModeDisplayName =>
-            sharedModeItems.FirstOrDefault(item => item.Index == selectedModeIndex)?.DisplayName
-                ?? sharedModeItems[0].DisplayName;
+            (sharedModeItems.FirstOrDefault(item => item.Index == selectedModeIndex)
+                ?? sharedModeItems[0]).DisplayName;
 
         public string AdvancedPlaceholderText =>
             $"{SideLabel} is set to {CurrentModeDisplayName}. This mode has no advanced settings.";
