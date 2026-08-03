@@ -264,6 +264,51 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler AccelerationMultiplierChanged;
 
+        public int SelectedSnapAngleIndex
+        {
+            get => (int)action.SnapAngle;
+            set
+            {
+                FlickSnapAngle snapAngle = (FlickSnapAngle)value;
+                if (action.SnapAngle == snapAngle) return;
+                action.SnapAngle = snapAngle;
+                SnapAngleChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedSnapAngleIndex)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SnapEnabled)));
+            }
+        }
+        public event EventHandler SnapAngleChanged;
+
+        public bool SnapEnabled => action.SnapAngle != FlickSnapAngle.Off;
+
+        public double SnapStrength
+        {
+            get => action.SnapStrength;
+            set
+            {
+                if (action.SnapStrength == value) return;
+                action.SnapStrength = value;
+                SnapStrengthChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler SnapStrengthChanged;
+
+        public bool HighlightSnapAngle
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.SNAP_ANGLE);
+        }
+        public event EventHandler HighlightSnapAngleChanged;
+
+        public bool HighlightSnapStrength
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.SNAP_STRENGTH);
+        }
+        public event EventHandler HighlightSnapStrengthChanged;
+
         public bool HighlightReleaseDampeningSpeed
         {
             get => action.ParentAction == null ||
@@ -364,6 +409,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             ReleaseDampeningSpeedChanged += TouchpadFlickStickPropViewModel_ReleaseDampeningSpeedChanged;
             MultiplierCompensationChanged += TouchpadFlickStickPropViewModel_MultiplierCompensationChanged;
             AccelerationMultiplierChanged += TouchpadFlickStickPropViewModel_AccelerationMultiplierChanged;
+            SnapAngleChanged += TouchpadFlickStickPropViewModel_SnapAngleChanged;
+            SnapStrengthChanged += TouchpadFlickStickPropViewModel_SnapStrengthChanged;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
 
             double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
@@ -543,6 +590,28 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.NAME);
             HighlightNameChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadFlickStickPropViewModel_SnapAngleChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.SNAP_ANGLE))
+            {
+                action.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.SNAP_ANGLE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.SNAP_ANGLE);
+            HighlightSnapAngleChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadFlickStickPropViewModel_SnapStrengthChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.SNAP_STRENGTH))
+            {
+                action.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.SNAP_STRENGTH);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.SNAP_STRENGTH);
+            HighlightSnapStrengthChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadFlickStickPropViewModel_ReleaseDampeningSpeedChanged(object sender, EventArgs e)

@@ -60,6 +60,51 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
         public bool ShowRotationSettings => action.SubMode != FlickStickSubMode.FlickOnly;
 
+        public int SelectedSnapAngleIndex
+        {
+            get => (int)action.SnapAngle;
+            set
+            {
+                FlickSnapAngle snapAngle = (FlickSnapAngle)value;
+                if (action.SnapAngle == snapAngle) return;
+                action.SnapAngle = snapAngle;
+                SnapAngleChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedSnapAngleIndex)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SnapEnabled)));
+            }
+        }
+        public event EventHandler SnapAngleChanged;
+
+        public bool SnapEnabled => action.SnapAngle != FlickSnapAngle.Off;
+
+        public double SnapStrength
+        {
+            get => action.SnapStrength;
+            set
+            {
+                if (action.SnapStrength == value) return;
+                action.SnapStrength = value;
+                SnapStrengthChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler SnapStrengthChanged;
+
+        public bool HighlightSnapAngle
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SNAP_ANGLE);
+        }
+        public event EventHandler HighlightSnapAngleChanged;
+
+        public bool HighlightSnapStrength
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SNAP_STRENGTH);
+        }
+        public event EventHandler HighlightSnapStrengthChanged;
+
         // --- Calibration fields (profile-level, synced across all actions) ---
 
         public CalibMode CalibMode
@@ -439,6 +484,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             MultiplierCompensationChanged += StickFlickStickPropViewModel_MultiplierCompensationChanged;
             AccelerationMultiplierChanged += StickFlickStickPropViewModel_AccelerationMultiplierChanged;
             RotateSmoothOverrideChanged += StickFlickStickPropViewModel_RotateSmoothOverrideChanged;
+            SnapAngleChanged += StickFlickStickPropViewModel_SnapAngleChanged;
+            SnapStrengthChanged += StickFlickStickPropViewModel_SnapStrengthChanged;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
 
             double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
@@ -662,6 +709,28 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.NAME);
             HighlightNameChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickFlickStickPropViewModel_SnapAngleChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SNAP_ANGLE))
+            {
+                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.SNAP_ANGLE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.SNAP_ANGLE);
+            HighlightSnapAngleChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickFlickStickPropViewModel_SnapStrengthChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SNAP_STRENGTH))
+            {
+                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.SNAP_STRENGTH);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.SNAP_STRENGTH);
+            HighlightSnapStrengthChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickFlickStickPropViewModel_SubModeChanged(object sender, EventArgs e)

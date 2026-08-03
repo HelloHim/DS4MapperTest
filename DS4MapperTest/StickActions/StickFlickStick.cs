@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using DS4MapperTest.Common;
 using DS4MapperTest.StickModifiers;
 
 namespace DS4MapperTest.StickActions
@@ -35,6 +36,8 @@ namespace DS4MapperTest.StickActions
             public const string ACCELERATION_MULTIPLIER = "AccelerationMultiplier";
             public const string ROTATE_SMOOTH_OVERRIDE = "RotateSmoothOverride";
             public const string SUB_MODE = "SubMode";
+            public const string SNAP_ANGLE = "SnapAngle";
+            public const string SNAP_STRENGTH = "SnapStrength";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -51,6 +54,8 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.ACCELERATION_MULTIPLIER,
             PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE,
             PropertyKeyStrings.SUB_MODE,
+            PropertyKeyStrings.SNAP_ANGLE,
+            PropertyKeyStrings.SNAP_STRENGTH,
         };
 
         public class FlickStickMappingData
@@ -205,6 +210,23 @@ namespace DS4MapperTest.StickActions
             set => subMode = value;
         }
 
+        // Matches JoyShockMapper's FLICK_SNAP_MODE and FLICK_SNAP_STRENGTH. Only the
+        // initial flick is snapped; sweeping a held stick is left untouched.
+        private FlickSnapAngle snapAngle = FlickSnapping.DEFAULT_SNAP_ANGLE;
+        public FlickSnapAngle SnapAngle
+        {
+            get => snapAngle;
+            set => snapAngle = value;
+        }
+
+        private double snapStrength = FlickSnapping.DEFAULT_STRENGTH;
+        public double SnapStrength
+        {
+            get => snapStrength;
+            set => snapStrength = Math.Clamp(value, FlickSnapping.MinStrength,
+                FlickSnapping.MaxStrength);
+        }
+
         private FlickStickMappingData tempFlickData;
 
         private int prevAxisXVal;
@@ -313,7 +335,11 @@ namespace DS4MapperTest.StickActions
                     {
                         // Start a new flick unless this is the rotation-only variant.
                         flickData.flickProgress = 0.0;
-                        flickData.flickSize = Math.Atan2((axisXVal - axisXMid), (axisYVal - axisYMid));
+                        // Snap before deriving the flick duration so a snapped flick
+                        // is timed by the angle it actually travels.
+                        flickData.flickSize = FlickSnapping.Apply(
+                            Math.Atan2((axisXVal - axisXMid), (axisYVal - axisYMid)),
+                            snapAngle, snapStrength);
                         flickData.flickTimeActual = flickTime * Math.Pow(Math.Abs(flickData.flickSize) / Math.PI, flickTimeExponent);
                         flickData.ResetRotationSmoothing();
                         //flickData.flickFilter.Filter(0.0, mapper.CurrentLatency);
@@ -493,6 +519,12 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.SUB_MODE:
                             subMode = tempFlickAction.subMode;
                             break;
+                        case PropertyKeyStrings.SNAP_ANGLE:
+                            snapAngle = tempFlickAction.snapAngle;
+                            break;
+                        case PropertyKeyStrings.SNAP_STRENGTH:
+                            snapStrength = tempFlickAction.snapStrength;
+                            break;
                         default:
                             break;
                     }
@@ -557,6 +589,12 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.SUB_MODE:
                     subMode = tempFlickAction.subMode;
+                    break;
+                case PropertyKeyStrings.SNAP_ANGLE:
+                    snapAngle = tempFlickAction.snapAngle;
+                    break;
+                case PropertyKeyStrings.SNAP_STRENGTH:
+                    snapStrength = tempFlickAction.snapStrength;
                     break;
                 default:
                     break;

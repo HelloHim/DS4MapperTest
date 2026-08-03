@@ -1,5 +1,6 @@
 ﻿using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.Common;
 using DS4MapperTest.GyroActions;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
@@ -5697,6 +5698,39 @@ namespace DS4MapperTest
                     flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
             }
 
+            [JsonConverter(typeof(StringEnumConverter))]
+            public FlickSnapAngle SnapAngle
+            {
+                get => flickAction.SnapAngle;
+                set
+                {
+                    flickAction.SnapAngle = value;
+                    SnapAngleChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SnapAngleChanged;
+
+            public bool ShouldSerializeSnapAngle()
+            {
+                return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.SNAP_ANGLE);
+            }
+
+            public double SnapStrength
+            {
+                get => flickAction.SnapStrength;
+                set
+                {
+                    flickAction.SnapStrength = value;
+                    SnapStrengthChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SnapStrengthChanged;
+
+            public bool ShouldSerializeSnapStrength()
+            {
+                return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.SNAP_STRENGTH);
+            }
+
             public FlickStickSettings(TouchpadFlickStick flickAction)
             {
                 this.flickAction = flickAction;
@@ -5725,6 +5759,18 @@ namespace DS4MapperTest
             settings.ReleaseDampeningSpeedChanged += Settings_ReleaseDampeningSpeedChanged;
             settings.MultiplierCompensationChanged += Settings_MultiplierCompensationChanged;
             settings.AccelerationMultiplierChanged += Settings_AccelerationMultiplierChanged;
+            settings.SnapAngleChanged += Settings_SnapAngleChanged;
+            settings.SnapStrengthChanged += Settings_SnapStrengthChanged;
+        }
+
+        private void Settings_SnapAngleChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.SNAP_ANGLE);
+        }
+
+        private void Settings_SnapStrengthChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.SNAP_STRENGTH);
         }
 
         public TouchpadFlickStickActionSerializer(ActionLayer tempLayer, MapAction action) :
@@ -5856,6 +5902,39 @@ namespace DS4MapperTest
                     flickAction.SubMode = value;
                     SubModeChanged?.Invoke(this, EventArgs.Empty);
                 }
+            }
+
+            [JsonConverter(typeof(StringEnumConverter))]
+            public FlickSnapAngle SnapAngle
+            {
+                get => flickAction.SnapAngle;
+                set
+                {
+                    flickAction.SnapAngle = value;
+                    SnapAngleChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SnapAngleChanged;
+
+            public bool ShouldSerializeSnapAngle()
+            {
+                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SNAP_ANGLE);
+            }
+
+            public double SnapStrength
+            {
+                get => flickAction.SnapStrength;
+                set
+                {
+                    flickAction.SnapStrength = value;
+                    SnapStrengthChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SnapStrengthChanged;
+
+            public bool ShouldSerializeSnapStrength()
+            {
+                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SNAP_STRENGTH);
             }
 
             public double RotateSmoothOverride
@@ -6048,6 +6127,18 @@ namespace DS4MapperTest
             settings.MultiplierCompensationChanged += Settings_MultiplierCompensationChanged;
             settings.AccelerationMultiplierChanged += Settings_AccelerationMultiplierChanged;
             settings.RotateSmoothOverrideChanged += Settings_RotateSmoothOverrideChanged;
+            settings.SnapAngleChanged += Settings_SnapAngleChanged;
+            settings.SnapStrengthChanged += Settings_SnapStrengthChanged;
+        }
+
+        private void Settings_SnapAngleChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.SNAP_ANGLE);
+        }
+
+        private void Settings_SnapStrengthChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.SNAP_STRENGTH);
         }
 
         public StickFlickStickActionSerializer(ActionLayer tempLayer, MapAction action) :
