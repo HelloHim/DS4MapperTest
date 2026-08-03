@@ -187,7 +187,7 @@
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="D-Pad Mode" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBlock Grid.Column="0" Text="Directional Pad Layout" Style="{StaticResource JsmccLabelText}"/>
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding PadModeItems}"
                                   DisplayMemberPath="DisplayName"
@@ -257,18 +257,24 @@
                     </Grid>
                 </Border>
 
-                <Border Style="{StaticResource ModeRowBorder}" Visibility="{Binding ShowDiagonalPad, Converter={StaticResource BoolToVis}}">
+                <Border Style="{StaticResource ModeRowBorder}" Visibility="{Binding ShowDiagonalZoneWidth, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Diagonal Range" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBlock Grid.Column="0" Text="Diagonal Zone Width" Style="{StaticResource JsmccLabelText}"/>
                         <hc:NumericUpDown Grid.Column="1" Minimum="1" Maximum="89" DecimalPlaces="0" Increment="1"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                           Value="{Binding DiagonalRange, UpdateSourceTrigger=LostFocus}"
                                           HorizontalAlignment="Left"/>
                     </Grid>
+                    <TextBlock Text="Controls the angle assigned to each diagonal zone. Lower values favour cardinal directions; higher values make diagonals easier to enter."
+                               Style="{StaticResource JsmccMutedText}"
+                               TextWrapping="Wrap"
+                               Margin="170,6,0,0"/>
+                    </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource ModeRowBorder}">
@@ -998,7 +1004,7 @@
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="D-Pad Mode" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBlock Grid.Column="0" Text="Directional Pad Layout" Style="{StaticResource JsmccLabelText}"/>
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding PadModeItems}"
                                   DisplayMemberPath="DisplayName"
