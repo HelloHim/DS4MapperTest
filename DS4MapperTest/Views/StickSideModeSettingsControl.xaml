@@ -806,8 +806,13 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="{Binding MasterCalibrationLabel}" Style="{StaticResource JsmccLabelText}"/>
-                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9999" DecimalPlaces="1" Increment="10"
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9" DecimalPlaces="1" Increment="10"
                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Visibility="{Binding IsCountsMode, Converter={StaticResource BoolToVis}}"
+                                              Value="{Binding MasterCalibrationValue, UpdateSourceTrigger=LostFocus}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9999" DecimalPlaces="4" Increment="0.0001"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Visibility="{Binding IsRwcMode, Converter={StaticResource BoolToVis}}"
                                               Value="{Binding MasterCalibrationValue, UpdateSourceTrigger=LostFocus}"/>
                             <ComboBox Grid.Column="2"
                                       ItemsSource="{Binding GamePresets}"
