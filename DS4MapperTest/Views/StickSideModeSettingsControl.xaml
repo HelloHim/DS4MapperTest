@@ -147,8 +147,6 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Max Output" Style="{StaticResource JsmccLabelText}"/>
                         <CheckBox Grid.Column="1" IsChecked="{Binding MaxOutputEnabled}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
@@ -713,10 +711,6 @@
                                               Width="90" Margin="8,0,0,0" Style="{StaticResource JsmccNumericUpDownStyle}"
                                               Value="{Binding FlickTimeExponent, UpdateSourceTrigger=LostFocus}"/>
                         </StackPanel>
-                        <TextBlock Grid.Column="2" Text="Min Angle Threshold" Style="{StaticResource JsmccLabelText}"/>
-                        <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="45" DecimalPlaces="1" Increment="0.5"
-                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding MinAngleThreshold, UpdateSourceTrigger=LostFocus}"/>
                     </Grid>
                 </Border>
 
@@ -742,7 +736,7 @@
                                 <ColumnDefinition Width="170"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Rotate Smoothing" Style="{StaticResource JsmccLabelText}"/>
+                            <TextBlock Grid.Column="0" Text="Sweep Rotation Smoothing" Style="{StaticResource JsmccLabelText}"/>
                             <hc:NumericUpDown Grid.Column="1" Minimum="-1" Maximum="1" DecimalPlaces="2" Increment="0.01"
                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                               Value="{Binding RotateSmoothOverride, UpdateSourceTrigger=LostFocus}"/>
