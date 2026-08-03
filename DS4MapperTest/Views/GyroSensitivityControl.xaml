@@ -95,12 +95,6 @@
                             </StackPanel>
                         </Border>
 
-                        <Button Content="Reset to Defaults"
-                                Command="{Binding ResetAccelerationDefaultsComm}"
-                                Style="{StaticResource JsmccButtonStyle}"
-                                HorizontalAlignment="Left"
-                                Margin="0,6,0,0"/>
-
                         <Border Style="{StaticResource SensRowBorder}" Margin="0,12,0,0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -159,6 +153,12 @@
                                     <TextBlock Text="{Binding TriggerSensitivityModifierValidationMessage}" Foreground="IndianRed" Visibility="{Binding TriggerSensitivityModifierIsValid, Converter={StaticResource InvertBoolToVis}}"/>
                                 </StackPanel>
                         </StackPanel>
+
+                        <Button Content="Reset to Defaults"
+                                Command="{Binding ResetAccelerationDefaultsComm}"
+                                Style="{StaticResource JsmccButtonStyle}"
+                                HorizontalAlignment="Left"
+                                Margin="0,6,0,0"/>
                     </StackPanel>
                 </Border>
                     </TabItem>
