@@ -81,7 +81,7 @@
                                                       Tag="Chorded"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click"/>
-                                            <MenuItem Header="Sim Press"
+                                            <MenuItem Header="Simultaneous Press"
                                                       Tag="SimPress"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click"/>
@@ -451,7 +451,7 @@
                                                             Margin="0,0,8,4"
                                                             Visibility="{Binding SupportsSimPressOptions, Converter={StaticResource BoolToVis}}">
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Sim Press Trigger" Style="{StaticResource SharedControlLabel}"/>
+                                                            <TextBlock Text="Simultaneous Press Trigger" Style="{StaticResource SharedControlLabel}"/>
                                                             <ComboBox ItemsSource="{Binding SimPressTriggerItems}"
                                                                       SelectedValue="{Binding SimPressTrigger, UpdateSourceTrigger=PropertyChanged}"
                                                                       SelectedValuePath="Code"
@@ -470,7 +470,7 @@
                                                             Margin="0,0,8,4"
                                                             Visibility="{Binding SupportsSimPressOptions, Converter={StaticResource BoolToVis}}">
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Sim Press Time" Style="{StaticResource SharedControlLabel}"/>
+                                                            <TextBlock Text="Simultaneous Press Time" Style="{StaticResource SharedControlLabel}"/>
                                                             <hc:NumericUpDown Minimum="0"
                                                                               Maximum="60000"
                                                                               DecimalPlaces="0"
