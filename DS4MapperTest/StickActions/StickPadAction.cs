@@ -105,6 +105,9 @@ namespace DS4MapperTest.StickActions
             EightWay,
             FourWayCardinal,
             FourWayDiagonal,
+            // This is a UI selection marker. StickSideViewModel replaces the action with
+            // StickAnalogEmulationAction before it can be processed or serialised.
+            AnalogEmulation,
         }
 
         public enum DpadDirections : uint

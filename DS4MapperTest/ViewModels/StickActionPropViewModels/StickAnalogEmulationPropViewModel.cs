@@ -41,6 +41,31 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler NameChanged;
 
+        // Kept here so legacy analogue-emulation actions are edited through the same
+        // D-Pad mode selector as newly-created D-Pad actions.
+        private readonly List<PadModeItem> padModeItems = new List<PadModeItem>()
+        {
+            new PadModeItem("Standard", StickPadAction.DPadMode.Standard),
+            new PadModeItem("Eight Way", StickPadAction.DPadMode.EightWay),
+            new PadModeItem("Four Way Cardinal", StickPadAction.DPadMode.FourWayCardinal),
+            new PadModeItem("Four Way Diagonal", StickPadAction.DPadMode.FourWayDiagonal),
+            new PadModeItem("Analogue Emulation", StickPadAction.DPadMode.AnalogEmulation),
+        };
+        public List<PadModeItem> PadModeItems => padModeItems;
+        public StickPadAction.DPadMode SelectedPadMode => padModeItems[selectedPadModeIndex].DPadMode;
+        private int selectedPadModeIndex = 4;
+        public int SelectedPadModeIndex
+        {
+            get => selectedPadModeIndex;
+            set
+            {
+                if (selectedPadModeIndex == value) return;
+                selectedPadModeIndex = value;
+                SelectedPadModeIndexChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler SelectedPadModeIndexChanged;
+
         private List<EnumChoiceSelection<StickDeadZone.DeadZoneTypes>> deadZoneModesChoices =
             new List<EnumChoiceSelection<StickDeadZone.DeadZoneTypes>>()
             {

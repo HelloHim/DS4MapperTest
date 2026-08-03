@@ -993,6 +993,22 @@
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="D-Pad Mode" Style="{StaticResource JsmccLabelText}"/>
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding PadModeItems}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedIndex="{Binding SelectedPadModeIndex}"
+                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                  HorizontalAlignment="Left"
+                                  MinWidth="180"/>
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Dead Zone Type" Style="{StaticResource JsmccLabelText}"/>
                         <ComboBox Grid.Column="1"
                                   ItemsSource="{Binding DeadZoneModesChoices}"
