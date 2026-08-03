@@ -149,10 +149,15 @@ namespace DS4MapperTest.StickActions
             set => flickTimeExponent = Math.Clamp(value, 0.0, 1.0);
         }
 
-        private double minAngleThreshold;
+        // Retained for backward-compatible profile loading. It is deliberately
+        // disabled: small rotation steps are preserved and smoothed instead of
+        // accumulated behind a threshold, matching the current sweep approach.
+        private const double MIN_ANGLE_THRESHOLD_DISABLED = 0.0;
+        private double minAngleThreshold = MIN_ANGLE_THRESHOLD_DISABLED;
         public double MinAngleThreshold
         {
-            get => minAngleThreshold; set => minAngleThreshold = value;
+            get => MIN_ANGLE_THRESHOLD_DISABLED;
+            set => minAngleThreshold = MIN_ANGLE_THRESHOLD_DISABLED;
         }
 
         private double inGameSens = IN_GAME_SENS_DEFAULT;
@@ -231,24 +236,12 @@ namespace DS4MapperTest.StickActions
             lsangle += tempFlickData.flickAngleRemainder;
             tempFlickData.flickAngleRemainder = 0.0;
 
-            if (minAngleThreshold == 0.0 && lsangle != 0.0)
-            //if (Math.Abs(lsangle) >= 0.5)
+            if (lsangle != 0.0)
             {
                 tempFlickData.flickAngleRemainder = 0.0;
                 //flickAngleRemainder = lsangle - (int)lsangle;
                 //lsangle = (int)lsangle;
                 tempMouseDeltaX += lsangle * realWorldCalibration / inGameSens;
-            }
-            else if (Math.Abs(lsangle) >= minAngleThreshold)
-            {
-                tempFlickData.flickAngleRemainder = 0.0;
-                //flickAngleRemainder = lsangle - (int)lsangle;
-                //lsangle = (int)lsangle;
-                tempMouseDeltaX += lsangle * realWorldCalibration / inGameSens;
-            }
-            else
-            {
-                tempFlickData.flickAngleRemainder = lsangle;
             }
 
             if (multiplierCompensation && tempMouseDeltaX != 0.0)
