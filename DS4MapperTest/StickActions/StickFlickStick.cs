@@ -10,6 +10,13 @@ using DS4MapperTest.StickModifiers;
 
 namespace DS4MapperTest.StickActions
 {
+    public enum FlickStickSubMode
+    {
+        Standard,
+        FlickOnly,
+        RotateOnly,
+    }
+
     public class StickFlickStick : StickMapAction
     {
         public const string ACTION_TYPE_NAME = "StickFlickStickAction";
@@ -26,6 +33,7 @@ namespace DS4MapperTest.StickActions
             public const string RELEASE_DAMPENING_SPEED = "ReleaseDampeningSpeed";
             public const string MULTIPLIER_COMPENSATION = "MultiplierCompensation";
             public const string ACCELERATION_MULTIPLIER = "AccelerationMultiplier";
+            public const string SUB_MODE = "SubMode";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -40,6 +48,7 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.RELEASE_DAMPENING_SPEED,
             PropertyKeyStrings.MULTIPLIER_COMPENSATION,
             PropertyKeyStrings.ACCELERATION_MULTIPLIER,
+            PropertyKeyStrings.SUB_MODE,
         };
 
         public class FlickStickMappingData
@@ -131,6 +140,13 @@ namespace DS4MapperTest.StickActions
             get => accelerationMultiplier;
             set => accelerationMultiplier = Math.Clamp(value,
                 ACCELERATION_MULTIPLIER_MIN, ACCELERATION_MULTIPLIER_MAX);
+        }
+
+        private FlickStickSubMode subMode = FlickStickSubMode.Standard;
+        public FlickStickSubMode SubMode
+        {
+            get => subMode;
+            set => subMode = value;
         }
 
         private FlickStickMappingData tempFlickData;
@@ -277,7 +293,12 @@ namespace DS4MapperTest.StickActions
                     //Trace.WriteLine(string.Format("ANGLE CHANGE: {0} {1} {2}", stickAngle, lastStickAngle, rawAngleChange));
                     //Trace.WriteLine(string.Format("{0} {1} | {2} {3}", axisXVal, prevXVal, axisYVal, prevYVal));
                     //angleChange = flickData.flickFilter.Filter(angleChange, mapper.CurrentLatency);
-                    result += angleChange * sweepDampen;
+                    // Flick Only deliberately preserves the initial flick but blocks
+                    // the camera rotation caused by sweeping a held stick.
+                    if (subMode != FlickStickSubMode.FlickOnly)
+                    {
+                        result += angleChange * sweepDampen;
+                    }
                 }
             }
             else
@@ -405,6 +426,9 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.ACCELERATION_MULTIPLIER:
                             accelerationMultiplier = tempFlickAction.accelerationMultiplier;
                             break;
+                        case PropertyKeyStrings.SUB_MODE:
+                            subMode = tempFlickAction.subMode;
+                            break;
                         default:
                             break;
                     }
@@ -463,6 +487,9 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.ACCELERATION_MULTIPLIER:
                     accelerationMultiplier = tempFlickAction.accelerationMultiplier;
+                    break;
+                case PropertyKeyStrings.SUB_MODE:
+                    subMode = tempFlickAction.subMode;
                     break;
                 default:
                     break;

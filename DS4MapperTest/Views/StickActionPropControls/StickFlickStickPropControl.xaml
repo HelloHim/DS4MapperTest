@@ -11,7 +11,19 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <DockPanel Margin="0,8,0,0">
         <StackPanel DockPanel.Dock="Top">
-            <local1:StickActionSelectControl x:Name="stickSelectControl" DockPanel.Dock="Top" />
+            <StackPanel Orientation="Horizontal">
+                <local1:StickActionSelectControl x:Name="stickSelectControl" />
+
+                <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
+                    <Label Content="Flick mode" />
+                    <ComboBox SelectedIndex="{Binding SelectedSubModeIndex}"
+                              MinWidth="140" Margin="8,0,0,0">
+                        <ComboBoxItem>Standard Flick</ComboBoxItem>
+                        <ComboBoxItem>Flick Only</ComboBoxItem>
+                        <ComboBoxItem>Rotate Only</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+            </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Name" />
