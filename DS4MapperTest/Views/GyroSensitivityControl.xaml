@@ -116,13 +116,18 @@
                             </Grid>
                         </Border>
 
-                        <Border Style="{StaticResource JsmccCardBorder}" Margin="0,12,0,0">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                    <TextBlock Text="Trigger Sensitivity Modifier" Style="{StaticResource JsmccCardTitle}" VerticalAlignment="Center"/>
-                                    <CheckBox Content="Enable Trigger Sensitivity Modifier" Style="{StaticResource JsmccToggleStyle}"
-                                              IsChecked="{Binding TriggerSensitivityModifierEnabled}" Margin="12,0,0,0"/>
-                                </StackPanel>
+                        <StackPanel Margin="0,12,0,0">
+                            <Border Style="{StaticResource SensRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Trigger Sensitivity Modifier" Style="{StaticResource SensRowLabel}"/>
+                                    <CheckBox Grid.Column="1" Content="Enable" Style="{StaticResource JsmccToggleStyle}"
+                                              IsChecked="{Binding TriggerSensitivityModifierEnabled}"/>
+                                </Grid>
+                            </Border>
                                 <StackPanel Visibility="{Binding TriggerSensitivityModifierEnabled, Converter={StaticResource Boolean2VisibilityConverter}}">
                                     <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                         <TextBlock Text="Trigger" Style="{StaticResource SensRowLabel}"/><ComboBox Grid.Column="1" ItemsSource="{Binding TriggerSensitivityModifierTriggerItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerSensitivityModifierTrigger}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
@@ -153,8 +158,7 @@
                                     </Grid></Border>
                                     <TextBlock Text="{Binding TriggerSensitivityModifierValidationMessage}" Foreground="IndianRed" Visibility="{Binding TriggerSensitivityModifierIsValid, Converter={StaticResource InvertBoolToVis}}"/>
                                 </StackPanel>
-                            </StackPanel>
-                        </Border>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
                     </TabItem>
@@ -382,13 +386,8 @@
         </DataTemplate>
 
         <DataTemplate x:Key="GyroSensitivityBindingTemplate">
-            <Border Style="{StaticResource JsmccCardBorder}">
-                <StackPanel>
-                    <TextBlock Text="{Binding ActionDisplayName}" Style="{StaticResource JsmccCardTitle}"/>
-                    <ContentControl Tag="Sensitivity" DataContext="{Binding}"
-                                    Loaded="InlineSettingsHost_Loaded" Margin="0,8,0,0"/>
-                </StackPanel>
-            </Border>
+            <ContentControl Tag="Sensitivity" DataContext="{Binding}"
+                            Loaded="InlineSettingsHost_Loaded"/>
         </DataTemplate>
     </UserControl.Resources>
 
