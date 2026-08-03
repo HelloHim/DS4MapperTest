@@ -34,7 +34,7 @@
 
             <StackPanel x:Name="SensitivityFieldsPanel">
                 <!-- Calibration block — synced across profile -->
-                <shared:CalibrationModeControl />
+                <shared:CalibrationModeControl Margin="0"/>
 
                 <StackPanel Margin="0,12,0,6">
                     <TextBlock Text="Sensitivity" Style="{StaticResource JsmccSectionTitle}"/>
