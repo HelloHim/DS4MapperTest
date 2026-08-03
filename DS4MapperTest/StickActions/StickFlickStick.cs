@@ -271,11 +271,14 @@ namespace DS4MapperTest.StickActions
             {
                 if (lastLength < testLength)
                 {
-                    // Start new Flick
-                    flickData.flickProgress = 0.0; // Reset Flick progress
-                    flickData.flickSize = Math.Atan2((axisXVal - axisXMid), (axisYVal - axisYMid));
-                    flickData.flickTimeActual = flickTime * Math.Pow(Math.Abs(flickData.flickSize) / Math.PI, flickTimeExponent);
-                    //flickData.flickFilter.Filter(0.0, mapper.CurrentLatency);
+                    if (subMode != FlickStickSubMode.RotateOnly)
+                    {
+                        // Start a new flick unless this is the rotation-only variant.
+                        flickData.flickProgress = 0.0;
+                        flickData.flickSize = Math.Atan2((axisXVal - axisXMid), (axisYVal - axisYMid));
+                        flickData.flickTimeActual = flickTime * Math.Pow(Math.Abs(flickData.flickSize) / Math.PI, flickTimeExponent);
+                        //flickData.flickFilter.Filter(0.0, mapper.CurrentLatency);
+                    }
                 }
                 else
                 {
@@ -311,7 +314,8 @@ namespace DS4MapperTest.StickActions
             // Continue Flick motion
             double lastFlickProgress = flickData.flickProgress;
             double testFlickTime = flickData.flickTimeActual;
-            if (lastFlickProgress < testFlickTime)
+            if (subMode != FlickStickSubMode.RotateOnly &&
+                lastFlickProgress < testFlickTime)
             {
                 flickData.flickProgress = Math.Min(flickData.flickProgress + mapper.CurrentLatency,
                     testFlickTime);
