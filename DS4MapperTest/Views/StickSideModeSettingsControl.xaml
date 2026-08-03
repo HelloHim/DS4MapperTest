@@ -1066,14 +1066,31 @@
 
         <Border Style="{StaticResource JsmccCardBorder}">
             <StackPanel>
-                <TextBlock Text="Stick Mode" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
-                <ComboBox ItemsSource="{Binding ModeItems}"
-                          DisplayMemberPath="DisplayName"
-                          SelectedValuePath="Index"
-                          SelectedValue="{Binding SelectedModeIndex}"
-                          Style="{StaticResource JsmccComboBoxStyle}"
-                          HorizontalAlignment="Left"
-                          MinWidth="220"/>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel>
+                        <TextBlock Text="Stick Mode" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding ModeItems}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedValuePath="Index"
+                                  SelectedValue="{Binding SelectedModeIndex}"
+                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                  HorizontalAlignment="Left"
+                                  MinWidth="220"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="16,0,0,0"
+                                Visibility="{Binding IsFlickStickMode, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="Flick Mode" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
+                        <ComboBox SelectedIndex="{Binding SettingsViewModel.SelectedSubModeIndex}"
+                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                  HorizontalAlignment="Left"
+                                  MinWidth="180">
+                            <ComboBoxItem>Standard</ComboBoxItem>
+                            <ComboBoxItem>Flick Only</ComboBoxItem>
+                            <ComboBoxItem>Rotate Only</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
         </Border>
 
