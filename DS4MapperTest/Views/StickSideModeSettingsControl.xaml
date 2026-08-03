@@ -1190,6 +1190,24 @@
                 </Border>
 
                 <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid IsEnabled="{Binding IsEightWayDirectionResolution}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Diagonal Zone Width" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="90" DecimalPlaces="0" Increment="1"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding DiagonalZoneWidth, UpdateSourceTrigger=LostFocus}"/>
+                    </Grid>
+                </Border>
+
+                <TextBlock Text="Controls the angle assigned to each diagonal zone in 8 Directions. It is not used by 16, 32, or Continuous Direction."
+                           Style="{StaticResource JsmccMutedText}"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,4"/>
+
+                <Border Style="{StaticResource ModeRowBorder}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>

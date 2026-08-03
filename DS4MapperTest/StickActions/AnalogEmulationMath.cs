@@ -32,6 +32,7 @@ namespace DS4MapperTest.StickActions
         /// (0.0-1.0) within the current Direction Resolution mode.
         /// </summary>
         public static void ComputeDirectionBlend(double xNorm, double yNorm, ResolutionMode mode,
+            int diagonalZoneWidth,
             out Direction primary, out Direction secondary, out double secondaryBlend)
         {
             if (xNorm == 0.0 && yNorm == 0.0)
@@ -46,14 +47,19 @@ namespace DS4MapperTest.StickActions
             double angleRad = Math.Atan2(xNorm, yNorm);
             double angle = (angleRad >= 0 ? angleRad : (2 * Math.PI + angleRad)) * 180.0 / Math.PI;
 
-            ComputeDirectionBlendFromAngle(angle, mode, out primary, out secondary, out secondaryBlend);
+            ComputeDirectionBlendFromAngle(angle, mode, diagonalZoneWidth, out primary, out secondary, out secondaryBlend);
         }
+
+        public static void ComputeDirectionBlend(double xNorm, double yNorm, ResolutionMode mode,
+            out Direction primary, out Direction secondary, out double secondaryBlend) =>
+            ComputeDirectionBlend(xNorm, yNorm, mode, 45, out primary, out secondary, out secondaryBlend);
 
         /// <summary>
         /// Angle-driven core of ComputeDirectionBlend, exposed directly so tests can target exact
         /// anchor and intermediate angles without reconstructing xNorm/yNorm vectors.
         /// </summary>
         public static void ComputeDirectionBlendFromAngle(double angleDeg, ResolutionMode mode,
+            int diagonalZoneWidth,
             out Direction primary, out Direction secondary, out double secondaryBlend)
         {
             double angle = angleDeg % 360.0;
@@ -88,8 +94,11 @@ namespace DS4MapperTest.StickActions
             {
                 case ResolutionMode.EightWay:
                     // Plain 8-way D-Pad bucketing: snap to the nearest cardinal (0%) or
-                    // diagonal (100%), never an intermediate pulse.
-                    secondaryBlend = Math.Round(rawBlend, MidpointRounding.AwayFromZero);
+                    // diagonal (100%), never an intermediate pulse. The diagonal zone width
+                    // only applies here because higher resolutions blend continuously.
+                    int width = Math.Clamp(diagonalZoneWidth, 0, 90);
+                    double threshold = 1.0 - (width / 90.0);
+                    secondaryBlend = width > 0 && rawBlend >= threshold ? 1.0 : 0.0;
                     break;
                 case ResolutionMode.Sixteen:
                     secondaryBlend = Math.Round(rawBlend * 2.0, MidpointRounding.AwayFromZero) / 2.0;
@@ -109,6 +118,10 @@ namespace DS4MapperTest.StickActions
                 secondaryBlend = 0.0;
             }
         }
+
+        public static void ComputeDirectionBlendFromAngle(double angleDeg, ResolutionMode mode,
+            out Direction primary, out Direction secondary, out double secondaryBlend) =>
+            ComputeDirectionBlendFromAngle(angleDeg, mode, 45, out primary, out secondary, out secondaryBlend);
 
         /// <summary>
         /// Evaluates a repeating ON/OFF duty cycle at a given running phase (ms), where duty is

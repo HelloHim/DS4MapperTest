@@ -7227,6 +7227,21 @@ namespace DS4MapperTest
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DIRECTION_MODE);
             }
 
+            public int DiagonalZoneWidth
+            {
+                get => analogAction.DiagonalZoneWidth;
+                set
+                {
+                    analogAction.DiagonalZoneWidth = value;
+                    DiagonalZoneWidthChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DiagonalZoneWidthChanged;
+            public bool ShouldSerializeDiagonalZoneWidth()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.DIAGONAL_ZONE_WIDTH);
+            }
+
             public int DirectionPulseTimeMs
             {
                 get => analogAction.DirectionPulseTimeMs;
@@ -7558,6 +7573,7 @@ namespace DS4MapperTest
             settings.RotationChanged += Settings_RotationChanged;
             settings.MaxZoneChanged += Settings_MaxZoneChanged;
             settings.DirectionModeChanged += Settings_DirectionModeChanged;
+            settings.DiagonalZoneWidthChanged += Settings_DiagonalZoneWidthChanged;
             settings.DirectionPulseTimeMsChanged += Settings_DirectionPulseTimeMsChanged;
             settings.AnalogSpeedEmulationEnabledChanged += Settings_AnalogSpeedEmulationEnabledChanged;
             settings.AnalogEmulationActivePercentChanged += Settings_AnalogEmulationActivePercentChanged;
@@ -7680,6 +7696,11 @@ namespace DS4MapperTest
         private void Settings_DirectionModeChanged(object sender, EventArgs e)
         {
             analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIRECTION_MODE);
+        }
+
+        private void Settings_DiagonalZoneWidthChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.DIAGONAL_ZONE_WIDTH);
         }
 
         private void Settings_DirectionPulseTimeMsChanged(object sender, EventArgs e)
