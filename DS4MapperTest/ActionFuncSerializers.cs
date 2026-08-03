@@ -632,6 +632,94 @@ namespace DS4MapperTest
         }
     }
 
+    public class SimPressFuncSerializer : ActionFuncSerializer
+    {
+        public class SimPressSettings
+        {
+            private SimPressFunc simPressFunc;
+
+            [JsonConverter(typeof(StringEnumConverter))]
+            public JoypadActionCodes Trigger
+            {
+                get => simPressFunc.TriggerButton;
+                set
+                {
+                    simPressFunc.TriggerButton = value;
+                }
+            }
+            public bool ShouldSerializeTrigger()
+            {
+                return simPressFunc.TriggerButton != JoypadActionCodes.Empty;
+            }
+
+            public int SimPressTimeMs
+            {
+                get => simPressFunc.SimPressTimeMs;
+                set => simPressFunc.SimPressTimeMs = value;
+            }
+            public bool ShouldSerializeSimPressTimeMs()
+            {
+                return simPressFunc.SimPressTimeMs != ActionUtil.SimPressFunc.DEFAULT_SIM_PRESS_MS;
+            }
+
+            public bool Interruptable
+            {
+                get => simPressFunc.InterruptRegularPress;
+                set => simPressFunc.InterruptRegularPress = value;
+            }
+            public bool ShouldSerializeInterruptable() => !simPressFunc.InterruptRegularPress;
+
+            public bool IsDefault()
+            {
+                return simPressFunc.TriggerButton == JoypadActionCodes.Empty &&
+                    simPressFunc.SimPressTimeMs == ActionUtil.SimPressFunc.DEFAULT_SIM_PRESS_MS &&
+                    simPressFunc.InterruptRegularPress == true;
+            }
+
+            public SimPressSettings(SimPressFunc actionFunc)
+            {
+                this.simPressFunc = actionFunc;
+            }
+        }
+
+        private const string typeString = "SimPress";
+
+        private SimPressFunc simPressFunc = new SimPressFunc();
+        [JsonIgnore]
+        public SimPressFunc SimPressFuncInstance { get => simPressFunc; set => simPressFunc = value; }
+
+        private SimPressSettings settings;
+        public SimPressSettings Settings
+        {
+            get => settings;
+            set => settings = value;
+        }
+        public bool ShouldSerializeSettings()
+        {
+            return !settings.IsDefault();
+        }
+
+        public SimPressFuncSerializer() : base()
+        {
+            this.type = typeString;
+            actionFunc = simPressFunc;
+            settings = new SimPressSettings(simPressFunc);
+        }
+
+        public SimPressFuncSerializer(ActionFunc tempFunc) : base(tempFunc)
+        {
+            if (tempFunc is SimPressFunc temp)
+            {
+                simPressFunc = temp;
+                this.type = typeString;
+                actionFunc = simPressFunc;
+                settings = new SimPressSettings(simPressFunc);
+
+                PopulateOutputActionData();
+            }
+        }
+    }
+
     public class AnalogFuncSerializer : ActionFuncSerializer
     {
         public class AnalogFuncSettings
@@ -865,6 +953,12 @@ namespace DS4MapperTest
                     chordedInstance.ActionDataSerializers.RemoveAll((item) => item == null);
                     resultInstance = chordedInstance;
                     break;
+                case "SimPress":
+                    SimPressFuncSerializer simPressInstance = new SimPressFuncSerializer();
+                    JsonConvert.PopulateObject(j.ToString(), simPressInstance);
+                    simPressInstance.ActionDataSerializers.RemoveAll((item) => item == null);
+                    resultInstance = simPressInstance;
+                    break;
                 case "Analog":
                     AnalogFuncSerializer analogInstance = new AnalogFuncSerializer();
                     JsonConvert.PopulateObject(j.ToString(), analogInstance);
@@ -933,6 +1027,13 @@ namespace DS4MapperTest
                     if (current is ChordedPressFuncSerializer chordedFuncSerializer)
                     {
                         serializer.Serialize(writer, chordedFuncSerializer);
+                    }
+
+                    break;
+                case "SimPress":
+                    if (current is SimPressFuncSerializer simPressFuncSerializer)
+                    {
+                        serializer.Serialize(writer, simPressFuncSerializer);
                     }
 
                     break;
