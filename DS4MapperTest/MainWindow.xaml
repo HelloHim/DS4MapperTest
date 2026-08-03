@@ -489,7 +489,7 @@
                                                                 ShowPanelHeader="False"
                                                                 ShowBindingHeader="False"/>
                                     </TabItem>
-                                    <TabItem Header="Sensitivity &amp; Calibration">
+                                    <TabItem Header="Sensitivity">
                                         <views:GyroSensitivityControl/>
                                     </TabItem>
                                     <TabItem Header="Noise &amp; Steadying">

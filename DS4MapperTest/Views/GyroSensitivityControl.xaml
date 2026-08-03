@@ -396,15 +396,15 @@
                   HorizontalScrollBarVisibility="Disabled"
                   CanContentScroll="False">
         <StackPanel Margin="0,0,10,12">
+            <views:GyroCalibrationControl DataContext="{Binding GyroCalibVM}" Margin="0,0,0,12"/>
+
             <TextBlock Text="Sensitivity" Style="{StaticResource JsmccSectionTitle}"/>
-            <TextBlock Text="Controls calibration, how fast the gyro turns your aim, and how that speed responds to how quickly you rotate the controller."
+            <TextBlock Text="Controls how fast the gyro turns your aim and how that speed responds to how quickly you rotate the controller."
                        Style="{StaticResource JsmccBodyText}"
                        TextWrapping="Wrap"
                        Margin="0,4,0,0"/>
 
-            <views:GyroCalibrationControl DataContext="{Binding GyroCalibVM}" Margin="0,12,0,0"/>
-
-            <ItemsControl ItemsSource="{Binding GyroBindings}" ItemTemplate="{StaticResource GyroSensitivityBindingTemplate}" Margin="0,4,0,0"/>
+            <ItemsControl ItemsSource="{Binding GyroBindings}" ItemTemplate="{StaticResource GyroSensitivityBindingTemplate}" Margin="0,12,0,0"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

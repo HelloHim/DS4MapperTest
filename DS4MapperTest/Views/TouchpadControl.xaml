@@ -5,11 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:views="clr-namespace:DS4MapperTest.Views"
+             xmlns:converters="clr-namespace:DS4MapperTest.Converters"
              mc:Ignorable="d"
              d:DesignHeight="560"
              d:DesignWidth="860">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVis"/>
 
         <Style x:Key="TouchpadInlineCard" TargetType="Border" BasedOn="{StaticResource JsmccCardBorder}">
             <Setter Property="Margin" Value="0,0,0,8"/>
@@ -134,9 +136,10 @@
 
                 <Border Visibility="{Binding IsSensitivityCalibrationAction, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
-                        <StackPanel Margin="0,0,0,6">
-                            <TextBlock Text="Sensitivity &amp; Calibration" Style="{StaticResource JsmccSectionTitle}"/>
-                            <TextBlock Text="Calibration, base and vertical sensitivity, and acceleration curve settings for this touchpad input."
+                        <StackPanel Margin="0,0,0,6"
+                                    Visibility="{Binding IsRelativeMouseAction, Converter={StaticResource InvertBoolToVis}}">
+                            <TextBlock Text="Sensitivity" Style="{StaticResource JsmccSectionTitle}"/>
+                            <TextBlock Text="Base and vertical sensitivity, and acceleration curve settings for this touchpad input."
                                        Style="{StaticResource JsmccBodyText}"
                                        TextWrapping="Wrap"
                                        Margin="0,4,0,0"/>
