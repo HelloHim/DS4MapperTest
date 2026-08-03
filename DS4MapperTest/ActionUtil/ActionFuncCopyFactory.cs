@@ -51,6 +51,12 @@ namespace DS4MapperTest.ActionUtil
                         result = temp;
                         break;
                     }
+                case SimPressFunc simPressFunc:
+                    {
+                        SimPressFunc temp = new SimPressFunc(simPressFunc);
+                        result = temp;
+                        break;
+                    }
                 default: break;
             }
 
