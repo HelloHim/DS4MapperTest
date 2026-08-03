@@ -808,6 +808,41 @@
                 </Border>
 
                 <Border Style="{StaticResource ModeRowBorder}"
+                        Visibility="{Binding ShowFlickSettings, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Snap Angle" Style="{StaticResource JsmccLabelText}"/>
+                            <ComboBox Grid.Column="1" SelectedIndex="{Binding SelectedSnapAngleIndex}"
+                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                      HorizontalAlignment="Left"
+                                      MinWidth="180">
+                                <ComboBoxItem>Off</ComboBoxItem>
+                                <ComboBoxItem>90&#176; (4 directions)</ComboBoxItem>
+                                <ComboBoxItem>45&#176; (8 directions)</ComboBoxItem>
+                            </ComboBox>
+                        </Grid>
+                        <Grid Margin="0,6,0,0" IsEnabled="{Binding SnapEnabled}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Snap Strength" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.05"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding SnapStrength, UpdateSourceTrigger=LostFocus}"/>
+                        </Grid>
+                        <TextBlock Text="Snaps each new flick to the nearest of a fixed set of directions. Strength 1 snaps fully, 0 leaves the flick untouched, and values between bias towards the nearest direction. Sweeping a held stick is never snapped."
+                                   Style="{StaticResource JsmccMutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}"
                         Visibility="{Binding ShowRotationSettings, Converter={StaticResource BoolToVis}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
