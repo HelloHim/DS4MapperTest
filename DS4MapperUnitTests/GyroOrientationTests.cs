@@ -157,6 +157,16 @@ namespace DS4MapperUnitTests
             Assert.IsFalse(GyroContributionSync.InvertFromContribution(0.0));
         }
 
+        [TestMethod]
+        public void InvertToggleIsDisabledOnlyAtExactlyZeroContribution()
+        {
+            Assert.IsFalse(GyroContributionSync.CanToggleInvert(0.0));
+            Assert.IsTrue(GyroContributionSync.CanToggleInvert(1.0));
+            Assert.IsTrue(GyroContributionSync.CanToggleInvert(100.0));
+            Assert.IsTrue(GyroContributionSync.CanToggleInvert(-1.0));
+            Assert.IsTrue(GyroContributionSync.CanToggleInvert(-100.0));
+        }
+
         // --- Legacy JSON migration -------------------------------------------------------
 
         private static GyroMouseSerializer DeserializeGyroMouse(string settingsJson)

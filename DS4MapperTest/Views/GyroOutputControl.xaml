@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d"
              d:DesignHeight="500"
              d:DesignWidth="860">
@@ -19,19 +20,179 @@
             <StackPanel>
                 <Border Style="{StaticResource JsmccCardBorder}">
                     <StackPanel>
-                        <TextBlock Text="Invert" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Gyro Orientation" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
                         <Border Style="{StaticResource OutputRowBorder}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="190"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Invert" Style="{StaticResource OutputRowLabel}"/>
-                                <ComboBox Grid.Column="1" ItemsSource="{Binding InvertChoiceItems}" DisplayMemberPath="DisplayName"
-                                          SelectedValuePath="Choice" SelectedValue="{Binding InvertChoice}"
-                                          Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
+                                <TextBlock Grid.Column="0" Text="Gyro Space" Style="{StaticResource OutputRowLabel}"/>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding GyroSpaceItems}" DisplayMemberPath="DisplayName"
+                                          SelectedValuePath="ChoiceValue" SelectedValue="{Binding GyroSpaceChoice}"
+                                          Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
                             </Grid>
                         </Border>
+
+                        <StackPanel Visibility="{Binding IsLocalSpace, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <TextBlock Text="Horizontal Control" Style="{StaticResource JsmccLabelText}" Margin="0,10,0,4"/>
+                            <Border Style="{StaticResource OutputRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Horizontal Control" Style="{StaticResource OutputRowLabel}"/>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding LocalAxisSourceItems}" DisplayMemberPath="DisplayName"
+                                              SelectedValuePath="ChoiceValue" SelectedValue="{Binding HorizontalControl}"
+                                              Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource OutputRowBorder}"
+                                    Visibility="{Binding HorizontalIsSingleAxis, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding HorizontalInvertLabel}" Style="{StaticResource OutputRowLabel}"/>
+                                    <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}" IsChecked="{Binding HorizontalInvert}"/>
+                                </Grid>
+                            </Border>
+
+                            <StackPanel Visibility="{Binding HorizontalIsYawPlusRoll, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <Border Style="{StaticResource OutputRowBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="190"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Invert Yaw" Style="{StaticResource OutputRowLabel}"/>
+                                        <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}"
+                                                  IsChecked="{Binding HorizontalInvertYaw}" IsEnabled="{Binding HorizontalYawInvertEnabled}"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource OutputRowBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="190"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Yaw Contribution" Style="{StaticResource OutputRowLabel}"/>
+                                        <hc:NumericUpDown Grid.Column="1" Minimum="-100" Maximum="100" DecimalPlaces="1" Increment="1"
+                                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                          Value="{Binding HorizontalYawContribution, UpdateSourceTrigger=LostFocus}"/>
+                                        <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource OutputRowBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="190"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Invert Roll" Style="{StaticResource OutputRowLabel}"/>
+                                        <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}"
+                                                  IsChecked="{Binding HorizontalInvertRoll}" IsEnabled="{Binding HorizontalRollInvertEnabled}"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource OutputRowBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="190"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Roll Contribution" Style="{StaticResource OutputRowLabel}"/>
+                                        <hc:NumericUpDown Grid.Column="1" Minimum="-100" Maximum="100" DecimalPlaces="1" Increment="1"
+                                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                          Value="{Binding HorizontalRollContribution, UpdateSourceTrigger=LostFocus}"/>
+                                        <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+
+                            <TextBlock Text="Vertical Control" Style="{StaticResource JsmccLabelText}" Margin="0,10,0,4"/>
+                            <Border Style="{StaticResource OutputRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Vertical Control" Style="{StaticResource OutputRowLabel}"/>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding LocalAxisSourceItems}" DisplayMemberPath="DisplayName"
+                                              SelectedValuePath="ChoiceValue" SelectedValue="{Binding VerticalControl}"
+                                              Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource OutputRowBorder}"
+                                    Visibility="{Binding VerticalIsSingleAxis, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding VerticalInvertLabel}" Style="{StaticResource OutputRowLabel}"/>
+                                    <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}" IsChecked="{Binding VerticalInvert}"/>
+                                </Grid>
+                            </Border>
+
+                            <StackPanel Visibility="{Binding VerticalIsYawPlusRoll, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                <Border Style="{StaticResource OutputRowBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="190"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Invert Yaw" Style="{StaticResource OutputRowLabel}"/>
+                                        <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}"
+                                                  IsChecked="{Binding VerticalInvertYaw}" IsEnabled="{Binding VerticalYawInvertEnabled}"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource OutputRowBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="190"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Yaw Contribution" Style="{StaticResource OutputRowLabel}"/>
+                                        <hc:NumericUpDown Grid.Column="1" Minimum="-100" Maximum="100" DecimalPlaces="1" Increment="1"
+                                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                          Value="{Binding VerticalYawContribution, UpdateSourceTrigger=LostFocus}"/>
+                                        <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource OutputRowBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="190"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Invert Roll" Style="{StaticResource OutputRowLabel}"/>
+                                        <CheckBox Grid.Column="1" Style="{StaticResource JsmccToggleStyle}"
+                                                  IsChecked="{Binding VerticalInvertRoll}" IsEnabled="{Binding VerticalRollInvertEnabled}"/>
+                                    </Grid>
+                                </Border>
+                                <Border Style="{StaticResource OutputRowBorder}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="190"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Roll Contribution" Style="{StaticResource OutputRowLabel}"/>
+                                        <hc:NumericUpDown Grid.Column="1" Minimum="-100" Maximum="100" DecimalPlaces="1" Increment="1"
+                                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                          Value="{Binding VerticalRollContribution, UpdateSourceTrigger=LostFocus}"/>
+                                        <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </StackPanel>

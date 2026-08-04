@@ -66,6 +66,10 @@ namespace DS4MapperTest.GyroActions
         }
 
         public static bool InvertFromContribution(double contribution) => contribution < 0.0;
+
+        // At exactly 0% the contribution has no direction, so the invert toggle for it
+        // is disabled (and shown off) rather than left clickable with no visible effect.
+        public static bool CanToggleInvert(double contribution) => contribution != 0.0;
     }
 
     public static class GyroOrientationResolver

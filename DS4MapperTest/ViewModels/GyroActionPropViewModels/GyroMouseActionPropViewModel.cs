@@ -660,64 +660,248 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler VerticalScaleMultiplierChanged;
 
-        private List<InvertChoiceItem> invertChoiceItems = new List<InvertChoiceItem>()
+        private List<EnumChoiceSelection<GyroSpaceChoice>> gyroSpaceItems = new()
         {
-            new InvertChoiceItem("None", InvertChocies.None),
-            new InvertChoiceItem("X", InvertChocies.InvertX),
-            new InvertChoiceItem("Y", InvertChocies.InvertY),
-            new InvertChoiceItem("X+Y", InvertChocies.InvertXY),
+            new("Local Space", GyroSpaceChoice.LocalSpace),
         };
-        public List<InvertChoiceItem> InvertChoiceItems => invertChoiceItems;
+        public List<EnumChoiceSelection<GyroSpaceChoice>> GyroSpaceItems => gyroSpaceItems;
 
-        public InvertChocies InvertChoice
+        public GyroSpaceChoice GyroSpaceChoice
         {
-            get
-            {
-                InvertChocies result = InvertChocies.None;
-                if (action.mouseParams.invertX && action.mouseParams.invertY)
-                {
-                    result = InvertChocies.InvertXY;
-                }
-                else if (action.mouseParams.invertX || action.mouseParams.invertY)
-                {
-                    if (action.mouseParams.invertX)
-                    {
-                        result = InvertChocies.InvertX;
-                    }
-                    else
-                    {
-                        result = InvertChocies.InvertY;
-                    }
-                }
-
-                return result;
-            }
+            get => action.mouseParams.orientation.gyroSpace;
             set
             {
-                action.mouseParams.invertX = action.mouseParams.invertY = false;
-
-                switch (value)
-                {
-                    case InvertChocies.None:
-                        break;
-                    case InvertChocies.InvertX:
-                        action.mouseParams.invertX = true;
-                        break;
-                    case InvertChocies.InvertY:
-                        action.mouseParams.invertY = true;
-                        break;
-                    case InvertChocies.InvertXY:
-                        action.mouseParams.invertX = action.mouseParams.invertY = true;
-                        break;
-                    default:
-                        break;
-                }
-
-                InvertChoicesChanged?.Invoke(this, EventArgs.Empty);
+                if (action.mouseParams.orientation.gyroSpace == value) return;
+                action.mouseParams.orientation.gyroSpace = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.GYRO_SPACE);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroSpaceChoice)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLocalSpace)));
+                HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler InvertChoicesChanged;
+
+        public bool IsLocalSpace => GyroSpaceChoice == GyroSpaceChoice.LocalSpace;
+
+        private List<EnumChoiceSelection<GyroLocalAxisSource>> localAxisSourceItems = new()
+        {
+            new("Yaw", GyroLocalAxisSource.Yaw),
+            new("Roll", GyroLocalAxisSource.Roll),
+            new("Pitch", GyroLocalAxisSource.Pitch),
+            new("Yaw + Roll", GyroLocalAxisSource.YawPlusRoll),
+        };
+        public List<EnumChoiceSelection<GyroLocalAxisSource>> LocalAxisSourceItems => localAxisSourceItems;
+
+        public GyroLocalAxisSource HorizontalControl
+        {
+            get => action.mouseParams.orientation.horizontal.source;
+            set
+            {
+                if (action.mouseParams.orientation.horizontal.source == value) return;
+                action.mouseParams.orientation.horizontal.source = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.HORIZONTAL_CONTROL);
+                RaiseHorizontalOrientationChanged();
+            }
+        }
+
+        public bool HorizontalIsSingleAxis => HorizontalControl != GyroLocalAxisSource.YawPlusRoll;
+        public bool HorizontalIsYawPlusRoll => HorizontalControl == GyroLocalAxisSource.YawPlusRoll;
+        public string HorizontalInvertLabel => $"Invert {HorizontalControl}";
+
+        public bool HorizontalInvert
+        {
+            get => action.mouseParams.orientation.horizontal.invertSingle;
+            set
+            {
+                if (action.mouseParams.orientation.horizontal.invertSingle == value) return;
+                action.mouseParams.orientation.horizontal.invertSingle = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.HORIZONTAL_INVERT);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HorizontalInvert)));
+                HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public double HorizontalYawContribution
+        {
+            get => action.mouseParams.orientation.horizontal.yawContribution;
+            set
+            {
+                double clamped = Math.Clamp(value,
+                    GyroLocalAxisMapping.CONTRIBUTION_MIN, GyroLocalAxisMapping.CONTRIBUTION_MAX);
+                if (action.mouseParams.orientation.horizontal.yawContribution == clamped) return;
+                action.mouseParams.orientation.horizontal.yawContribution = clamped;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.HORIZONTAL_YAW_CONTRIBUTION);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HorizontalYawContribution)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HorizontalInvertYaw)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HorizontalYawInvertEnabled)));
+                HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public double HorizontalRollContribution
+        {
+            get => action.mouseParams.orientation.horizontal.rollContribution;
+            set
+            {
+                double clamped = Math.Clamp(value,
+                    GyroLocalAxisMapping.CONTRIBUTION_MIN, GyroLocalAxisMapping.CONTRIBUTION_MAX);
+                if (action.mouseParams.orientation.horizontal.rollContribution == clamped) return;
+                action.mouseParams.orientation.horizontal.rollContribution = clamped;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.HORIZONTAL_ROLL_CONTRIBUTION);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HorizontalRollContribution)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HorizontalInvertRoll)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HorizontalRollInvertEnabled)));
+                HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public bool HorizontalInvertYaw
+        {
+            get => GyroContributionSync.InvertFromContribution(HorizontalYawContribution);
+            set => HorizontalYawContribution = GyroContributionSync.ApplySignFromInvert(HorizontalYawContribution, value);
+        }
+
+        public bool HorizontalInvertRoll
+        {
+            get => GyroContributionSync.InvertFromContribution(HorizontalRollContribution);
+            set => HorizontalRollContribution = GyroContributionSync.ApplySignFromInvert(HorizontalRollContribution, value);
+        }
+
+        public bool HorizontalYawInvertEnabled => GyroContributionSync.CanToggleInvert(HorizontalYawContribution);
+        public bool HorizontalRollInvertEnabled => GyroContributionSync.CanToggleInvert(HorizontalRollContribution);
+
+        public GyroLocalAxisSource VerticalControl
+        {
+            get => action.mouseParams.orientation.vertical.source;
+            set
+            {
+                if (action.mouseParams.orientation.vertical.source == value) return;
+                action.mouseParams.orientation.vertical.source = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.VERTICAL_CONTROL);
+                RaiseVerticalOrientationChanged();
+            }
+        }
+
+        public bool VerticalIsSingleAxis => VerticalControl != GyroLocalAxisSource.YawPlusRoll;
+        public bool VerticalIsYawPlusRoll => VerticalControl == GyroLocalAxisSource.YawPlusRoll;
+        public string VerticalInvertLabel => $"Invert {VerticalControl}";
+
+        public bool VerticalInvert
+        {
+            get => action.mouseParams.orientation.vertical.invertSingle;
+            set
+            {
+                if (action.mouseParams.orientation.vertical.invertSingle == value) return;
+                action.mouseParams.orientation.vertical.invertSingle = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.VERTICAL_INVERT);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalInvert)));
+                HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public double VerticalYawContribution
+        {
+            get => action.mouseParams.orientation.vertical.yawContribution;
+            set
+            {
+                double clamped = Math.Clamp(value,
+                    GyroLocalAxisMapping.CONTRIBUTION_MIN, GyroLocalAxisMapping.CONTRIBUTION_MAX);
+                if (action.mouseParams.orientation.vertical.yawContribution == clamped) return;
+                action.mouseParams.orientation.vertical.yawContribution = clamped;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.VERTICAL_YAW_CONTRIBUTION);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalYawContribution)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalInvertYaw)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalYawInvertEnabled)));
+                HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public double VerticalRollContribution
+        {
+            get => action.mouseParams.orientation.vertical.rollContribution;
+            set
+            {
+                double clamped = Math.Clamp(value,
+                    GyroLocalAxisMapping.CONTRIBUTION_MIN, GyroLocalAxisMapping.CONTRIBUTION_MAX);
+                if (action.mouseParams.orientation.vertical.rollContribution == clamped) return;
+                action.mouseParams.orientation.vertical.rollContribution = clamped;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalRollContribution)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalInvertRoll)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalRollInvertEnabled)));
+                HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public bool VerticalInvertYaw
+        {
+            get => GyroContributionSync.InvertFromContribution(VerticalYawContribution);
+            set => VerticalYawContribution = GyroContributionSync.ApplySignFromInvert(VerticalYawContribution, value);
+        }
+
+        public bool VerticalInvertRoll
+        {
+            get => GyroContributionSync.InvertFromContribution(VerticalRollContribution);
+            set => VerticalRollContribution = GyroContributionSync.ApplySignFromInvert(VerticalRollContribution, value);
+        }
+
+        public bool VerticalYawInvertEnabled => GyroContributionSync.CanToggleInvert(VerticalYawContribution);
+        public bool VerticalRollInvertEnabled => GyroContributionSync.CanToggleInvert(VerticalRollContribution);
+
+        private void RaiseHorizontalOrientationChanged()
+        {
+            foreach (string name in new[]
+            {
+                nameof(HorizontalControl), nameof(HorizontalIsSingleAxis), nameof(HorizontalIsYawPlusRoll),
+                nameof(HorizontalInvertLabel), nameof(HorizontalInvert),
+                nameof(HorizontalYawContribution), nameof(HorizontalRollContribution),
+                nameof(HorizontalInvertYaw), nameof(HorizontalInvertRoll),
+                nameof(HorizontalYawInvertEnabled), nameof(HorizontalRollInvertEnabled),
+            })
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            }
+            HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
+            ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void RaiseVerticalOrientationChanged()
+        {
+            foreach (string name in new[]
+            {
+                nameof(VerticalControl), nameof(VerticalIsSingleAxis), nameof(VerticalIsYawPlusRoll),
+                nameof(VerticalInvertLabel), nameof(VerticalInvert),
+                nameof(VerticalYawContribution), nameof(VerticalRollContribution),
+                nameof(VerticalInvertYaw), nameof(VerticalInvertRoll),
+                nameof(VerticalYawInvertEnabled), nameof(VerticalRollInvertEnabled),
+            })
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            }
+            HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
+            ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public bool HighlightGyroOrientation
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.GYRO_SPACE) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_CONTROL) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_CONTROL) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_INVERT) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_INVERT) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_YAW_CONTRIBUTION) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_ROLL_CONTRIBUTION) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_YAW_CONTRIBUTION) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION);
+        }
+        public event EventHandler HighlightGyroOrientationChanged;
 
         public bool GyroJitterCompensation
         {
@@ -1305,14 +1489,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler HighlightSmoothingFilterChanged;
 
-        public bool HighlightInvert
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_X) ||
-                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_Y);
-        }
-        public event EventHandler HighlightInvertChanged;
-
         public override event EventHandler ActionPropertyChanged;
 
         public GyroMouseActionPropViewModel(Mapper mapper, GyroMapAction action)
@@ -1416,7 +1592,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             NaturalVHalfChanged += GyroMouseActionPropViewModel_NaturalVHalfChanged;
             SensitivityChanged += GyroMouseActionPropViewModel_SensitivityChanged;
             VerticalScaleChanged += GyroMouseActionPropViewModel_VerticalScaleChanged;
-            InvertChoicesChanged += GyroMouseActionPropViewModel_InvertChoicesChanged;
             GyroJitterCompensationChanged += GyroMouseActionPropViewModel_GyroJitterCompensationChanged;
             MultiplierCompensationChanged += GyroMouseActionPropViewModel_MultiplierCompensationChanged;
             AccelerationMultiplierChanged += GyroMouseActionPropViewModel_AccelerationMultiplierChanged;
@@ -1919,27 +2094,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.SMOOTHING_ENABLED);
             HighlightSmoothingEnabledChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void GyroMouseActionPropViewModel_InvertChoicesChanged(object sender, EventArgs e)
-        {
-            if (!action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_X))
-            {
-                action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_X);
-            }
-
-            if (!action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_Y))
-            {
-                action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_Y);
-            }
-
-            ExecuteInMapperThread(() =>
-            {
-                action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.INVERT_X);
-                action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.INVERT_Y);
-            });
-
-            HighlightInvertChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void GyroMouseActionPropViewModel_VerticalScaleChanged(object sender, EventArgs e)
