@@ -1,6 +1,7 @@
 using DS4MapperTest;
 using DS4MapperTest.TouchpadActions;
 using DS4MapperTest.StickActions;
+using DS4MapperTest.GyroActions;
 using DS4MapperTest.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -51,6 +52,25 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(profile.CalibInGameSens, action.InGameSens);
             Assert.AreEqual(profile.CalibCounts,
                 action.RealWorldCalibration * 360.0 / action.InGameSens, 1e-10);
+        }
+
+        [TestMethod]
+        public void PrepareNewAction_GyroMouse_UsesSharedProfileCalibration()
+        {
+            Profile profile = new Profile
+            {
+                CalibRwc = 8.25,
+                CalibInGameSens = 1.5,
+            };
+            TestMapper mapper = new TestMapper(profile);
+            GyroBindEditViewModel editViewModel =
+                new GyroBindEditViewModel(mapper, new GyroNoMapAction());
+
+            GyroMouse action = editViewModel.PrepareNewAction(1) as GyroMouse;
+
+            Assert.IsNotNull(action);
+            Assert.AreEqual(profile.CalibRwc, action.mouseParams.realWorldCalibration);
+            Assert.AreEqual(profile.CalibInGameSens, action.mouseParams.inGameSens);
         }
     }
 }

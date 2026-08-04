@@ -123,6 +123,7 @@ namespace DS4MapperTest.ViewModels
             get => _selectedPreset;
             set
             {
+                if (!_modelReady) return;
                 if (_selectedPreset == value) return;
                 _selectedPreset = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
