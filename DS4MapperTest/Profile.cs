@@ -84,13 +84,43 @@ namespace DS4MapperTest
         }
 
         private double calibRwc = GyroMouseParams.REAL_WORLD_CALIBRATION_DEFAULT;
-        public double CalibRwc { get => calibRwc; set => calibRwc = value; }
+        public double CalibRwc
+        {
+            get => calibRwc;
+            set
+            {
+                if (calibRwc == value) return;
+                calibRwc = value;
+                CalibRwcChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler CalibRwcChanged;
 
         private double calibInGameSens = GyroMouseParams.IN_GAME_SENS_DEFAULT;
-        public double CalibInGameSens { get => calibInGameSens; set => calibInGameSens = value; }
+        public double CalibInGameSens
+        {
+            get => calibInGameSens;
+            set
+            {
+                if (calibInGameSens == value) return;
+                calibInGameSens = value;
+                CalibInGameSensChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler CalibInGameSensChanged;
 
         private double calibCounts = GyroMouseParams.COUNTS_CALIBRATION_DEFAULT;
-        public double CalibCounts { get => calibCounts; set => calibCounts = value; }
+        public double CalibCounts
+        {
+            get => calibCounts;
+            set
+            {
+                if (calibCounts == value) return;
+                calibCounts = value;
+                CalibCountsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler CalibCountsChanged;
 
         private CalibMode calibMode = CalibMode.RwcMode;
         public CalibMode CalibMode
