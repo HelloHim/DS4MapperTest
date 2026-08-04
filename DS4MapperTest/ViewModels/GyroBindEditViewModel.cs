@@ -69,6 +69,13 @@ namespace DS4MapperTest.ViewModels
 
                     var joyDefaults = mapper.DeviceActionDefaults.GrabGyroMouseActionDefaults();
                     joyDefaults.Process(tempAction);
+
+                    // RWC/In-Game Sens are shared calibration (see Profile.CalibRwc/
+                    // CalibInGameSens); a new gyro binding should start in sync with
+                    // it rather than the device's generic defaults.
+                    tempAction.mouseParams.realWorldCalibration = mapper.ActionProfile.CalibRwc;
+                    tempAction.mouseParams.inGameSens = mapper.ActionProfile.CalibInGameSens;
+
                     result = tempAction;
                     break;
                 case 2:

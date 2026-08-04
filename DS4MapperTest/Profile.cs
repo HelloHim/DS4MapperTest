@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.Common;
 using DS4MapperTest.GyroActions;
 using static DS4MapperTest.Mapper;
 using DS4MapperTest.DS4Library;
@@ -83,7 +84,10 @@ namespace DS4MapperTest
             set => lightbarSettings = value;
         }
 
-        private double calibRwc = GyroMouseParams.REAL_WORLD_CALIBRATION_DEFAULT;
+        // Default calibration matches the VALORANT preset at an In-Game
+        // Sensitivity of 1.0, so a brand-new profile shows that preset selected
+        // with no further setup needed (see GameCalibPreset.Valorant).
+        private double calibRwc = GameCalibPreset.Valorant.RWC;
         public double CalibRwc
         {
             get => calibRwc;
@@ -96,7 +100,7 @@ namespace DS4MapperTest
         }
         public event EventHandler CalibRwcChanged;
 
-        private double calibInGameSens = GyroMouseParams.IN_GAME_SENS_DEFAULT;
+        private double calibInGameSens = 1.0;
         public double CalibInGameSens
         {
             get => calibInGameSens;
@@ -109,7 +113,7 @@ namespace DS4MapperTest
         }
         public event EventHandler CalibInGameSensChanged;
 
-        private double calibCounts = GyroMouseParams.COUNTS_CALIBRATION_DEFAULT;
+        private double calibCounts = GameCalibPreset.Valorant.RWC * 360.0;
         public double CalibCounts
         {
             get => calibCounts;
