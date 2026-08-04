@@ -17,6 +17,60 @@ namespace DS4MapperTest.GyroActions
         Roll,
     }
 
+    public enum GyroInvertAxisChoice
+    {
+        XAndY,
+        XOnly,
+        YOnly,
+    }
+
+    // Independent, trigger-gated final-output inversion for gyro mouse. Separate from
+    // GyroOrientationSettings: this flips whichever value is already driving the mouse's
+    // horizontal/vertical output, regardless of which gyro source feeds it.
+    public struct GyroInvertSettings
+    {
+        public bool enabled;
+        public GyroInvertAxisChoice axisChoice;
+        public JoypadActionCodes[] triggerButtons;
+        public bool andCond;
+        public bool triggerActivates;
+        public int activationHoldMs;
+
+        public static GyroInvertSettings CreateDefault()
+        {
+            return new GyroInvertSettings()
+            {
+                enabled = false,
+                axisChoice = GyroInvertAxisChoice.XOnly,
+                triggerButtons = Array.Empty<JoypadActionCodes>(),
+                andCond = false,
+                triggerActivates = true,
+                activationHoldMs = 0,
+            };
+        }
+    }
+
+    public static class GyroInvertApplier
+    {
+        public static void Apply(GyroInvertAxisChoice axisChoice, ref double x, ref double y)
+        {
+            switch (axisChoice)
+            {
+                case GyroInvertAxisChoice.XOnly:
+                    x = -x;
+                    break;
+                case GyroInvertAxisChoice.YOnly:
+                    y = -y;
+                    break;
+                case GyroInvertAxisChoice.XAndY:
+                default:
+                    x = -x;
+                    y = -y;
+                    break;
+            }
+        }
+    }
+
     public enum GyroMouseAccelCurveChoice
     {
         None,
@@ -122,6 +176,7 @@ namespace DS4MapperTest.GyroActions
         public bool invertY;
         public GyroMouseXAxisChoice useForXAxis;
         public GyroOrientationSettings orientation;
+        public GyroInvertSettings invert;
         public double minThreshold;
         public bool toggleAction;
         public bool smoothing;
@@ -159,6 +214,12 @@ namespace DS4MapperTest.GyroActions
             public const string HORIZONTAL_ROLL_CONTRIBUTION = "HorizontalRollContribution";
             public const string VERTICAL_YAW_CONTRIBUTION = "VerticalYawContribution";
             public const string VERTICAL_ROLL_CONTRIBUTION = "VerticalRollContribution";
+            public const string INVERT_GYRO_ENABLED = "InvertGyroEnabled";
+            public const string INVERT_GYRO_AXIS = "InvertGyroAxis";
+            public const string INVERT_GYRO_TRIGGER_BUTTONS = "InvertGyroTriggerButtons";
+            public const string INVERT_GYRO_TRIGGER_ACTIVATES = "InvertGyroTriggerActivates";
+            public const string INVERT_GYRO_TRIGGER_EVAL_COND = "InvertGyroTriggerEvalCond";
+            public const string INVERT_GYRO_ACTIVATION_HOLD_MS = "InvertGyroActivationHoldMs";
             public const string MIN_THRESHOLD = "MinThreshold";
             public const string REAL_WORLD_CALIBRATION = "RealWorldCalibration";
             public const string ACCEL_CURVE = "AccelCurve";
@@ -211,6 +272,12 @@ namespace DS4MapperTest.GyroActions
             PropertyKeyStrings.HORIZONTAL_ROLL_CONTRIBUTION,
             PropertyKeyStrings.VERTICAL_YAW_CONTRIBUTION,
             PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION,
+            PropertyKeyStrings.INVERT_GYRO_ENABLED,
+            PropertyKeyStrings.INVERT_GYRO_AXIS,
+            PropertyKeyStrings.INVERT_GYRO_TRIGGER_BUTTONS,
+            PropertyKeyStrings.INVERT_GYRO_TRIGGER_ACTIVATES,
+            PropertyKeyStrings.INVERT_GYRO_TRIGGER_EVAL_COND,
+            PropertyKeyStrings.INVERT_GYRO_ACTIVATION_HOLD_MS,
             PropertyKeyStrings.MIN_THRESHOLD,
             PropertyKeyStrings.REAL_WORLD_CALIBRATION,
             PropertyKeyStrings.IN_GAME_SENS,
@@ -249,6 +316,8 @@ namespace DS4MapperTest.GyroActions
         private bool previousTriggerActivated;
         private bool toggleActiveState;
         private readonly GyroActivationHold activationHold = new GyroActivationHold();
+        private bool invertActive;
+        private readonly GyroActivationHold invertActivationHold = new GyroActivationHold();
         private bool useParentSmoothingFilter;
 
         //private OneEuroFilter smoothFilter = new OneEuroFilter(1.0, 1.0);
@@ -296,6 +365,7 @@ namespace DS4MapperTest.GyroActions
             mouseParams.smoothingFilterSettings = new SmoothingFilterSettings();
             mouseParams.smoothingFilterSettings.Init();
             mouseParams.orientation = GyroOrientationSettings.CreateDefault();
+            mouseParams.invert = GyroInvertSettings.CreateDefault();
             onlyOnPrimary = true;
         }
 
@@ -369,6 +439,28 @@ namespace DS4MapperTest.GyroActions
                 activeEvent = false;
                 return;
             }
+
+            // Independent, trigger-gated final-output invert. Unrelated to the horizontal/
+            // vertical source selection above - it just flips whichever value ends up
+            // driving mouse X/Y, resolved here (where gyroFrame.timeElapsed is available
+            // for the hold-time debounce) and applied in Event().
+            bool invertTriggerButtonActive = mapper.IsButtonsActiveDraft(
+                mouseParams.invert.triggerButtons, mouseParams.invert.andCond);
+
+            bool invertRequested = true;
+            if (!mouseParams.invert.triggerActivates && invertTriggerButtonActive)
+            {
+                invertRequested = false;
+            }
+            else if (mouseParams.invert.triggerActivates && !invertTriggerButtonActive)
+            {
+                invertRequested = false;
+            }
+
+            invertRequested = invertActivationHold.Update(invertRequested,
+                mouseParams.invert.activationHoldMs, gyroFrame.timeElapsed);
+
+            invertActive = mouseParams.invert.enabled && invertRequested;
 
             double offset = gyroSensDefinition.mouseOffset;
             //double coefficient = gyroSensDefinition.mouseCoefficient * mouseParams.sensitivity;
@@ -681,10 +773,18 @@ namespace DS4MapperTest.GyroActions
             }
             */
 
-            // Inversion is resolved at the source in Prepare() via GyroOrientationResolver,
-            // not here - legacy invertX/invertY are migration-only and not read here.
+            // Orientation-level inversion is resolved at the source in Prepare() via
+            // GyroOrientationResolver, not here - legacy invertX/invertY are migration-only
+            // and not read here. The independent, trigger-gated Gyro Invert feature flips
+            // the final resolved output instead, applied here based on invertActive
+            // (computed in Prepare(), where the trigger/hold-time state is evaluated).
             double outXMotion = tempX;
             double outYMotion = tempY;
+
+            if (invertActive)
+            {
+                GyroInvertApplier.Apply(mouseParams.invert.axisChoice, ref outXMotion, ref outYMotion);
+            }
 
             bool mouseSync = true;
             if (mouseParams.minThreshold != 1.0)
@@ -916,6 +1016,24 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION:
                             mouseParams.orientation.vertical.rollContribution = tempMouseAction.mouseParams.orientation.vertical.rollContribution;
                             break;
+                        case PropertyKeyStrings.INVERT_GYRO_ENABLED:
+                            mouseParams.invert.enabled = tempMouseAction.mouseParams.invert.enabled;
+                            break;
+                        case PropertyKeyStrings.INVERT_GYRO_AXIS:
+                            mouseParams.invert.axisChoice = tempMouseAction.mouseParams.invert.axisChoice;
+                            break;
+                        case PropertyKeyStrings.INVERT_GYRO_TRIGGER_BUTTONS:
+                            mouseParams.invert.triggerButtons = tempMouseAction.mouseParams.invert.triggerButtons;
+                            break;
+                        case PropertyKeyStrings.INVERT_GYRO_TRIGGER_ACTIVATES:
+                            mouseParams.invert.triggerActivates = tempMouseAction.mouseParams.invert.triggerActivates;
+                            break;
+                        case PropertyKeyStrings.INVERT_GYRO_TRIGGER_EVAL_COND:
+                            mouseParams.invert.andCond = tempMouseAction.mouseParams.invert.andCond;
+                            break;
+                        case PropertyKeyStrings.INVERT_GYRO_ACTIVATION_HOLD_MS:
+                            mouseParams.invert.activationHoldMs = tempMouseAction.mouseParams.invert.activationHoldMs;
+                            break;
                         case PropertyKeyStrings.MIN_THRESHOLD:
                             mouseParams.minThreshold = tempMouseAction.mouseParams.minThreshold;
                             break;
@@ -1094,6 +1212,24 @@ namespace DS4MapperTest.GyroActions
                     break;
                 case PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION:
                     mouseParams.orientation.vertical.rollContribution = tempMouseAction.mouseParams.orientation.vertical.rollContribution;
+                    break;
+                case PropertyKeyStrings.INVERT_GYRO_ENABLED:
+                    mouseParams.invert.enabled = tempMouseAction.mouseParams.invert.enabled;
+                    break;
+                case PropertyKeyStrings.INVERT_GYRO_AXIS:
+                    mouseParams.invert.axisChoice = tempMouseAction.mouseParams.invert.axisChoice;
+                    break;
+                case PropertyKeyStrings.INVERT_GYRO_TRIGGER_BUTTONS:
+                    mouseParams.invert.triggerButtons = tempMouseAction.mouseParams.invert.triggerButtons;
+                    break;
+                case PropertyKeyStrings.INVERT_GYRO_TRIGGER_ACTIVATES:
+                    mouseParams.invert.triggerActivates = tempMouseAction.mouseParams.invert.triggerActivates;
+                    break;
+                case PropertyKeyStrings.INVERT_GYRO_TRIGGER_EVAL_COND:
+                    mouseParams.invert.andCond = tempMouseAction.mouseParams.invert.andCond;
+                    break;
+                case PropertyKeyStrings.INVERT_GYRO_ACTIVATION_HOLD_MS:
+                    mouseParams.invert.activationHoldMs = tempMouseAction.mouseParams.invert.activationHoldMs;
                     break;
                 case PropertyKeyStrings.MIN_THRESHOLD:
                     mouseParams.minThreshold = tempMouseAction.mouseParams.minThreshold;
