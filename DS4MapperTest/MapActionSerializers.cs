@@ -9709,6 +9709,130 @@ namespace DS4MapperTest
             }
             public event EventHandler UseForXAxisChanged;
 
+            [JsonConverter(typeof(StringEnumConverter))]
+            public GyroSpaceChoice GyroSpace
+            {
+                get => gyroMouseAction.mouseParams.orientation.gyroSpace;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.gyroSpace = value;
+                    GyroSpaceChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler GyroSpaceChanged;
+            public bool ShouldSerializeGyroSpace() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.GYRO_SPACE);
+
+            [JsonConverter(typeof(StringEnumConverter))]
+            public GyroLocalAxisSource HorizontalControl
+            {
+                get => gyroMouseAction.mouseParams.orientation.horizontal.source;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.horizontal.source = value;
+                    HorizontalControlChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler HorizontalControlChanged;
+            public bool ShouldSerializeHorizontalControl() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_CONTROL);
+
+            [JsonConverter(typeof(StringEnumConverter))]
+            public GyroLocalAxisSource VerticalControl
+            {
+                get => gyroMouseAction.mouseParams.orientation.vertical.source;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.vertical.source = value;
+                    VerticalControlChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalControlChanged;
+            public bool ShouldSerializeVerticalControl() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_CONTROL);
+
+            public bool HorizontalInvert
+            {
+                get => gyroMouseAction.mouseParams.orientation.horizontal.invertSingle;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.horizontal.invertSingle = value;
+                    HorizontalInvertChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler HorizontalInvertChanged;
+            public bool ShouldSerializeHorizontalInvert() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_INVERT);
+
+            public bool VerticalInvert
+            {
+                get => gyroMouseAction.mouseParams.orientation.vertical.invertSingle;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.vertical.invertSingle = value;
+                    VerticalInvertChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalInvertChanged;
+            public bool ShouldSerializeVerticalInvert() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_INVERT);
+
+            public double HorizontalYawContribution
+            {
+                get => gyroMouseAction.mouseParams.orientation.horizontal.yawContribution;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.horizontal.yawContribution =
+                        Math.Clamp(value, GyroLocalAxisMapping.CONTRIBUTION_MIN, GyroLocalAxisMapping.CONTRIBUTION_MAX);
+                    HorizontalYawContributionChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler HorizontalYawContributionChanged;
+            public bool ShouldSerializeHorizontalYawContribution() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_YAW_CONTRIBUTION);
+
+            public double HorizontalRollContribution
+            {
+                get => gyroMouseAction.mouseParams.orientation.horizontal.rollContribution;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.horizontal.rollContribution =
+                        Math.Clamp(value, GyroLocalAxisMapping.CONTRIBUTION_MIN, GyroLocalAxisMapping.CONTRIBUTION_MAX);
+                    HorizontalRollContributionChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler HorizontalRollContributionChanged;
+            public bool ShouldSerializeHorizontalRollContribution() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_ROLL_CONTRIBUTION);
+
+            public double VerticalYawContribution
+            {
+                get => gyroMouseAction.mouseParams.orientation.vertical.yawContribution;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.vertical.yawContribution =
+                        Math.Clamp(value, GyroLocalAxisMapping.CONTRIBUTION_MIN, GyroLocalAxisMapping.CONTRIBUTION_MAX);
+                    VerticalYawContributionChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalYawContributionChanged;
+            public bool ShouldSerializeVerticalYawContribution() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_YAW_CONTRIBUTION);
+
+            public double VerticalRollContribution
+            {
+                get => gyroMouseAction.mouseParams.orientation.vertical.rollContribution;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.vertical.rollContribution =
+                        Math.Clamp(value, GyroLocalAxisMapping.CONTRIBUTION_MIN, GyroLocalAxisMapping.CONTRIBUTION_MAX);
+                    VerticalRollContributionChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalRollContributionChanged;
+            public bool ShouldSerializeVerticalRollContribution() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION);
+
             public double MinThreshold
             {
                 get => gyroMouseAction.mouseParams.minThreshold;
@@ -9970,6 +10094,15 @@ namespace DS4MapperTest
             settings.TriggerActivatesChanged += Settings_TriggerActivatesChanged;
             settings.EvalCondChanged += Settings_EvalCondChanged;
             settings.UseForXAxisChanged += Settings_UseForXAxisChanged;
+            settings.GyroSpaceChanged += Settings_GyroSpaceChanged;
+            settings.HorizontalControlChanged += Settings_HorizontalControlChanged;
+            settings.VerticalControlChanged += Settings_VerticalControlChanged;
+            settings.HorizontalInvertChanged += Settings_HorizontalInvertChanged;
+            settings.VerticalInvertChanged += Settings_VerticalInvertChanged;
+            settings.HorizontalYawContributionChanged += Settings_HorizontalYawContributionChanged;
+            settings.HorizontalRollContributionChanged += Settings_HorizontalRollContributionChanged;
+            settings.VerticalYawContributionChanged += Settings_VerticalYawContributionChanged;
+            settings.VerticalRollContributionChanged += Settings_VerticalRollContributionChanged;
             settings.MinThresholdChanged += Settings_MinThresholdChanged;
             settings.ToggleChanged += Settings_ToggleChanged;
             settings.JitterCompensationChanged += Settings_JitterCompensationChanged;
@@ -9980,6 +10113,81 @@ namespace DS4MapperTest
             settings.SmoothingEnabledChanged += Settings_SmoothingEnabledChanged;
             settings.SmoothingMinCutoffChanged += Settings_SmoothingMinCutoffChanged;
             settings.SmoothingBetaChanged += Settings_SmoothingMinBetaChanged;
+        }
+
+        private void Settings_GyroSpaceChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.GYRO_SPACE);
+        }
+
+        private void Settings_HorizontalControlChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.HORIZONTAL_CONTROL);
+        }
+
+        private void Settings_VerticalControlChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_CONTROL);
+        }
+
+        private void Settings_HorizontalInvertChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.HORIZONTAL_INVERT);
+        }
+
+        private void Settings_VerticalInvertChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_INVERT);
+        }
+
+        private void Settings_HorizontalYawContributionChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.HORIZONTAL_YAW_CONTRIBUTION);
+        }
+
+        private void Settings_HorizontalRollContributionChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.HORIZONTAL_ROLL_CONTRIBUTION);
+        }
+
+        private void Settings_VerticalYawContributionChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_YAW_CONTRIBUTION);
+        }
+
+        private void Settings_VerticalRollContributionChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION);
+        }
+
+        // Post-deserialize: migrate legacy InvertX/InvertY/UseForXAxis into the new
+        // orientation model when a loaded profile predates this feature. Gated on
+        // ChangedProperties so an explicit new-format value is never overwritten.
+        public override void PopulateMap()
+        {
+            MigrateLegacyOrientation();
+        }
+
+        private void MigrateLegacyOrientation()
+        {
+            if (!gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_CONTROL))
+            {
+                gyroMouseAction.mouseParams.orientation.horizontal.source =
+                    gyroMouseAction.mouseParams.useForXAxis == GyroMouseXAxisChoice.Roll
+                        ? GyroLocalAxisSource.Roll : GyroLocalAxisSource.Yaw;
+                gyroMouseAction.mouseParams.orientation.horizontal.invertSingle = gyroMouseAction.mouseParams.invertX;
+                gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.HORIZONTAL_CONTROL);
+                gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.HORIZONTAL_INVERT);
+            }
+
+            if (!gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_CONTROL))
+            {
+                // Vertical was always hardcoded to Pitch prior to this feature.
+                gyroMouseAction.mouseParams.orientation.vertical.source = GyroLocalAxisSource.Pitch;
+                gyroMouseAction.mouseParams.orientation.vertical.invertSingle = gyroMouseAction.mouseParams.invertY;
+                gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_CONTROL);
+                gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_INVERT);
+            }
         }
 
         private void Settings_NaturalVHalfChanged(object sender, EventArgs e)
