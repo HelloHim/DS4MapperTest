@@ -903,6 +903,200 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler HighlightGyroOrientationChanged;
 
+        private List<GyroTriggerButtonItem> invertTriggerButtonItems;
+        public List<GyroTriggerButtonItem> InvertTriggerButtonItems => invertTriggerButtonItems;
+        public List<GyroTriggerButtonItem> InvertActivationButtonItems =>
+            invertTriggerButtonItems.Where((item) => item.Code != JoypadActionCodes.AlwaysOn).ToList();
+
+        public bool GyroInvertEnabled
+        {
+            get => action.mouseParams.invert.enabled;
+            set
+            {
+                if (action.mouseParams.invert.enabled == value) return;
+                action.mouseParams.invert.enabled = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.INVERT_GYRO_ENABLED);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroInvertEnabled)));
+                HighlightGyroInvertChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private List<EnumChoiceSelection<GyroInvertAxisChoice>> gyroInvertAxisItems = new()
+        {
+            new("X and Y", GyroInvertAxisChoice.XAndY),
+            new("X Only", GyroInvertAxisChoice.XOnly),
+            new("Y Only", GyroInvertAxisChoice.YOnly),
+        };
+        public List<EnumChoiceSelection<GyroInvertAxisChoice>> GyroInvertAxisItems => gyroInvertAxisItems;
+
+        public GyroInvertAxisChoice GyroInvertAxisChoice
+        {
+            get => action.mouseParams.invert.axisChoice;
+            set
+            {
+                if (action.mouseParams.invert.axisChoice == value) return;
+                action.mouseParams.invert.axisChoice = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.INVERT_GYRO_AXIS);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroInvertAxisChoice)));
+                HighlightGyroInvertChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public GyroActivationModeChoice GyroInvertActivationModeChoice
+        {
+            get => GetGyroActivationMode(
+                action.mouseParams.invert.triggerButtons,
+                action.mouseParams.invert.triggerActivates);
+            set
+            {
+                if (GyroInvertActivationModeChoice == value) return;
+
+                if (value == GyroActivationModeChoice.AlwaysOn)
+                {
+                    foreach (GyroTriggerButtonItem item in InvertActivationButtonItems)
+                    {
+                        if (item.Enabled)
+                        {
+                            item.Enabled = false;
+                        }
+                    }
+
+                    SetTriggerItemEnabled(invertTriggerButtonItems, JoypadActionCodes.AlwaysOn, true);
+                    GyroInvertTriggerActivates = true;
+                }
+                else
+                {
+                    SetTriggerItemEnabled(invertTriggerButtonItems, JoypadActionCodes.AlwaysOn, false);
+                    GyroInvertTriggerActivates = value == GyroActivationModeChoice.HoldToEnable;
+                }
+
+                GyroInvertActivationModeChoiceChanged?.Invoke(this, EventArgs.Empty);
+                GyroInvertActivationButtonsUsedChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroInvertActivationModeChoice)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroInvertActivationButtonsUsed)));
+                HighlightGyroInvertChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler GyroInvertActivationModeChoiceChanged;
+
+        public bool GyroInvertActivationButtonsUsed =>
+            GyroInvertActivationModeChoice != GyroActivationModeChoice.AlwaysOn;
+        public event EventHandler GyroInvertActivationButtonsUsedChanged;
+
+        public bool GyroInvertTriggerCondChoice
+        {
+            get => action.mouseParams.invert.andCond;
+            set
+            {
+                if (action.mouseParams.invert.andCond == value) return;
+                action.mouseParams.invert.andCond = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_EVAL_COND);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroInvertTriggerAnySelected)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroInvertTriggerAllSelected)));
+                HighlightGyroInvertChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public bool GyroInvertTriggerAnySelected
+        {
+            get => !GyroInvertTriggerCondChoice;
+            set
+            {
+                if (value)
+                {
+                    GyroInvertTriggerCondChoice = false;
+                }
+            }
+        }
+
+        public bool GyroInvertTriggerAllSelected
+        {
+            get => GyroInvertTriggerCondChoice;
+            set
+            {
+                if (value)
+                {
+                    GyroInvertTriggerCondChoice = true;
+                }
+            }
+        }
+
+        public bool GyroInvertTriggerActivates
+        {
+            get => action.mouseParams.invert.triggerActivates;
+            set
+            {
+                if (action.mouseParams.invert.triggerActivates == value) return;
+                action.mouseParams.invert.triggerActivates = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_ACTIVATES);
+                HighlightGyroInvertChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public int GyroInvertActivationHoldMs
+        {
+            get => action.mouseParams.invert.activationHoldMs;
+            set
+            {
+                int clampedValue = Math.Clamp(value, 0, 60000);
+                if (action.mouseParams.invert.activationHoldMs == clampedValue) return;
+                action.mouseParams.invert.activationHoldMs = clampedValue;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.INVERT_GYRO_ACTIVATION_HOLD_MS);
+                HighlightGyroInvertChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private void GyroInvertTriggerItem_EnabledChanged(object sender, EventArgs e)
+        {
+            GyroTriggerButtonItem tempItem = sender as GyroTriggerButtonItem;
+
+            List<JoypadActionCodes> tempList = action.mouseParams.invert.triggerButtons.ToList();
+
+            if (tempItem.Enabled)
+            {
+                tempList.Add(tempItem.Code);
+            }
+            else
+            {
+                tempList.Remove(tempItem.Code);
+            }
+
+            if (!action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_BUTTONS))
+            {
+                action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_BUTTONS);
+            }
+
+            ExecuteInMapperThread(() =>
+            {
+                action.mouseParams.invert.triggerButtons = tempList.ToArray();
+                action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_BUTTONS);
+            });
+
+            GyroInvertActivationModeChoiceChanged?.Invoke(this, EventArgs.Empty);
+            GyroInvertActivationButtonsUsedChanged?.Invoke(this, EventArgs.Empty);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroInvertActivationModeChoice)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroInvertActivationButtonsUsed)));
+            HighlightGyroInvertChanged?.Invoke(this, EventArgs.Empty);
+            ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public bool HighlightGyroInvert
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_ENABLED) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_AXIS) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_BUTTONS) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_ACTIVATES) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_EVAL_COND) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_ACTIVATION_HOLD_MS);
+        }
+        public event EventHandler HighlightGyroInvertChanged;
+
         public bool GyroJitterCompensation
         {
             get => action.mouseParams.jitterCompensation;
@@ -1497,6 +1691,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             this.action = action as GyroMouse;
             this.baseAction = action;
             triggerButtonItems = new List<GyroTriggerButtonItem>();
+            invertTriggerButtonItems = new List<GyroTriggerButtonItem>();
 
             // Check if base ActionLayer action from composite layer
             if (action.ParentAction == null &&
@@ -2329,6 +2524,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             foreach(ActionTriggerItem item in mapper.ActionTriggerItems)
             {
                 triggerButtonItems.Add(new GyroTriggerButtonItem(item.DisplayName, item.Code));
+                invertTriggerButtonItems.Add(new GyroTriggerButtonItem(item.DisplayName, item.Code));
             }
 
             foreach(JoypadActionCodes code in action.mouseParams.gyroTriggerButtons)
@@ -2340,9 +2536,23 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 }
             }
 
+            foreach(JoypadActionCodes code in action.mouseParams.invert.triggerButtons)
+            {
+                GyroTriggerButtonItem tempItem = invertTriggerButtonItems.Find((item) => item.Code == code);
+                if (tempItem != null)
+                {
+                    tempItem.Enabled = true;
+                }
+            }
+
             triggerButtonItems.ForEach((item) =>
             {
                 item.EnabledChanged += GyroTriggerItem_EnabledChanged;
+            });
+
+            invertTriggerButtonItems.ForEach((item) =>
+            {
+                item.EnabledChanged += GyroInvertTriggerItem_EnabledChanged;
             });
         }
 
