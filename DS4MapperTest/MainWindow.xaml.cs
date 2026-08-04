@@ -494,7 +494,13 @@ namespace DS4MapperTest
             // Clear inherited bindings before replacing the editor.  Some child
             // controls keep profile-list item contexts, so swapping directly can
             // make WPF resolve a binding against its internal unset-value marker.
+            // Unlike SwitchActionSetAsync/SwitchActionLayerAsync (which await a real
+            // yield point between the clear and the reassignment), this method is
+            // fully synchronous, so the DataContext = null below never actually
+            // reaches the dispatcher before being overwritten a few lines later.
+            // Pump the dispatcher so WPF processes the clear first.
             DataContext = null;
+            Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
             editorTestVM?.UnregisterEvents();
             editorTestVM = new ProfileEditorTestViewModel(mapper, profileEnt, mapper.ActionProfile);
             DataContext = editorTestVM;
