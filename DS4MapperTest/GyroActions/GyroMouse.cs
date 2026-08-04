@@ -115,9 +115,13 @@ namespace DS4MapperTest.GyroActions
         public double naturalVHalf;
         public double sensitivity;
         public double verticalScale;
+        // Legacy inversion/axis-selection fields. Retained only for backward-compatible
+        // profile deserialization and migration into `orientation` (see
+        // GyroMouseSerializer.MigrateLegacyOrientation) - no longer read by Prepare/Event.
         public bool invertX;
         public bool invertY;
         public GyroMouseXAxisChoice useForXAxis;
+        public GyroOrientationSettings orientation;
         public double minThreshold;
         public bool toggleAction;
         public bool smoothing;
@@ -146,6 +150,15 @@ namespace DS4MapperTest.GyroActions
             public const string INVERT_X = "InvertX";
             public const string INVERT_Y = "InvertY";
             public const string X_AXIS = "XAxis";
+            public const string GYRO_SPACE = "GyroSpace";
+            public const string HORIZONTAL_CONTROL = "HorizontalControl";
+            public const string VERTICAL_CONTROL = "VerticalControl";
+            public const string HORIZONTAL_INVERT = "HorizontalInvert";
+            public const string VERTICAL_INVERT = "VerticalInvert";
+            public const string HORIZONTAL_YAW_CONTRIBUTION = "HorizontalYawContribution";
+            public const string HORIZONTAL_ROLL_CONTRIBUTION = "HorizontalRollContribution";
+            public const string VERTICAL_YAW_CONTRIBUTION = "VerticalYawContribution";
+            public const string VERTICAL_ROLL_CONTRIBUTION = "VerticalRollContribution";
             public const string MIN_THRESHOLD = "MinThreshold";
             public const string REAL_WORLD_CALIBRATION = "RealWorldCalibration";
             public const string ACCEL_CURVE = "AccelCurve";
@@ -189,6 +202,15 @@ namespace DS4MapperTest.GyroActions
             PropertyKeyStrings.INVERT_X,
             PropertyKeyStrings.INVERT_Y,
             PropertyKeyStrings.X_AXIS,
+            PropertyKeyStrings.GYRO_SPACE,
+            PropertyKeyStrings.HORIZONTAL_CONTROL,
+            PropertyKeyStrings.VERTICAL_CONTROL,
+            PropertyKeyStrings.HORIZONTAL_INVERT,
+            PropertyKeyStrings.VERTICAL_INVERT,
+            PropertyKeyStrings.HORIZONTAL_YAW_CONTRIBUTION,
+            PropertyKeyStrings.HORIZONTAL_ROLL_CONTRIBUTION,
+            PropertyKeyStrings.VERTICAL_YAW_CONTRIBUTION,
+            PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION,
             PropertyKeyStrings.MIN_THRESHOLD,
             PropertyKeyStrings.REAL_WORLD_CALIBRATION,
             PropertyKeyStrings.IN_GAME_SENS,
@@ -273,6 +295,7 @@ namespace DS4MapperTest.GyroActions
 
             mouseParams.smoothingFilterSettings = new SmoothingFilterSettings();
             mouseParams.smoothingFilterSettings.Init();
+            mouseParams.orientation = GyroOrientationSettings.CreateDefault();
             onlyOnPrimary = true;
         }
 
@@ -382,19 +405,21 @@ namespace DS4MapperTest.GyroActions
             //double tempDouble = timeElapsed * 3 * gyroFrame.elapsedReference;
             //double tempDouble = timeElapsed * gyroFrame.elapsedReference;
             double tempDouble = 1.0;
-            int deltaX = mouseParams.useForXAxis == GyroMouseXAxisChoice.Yaw ?
-                gyroFrame.GyroYaw : gyroFrame.GyroRoll;
+            int deltaX = (int)Math.Round(GyroOrientationResolver.Resolve(mouseParams.orientation.horizontal,
+                gyroFrame.GyroYaw, gyroFrame.GyroRoll, gyroFrame.GyroPitch));
+            int deltaY = (int)Math.Round(GyroOrientationResolver.Resolve(mouseParams.orientation.vertical,
+                gyroFrame.GyroYaw, gyroFrame.GyroRoll, gyroFrame.GyroPitch));
 
-            int deltaY = gyroFrame.GyroPitch;
             double tempAngle = Math.Atan2(-deltaY, deltaX);
             double normX = Math.Abs(Math.Cos(tempAngle));
             double normY = Math.Abs(Math.Sin(tempAngle));
             int signX = Math.Sign(deltaX);
             int signY = Math.Sign(deltaY);
 
-            double deltaAngVelX = (mouseParams.useForXAxis == GyroMouseXAxisChoice.Yaw ?
-                gyroFrame.AngGyroYaw : gyroFrame.AngGyroRoll);
-            double deltaAngVelY = gyroFrame.AngGyroPitch;
+            double deltaAngVelX = GyroOrientationResolver.Resolve(mouseParams.orientation.horizontal,
+                gyroFrame.AngGyroYaw, gyroFrame.AngGyroRoll, gyroFrame.AngGyroPitch);
+            double deltaAngVelY = GyroOrientationResolver.Resolve(mouseParams.orientation.vertical,
+                gyroFrame.AngGyroYaw, gyroFrame.AngGyroRoll, gyroFrame.AngGyroPitch);
 
             //Trace.WriteLine($"{deltaX} {deltaY}");
 
@@ -656,8 +681,10 @@ namespace DS4MapperTest.GyroActions
             }
             */
 
-            double outXMotion = !mouseParams.invertX ? tempX : -1.0 * tempX;
-            double outYMotion = !mouseParams.invertY ? tempY : -1.0 * tempY;
+            // Inversion is resolved at the source in Prepare() via GyroOrientationResolver,
+            // not here - legacy invertX/invertY are migration-only and not read here.
+            double outXMotion = tempX;
+            double outYMotion = tempY;
 
             bool mouseSync = true;
             if (mouseParams.minThreshold != 1.0)
@@ -862,6 +889,33 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.X_AXIS:
                             mouseParams.useForXAxis = tempMouseAction.mouseParams.useForXAxis;
                             break;
+                        case PropertyKeyStrings.GYRO_SPACE:
+                            mouseParams.orientation.gyroSpace = tempMouseAction.mouseParams.orientation.gyroSpace;
+                            break;
+                        case PropertyKeyStrings.HORIZONTAL_CONTROL:
+                            mouseParams.orientation.horizontal.source = tempMouseAction.mouseParams.orientation.horizontal.source;
+                            break;
+                        case PropertyKeyStrings.VERTICAL_CONTROL:
+                            mouseParams.orientation.vertical.source = tempMouseAction.mouseParams.orientation.vertical.source;
+                            break;
+                        case PropertyKeyStrings.HORIZONTAL_INVERT:
+                            mouseParams.orientation.horizontal.invertSingle = tempMouseAction.mouseParams.orientation.horizontal.invertSingle;
+                            break;
+                        case PropertyKeyStrings.VERTICAL_INVERT:
+                            mouseParams.orientation.vertical.invertSingle = tempMouseAction.mouseParams.orientation.vertical.invertSingle;
+                            break;
+                        case PropertyKeyStrings.HORIZONTAL_YAW_CONTRIBUTION:
+                            mouseParams.orientation.horizontal.yawContribution = tempMouseAction.mouseParams.orientation.horizontal.yawContribution;
+                            break;
+                        case PropertyKeyStrings.HORIZONTAL_ROLL_CONTRIBUTION:
+                            mouseParams.orientation.horizontal.rollContribution = tempMouseAction.mouseParams.orientation.horizontal.rollContribution;
+                            break;
+                        case PropertyKeyStrings.VERTICAL_YAW_CONTRIBUTION:
+                            mouseParams.orientation.vertical.yawContribution = tempMouseAction.mouseParams.orientation.vertical.yawContribution;
+                            break;
+                        case PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION:
+                            mouseParams.orientation.vertical.rollContribution = tempMouseAction.mouseParams.orientation.vertical.rollContribution;
+                            break;
                         case PropertyKeyStrings.MIN_THRESHOLD:
                             mouseParams.minThreshold = tempMouseAction.mouseParams.minThreshold;
                             break;
@@ -1013,6 +1067,33 @@ namespace DS4MapperTest.GyroActions
                     break;
                 case PropertyKeyStrings.X_AXIS:
                     mouseParams.useForXAxis = tempMouseAction.mouseParams.useForXAxis;
+                    break;
+                case PropertyKeyStrings.GYRO_SPACE:
+                    mouseParams.orientation.gyroSpace = tempMouseAction.mouseParams.orientation.gyroSpace;
+                    break;
+                case PropertyKeyStrings.HORIZONTAL_CONTROL:
+                    mouseParams.orientation.horizontal.source = tempMouseAction.mouseParams.orientation.horizontal.source;
+                    break;
+                case PropertyKeyStrings.VERTICAL_CONTROL:
+                    mouseParams.orientation.vertical.source = tempMouseAction.mouseParams.orientation.vertical.source;
+                    break;
+                case PropertyKeyStrings.HORIZONTAL_INVERT:
+                    mouseParams.orientation.horizontal.invertSingle = tempMouseAction.mouseParams.orientation.horizontal.invertSingle;
+                    break;
+                case PropertyKeyStrings.VERTICAL_INVERT:
+                    mouseParams.orientation.vertical.invertSingle = tempMouseAction.mouseParams.orientation.vertical.invertSingle;
+                    break;
+                case PropertyKeyStrings.HORIZONTAL_YAW_CONTRIBUTION:
+                    mouseParams.orientation.horizontal.yawContribution = tempMouseAction.mouseParams.orientation.horizontal.yawContribution;
+                    break;
+                case PropertyKeyStrings.HORIZONTAL_ROLL_CONTRIBUTION:
+                    mouseParams.orientation.horizontal.rollContribution = tempMouseAction.mouseParams.orientation.horizontal.rollContribution;
+                    break;
+                case PropertyKeyStrings.VERTICAL_YAW_CONTRIBUTION:
+                    mouseParams.orientation.vertical.yawContribution = tempMouseAction.mouseParams.orientation.vertical.yawContribution;
+                    break;
+                case PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION:
+                    mouseParams.orientation.vertical.rollContribution = tempMouseAction.mouseParams.orientation.vertical.rollContribution;
                     break;
                 case PropertyKeyStrings.MIN_THRESHOLD:
                     mouseParams.minThreshold = tempMouseAction.mouseParams.minThreshold;
