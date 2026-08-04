@@ -9833,6 +9833,89 @@ namespace DS4MapperTest
             public bool ShouldSerializeVerticalRollContribution() =>
                 gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION);
 
+            public bool InvertGyroEnabled
+            {
+                get => gyroMouseAction.mouseParams.invert.enabled;
+                set
+                {
+                    gyroMouseAction.mouseParams.invert.enabled = value;
+                    InvertGyroEnabledChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler InvertGyroEnabledChanged;
+            public bool ShouldSerializeInvertGyroEnabled() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_ENABLED);
+
+            [JsonConverter(typeof(StringEnumConverter))]
+            public GyroInvertAxisChoice InvertGyroAxis
+            {
+                get => gyroMouseAction.mouseParams.invert.axisChoice;
+                set
+                {
+                    gyroMouseAction.mouseParams.invert.axisChoice = value;
+                    InvertGyroAxisChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler InvertGyroAxisChanged;
+            public bool ShouldSerializeInvertGyroAxis() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_AXIS);
+
+            [JsonConverter(typeof(TriggerButtonsConverter))]
+            public JoypadActionCodes[] InvertGyroTriggerButtons
+            {
+                get => gyroMouseAction.mouseParams.invert.triggerButtons;
+                set
+                {
+                    gyroMouseAction.mouseParams.invert.triggerButtons = value;
+                    InvertGyroTriggerButtonsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler InvertGyroTriggerButtonsChanged;
+            public bool ShouldSerializeInvertGyroTriggerButtons() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_BUTTONS);
+
+            public bool InvertGyroTriggerActivates
+            {
+                get => gyroMouseAction.mouseParams.invert.triggerActivates;
+                set
+                {
+                    gyroMouseAction.mouseParams.invert.triggerActivates = value;
+                    InvertGyroTriggerActivatesChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler InvertGyroTriggerActivatesChanged;
+            public bool ShouldSerializeInvertGyroTriggerActivates() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_ACTIVATES);
+
+            [JsonConverter(typeof(StringEnumConverter))]
+            public GyroActionsUtils.GyroTriggerEvalCond InvertGyroTriggerEvalCond
+            {
+                get => gyroMouseAction.mouseParams.invert.andCond ?
+                    GyroActionsUtils.GyroTriggerEvalCond.And : GyroActionsUtils.GyroTriggerEvalCond.Or;
+                set
+                {
+                    gyroMouseAction.mouseParams.invert.andCond =
+                        value == GyroActionsUtils.GyroTriggerEvalCond.And;
+                    InvertGyroTriggerEvalCondChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler InvertGyroTriggerEvalCondChanged;
+            public bool ShouldSerializeInvertGyroTriggerEvalCond() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_EVAL_COND);
+
+            public int InvertGyroActivationHoldMs
+            {
+                get => gyroMouseAction.mouseParams.invert.activationHoldMs;
+                set
+                {
+                    gyroMouseAction.mouseParams.invert.activationHoldMs = Math.Clamp(value, 0, 60000);
+                    InvertGyroActivationHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler InvertGyroActivationHoldMsChanged;
+            public bool ShouldSerializeInvertGyroActivationHoldMs() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.INVERT_GYRO_ACTIVATION_HOLD_MS);
+
             public double MinThreshold
             {
                 get => gyroMouseAction.mouseParams.minThreshold;
@@ -10103,6 +10186,12 @@ namespace DS4MapperTest
             settings.HorizontalRollContributionChanged += Settings_HorizontalRollContributionChanged;
             settings.VerticalYawContributionChanged += Settings_VerticalYawContributionChanged;
             settings.VerticalRollContributionChanged += Settings_VerticalRollContributionChanged;
+            settings.InvertGyroEnabledChanged += Settings_InvertGyroEnabledChanged;
+            settings.InvertGyroAxisChanged += Settings_InvertGyroAxisChanged;
+            settings.InvertGyroTriggerButtonsChanged += Settings_InvertGyroTriggerButtonsChanged;
+            settings.InvertGyroTriggerActivatesChanged += Settings_InvertGyroTriggerActivatesChanged;
+            settings.InvertGyroTriggerEvalCondChanged += Settings_InvertGyroTriggerEvalCondChanged;
+            settings.InvertGyroActivationHoldMsChanged += Settings_InvertGyroActivationHoldMsChanged;
             settings.MinThresholdChanged += Settings_MinThresholdChanged;
             settings.ToggleChanged += Settings_ToggleChanged;
             settings.JitterCompensationChanged += Settings_JitterCompensationChanged;
@@ -10158,6 +10247,36 @@ namespace DS4MapperTest
         private void Settings_VerticalRollContributionChanged(object sender, EventArgs e)
         {
             gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION);
+        }
+
+        private void Settings_InvertGyroEnabledChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_GYRO_ENABLED);
+        }
+
+        private void Settings_InvertGyroAxisChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_GYRO_AXIS);
+        }
+
+        private void Settings_InvertGyroTriggerButtonsChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_BUTTONS);
+        }
+
+        private void Settings_InvertGyroTriggerActivatesChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_ACTIVATES);
+        }
+
+        private void Settings_InvertGyroTriggerEvalCondChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_GYRO_TRIGGER_EVAL_COND);
+        }
+
+        private void Settings_InvertGyroActivationHoldMsChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_GYRO_ACTIVATION_HOLD_MS);
         }
 
         // Post-deserialize: migrate legacy InvertX/InvertY/UseForXAxis into the new
