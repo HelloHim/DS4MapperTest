@@ -487,6 +487,9 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             SnapAngleChanged += StickFlickStickPropViewModel_SnapAngleChanged;
             SnapStrengthChanged += StickFlickStickPropViewModel_SnapStrengthChanged;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
+            mapper.ActionProfile.CalibRwcChanged += ActionProfile_CalibValuesChanged;
+            mapper.ActionProfile.CalibInGameSensChanged += ActionProfile_CalibValuesChanged;
+            mapper.ActionProfile.CalibCountsChanged += ActionProfile_CalibValuesChanged;
 
             double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
             double savedRwc = mapper.ActionProfile.CalibRwc;
@@ -610,6 +613,21 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             {
                 CalculateTestRWC();
             }
+        }
+
+        // Another calibration panel (Gyro/Stick Flick Stick/Touchpad Flick Stick all
+        // share the same profile-level RWC/In-Game Sens/Counts) changed a value.
+        // Refresh this instance's own cached counts and bound properties to match.
+        private void ActionProfile_CalibValuesChanged(object sender, EventArgs e)
+        {
+            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0
+                ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
+            if (!_applyingPreset) TryMatchPreset();
+            CalculateTestRWC();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
         }
 
         private void StickFlickStickPropViewModel_MinAngleThresholdChanged(object sender, EventArgs e)
