@@ -51,6 +51,14 @@ namespace DS4MapperUnitTests
             eventInputMapping = mapping;
         }
 
+        // Lets tests drive per-action Prepare/Event calls directly (bypassing
+        // Reader_Report) while still controlling the frame time those actions read.
+        public void SetCurrentLatencyForTest(double latency)
+        {
+            currentLatency = latency;
+            currentRate = latency > 0.0 ? 1.0 / latency : 0.0;
+        }
+
         private const short STICK_MAX = 30000;
         private const short STICK_MIN = -30000;
 
