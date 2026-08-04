@@ -18,13 +18,19 @@ namespace DS4MapperTest.Common
         public static readonly GameCalibPreset Custom =
             new GameCalibPreset("Custom", 0, isCustom: true);
 
+        // The default profile calibration (Profile.cs) is seeded to match this
+        // preset at an In-Game Sensitivity of 1.0, so a brand-new profile shows
+        // VALORANT selected with no further setup needed.
+        public static readonly GameCalibPreset Valorant =
+            new GameCalibPreset("VALORANT", 14.2857);
+
         // Presets identify a game's RWC. Counts are measured by the player and
         // sensitivity is derived from that count total at selection time.
         public static readonly IReadOnlyList<GameCalibPreset> All =
             new List<GameCalibPreset>
             {
                 Custom,
-                new GameCalibPreset("VALORANT",                14.2857),
+                Valorant,
                 new GameCalibPreset("Apex Legends",            45.4545),
                 new GameCalibPreset("Battlefield 6",           465.1974),
                 new GameCalibPreset("COD / OW2",               151.5152),
