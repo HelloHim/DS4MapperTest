@@ -739,7 +739,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="In-Game Sensitivity" Style="{StaticResource JsmccLabelText}"/>
-                            <hc:NumericUpDown Grid.Column="1" Minimum="0.1" Maximum="10" DecimalPlaces="2" Increment="0.05"
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="10" DecimalPlaces="2" Increment="0.05"
                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                               Value="{Binding InGameSens, UpdateSourceTrigger=LostFocus}"/>
                         </Grid>

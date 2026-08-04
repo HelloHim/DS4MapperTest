@@ -110,7 +110,7 @@ namespace DS4MapperTest.TouchpadActions
         public double InGameSens
         {
             get => inGameSens;
-            set => inGameSens = Math.Clamp(value, 0.1, 10.0);
+            set => inGameSens = Math.Clamp(value, 0.01, 10.0);
         }
 
         private double releaseDampeningSpeed = 2.5;
