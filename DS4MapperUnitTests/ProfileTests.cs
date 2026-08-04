@@ -1012,6 +1012,10 @@ namespace DS4MapperUnitTests
                 ""TriggerActivates"": true,
                 ""EvalCond"": ""And"",
                 ""UseForXAxis"": ""Yaw"",
+                ""HorizontalControl"": ""Yaw"",
+                ""VerticalControl"": ""Pitch"",
+                ""HorizontalInvert"": false,
+                ""VerticalInvert"": false,
                 ""MinThreshold"": 0.0,
                 ""Toggle"": false
               }
