@@ -552,8 +552,23 @@ namespace DS4MapperTest
             if (currentDeviceItem == null) return;
 
             suppressCombo = true;
-            profileComboBox.ItemsSource = null;
-            profileComboBox.ItemsSource = currentDeviceItem.DevProfileList;
+
+            // Only tear down and rebuild ItemsSource when the backing collection
+            // actually changed (e.g. switching devices). Re-nulling and
+            // immediately reassigning the SAME ObservableCollection (as happens
+            // on every profile switch/delete/discard within one device) makes
+            // WPF resolve an item's data template binding against its internal
+            // unset-value marker (MS.Internal.NamedObject), which throws a
+            // TargetException that crashes the app. Pump the dispatcher between
+            // the clear and the reassignment on the rare path where the source
+            // really does change, same workaround as LoadProfileForDevice.
+            if (profileComboBox.ItemsSource != currentDeviceItem.DevProfileList)
+            {
+                profileComboBox.ItemsSource = null;
+                Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
+                profileComboBox.ItemsSource = currentDeviceItem.DevProfileList;
+            }
+
             profileComboBox.SelectedIndex = currentDeviceItem.ProfileIndex;
             suppressCombo = false;
         }
