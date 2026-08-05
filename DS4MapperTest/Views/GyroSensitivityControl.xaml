@@ -27,7 +27,8 @@
         <DataTemplate x:Key="MouseSensitivityTemplate">
             <StackPanel>
                 <TabControl Style="{StaticResource JsmccPillTabControlStyle}"
-                            SelectionChanged="SensitivityModeTabs_SelectionChanged">
+                            SelectionChanged="SensitivityModeTabs_SelectionChanged"
+                            DataContextChanged="SensitivityModeTabs_DataContextChanged">
                     <TabItem Header="Static Sensitivity">
                 <Border Style="{StaticResource JsmccCardBorder}">
                     <StackPanel>

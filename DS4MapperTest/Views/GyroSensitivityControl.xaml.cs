@@ -65,16 +65,39 @@ namespace DS4MapperTest.Views
 
         private void SensitivityModeTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.Source is not TabControl tabControl ||
-                tabControl.SelectedItem is not TabItem selectedTab ||
-                selectedTab.Header as string != "Acceleration Curve" ||
-                tabControl.DataContext is not GyroMouseActionPropViewModel vm ||
-                vm.AccelCurveChoice != GyroMouseAccelCurveChoice.None)
+            if (e.Source is TabControl tabControl)
+            {
+                SyncSensitivityMode(tabControl);
+            }
+        }
+
+        private void SensitivityModeTabs_DataContextChanged(object sender,
+            DependencyPropertyChangedEventArgs e)
+        {
+            if (sender is TabControl tabControl)
+            {
+                SyncSensitivityMode(tabControl);
+            }
+        }
+
+        private static void SyncSensitivityMode(TabControl tabControl)
+        {
+            if (tabControl.SelectedItem is not TabItem selectedTab ||
+                tabControl.DataContext is not GyroMouseActionPropViewModel vm)
             {
                 return;
             }
 
-            vm.AccelCurveChoice = GyroMouseAccelCurveChoice.Linear;
+            switch (selectedTab.Header as string)
+            {
+                case "Static Sensitivity":
+                    // Static sensitivity always behaves as an unbound acceleration curve.
+                    vm.AccelCurveChoice = GyroMouseAccelCurveChoice.None;
+                    break;
+                case "Acceleration Curve" when vm.AccelCurveChoice == GyroMouseAccelCurveChoice.None:
+                    vm.AccelCurveChoice = GyroMouseAccelCurveChoice.Linear;
+                    break;
+            }
         }
 
         private void RenderInlineHost(ContentControl host, GyroBindingItemsTest item)
