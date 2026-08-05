@@ -105,6 +105,16 @@ namespace DS4MapperTest.Behaviors
                 return;
             }
 
+            if (e.RemovedItems.Count == 0)
+            {
+                // Nothing was previously selected, so this is the TabControl
+                // picking its own default tab as it first loads (eg. a brand
+                // new inline binding editor appearing under the cog button),
+                // not the user actually switching tabs - don't yank the page
+                // back to the top for that.
+                return;
+            }
+
             tabControl.Dispatcher.BeginInvoke(new Action(() =>
             {
                 // Reset both the page-level ScrollViewer that contains this tab
