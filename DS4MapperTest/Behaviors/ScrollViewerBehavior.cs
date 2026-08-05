@@ -199,6 +199,18 @@ namespace DS4MapperTest.Behaviors
                 return;
             }
 
+            // PreviewMouseWheel tunnels from the outermost ScrollViewer down to
+            // the innermost one under the cursor. If a more deeply nested
+            // ScrollViewer sits between this one and the actual event source,
+            // let that inner ScrollViewer decide first - otherwise the outer
+            // ScrollViewer's own boundary state (eg. already at the top) would
+            // swallow the wheel input before the inner one ever sees it.
+            ScrollViewer nearest = FindVisualAncestor<ScrollViewer>(e.OriginalSource as DependencyObject);
+            if (nearest != null && nearest != scrollViewer)
+            {
+                return;
+            }
+
             bool scrollingDown = e.Delta < 0;
             bool canScrollFurther = scrollingDown
                 ? scrollViewer.VerticalOffset < scrollViewer.ScrollableHeight
