@@ -414,12 +414,20 @@ namespace DS4MapperTest.ViewModels
                     MarkFunctionsChanged(buttonAction);
                 });
 
-                RefreshFunctions();
+                // item.Kind and its slot in FunctionItems are unchanged, only its func,
+                // so update it in place instead of rebuilding the whole list.
+                item.SetFunc(func);
             }
 
             return new EditFaceBindingContext(owner.DeviceMapper, buttonAction, func);
         }
 
+        // Rebuilds the whole FunctionItems list, destroying and regenerating every row's
+        // UI container. Only call this when a func was actually added or removed (the
+        // set of rows changed) - e.g. AddExtraBinding/RemoveBinding. A plain value edit
+        // on an existing func should call that item's own cheap Refresh() instead, or
+        // this tears down whatever else is on screen (including an open inline editor
+        // in a sibling row) and resets the containing list's scroll position.
         public void RefreshAfterEdit()
         {
             RefreshFunctions();
@@ -515,7 +523,7 @@ namespace DS4MapperTest.ViewModels
         IActionOutputListOwner
     {
         private readonly FaceButtonBindingItem owner;
-        private readonly ActionFunc func;
+        private ActionFunc func;
         private readonly ObservableCollection<ActionOutputItem> outputItems =
             new ObservableCollection<ActionOutputItem>();
 
@@ -612,7 +620,7 @@ namespace DS4MapperTest.ViewModels
                     target.toggleEnabled = value;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -645,7 +653,7 @@ namespace DS4MapperTest.ViewModels
                     }
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -678,7 +686,7 @@ namespace DS4MapperTest.ViewModels
                     }
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -696,7 +704,7 @@ namespace DS4MapperTest.ViewModels
                     targetFunc.FireDelayMs = value;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -714,7 +722,7 @@ namespace DS4MapperTest.ViewModels
                     targetFunc.DurationMs = value;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -732,7 +740,7 @@ namespace DS4MapperTest.ViewModels
                     targetFunc.DurationMs = value;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -758,7 +766,7 @@ namespace DS4MapperTest.ViewModels
                     }
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -776,7 +784,7 @@ namespace DS4MapperTest.ViewModels
                     targetFunc.DelayDurationMs = temp;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -794,7 +802,7 @@ namespace DS4MapperTest.ViewModels
                     targetFunc.MaxHoldTimeEnabled = value;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -812,7 +820,7 @@ namespace DS4MapperTest.ViewModels
                     targetFunc.MaxHoldTimeMs = temp;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -830,7 +838,7 @@ namespace DS4MapperTest.ViewModels
                     targetFunc.Name = value;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -850,7 +858,7 @@ namespace DS4MapperTest.ViewModels
                     targetFunc.distance = clampedValue;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -871,7 +879,7 @@ namespace DS4MapperTest.ViewModels
                     targetFunc.TriggerButton = value;
                     FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
                 });
-                owner.RefreshAfterEdit();
+                Refresh();
             }
         }
 
@@ -901,7 +909,7 @@ namespace DS4MapperTest.ViewModels
                 // modes" and the whole app crashes). Let the click finish first.
                 System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    owner.RefreshAfterEdit();
+                    Refresh();
 
                     if (oldTrigger != JoypadActionCodes.Empty && oldTrigger != value)
                     {
@@ -933,7 +941,7 @@ namespace DS4MapperTest.ViewModels
 
                 System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    owner.RefreshAfterEdit();
+                    Refresh();
 
                     if (targetFunc.TriggerButton != JoypadActionCodes.Empty)
                     {
@@ -997,7 +1005,7 @@ namespace DS4MapperTest.ViewModels
                 FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
             });
 
-            owner.RefreshAfterEdit();
+            Refresh();
             MirrorSimPressIfNeeded();
         }
 
@@ -1032,7 +1040,7 @@ namespace DS4MapperTest.ViewModels
                 FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
             });
 
-            owner.RefreshAfterEdit();
+            Refresh();
             MirrorSimPressIfNeeded();
         }
 
@@ -1070,7 +1078,7 @@ namespace DS4MapperTest.ViewModels
         EditFaceBindingContext IQuickBindTarget.GetEditContext() => owner.PrepareEdit(this);
         void IQuickBindTarget.NotifyBindingChanged()
         {
-            owner.RefreshAfterEdit();
+            Refresh();
             MirrorSimPressIfNeeded();
         }
 
@@ -1083,8 +1091,17 @@ namespace DS4MapperTest.ViewModels
         void IActionOutputListOwner.RemoveOutputAction(ActionOutputItem item) => RemoveOutputAction(item);
         void IActionOutputListOwner.NotifyBindingChanged()
         {
-            owner.RefreshAfterEdit();
+            Refresh();
             MirrorSimPressIfNeeded();
+        }
+
+        // Lets an owner attach the func created on first edit of an empty slot without
+        // rebuilding the whole FunctionItems list (see RefreshAfterEdit for why that
+        // matters): this item's Kind and position are unchanged, only its func.
+        internal void SetFunc(ActionFunc newFunc)
+        {
+            func = newFunc;
+            Refresh();
         }
 
         public void Refresh()
