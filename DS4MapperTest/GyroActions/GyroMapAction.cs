@@ -59,6 +59,8 @@ namespace DS4MapperTest.GyroActions
         public short AccelY;
         public short AccelZ;
         public double AccelXG, AccelYG, AccelZG;
+        public double GravX, GravY, GravZ;
+        public bool GravValid;
         public double timeElapsed;
 
         public double elapsedReference;

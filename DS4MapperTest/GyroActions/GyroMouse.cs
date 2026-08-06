@@ -497,23 +497,48 @@ namespace DS4MapperTest.GyroActions
             //double tempDouble = timeElapsed * 3 * gyroFrame.elapsedReference;
             //double tempDouble = timeElapsed * gyroFrame.elapsedReference;
             double tempDouble = 1.0;
-            int deltaX = (int)Math.Round(GyroOrientationResolver.Resolve(mouseParams.orientation.horizontal,
-                gyroFrame.GyroYaw, gyroFrame.GyroRoll, gyroFrame.GyroPitch));
-            int deltaY = (int)Math.Round(GyroOrientationResolver.Resolve(mouseParams.orientation.vertical,
-                gyroFrame.GyroYaw, gyroFrame.GyroRoll, gyroFrame.GyroPitch));
 
-            double tempAngle = Math.Atan2(-deltaY, deltaX);
+            double deltaAngVelX;
+            double deltaAngVelY;
+            GyroSpaceChoice activeSpace = mouseParams.orientation.gyroSpace;
+            if (activeSpace != GyroSpaceChoice.LocalSpace && !gyroFrame.GravValid)
+            {
+                // Gravity has not converged yet (first frames after connect).
+                activeSpace = GyroSpaceChoice.LocalSpace;
+            }
+
+            if (activeSpace == GyroSpaceChoice.LocalSpace)
+            {
+                deltaAngVelX = GyroOrientationResolver.Resolve(mouseParams.orientation.horizontal,
+                    gyroFrame.AngGyroYaw, gyroFrame.AngGyroRoll, gyroFrame.AngGyroPitch);
+                deltaAngVelY = GyroOrientationResolver.Resolve(mouseParams.orientation.vertical,
+                    gyroFrame.AngGyroYaw, gyroFrame.AngGyroRoll, gyroFrame.AngGyroPitch);
+            }
+            else
+            {
+                GyroMotionAxisAdapter.ToMotionSpace(
+                    gyroFrame.AngGyroYaw, gyroFrame.AngGyroPitch, gyroFrame.AngGyroRoll,
+                    gyroFrame.AccelXG, gyroFrame.AccelYG, gyroFrame.AccelZG,
+                    out double gmGyroX, out double gmGyroY, out double gmGyroZ,
+                    out _, out _, out _);
+
+                GyroSpaceResolver.Resolve(activeSpace,
+                    gmGyroX, gmGyroY, gmGyroZ,
+                    gyroFrame.GravX, gyroFrame.GravY, gyroFrame.GravZ,
+                    out double spaceH, out double spaceV);
+
+                GyroMotionAxisAdapter.FromMotionSpace(spaceH, spaceV,
+                    out deltaAngVelX, out deltaAngVelY);
+            }
+
+            // Angle/deadzone basis, derived from the deg/s vector directly rather than
+            // from rounded raw counts. Rounding to int used to throw the angle off for
+            // small movements; the space output is not integral so we must not round.
+            double tempAngle = Math.Atan2(-deltaAngVelY, deltaAngVelX);
             double normX = Math.Abs(Math.Cos(tempAngle));
             double normY = Math.Abs(Math.Sin(tempAngle));
-            int signX = Math.Sign(deltaX);
-            int signY = Math.Sign(deltaY);
-
-            double deltaAngVelX = GyroOrientationResolver.Resolve(mouseParams.orientation.horizontal,
-                gyroFrame.AngGyroYaw, gyroFrame.AngGyroRoll, gyroFrame.AngGyroPitch);
-            double deltaAngVelY = GyroOrientationResolver.Resolve(mouseParams.orientation.vertical,
-                gyroFrame.AngGyroYaw, gyroFrame.AngGyroRoll, gyroFrame.AngGyroPitch);
-
-            //Trace.WriteLine($"{deltaX} {deltaY}");
+            int signX = Math.Sign(deltaAngVelX);
+            int signY = Math.Sign(deltaAngVelY);
 
             double deadzoneX = Math.Abs(normX * deadZone);
             double deadzoneY = Math.Abs(normY * deadZone);

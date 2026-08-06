@@ -5,6 +5,10 @@ namespace DS4MapperTest.GyroActions
     public enum GyroSpaceChoice
     {
         LocalSpace,
+        PlayerTurn,
+        PlayerLean,
+        WorldTurn,
+        WorldLean,
     }
 
     public enum GyroLocalAxisSource
