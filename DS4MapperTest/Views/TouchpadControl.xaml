@@ -290,22 +290,24 @@
                   HorizontalScrollBarVisibility="Disabled"
                   CanContentScroll="False">
         <TabControl x:Name="TabControlRoot" Style="{StaticResource JsmccPillTabControlStyle}">
-            <TabItem Header="Click &amp; Touch Bindings">
+            <TabItem Header="Touch Bindings">
                 <StackPanel>
-                    <StackPanel Margin="0,0,0,6">
-                        <TextBlock Text="Click &amp; Touch Bindings" Style="{StaticResource JsmccSectionTitle}"/>
-                        <TextBlock Text="Touch and click bindings for this touchpad. These are always available, regardless of the mode chosen in Mode."
-                                   Style="{StaticResource JsmccBodyText}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,4,0,0"/>
-                    </StackPanel>
-
                     <views:SharedButtonKeybindsControl
-                        SectionTitle="Touch &amp; Click"
-                        Description="Physical touchpad touch and click inputs exposed by the current controller."
-                        EmptyText="No touchpad touch or click bindings were found for this controller."
+                        SectionTitle="Touch Bindings"
+                        Description="Touchpad capacitive touch bindings."
+                        EmptyText="No touchpad touch bindings were found for this controller."
                         CardSubtitle="Touchpad input"
-                        ItemsSource="{Binding TouchpadButtonBindings}"/>
+                        ItemsSource="{Binding TouchpadTouchBindings}"/>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Press Bindings">
+                <StackPanel>
+                    <views:SharedButtonKeybindsControl
+                        SectionTitle="Press Bindings"
+                        Description="Touchpad physical press bindings."
+                        EmptyText="No touchpad press bindings were found for this controller."
+                        CardSubtitle="Touchpad input"
+                        ItemsSource="{Binding TouchpadPressBindings}"/>
                 </StackPanel>
             </TabItem>
         </TabControl>

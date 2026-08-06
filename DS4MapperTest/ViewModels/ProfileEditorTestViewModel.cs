@@ -194,6 +194,14 @@ namespace DS4MapperTest.ViewModels
             new ObservableCollection<FaceButtonBindingItem>();
         public ObservableCollection<FaceButtonBindingItem> TouchpadButtonBindings => touchpadButtonBindings;
 
+        private ObservableCollection<FaceButtonBindingItem> touchpadTouchBindings =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> TouchpadTouchBindings => touchpadTouchBindings;
+
+        private ObservableCollection<FaceButtonBindingItem> touchpadPressBindings =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> TouchpadPressBindings => touchpadPressBindings;
+
         private Dictionary<string, FaceButtonBindingItem> touchpadButtonBindingItems =
             new Dictionary<string, FaceButtonBindingItem>(StringComparer.OrdinalIgnoreCase);
 
@@ -1094,26 +1102,40 @@ namespace DS4MapperTest.ViewModels
 
         private void PopulateTouchpadButtonBindings()
         {
-            AddTouchpadButtonBinding(
+            touchpadTouchBindings.Clear();
+            touchpadPressBindings.Clear();
+
+            FaceButtonBindingItem item;
+
+            item = AddTouchpadButtonBinding(
                 new string[] { "LeftPadTouch", "LeftTouchpadTouch" },
                 "Left Touch",
                 "Touchpad touch sensor");
-            AddTouchpadButtonBinding(
+            if (item != null) touchpadTouchBindings.Add(item);
+
+            item = AddTouchpadButtonBinding(
                 new string[] { "RightPadTouch", "RightTouchpadTouch" },
                 "Right Touch",
                 "Touchpad touch sensor");
-            AddTouchpadButtonBinding(
+            if (item != null) touchpadTouchBindings.Add(item);
+
+            item = AddTouchpadButtonBinding(
                 new string[] { "TouchClick" },
-                "Main Click",
-                "Physical full-pad click");
-            AddTouchpadButtonBinding(
+                "Main Press",
+                "Physical full-pad press");
+            if (item != null) touchpadPressBindings.Add(item);
+
+            item = AddTouchpadButtonBinding(
                 new string[] { "LeftPadClick", "LeftTouchpadClick" },
-                "Left Click",
-                "Physical left-pad click");
-            AddTouchpadButtonBinding(
+                "Left Press",
+                "Physical left-pad press");
+            if (item != null) touchpadPressBindings.Add(item);
+
+            item = AddTouchpadButtonBinding(
                 new string[] { "RightPadClick", "RightTouchpadClick" },
-                "Right Click",
-                "Physical right-pad click");
+                "Right Press",
+                "Physical right-pad press");
+            if (item != null) touchpadPressBindings.Add(item);
         }
 
         private void PopulateStickKeybinds()
@@ -1322,9 +1344,9 @@ namespace DS4MapperTest.ViewModels
                 {
                     return AddTouchpadButtonBinding(buttonBindings[index],
                         touchpadItem.BindingName == "RightTouchpad" || touchpadItem.BindingName == "TouchpadRight"
-                            ? "Right Click"
-                            : "Left Click",
-                        "Physical pad click");
+                            ? "Right Press"
+                            : "Left Press",
+                        "Physical touchpad press");
                 }
             }
 
