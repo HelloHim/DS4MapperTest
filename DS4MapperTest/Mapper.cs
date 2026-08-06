@@ -2650,8 +2650,15 @@ namespace DS4MapperTest
 
             // TEMPORARY: sign-verification probe. Remove once axis signs in
             // GyroMotionAxisAdapter have been confirmed against real hardware.
+            // Normalized so the readings are directly comparable to +/-1.
+            var probeGrav = motionGravity.Grav;
+            double probeLen = Math.Sqrt((probeGrav.x * probeGrav.x) +
+                (probeGrav.y * probeGrav.y) + (probeGrav.z * probeGrav.z));
+            double probeNx = probeLen > 0.0 ? probeGrav.x / probeLen : 0.0;
+            double probeNy = probeLen > 0.0 ? probeGrav.y / probeLen : 0.0;
+            double probeNz = probeLen > 0.0 ? probeGrav.z / probeLen : 0.0;
             System.Diagnostics.Trace.WriteLine(
-                $"GRAV {motionGravity.Grav.x:F2} {motionGravity.Grav.y:F2} {motionGravity.Grav.z:F2}");
+                $"GRAV {probeNx:F2} {probeNy:F2} {probeNz:F2}");
 
             frame.GravX = motionGravity.Grav.x;
             frame.GravY = motionGravity.Grav.y;

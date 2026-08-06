@@ -47,6 +47,12 @@ namespace DS4MapperTest.GyroActions
         public GyroSpaceChoice gyroSpace;
         public GyroLocalAxisMapping horizontal;
         public GyroLocalAxisMapping vertical;
+        // Final-output inversion for the gravity spaces only. Local Space keeps its
+        // per-source invert on horizontal/vertical instead, since there the axis
+        // blend is user-chosen; for the gravity spaces it is gravity-derived, so a
+        // single flip of the resolved horizontal/vertical output is all that applies.
+        public bool spaceInvertX;
+        public bool spaceInvertY;
 
         public static GyroOrientationSettings CreateDefault()
         {
@@ -55,6 +61,8 @@ namespace DS4MapperTest.GyroActions
                 gyroSpace = GyroSpaceChoice.LocalSpace,
                 horizontal = GyroLocalAxisMapping.CreateDefault(GyroLocalAxisSource.Yaw),
                 vertical = GyroLocalAxisMapping.CreateDefault(GyroLocalAxisSource.Pitch),
+                spaceInvertX = false,
+                spaceInvertY = false,
             };
         }
     }
