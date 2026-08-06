@@ -9833,6 +9833,32 @@ namespace DS4MapperTest
             public bool ShouldSerializeVerticalRollContribution() =>
                 gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION);
 
+            public bool GyroSpaceInvertX
+            {
+                get => gyroMouseAction.mouseParams.orientation.spaceInvertX;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.spaceInvertX = value;
+                    GyroSpaceInvertXChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler GyroSpaceInvertXChanged;
+            public bool ShouldSerializeGyroSpaceInvertX() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.SPACE_INVERT_X);
+
+            public bool GyroSpaceInvertY
+            {
+                get => gyroMouseAction.mouseParams.orientation.spaceInvertY;
+                set
+                {
+                    gyroMouseAction.mouseParams.orientation.spaceInvertY = value;
+                    GyroSpaceInvertYChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler GyroSpaceInvertYChanged;
+            public bool ShouldSerializeGyroSpaceInvertY() =>
+                gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.SPACE_INVERT_Y);
+
             public bool InvertGyroEnabled
             {
                 get => gyroMouseAction.mouseParams.invert.enabled;
@@ -10186,6 +10212,8 @@ namespace DS4MapperTest
             settings.HorizontalRollContributionChanged += Settings_HorizontalRollContributionChanged;
             settings.VerticalYawContributionChanged += Settings_VerticalYawContributionChanged;
             settings.VerticalRollContributionChanged += Settings_VerticalRollContributionChanged;
+            settings.GyroSpaceInvertXChanged += Settings_GyroSpaceInvertXChanged;
+            settings.GyroSpaceInvertYChanged += Settings_GyroSpaceInvertYChanged;
             settings.InvertGyroEnabledChanged += Settings_InvertGyroEnabledChanged;
             settings.InvertGyroAxisChanged += Settings_InvertGyroAxisChanged;
             settings.InvertGyroTriggerButtonsChanged += Settings_InvertGyroTriggerButtonsChanged;
@@ -10277,6 +10305,16 @@ namespace DS4MapperTest
         private void Settings_InvertGyroActivationHoldMsChanged(object sender, EventArgs e)
         {
             gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_GYRO_ACTIVATION_HOLD_MS);
+        }
+
+        private void Settings_GyroSpaceInvertXChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.SPACE_INVERT_X);
+        }
+
+        private void Settings_GyroSpaceInvertYChanged(object sender, EventArgs e)
+        {
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.SPACE_INVERT_Y);
         }
 
         // Post-deserialize: migrate legacy InvertX/InvertY/UseForXAxis into the new

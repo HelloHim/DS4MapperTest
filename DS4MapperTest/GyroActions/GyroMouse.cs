@@ -214,6 +214,8 @@ namespace DS4MapperTest.GyroActions
             public const string HORIZONTAL_ROLL_CONTRIBUTION = "HorizontalRollContribution";
             public const string VERTICAL_YAW_CONTRIBUTION = "VerticalYawContribution";
             public const string VERTICAL_ROLL_CONTRIBUTION = "VerticalRollContribution";
+            public const string SPACE_INVERT_X = "GyroSpaceInvertX";
+            public const string SPACE_INVERT_Y = "GyroSpaceInvertY";
             public const string INVERT_GYRO_ENABLED = "InvertGyroEnabled";
             public const string INVERT_GYRO_AXIS = "InvertGyroAxis";
             public const string INVERT_GYRO_TRIGGER_BUTTONS = "InvertGyroTriggerButtons";
@@ -272,6 +274,8 @@ namespace DS4MapperTest.GyroActions
             PropertyKeyStrings.HORIZONTAL_ROLL_CONTRIBUTION,
             PropertyKeyStrings.VERTICAL_YAW_CONTRIBUTION,
             PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION,
+            PropertyKeyStrings.SPACE_INVERT_X,
+            PropertyKeyStrings.SPACE_INVERT_Y,
             PropertyKeyStrings.INVERT_GYRO_ENABLED,
             PropertyKeyStrings.INVERT_GYRO_AXIS,
             PropertyKeyStrings.INVERT_GYRO_TRIGGER_BUTTONS,
@@ -529,6 +533,11 @@ namespace DS4MapperTest.GyroActions
 
                 GyroMotionAxisAdapter.FromMotionSpace(spaceH, spaceV,
                     out deltaAngVelX, out deltaAngVelY);
+
+                // Gravity-space final-output invert. Local Space is untouched here: it
+                // applies its inversion per source inside GyroOrientationResolver above.
+                if (mouseParams.orientation.spaceInvertX) deltaAngVelX = -deltaAngVelX;
+                if (mouseParams.orientation.spaceInvertY) deltaAngVelY = -deltaAngVelY;
             }
 
             // Angle/deadzone basis, derived from the deg/s vector directly rather than
@@ -1041,6 +1050,12 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION:
                             mouseParams.orientation.vertical.rollContribution = tempMouseAction.mouseParams.orientation.vertical.rollContribution;
                             break;
+                        case PropertyKeyStrings.SPACE_INVERT_X:
+                            mouseParams.orientation.spaceInvertX = tempMouseAction.mouseParams.orientation.spaceInvertX;
+                            break;
+                        case PropertyKeyStrings.SPACE_INVERT_Y:
+                            mouseParams.orientation.spaceInvertY = tempMouseAction.mouseParams.orientation.spaceInvertY;
+                            break;
                         case PropertyKeyStrings.INVERT_GYRO_ENABLED:
                             mouseParams.invert.enabled = tempMouseAction.mouseParams.invert.enabled;
                             break;
@@ -1237,6 +1252,12 @@ namespace DS4MapperTest.GyroActions
                     break;
                 case PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION:
                     mouseParams.orientation.vertical.rollContribution = tempMouseAction.mouseParams.orientation.vertical.rollContribution;
+                    break;
+                case PropertyKeyStrings.SPACE_INVERT_X:
+                    mouseParams.orientation.spaceInvertX = tempMouseAction.mouseParams.orientation.spaceInvertX;
+                    break;
+                case PropertyKeyStrings.SPACE_INVERT_Y:
+                    mouseParams.orientation.spaceInvertY = tempMouseAction.mouseParams.orientation.spaceInvertY;
                     break;
                 case PropertyKeyStrings.INVERT_GYRO_ENABLED:
                     mouseParams.invert.enabled = tempMouseAction.mouseParams.invert.enabled;
