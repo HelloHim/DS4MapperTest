@@ -553,6 +553,14 @@ namespace DS4MapperTest.JoyConLibrary
                     bool runPrepareAction = (gyroAct.OnlyOnPrimary && currentDev);
                     //if (!gyroAct.OnlyOnPrimary || runPrepareAction)
                     {
+                        // PopulateStateGyro (and therefore motionGravity) is only ever
+                        // called from this Right JoyCon branch - the Left branch above
+                        // builds its GyroL frame and calls gyroAct.Prepare directly,
+                        // without going through PopulateStateGyro. That already
+                        // guarantees a single gyro source feeds gravity tracking,
+                        // mirroring JSM's IGNORE_LEFT default, so no reset-on-switch
+                        // call is needed: there is no live second source to switch away
+                        // from.
                         GyroEventFrame gyroFrame = new GyroEventFrame
                         {
                             GyroYaw = currentMapperState.MotionR.GyroYaw,

@@ -2609,6 +2609,20 @@ namespace DS4MapperTest
             intermediateState.PacketCounter = intermediateState.PacketCounter + 1;
         }
 
+        private readonly GyroMotionGravity motionGravity = new GyroMotionGravity();
+
+        // No explicit reset call needed: on a genuine physical disconnect,
+        // BackendManager.Device_Removal tears the Mapper down entirely and a
+        // brand new Mapper (and this field) is constructed when the device is
+        // re-enumerated, so motionGravity already starts clean. The only case
+        // where a single Mapper instance is reused across a reconnect-like
+        // event is the Steam Controller/Triton dongle sync cycle
+        // (SteamControllerReader/SteamControllerTritionReader toggling
+        // device.Synced -> BackendManager.Device_SyncedChanged ->
+        // PrepareSyncedInputDevice -> Mapper.Start()); no existing per-device
+        // gyro state (including GyroCalibration, whose own reset only fires
+        // once per reader thread on its first packet) is reset on that path
+        // either, so there is no existing hook to mirror here.
         public void PopulateStateGyro(ref GyroEventFrame frame)
         {
             intermediateState.GyroYaw = frame.GyroYaw;
@@ -2617,6 +2631,29 @@ namespace DS4MapperTest
             intermediateState.AccelX = frame.AccelX;
             intermediateState.AccelY = frame.AccelY;
             intermediateState.AccelZ = frame.AccelZ;
+
+            // Keep the gravity estimate warm every tick, regardless of whether any
+            // gyro action is currently active. JSM does the same: ProcessMotion runs
+            // unconditionally in the poll loop, so gravity is already converged the
+            // instant the gyro button is pressed.
+            GyroMotionAxisAdapter.ToMotionSpace(
+                frame.AngGyroYaw, frame.AngGyroPitch, frame.AngGyroRoll,
+                frame.AccelXG, frame.AccelYG, frame.AccelZG,
+                out double gmGyroX, out double gmGyroY, out double gmGyroZ,
+                out double gmAccelX, out double gmAccelY, out double gmAccelZ);
+
+            motionGravity.Update(gmGyroX, gmGyroY, gmGyroZ,
+                gmAccelX, gmAccelY, gmAccelZ, frame.timeElapsed);
+
+            // TEMPORARY: sign-verification probe. Remove once axis signs in
+            // GyroMotionAxisAdapter have been confirmed against real hardware.
+            System.Diagnostics.Trace.WriteLine(
+                $"GRAV {motionGravity.Grav.x:F2} {motionGravity.Grav.y:F2} {motionGravity.Grav.z:F2}");
+
+            frame.GravX = motionGravity.Grav.x;
+            frame.GravY = motionGravity.Grav.y;
+            frame.GravZ = motionGravity.Grav.z;
+            frame.GravValid = motionGravity.HasGravity;
         }
 
         public void ProcessActionSetLayerChecks()
