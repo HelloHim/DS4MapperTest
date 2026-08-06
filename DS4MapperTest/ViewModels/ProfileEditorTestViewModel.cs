@@ -733,6 +733,19 @@ namespace DS4MapperTest.ViewModels
             RefreshProfileDirtyState();
             mapper.ProfileEditCommitted += Mapper_ProfileEditCommitted;
             CurrentLightbarModeChanged += ProfileEditorTestViewModel_CurrentLightbarModeChanged;
+
+            // Editor controls for the binding shown by default (numeric spinners,
+            // tab auto-selection, etc.) can push a stray property update the moment
+            // they finish loading, before the user has touched anything. Re-baseline
+            // once the UI has settled so that startup noise isn't mistaken for a real
+            // edit and doesn't trip the unsaved-changes prompt on close.
+            System.Windows.Application.Current?.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                new Action(() =>
+                {
+                    savedProfileFingerprint = CreateProfileFingerprint();
+                    RefreshProfileDirtyState();
+                }));
         }
 
         private void Mapper_ProfileEditCommitted(object sender, EventArgs e)
