@@ -19,7 +19,7 @@ namespace DS4MapperTest.GyroActions
     ///
     /// All inputs and outputs are in GamepadMotion / DualShock 4 space (Y-up):
     ///   gyroX = pitch rate, gyroY = yaw rate, gyroZ = roll rate (deg/s)
-    ///   grav = gravity vector, need not be normalized (this normalizes it)
+    ///   grav = gravity vector, need not be normalised (this normalises it)
     /// Outputs:
     ///   outHorizontal / outVertical, in the same units JSM writes into its
     ///   gyroX / gyroY accumulators, ready to be used as mouse deltas.
@@ -204,8 +204,9 @@ namespace DS4MapperTest.GyroActions
     /// accel output here must be approximately (0, +1, 0), so that
     /// GyroMotionGravity settles gravity at approximately (0, -1, 0).
     ///
-    /// Only the DualSense/DS4 mapping is confirmed against real hardware. The
-    /// others are derived from source and still want a hardware check.
+    /// The DualSense/DS4 and Steam Controller mappings are confirmed against
+    /// real hardware. Switch Pro, Joy-Con and 8BitDo Ultimate 2 Wireless are
+    /// derived from source only and still want a hardware check.
     /// </summary>
     public static class GyroMotionAxisAdapter
     {
@@ -299,7 +300,8 @@ namespace DS4MapperTest.GyroActions
 
         /// <summary>
         /// Steam Controller, both the USB/dongle reader and the Triton reader
-        /// (identical report layout and identical negations).
+        /// (identical report layout and identical negations). Confirmed against
+        /// real hardware.
         ///
         /// Here the reader takes pitch from the first gyro word, roll from the
         /// second and yaw from the third, so relative to the DualShock the
