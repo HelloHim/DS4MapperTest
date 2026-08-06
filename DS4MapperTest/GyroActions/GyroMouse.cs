@@ -516,7 +516,7 @@ namespace DS4MapperTest.GyroActions
             }
             else
             {
-                GyroMotionAxisAdapter.ToMotionSpace(
+                GyroMotionAxisAdapter.ToMotionSpace(mapper.DeviceType,
                     gyroFrame.AngGyroYaw, gyroFrame.AngGyroPitch, gyroFrame.AngGyroRoll,
                     gyroFrame.AccelXG, gyroFrame.AccelYG, gyroFrame.AccelZG,
                     out double gmGyroX, out double gmGyroY, out double gmGyroZ,
