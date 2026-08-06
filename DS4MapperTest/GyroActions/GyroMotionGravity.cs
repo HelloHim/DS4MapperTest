@@ -42,7 +42,7 @@ namespace DS4MapperTest.GyroActions
         private Vec smoothAccel;
         private double shakiness;
 
-        /// <summary>Current gravity estimate, GamepadMotion space. Not normalized.</summary>
+        /// <summary>Current gravity estimate, GamepadMotion space. Not normalised.</summary>
         public Vec Grav => grav;
 
         /// <summary>True once gravity has converged enough to be usable.</summary>
