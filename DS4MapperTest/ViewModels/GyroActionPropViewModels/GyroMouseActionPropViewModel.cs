@@ -663,6 +663,10 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         private List<EnumChoiceSelection<GyroSpaceChoice>> gyroSpaceItems = new()
         {
             new("Local Space", GyroSpaceChoice.LocalSpace),
+            new("Player Turn", GyroSpaceChoice.PlayerTurn),
+            new("Player Lean", GyroSpaceChoice.PlayerLean),
+            new("World Turn", GyroSpaceChoice.WorldTurn),
+            new("World Lean", GyroSpaceChoice.WorldLean),
         };
         public List<EnumChoiceSelection<GyroSpaceChoice>> GyroSpaceItems => gyroSpaceItems;
 
