@@ -2636,7 +2636,10 @@ namespace DS4MapperTest
             // gyro action is currently active. JSM does the same: ProcessMotion runs
             // unconditionally in the poll loop, so gravity is already converged the
             // instant the gyro button is pressed.
-            GyroMotionAxisAdapter.ToMotionSpace(
+            // Each device family reports its sensors in its own convention, so
+            // the conversion is selected per family. DeviceType is already the
+            // discriminator every mapper subclass overrides.
+            GyroMotionAxisAdapter.ToMotionSpace(DeviceType,
                 frame.AngGyroYaw, frame.AngGyroPitch, frame.AngGyroRoll,
                 frame.AccelXG, frame.AccelYG, frame.AccelZG,
                 out double gmGyroX, out double gmGyroY, out double gmGyroZ,
