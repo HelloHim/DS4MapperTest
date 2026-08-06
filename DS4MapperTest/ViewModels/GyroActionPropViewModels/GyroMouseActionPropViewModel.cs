@@ -680,12 +680,42 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 MarkChangedProperty(GyroMouse.PropertyKeyStrings.GYRO_SPACE);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GyroSpaceChoice)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLocalSpace)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsGravitySpace)));
                 HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
         public bool IsLocalSpace => GyroSpaceChoice == GyroSpaceChoice.LocalSpace;
+        public bool IsGravitySpace => !IsLocalSpace;
+
+        public bool SpaceInvertX
+        {
+            get => action.mouseParams.orientation.spaceInvertX;
+            set
+            {
+                if (action.mouseParams.orientation.spaceInvertX == value) return;
+                action.mouseParams.orientation.spaceInvertX = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.SPACE_INVERT_X);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SpaceInvertX)));
+                HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public bool SpaceInvertY
+        {
+            get => action.mouseParams.orientation.spaceInvertY;
+            set
+            {
+                if (action.mouseParams.orientation.spaceInvertY == value) return;
+                action.mouseParams.orientation.spaceInvertY = value;
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.SPACE_INVERT_Y);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SpaceInvertY)));
+                HighlightGyroOrientationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         private List<EnumChoiceSelection<GyroLocalAxisSource>> localAxisSourceItems = new()
         {
@@ -903,7 +933,9 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_YAW_CONTRIBUTION) ||
                 action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.HORIZONTAL_ROLL_CONTRIBUTION) ||
                 action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_YAW_CONTRIBUTION) ||
-                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION);
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_ROLL_CONTRIBUTION) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.SPACE_INVERT_X) ||
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.SPACE_INVERT_Y);
         }
         public event EventHandler HighlightGyroOrientationChanged;
 
