@@ -134,6 +134,11 @@ namespace DS4MapperTest
             Logger logger = logHolder.Logger;
             logger.Error($"Thread Crashed with message {e.Exception.Message}");
             logger.Error(e.Exception.ToString());
+
+            // Log and keep the app running. The app should only close when the
+            // user closes it manually, not because a UI-thread exception occurred
+            // (e.g. while handling a controller disconnect).
+            e.Handled = true;
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

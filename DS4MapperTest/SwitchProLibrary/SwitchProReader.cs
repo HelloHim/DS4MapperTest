@@ -109,7 +109,7 @@ namespace DS4MapperTest.SwitchProLibrary
         {
             PrepareDevice();
 
-            inputThread = new Thread(ReadInput);
+            inputThread = new Thread(() => RunReadInputSafely(ReadInput));
             inputThread.IsBackground = true;
             inputThread.Priority = ThreadPriority.AboveNormal;
             inputThread.Name = "Switch Pro Reader Thread";
