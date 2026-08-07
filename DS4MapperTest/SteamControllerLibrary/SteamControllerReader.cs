@@ -68,7 +68,7 @@ namespace DS4MapperTest.SteamControllerLibrary
 
             PrepareDevice();
 
-            inputThread = new Thread(ReadInput);
+            inputThread = new Thread(() => RunReadInputSafely(ReadInput));
             inputThread.IsBackground = true;
             inputThread.Priority = ThreadPriority.AboveNormal;
             inputThread.Name = "Steam Controller Reader Thread";

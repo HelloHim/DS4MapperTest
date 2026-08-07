@@ -113,7 +113,7 @@ namespace DS4MapperTest.JoyConLibrary
         {
             PrepareDevice();
 
-            inputThread = new Thread(ReadInput);
+            inputThread = new Thread(() => RunReadInputSafely(ReadInput));
             inputThread.IsBackground = true;
             inputThread.Priority = ThreadPriority.AboveNormal;
             inputThread.Name = "JoyCon Reader Thread";

@@ -52,7 +52,7 @@ namespace DS4MapperTest.DS4Library
             device.PrepareOutputReport(outputReportBuffer);
             device.WriteReport(outputReportBuffer);
 
-            inputThread = new Thread(ReadInput);
+            inputThread = new Thread(() => RunReadInputSafely(ReadInput));
             inputThread.IsBackground = true;
             inputThread.Priority = ThreadPriority.AboveNormal;
             inputThread.Name = "DS4Device Reader Thread";

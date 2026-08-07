@@ -45,7 +45,7 @@ namespace DS4MapperTest.InputDevices.EightBitDoLibrary
             //device.PrepareOutputReport(outputReportBuffer);
             //device.WriteReport(outputReportBuffer);
 
-            inputThread = new Thread(ReadInput);
+            inputThread = new Thread(() => RunReadInputSafely(() => ReadInput(null)));
             inputThread.IsBackground = true;
             inputThread.Priority = ThreadPriority.AboveNormal;
             inputThread.Name = "8BitDo Ultimate 2 Wireless Reader Thread";
