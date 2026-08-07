@@ -1021,19 +1021,6 @@
                                               MinWidth="180"/>
                                 </StackPanel>
 
-                                <StackPanel Margin="0,0,0,12">
-                                    <TextBlock Text="Creator"
-                                               Style="{StaticResource JsmccLabelText}"
-                                               Margin="0,0,0,4"/>
-                                    <TextBox Text="{Binding Creator, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                             Style="{StaticResource JsmccTextBoxStyle}"/>
-                                    <TextBlock Text="{Binding CreatorErrors}"
-                                               Foreground="{DynamicResource JsmccDangerTextBrush}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,4,0,0"
-                                               Visibility="{Binding HasCreatorError, Converter={StaticResource BoolToVis}}"/>
-                                </StackPanel>
-
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Content="Cancel"
                                             Click="CancelNewProfileBtn_Click"
