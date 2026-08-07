@@ -89,16 +89,27 @@ namespace DS4MapperTest.Views
                 return;
             }
 
-            if (buttonActionEditVM == null || flickTurnBindTab?.IsSelected != true)
+            if (buttonActionEditVM == null)
             {
                 return;
             }
 
-            DataContext = null;
+            if (flickTurnBindTab?.IsSelected == true)
+            {
+                DataContext = null;
 
-            buttonActionEditVM.AssignCameraTurn();
+                buttonActionEditVM.AssignCameraTurn();
 
-            DataContext = buttonActionEditVM;
+                DataContext = buttonActionEditVM;
+            }
+            else if (recalibrateGyroBindTab?.IsSelected == true)
+            {
+                DataContext = null;
+
+                buttonActionEditVM.AssignRecalibrateGyro();
+
+                DataContext = buttonActionEditVM;
+            }
         }
     }
 }
