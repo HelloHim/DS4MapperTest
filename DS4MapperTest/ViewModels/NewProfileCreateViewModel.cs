@@ -45,20 +45,6 @@ namespace DS4MapperTest.ViewModels
         }
         public event EventHandler ProfilePathChanged;
 
-        private string creator;
-        public string Creator
-        {
-            get => creator;
-            set
-            {
-                if (creator == value) return;
-                creator = value;
-                RaisePropertyChanged(nameof(Creator));
-                CreatorChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-        public event EventHandler CreatorChanged;
-
         private bool profileCreated;
         public bool ProfileCreated
         {
@@ -109,27 +95,6 @@ namespace DS4MapperTest.ViewModels
         }
         public event EventHandler HasProfilePathErrorChanged;
 
-        public string CreatorErrors
-        {
-            get
-            {
-                string result = string.Empty;
-                if (errors.TryGetValue("Creator", out List<string> errorList))
-                {
-                    result = string.Join("\n", errorList);
-                }
-
-                return result;
-            }
-        }
-        public event EventHandler CreatorErrorsChanged;
-        public bool HasCreatorError
-        {
-            get => errors.ContainsKey("Creator");
-        }
-        public event EventHandler HasCreatorErrorChanged;
-
-
         protected Dictionary<string, List<string>> errors =
             new Dictionary<string, List<string>>();
 
@@ -154,7 +119,6 @@ namespace DS4MapperTest.ViewModels
                 tempProfile = mapper.ActionProfile;
                 profileName = Path.GetFileNameWithoutExtension(profilePath);
                 tempProfile.Name = profileName;
-                tempProfile.Creator = creator;
                 tempProfile.CreationDate = DateTime.UtcNow;
                 tempProfile.Description = profileName;
                 if (outputControllerTypeIdx >= 0)
@@ -237,19 +201,6 @@ namespace DS4MapperTest.ViewModels
                 ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs("ProfilePath"));
             }
 
-            if (string.IsNullOrEmpty(creator))
-            {
-                List<string> tempList;
-                if (!errors.TryGetValue("Creator", out tempList))
-                {
-                    tempList = new List<string>();
-                    errors.Add("Creator", tempList);
-                }
-
-                tempList.Add("No creator specified");
-                ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs("Creator"));
-            }
-
             result = errors.Count == 0;
             if (!result)
             {
@@ -289,12 +240,6 @@ namespace DS4MapperTest.ViewModels
                         RaisePropertyChanged(nameof(HasProfilePathError));
                         ProfilePathErrorsChanged?.Invoke(this, EventArgs.Empty);
                         HasProfilePathErrorChanged?.Invoke(this, EventArgs.Empty);
-                        break;
-                    case "Creator":
-                        RaisePropertyChanged(nameof(CreatorErrors));
-                        RaisePropertyChanged(nameof(HasCreatorError));
-                        CreatorErrorsChanged?.Invoke(this, EventArgs.Empty);
-                        HasCreatorErrorChanged?.Invoke(this, EventArgs.Empty);
                         break;
                     default:
                         break;

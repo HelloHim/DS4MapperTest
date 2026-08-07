@@ -38,9 +38,8 @@
             <Button x:Name="createBtn" Content="Create" Click="CreateBtn_Click" Margin="8,0,0,0" />
         </StackPanel>
 
-        <Grid Height="140" DockPanel.Dock="Top">
+        <Grid Height="100" DockPanel.Dock="Top">
             <Grid.RowDefinitions>
-                <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
             </Grid.RowDefinitions>
@@ -63,14 +62,6 @@
             <Label Content="Output Controller Type" Grid.Row="1" Grid.Column="0" Margin="0,8,0,0" />
             <ComboBox ItemsSource="{Binding OutputContList}" SelectedIndex="{Binding OutputControllerTypeIdx,FallbackValue='0'}" DisplayMemberPath="Name" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">
             </ComboBox>
-
-            <Label Content="Creator" Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" />
-            <DockPanel Grid.Row="2" Grid.Column="1" Margin="0,8,0,0">
-                <TextBlock Text="{Binding CreatorErrors}" Foreground="{StaticResource DangerBrush}" Height="20"
-                            Margin="0,4,0,0" Visibility="{Binding HasCreatorError,Converter={StaticResource boolVisConverter}}" DockPanel.Dock="Bottom" />
-
-                <TextBox Text="{Binding Creator, ValidatesOnNotifyDataErrors=True}" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" />
-            </DockPanel>
 
         </Grid>
     </DockPanel>

@@ -49,9 +49,6 @@ namespace DS4MapperTest
         protected string description;
         public string Description { get => description; set => description = value; }
 
-        protected string creator;
-        public string Creator { get => creator; set => creator = value; }
-
         protected DateTime creationDate;
         public DateTime CreationDate { get => creationDate; set => creationDate = value; }
 
