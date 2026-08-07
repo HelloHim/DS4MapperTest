@@ -26,6 +26,7 @@ namespace DS4MapperTest.MapperUtil
             Wait,
             CycleStep,
             CameraTurn,
+            RecalibrateGyro,
         }
 
         public enum SetChangeCondition : uint
@@ -598,6 +599,9 @@ namespace DS4MapperTest.MapperUtil
                     break;
                 case ActionType.CameraTurn:
                     result = $"Flick Turn ({cameraTurnAngle}°, {cameraTurnDurationMs}ms)";
+                    break;
+                case ActionType.RecalibrateGyro:
+                    result = "Recalibrate Gyro";
                     break;
                 case ActionType.Empty:
                     result = "Empty";

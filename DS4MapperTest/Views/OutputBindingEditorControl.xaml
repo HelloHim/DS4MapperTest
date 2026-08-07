@@ -269,6 +269,15 @@
                     </ComboBox>
                 </WrapPanel>
             </TabItem>
+
+            <TabItem x:Name="recalibrateGyroBindTab"
+                     Header="Recalibrate Gyro">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Recalibrates the gyro when this binding activates, the same as the Recalibrate Gyro button in the header (1 second delay, then 5 seconds of calibration)."
+                               Style="{StaticResource JsmccMutedText}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </TabItem>
         </TabControl>
     </DockPanel>
 </UserControl>

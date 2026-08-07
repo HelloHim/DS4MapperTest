@@ -1708,6 +1708,23 @@ namespace DS4MapperTest.ViewModels
             CameraTurnActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        public void AssignRecalibrateGyro()
+        {
+            if (selectedSlotItemIndex <= -1) return;
+
+            OutputSlotItem item = slotItems[selectedSlotItemIndex];
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                currentAction.Release(mapper, ignoreReleaseActions: true);
+                OutputActionData tempData = item.Data;
+                tempData.Reset();
+                tempData.OutputType = OutputActionData.ActionType.RecalibrateGyro;
+            });
+
+            ResetComboBoxIndex(ActionComboBoxTypes.None);
+            PostSlotChangeChecks();
+        }
+
         private void ButtonActionEditViewModel_CameraTurnAngleChanged(object sender, EventArgs e)
         {
             if (selectedSlotItemIndex < 0) return;

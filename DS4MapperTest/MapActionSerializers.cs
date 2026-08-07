@@ -12531,6 +12531,10 @@ namespace DS4MapperTest
                         tempInstance.cameraTurnCounts360 = camCounts360;
                     resultInstance = new OutputActionDataSerializer(tempInstance);
                     break;
+                case ActionType.RecalibrateGyro:
+                    tempInstance.OutputType = checkType;
+                    resultInstance = new OutputActionDataSerializer(tempInstance);
+                    break;
                 case ActionType.Empty:
                     tempInstance.OutputType = ActionType.Empty;
                     resultInstance = new OutputActionDataSerializer(tempInstance);
@@ -12648,6 +12652,8 @@ namespace DS4MapperTest
                 case ActionType.CameraTurn:
                     tempJ.Add("Angle", current.OutputData.cameraTurnAngle);
                     tempJ.Add("Duration", current.OutputData.cameraTurnDurationMs);
+                    break;
+                case ActionType.RecalibrateGyro:
                     break;
                 default:
                     break;
