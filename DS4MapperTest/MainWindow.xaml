@@ -276,7 +276,7 @@
                                         Style="{StaticResource JsmccButtonStyle}"/>
 
                                 <Button x:Name="gyroCalibrateButton"
-                                        Content="Calibrate Gyro"
+                                        Content="Recalibrate Gyro"
                                         Click="GyroCalibrateButton_Click"
                                         Margin="0,4,12,4"
                                         Style="{StaticResource JsmccButtonStyle}"/>
