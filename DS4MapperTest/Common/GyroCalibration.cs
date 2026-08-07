@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS4MapperTest.Common
 {
@@ -22,26 +18,66 @@ namespace DS4MapperTest.Common
         }
     }
 
+    /// <summary>
+    /// Direct C# port of the Manual-mode calibration accumulator from Jibb Smart's
+    /// GamepadMotion.hpp (MIT licence, https://github.com/JibbSmart/GamepadMotionHelpers) -
+    /// the same engine JoyShockMapper itself uses (GamepadMotionHelpers, not
+    /// JoyShockLibrary; JSL only supplies raw sensor reports, all of JSM's motion
+    /// math including calibration is GamepadMotionHelpers).
+    ///
+    /// This intentionally ports ONLY GamepadMotion::GyroCalibration /
+    /// PushSensorSamples / GetCalibratedSensor - the Manual mode accumulator.
+    /// GamepadMotion's Stillness/SensorFusion auto-calibration is not ported and
+    /// is not wanted here; Manual mode is also what JSM itself defaults to
+    /// (AUTO_CALIBRATE_GYRO ships OFF).
+    ///
+    /// Offset is the plain running mean of every sample collected while
+    /// calibrating - sum / count, recomputed on read, exactly like
+    /// GamepadMotion::GetCalibratedSensor. There is no windowing and no
+    /// duration weighting; the previous JoyShockLibrary-style behaviour
+    /// inherited from upstream Ryochan7/DS4MapperTest is gone.
+    ///
+    /// Kept in the device's raw integer units rather than deg/s: mean-subtraction
+    /// is linear, so averaging raw counts and subtracting the raw-count mean is
+    /// equivalent to converting to deg/s first and doing it there. That
+    /// equivalence only holds for Manual mode - GamepadMotion's auto-calibration
+    /// thresholds are hardcoded in deg/s and g, so if Stillness/SensorFusion is
+    /// ever wanted later, it needs to run downstream on already-converted values.
+    ///
+    /// The 5-second collection window, 1-second start delay, and
+    /// reconnect/relaunch retrigger are this app's own UI timing layered on top
+    /// of JSM's plain Start/Pause/Reset primitives - JSM's own app leaves manual
+    /// calibration open until FINISH_GYRO_CALIBRATION is pressed by hand. Nothing
+    /// about a timed auto-stop is part of GamepadMotion itself; it's just this
+    /// app calling Pause on a timer instead of on a button.
+    /// </summary>
     public class GyroCalibration
     {
-        // for continuous calibration (JoyShockLibrary)
-        const int num_gyro_average_windows = 3;
-        private int gyro_average_window_front_index = 0;
-        const int gyro_average_window_ms = 5000;
-        private GyroAverageWindow[] gyro_average_window = new GyroAverageWindow[num_gyro_average_windows];
-        public int gyro_offset_x = 0;
-        public int gyro_offset_y = 0;
-        public int gyro_offset_z = 0;
-        public double gyro_accel_magnitude = 1.0f;
-        public Stopwatch gyroAverageTimer = new Stopwatch();
+        private const int CalibrationWindowMs = 5000;
+
         private readonly object calibrationLock = new object();
+        private readonly Stopwatch gyroCalibrationTimer = new Stopwatch();
         private DateTime? delayedCalibrationStartUtc;
+
+        // GamepadMotionHelpers::GyroCalibration - running sums, not windows.
+        private double sumX;
+        private double sumY;
+        private double sumZ;
+        private double sumAccelMagnitude;
+        private long numSamples;
+
+        // GamepadMotion::GetCalibratedSensor: mean of accumulated samples,
+        // computed on demand. Zero samples -> zero offset (no correction yet).
+        public int gyro_offset_x => numSamples > 0 ? (int)Math.Round(sumX / numSamples) : 0;
+        public int gyro_offset_y => numSamples > 0 ? (int)Math.Round(sumY / numSamples) : 0;
+        public int gyro_offset_z => numSamples > 0 ? (int)Math.Round(sumZ / numSamples) : 0;
+        public double gyro_accel_magnitude => numSamples > 0 ? sumAccelMagnitude / numSamples : 1.0;
 
         public long CntCalibrating
         {
             get
             {
-                return gyroAverageTimer.IsRunning ? gyroAverageTimer.ElapsedMilliseconds : 0;
+                return gyroCalibrationTimer.IsRunning ? gyroCalibrationTimer.ElapsedMilliseconds : 0;
             }
         }
 
@@ -57,9 +93,9 @@ namespace DS4MapperTest.Common
                         return new GyroCalibrationStatus(true, false, remaining);
                     }
 
-                    if (gyroAverageTimer.IsRunning)
+                    if (gyroCalibrationTimer.IsRunning)
                     {
-                        long remaining = Math.Max(0, 5000L - gyroAverageTimer.ElapsedMilliseconds);
+                        long remaining = Math.Max(0, CalibrationWindowMs - gyroCalibrationTimer.ElapsedMilliseconds);
                         return new GyroCalibrationStatus(false, true, remaining);
                     }
 
@@ -73,26 +109,11 @@ namespace DS4MapperTest.Common
             StartContinuousCalibration();
         }
 
-        public unsafe void CalcSensorCamples(ref int currentYaw, ref int currentPitch, ref int currentRoll, ref int AccelX, ref int AccelY, ref int AccelZ)
-        {
-            unchecked
-            {
-                double accelMag = Math.Sqrt(AccelX * AccelX + AccelY * AccelY + AccelZ * AccelZ);
-                PushSensorSamples(currentYaw, currentPitch, currentRoll, (float)accelMag);
-                if (gyroAverageTimer.ElapsedMilliseconds > 5000L)
-                {
-                    gyroAverageTimer.Stop();
-                    AverageGyro(ref gyro_offset_x, ref gyro_offset_y, ref gyro_offset_z, ref gyro_accel_magnitude);
-#if TRACE
-                    Trace.WriteLine(string.Format("AverageGyro {0} {1} {2} {3}", gyro_offset_x, gyro_offset_y, gyro_offset_z, gyro_accel_magnitude));
-#endif
-                }
-            }
-        }
-
         /// <summary>
-        /// Samples a report when calibration is active, or begins a requested delayed
-        /// calibration as soon as the delay has elapsed. Called by the input thread.
+        /// Samples a report while calibration is active, begins a requested delayed
+        /// calibration once its delay has elapsed, and freezes the accumulator once
+        /// the collection window has run its course - mirrors this app's existing
+        /// 5-second burst UX. Called by the input thread.
         /// </summary>
         public void Update(ref int currentYaw, ref int currentPitch, ref int currentRoll,
             ref int accelX, ref int accelY, ref int accelZ)
@@ -105,15 +126,25 @@ namespace DS4MapperTest.Common
                     ResetContinuousCalibrationInternal();
                 }
 
-                if (gyroAverageTimer.IsRunning)
+                if (gyroCalibrationTimer.IsRunning)
                 {
-                    CalcSensorCamples(ref currentYaw, ref currentPitch, ref currentRoll,
-                        ref accelX, ref accelY, ref accelZ);
+                    if (gyroCalibrationTimer.ElapsedMilliseconds >= CalibrationWindowMs)
+                    {
+                        // Collection window elapsed: freeze here, same as JSM's
+                        // FINISH_GYRO_CALIBRATION / PauseContinuousCalibration.
+                        // Do NOT clear the accumulator - the mean gathered so far
+                        // is the offset going forward.
+                        PauseContinuousCalibrationInternal();
+                    }
+                    else
+                    {
+                        PushSensorSamples(currentYaw, currentPitch, currentRoll, accelX, accelY, accelZ);
+                    }
                 }
             }
         }
 
-        /// <summary>Begins a fresh five-second gyro offset average after the requested delay.</summary>
+        /// <summary>Begins a fresh calibration window after the requested delay.</summary>
         public void RequestCalibrationAfterDelay(int delayMilliseconds)
         {
             lock (calibrationLock)
@@ -122,6 +153,7 @@ namespace DS4MapperTest.Common
             }
         }
 
+        /// <summary>GamepadMotion::StartContinuousCalibration - begin collecting. Does not clear the accumulator.</summary>
         public void StartContinuousCalibration()
         {
             lock (calibrationLock)
@@ -132,26 +164,37 @@ namespace DS4MapperTest.Common
 
         private void StartContinuousCalibrationInternal()
         {
-            for (int i = 0; i < gyro_average_window.Length; i++) gyro_average_window[i] = new GyroAverageWindow();
-            gyroAverageTimer.Start();
+            gyroCalibrationTimer.Restart();
         }
 
-        public void StopContinuousCalibration()
+        /// <summary>GamepadMotion::PauseContinuousCalibration - stop collecting, keep the settled offset.</summary>
+        public void PauseContinuousCalibration()
         {
             lock (calibrationLock)
             {
-                StopContinuousCalibrationInternal();
+                PauseContinuousCalibrationInternal();
             }
         }
 
-        private void StopContinuousCalibrationInternal()
+        private void PauseContinuousCalibrationInternal()
         {
-            delayedCalibrationStartUtc = null;
-            gyroAverageTimer.Stop();
-            gyroAverageTimer.Reset();
-            for (int i = 0; i < gyro_average_window.Length; i++) gyro_average_window[i].Reset();
+            gyroCalibrationTimer.Stop();
         }
 
+        /// <summary>
+        /// Zeroes the accumulator, then immediately begins a fresh collection window.
+        ///
+        /// Upstream GamepadMotion::ResetContinuousCalibration only zeroes
+        /// GyroCalibration and leaves IsCalibrating untouched - it relies on a
+        /// separate, already-active StartContinuousCalibration to still be in
+        /// effect. This app has exactly one call site for this method: once per
+        /// (re)connect, with no paired Start call alongside it, because a
+        /// reconnect must restart the 5-second window from zero elapsed time
+        /// rather than inherit however much of the constructor's original
+        /// window had already ticked by. So unlike the upstream one-liner, this
+        /// override also restarts the window, folding in what would otherwise be
+        /// a separate StartContinuousCalibration call at every call site.
+        /// </summary>
         public void ResetContinuousCalibration()
         {
             lock (calibrationLock)
@@ -162,77 +205,25 @@ namespace DS4MapperTest.Common
 
         private void ResetContinuousCalibrationInternal()
         {
-            StopContinuousCalibrationInternal();
+            sumX = 0.0;
+            sumY = 0.0;
+            sumZ = 0.0;
+            sumAccelMagnitude = 0.0;
+            numSamples = 0;
             StartContinuousCalibrationInternal();
         }
 
-        public unsafe void PushSensorSamples(int x, int y, int z, double accelMagnitude)
+        // GamepadMotion::PushSensorSamples - plain accumulation, no windowing.
+        private void PushSensorSamples(int gyroX, int gyroY, int gyroZ, int accelX, int accelY, int accelZ)
         {
-            // push samples
-            GyroAverageWindow windowPointer = gyro_average_window[gyro_average_window_front_index];
+            double accelMagnitude = Math.Sqrt(
+                (double)accelX * accelX + (double)accelY * accelY + (double)accelZ * accelZ);
 
-            if (windowPointer.StopIfElapsed(gyro_average_window_ms))
-            {
-#if TRACE
-                Trace.WriteLine(string.Format("GyroAvg[{0}], numSamples: {1}", gyro_average_window_front_index,
-                    windowPointer.numSamples));
-#endif
-
-                // next
-                gyro_average_window_front_index = (gyro_average_window_front_index + num_gyro_average_windows - 1) % num_gyro_average_windows;
-                windowPointer = gyro_average_window[gyro_average_window_front_index];
-                windowPointer.Reset();
-            }
-            // accumulate
-            windowPointer.numSamples++;
-            windowPointer.x += x;
-            windowPointer.y += y;
-            windowPointer.z += z;
-            windowPointer.accelMagnitude += accelMagnitude;
-        }
-
-        public void AverageGyro(ref int x, ref int y, ref int z, ref double accelMagnitude)
-        {
-            double weight = 0.0;
-            double totalX = 0.0;
-            double totalY = 0.0;
-            double totalZ = 0.0;
-            double totalAccelMagnitude = 0.0;
-
-            int wantedMs = 5000;
-            for (int i = 0; i < num_gyro_average_windows && wantedMs > 0; i++)
-            {
-                int cycledIndex = (i + gyro_average_window_front_index) % num_gyro_average_windows;
-                GyroAverageWindow windowPointer = gyro_average_window[cycledIndex];
-                if (windowPointer.numSamples == 0 || windowPointer.DurationMs == 0) continue;
-
-                double thisWeight;
-                double fNumSamples = windowPointer.numSamples;
-                if (wantedMs < windowPointer.DurationMs)
-                {
-                    thisWeight = (float)wantedMs / windowPointer.DurationMs;
-                    wantedMs = 0;
-                }
-                else
-                {
-                    thisWeight = windowPointer.GetWeight(gyro_average_window_ms);
-                    wantedMs -= windowPointer.DurationMs;
-                }
-
-                totalX += (windowPointer.x / fNumSamples) * thisWeight;
-                totalY += (windowPointer.y / fNumSamples) * thisWeight;
-                totalZ += (windowPointer.z / fNumSamples) * thisWeight;
-                totalAccelMagnitude += (windowPointer.accelMagnitude / fNumSamples) * thisWeight;
-                weight += thisWeight;
-            }
-
-            if (weight > 0.0)
-            {
-                x = (int)(totalX / weight);
-                y = (int)(totalY / weight);
-                z = (int)(totalZ / weight);
-                accelMagnitude = totalAccelMagnitude / weight;
-            }
+            numSamples++;
+            sumX += gyroX;
+            sumY += gyroY;
+            sumZ += gyroZ;
+            sumAccelMagnitude += accelMagnitude;
         }
     }
 }
