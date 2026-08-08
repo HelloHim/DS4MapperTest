@@ -406,67 +406,11 @@ namespace DS4MapperTest.Views
                         return propControl;
                     }
                 case TouchpadPassthruAction:
-                    if (item.ShowsPassthruClickThreshold)
-                    {
-                        return CreatePassthruThresholdControl(item);
-                    }
-
                     return CreateMessage(
                         $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no inline settings.");
                 default:
                     return CreateMessage($"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no inline settings.");
             }
-        }
-
-        private FrameworkElement CreatePassthruThresholdControl(TouchBindingItemsTest item)
-        {
-            Border border = new Border
-            {
-                Padding = new Thickness(0),
-            };
-
-            Grid grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(180) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-            TextBlock label = new TextBlock
-            {
-                Text = "Virtual Click Threshold",
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-            if (TryFindResource("JsmccLabelText") is Style labelStyle)
-            {
-                label.Style = labelStyle;
-            }
-
-            HandyControl.Controls.NumericUpDown thresholdInput = new HandyControl.Controls.NumericUpDown
-            {
-                Minimum = 0,
-                Maximum = TouchpadPressureDualStageAction.MAX_PRESSURE,
-                DecimalPlaces = 0,
-                Increment = 500,
-                Width = 108,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-            if (TryFindResource("JsmccNumericUpDownStyle") is Style numericStyle)
-            {
-                thresholdInput.Style = numericStyle;
-            }
-            thresholdInput.SetBinding(HandyControl.Controls.NumericUpDown.ValueProperty,
-                new Binding(nameof(TouchBindingItemsTest.PassthruClickThreshold))
-                {
-                    Source = item,
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus,
-                });
-
-            Grid.SetColumn(label, 0);
-            Grid.SetColumn(thresholdInput, 1);
-            grid.Children.Add(label);
-            grid.Children.Add(thresholdInput);
-            border.Child = grid;
-
-            return border;
         }
 
         private void ShowFuncEditor(ContentControl host, UserControl baseControl, ButtonAction action,

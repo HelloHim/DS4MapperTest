@@ -8,21 +8,11 @@ namespace DS4MapperTest.TouchpadActions
         public class PropertyKeyStrings
         {
             public const string NAME = "Name";
-            public const string VIRTUAL_CLICK_PRESSURE_THRESHOLD = "VirtualClickPressureThreshold";
         }
 
         public const string ACTION_TYPE_NAME = "TouchPassthruAction";
-        public const int DEFAULT_VIRTUAL_CLICK_PRESSURE_THRESHOLD =
-            TouchpadPressureDualStageAction.DEFAULT_FULL_THRESHOLD;
 
         public override bool OutputsNativeTouch => true;
-
-        private int virtualClickPressureThreshold = DEFAULT_VIRTUAL_CLICK_PRESSURE_THRESHOLD;
-        public int VirtualClickPressureThreshold
-        {
-            get => virtualClickPressureThreshold;
-            set => virtualClickPressureThreshold = Math.Clamp(value, 0, TouchpadPressureDualStageAction.MAX_PRESSURE);
-        }
 
         public TouchpadPassthruAction()
         {
@@ -57,7 +47,6 @@ namespace DS4MapperTest.TouchpadActions
 
                 this.parentAction = parentAction;
                 mappingId = tempPassthru.mappingId;
-                virtualClickPressureThreshold = tempPassthru.virtualClickPressureThreshold;
             }
         }
     }

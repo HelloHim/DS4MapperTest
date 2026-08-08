@@ -1494,9 +1494,7 @@ namespace DS4MapperTest.ViewModels
                     string label = useDualShock4Labels ? def.DualShock4Label : def.XboxLabel;
                     gamepadComboItems.Add(new GamepadCodeItem(label, def.Code, tempInd++));
                 }
-                // Real hardware feature, only present on DS4/DualSense pads, so it keeps
-                // its DS4 prefix and appears the same regardless of output controller type.
-                gamepadComboItems.Add(new GamepadCodeItem("DS4_Touchpad_Click", JoypadActionCodes.CenterPadClick, tempInd++));
+                gamepadComboItems.Add(new GamepadCodeItem("PS Touchpad Click", JoypadActionCodes.CenterPadClick, tempInd++));
 
                 gamepadComboItems.AddRange(new GamepadCodeItem[]
                 {

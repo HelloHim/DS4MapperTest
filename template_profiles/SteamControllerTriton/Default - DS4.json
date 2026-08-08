@@ -257,6 +257,36 @@
                   ]
                 }
               ]
+            },
+            {
+              "Id": 17,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "GamepadControl",
+                      "PadOutput": "DS4_TOUCH_CLICK"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Id": 18,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "GamepadControl",
+                      "PadOutput": "DS4_TOUCH_CLICK"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -335,6 +365,14 @@
         {
           "Input": "QAM",
           "Action": 16
+        },
+        {
+          "Input": "LeftPadClick",
+          "Action": 17
+        },
+        {
+          "Input": "RightPadClick",
+          "Action": 18
         }
       ]
     }
