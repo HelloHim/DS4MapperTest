@@ -690,7 +690,8 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
                         elapsedReference = device.BaseElapsedReference,
                     };
 
-                    PopulateStateGyro(ref gyroFrame);
+                    if (gyroAct.OutputsNativeGyro) PopulateStateGyro(ref gyroFrame);
+                    else ClearStateGyro();
                     gyroAct.Prepare(this, ref gyroFrame);
                     if (gyroAct.active)
                     {

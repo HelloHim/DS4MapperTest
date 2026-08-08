@@ -84,6 +84,7 @@ namespace DS4MapperTest.GyroActions
     {
         public bool active;
         public bool activeEvent;
+        public virtual bool OutputsNativeGyro => true;
         protected GyroSensDefinition gyroSensDefinition = new GyroSensDefinition();
         public GyroSensDefinition GyroSensDefinition
         {
