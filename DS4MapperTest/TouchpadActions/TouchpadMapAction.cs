@@ -36,6 +36,7 @@ namespace DS4MapperTest.TouchpadActions
     {
         public bool activeEvent;
         public bool active;
+        public virtual bool OutputsNativeTouch => false;
 
         protected TouchpadDefinition touchpadDefinition;
         public TouchpadDefinition TouchDefinition

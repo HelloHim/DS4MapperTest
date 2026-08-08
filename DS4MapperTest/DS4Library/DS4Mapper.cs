@@ -625,23 +625,62 @@ namespace DS4MapperTest.DS4Library
 
             }
 
-            SetVirtualTouchContact1(
-                NormaliseTouchAxis(currentMapperState.Touch1.X, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_X),
-                NormaliseTouchAxis(currentMapperState.Touch1.Y, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_Y),
-                currentMapperState.Touch1.Touch);
-            SetVirtualTouchContact2(
-                NormaliseTouchAxis(currentMapperState.Touch2.X, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_X),
-                NormaliseTouchAxis(currentMapperState.Touch2.Y, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_Y),
-                currentMapperState.Touch2.Touch);
-            intermediateState.BtnTouchClick |= currentMapperState.TouchClickButton;
-            intermediateState.Dirty |=
-                currentMapperState.TouchClickButton != previousMapperState.TouchClickButton ||
-                currentMapperState.Touch1.Touch != previousMapperState.Touch1.Touch ||
-                currentMapperState.Touch1.X != previousMapperState.Touch1.X ||
-                currentMapperState.Touch1.Y != previousMapperState.Touch1.Y ||
-                currentMapperState.Touch2.Touch != previousMapperState.Touch2.Touch ||
-                currentMapperState.Touch2.X != previousMapperState.Touch2.X ||
-                currentMapperState.Touch2.Y != previousMapperState.Touch2.Y;
+            ActionLayer touchLayer = actionProfile.CurrentActionSet.RecentAppliedLayer;
+            TouchpadMapAction wholeTouchAction = touchLayer.touchpadActionDict["Touchpad"];
+            if (wholeTouchAction.OutputsNativeTouch)
+            {
+                ApplyVirtualTouchState(
+                    NormaliseTouchAxis(currentMapperState.Touch1.X, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_X),
+                    NormaliseTouchAxis(currentMapperState.Touch1.Y, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_Y),
+                    currentMapperState.Touch1.Touch,
+                    NormaliseTouchAxis(currentMapperState.Touch2.X, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_X),
+                    NormaliseTouchAxis(currentMapperState.Touch2.Y, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_Y),
+                    currentMapperState.Touch2.Touch,
+                    currentMapperState.TouchClickButton);
+            }
+            else
+            {
+                bool leftPassthru = touchLayer.touchpadActionDict["TouchpadLeft"].OutputsNativeTouch;
+                bool rightPassthru = touchLayer.touchpadActionDict["TouchpadRight"].OutputsNativeTouch;
+
+                ref DS4State.TouchInfo leftPrimaryTouchData = ref currentMapperState.Touch1;
+                ref DS4State.TouchInfo rightPrimaryTouchData = ref currentMapperState.Touch2;
+
+                if (currentMapperState.NumTouches > 0)
+                {
+                    if (currentMapperState.Touch1.Touch && currentMapperState.Touch1.LeftRegion)
+                    {
+                        leftPrimaryTouchData = ref currentMapperState.Touch1;
+                    }
+                    else if (currentMapperState.Touch2.Touch && currentMapperState.Touch2.LeftRegion)
+                    {
+                        leftPrimaryTouchData = ref currentMapperState.Touch2;
+                    }
+
+                    if (currentMapperState.Touch1.Touch && currentMapperState.Touch1.RightRegion)
+                    {
+                        rightPrimaryTouchData = ref currentMapperState.Touch1;
+                    }
+                    else if (currentMapperState.Touch2.Touch && currentMapperState.Touch2.RightRegion)
+                    {
+                        rightPrimaryTouchData = ref currentMapperState.Touch2;
+                    }
+                }
+
+                bool leftTouchActive = leftPassthru &&
+                    leftPrimaryTouchData.Touch && leftPrimaryTouchData.LeftRegion;
+                bool rightTouchActive = rightPassthru &&
+                    rightPrimaryTouchData.Touch && rightPrimaryTouchData.RightRegion;
+
+                ApplyVirtualTouchState(
+                    leftTouchActive ? NormaliseTouchAxis(leftPrimaryTouchData.X, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_X) : 0.0,
+                    leftTouchActive ? NormaliseTouchAxis(leftPrimaryTouchData.Y, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_Y) : 0.0,
+                    leftTouchActive,
+                    rightTouchActive ? NormaliseTouchAxis(rightPrimaryTouchData.X, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_X) : 0.0,
+                    rightTouchActive ? NormaliseTouchAxis(rightPrimaryTouchData.Y, 0.0, DS4State.TouchInfo.TOUCHPAD_MAX_Y) : 0.0,
+                    rightTouchActive,
+                    (leftTouchActive || rightTouchActive) && currentMapperState.TouchClickButton);
+            }
 
             lightProcess.UpdateLightbarDS4(device, actionProfile);
 

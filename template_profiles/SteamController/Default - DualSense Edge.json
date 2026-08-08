@@ -29,7 +29,7 @@
           "MappedActions": [
             {
               "Id": 0,
-              "ActionMode": "TouchStickTranslateAction",
+              "ActionMode": "TouchPassthruAction",
               "Settings": {
                 "OutputStick": "X360_LS",
                 "DeadZone": 0.05,
@@ -40,7 +40,7 @@
             },
             {
               "Id": 1,
-              "ActionMode": "TouchMouseJoystickAction",
+              "ActionMode": "TouchPassthruAction",
               "Settings": {
                 "OutputStick": "X360_RS"
               }

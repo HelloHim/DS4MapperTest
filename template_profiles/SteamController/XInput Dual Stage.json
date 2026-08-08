@@ -17,7 +17,7 @@
             {
               "Id": "0",
               "Name": "LS Action",
-              "ActionMode": "TouchStickTranslateAction",
+              "ActionMode": "TouchPassthruAction",
               "Settings":
               {
                 "OutputStick": "X360_LS",
@@ -30,7 +30,7 @@
             {
               "Id": "1",
               "Name": "RS Action",
-              "ActionMode": "TouchMouseJoystickAction",
+              "ActionMode": "TouchPassthruAction",
               "Settings":
               {
                 "OutputStick": "X360_RS",

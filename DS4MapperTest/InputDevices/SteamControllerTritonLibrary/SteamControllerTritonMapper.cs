@@ -650,24 +650,29 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
                     previousTouchFrameRightPad = eventFrame;
                 }
 
-                SetVirtualTouchContact1(
-                    NormaliseTouchAxis(currentMapperState.LeftPad.X, -32768.0, 32767.0) * 0.5,
-                    NormaliseTouchAxis(currentMapperState.LeftPad.Y, -32768.0, 32767.0),
-                    currentMapperState.LeftPad.Touch);
-                SetVirtualTouchContact2(
-                    0.5 + (NormaliseTouchAxis(currentMapperState.RightPad.X, -32768.0, 32767.0) * 0.5),
-                    NormaliseTouchAxis(currentMapperState.RightPad.Y, -32768.0, 32767.0),
-                    currentMapperState.RightPad.Touch);
-                intermediateState.BtnTouchClick |= currentMapperState.LeftPad.Click || currentMapperState.RightPad.Click;
-                intermediateState.Dirty |=
-                    currentMapperState.LeftPad.Touch != previousMapperState.LeftPad.Touch ||
-                    currentMapperState.LeftPad.Click != previousMapperState.LeftPad.Click ||
-                    currentMapperState.LeftPad.X != previousMapperState.LeftPad.X ||
-                    currentMapperState.LeftPad.Y != previousMapperState.LeftPad.Y ||
-                    currentMapperState.RightPad.Touch != previousMapperState.RightPad.Touch ||
-                    currentMapperState.RightPad.Click != previousMapperState.RightPad.Click ||
-                    currentMapperState.RightPad.X != previousMapperState.RightPad.X ||
-                    currentMapperState.RightPad.Y != previousMapperState.RightPad.Y;
+                TouchpadMapAction leftTouchAction = currentLayer.touchpadActionDict["LeftTouchpad"];
+                TouchpadMapAction rightTouchAction = currentLayer.touchpadActionDict["RightTouchpad"];
+                bool leftPassthru = leftTouchAction.OutputsNativeTouch;
+                bool rightPassthru = rightTouchAction.OutputsNativeTouch;
+                bool leftTouchActive = leftPassthru && currentMapperState.LeftPad.Touch;
+                bool rightTouchActive = rightPassthru && currentMapperState.RightPad.Touch;
+                bool leftVirtualClick = leftPassthru &&
+                    leftTouchAction is TouchpadPassthruAction leftPassthruAction &&
+                    currentMapperState.LeftPad.Touch &&
+                    currentMapperState.LeftPad.Pressure >= leftPassthruAction.VirtualClickPressureThreshold;
+                bool rightVirtualClick = rightPassthru &&
+                    rightTouchAction is TouchpadPassthruAction rightPassthruAction &&
+                    currentMapperState.RightPad.Touch &&
+                    currentMapperState.RightPad.Pressure >= rightPassthruAction.VirtualClickPressureThreshold;
+
+                ApplyVirtualTouchState(
+                    leftTouchActive ? NormaliseTouchAxis(currentMapperState.LeftPad.X, -32768.0, 32767.0) * 0.5 : 0.0,
+                    leftTouchActive ? NormaliseTouchAxis(currentMapperState.LeftPad.Y, -32768.0, 32767.0) : 0.0,
+                    leftTouchActive,
+                    rightTouchActive ? 0.5 + (NormaliseTouchAxis(currentMapperState.RightPad.X, -32768.0, 32767.0) * 0.5) : 0.0,
+                    rightTouchActive ? NormaliseTouchAxis(currentMapperState.RightPad.Y, -32768.0, 32767.0) : 0.0,
+                    rightTouchActive,
+                    leftVirtualClick || rightVirtualClick);
 
                 DpadDirections currentDpad =
                     DpadDirections.Centered;
