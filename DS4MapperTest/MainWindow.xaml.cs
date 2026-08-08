@@ -1268,9 +1268,16 @@ namespace DS4MapperTest
             IsEnabled = false;
 
             Exception saveException = null;
+            bool liveReloaded = false;
             try
             {
                 await Task.Run(() => activeVM.TestSave(activeVM.ProfileEnt, activeVM.DeviceMapper.ActionProfile));
+                if (currentDeviceItem != null)
+                {
+                    int profileIndex = currentDeviceItem.ProfileIndex;
+                    await Task.Run(() => currentDeviceItem.ResyncProfileIndex(profileIndex, reloadProfile: true));
+                    liveReloaded = true;
+                }
             }
             catch (Exception ex)
             {
@@ -1283,6 +1290,11 @@ namespace DS4MapperTest
 
             if (saveException == null)
             {
+                if (liveReloaded && currentDeviceItem != null)
+                {
+                    LoadProfileForDevice(currentDeviceItem);
+                }
+
                 activeVM.MarkProfileClean();
                 saveProfileButton.Content = "Saved ✓";
                 ShowSaveStatusPill(success: true);

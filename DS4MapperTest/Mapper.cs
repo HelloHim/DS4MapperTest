@@ -6,6 +6,7 @@ using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
 using DS4MapperTest.TouchpadActions;
 using DS4MapperTest.TriggerActions;
+using NLog;
 using Newtonsoft.Json;
 using Sensorit.Base;
 using System;
@@ -24,6 +25,7 @@ namespace DS4MapperTest
 {
     public abstract class Mapper
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         protected const int X360_STICK_MAX = 32767;
         protected const int X360_STICK_MIN = -32768;
         protected const int OUTPUT_X360_RESOLUTION = X360_STICK_MAX - X360_STICK_MIN;
@@ -253,6 +255,7 @@ namespace DS4MapperTest
 
         protected Xbox360RumbleCallbackDelegate viiper360Feedback;
         protected DSOutputCallbackDelegate viiperDSFeedback;
+        protected bool loggedFirstVirtualState;
 
         protected static bool IsPlausibleViiperDeviceHandle(nuint handle)
         {
@@ -1099,12 +1102,14 @@ namespace DS4MapperTest
 
                 // Change profile path
                 profileFile = profilePath;
+                loggedFirstVirtualState = false;
 
                 // Read file
                 try
                 {
                     ReadFromProfile();
                     ProfileChanged?.Invoke(this, profileFile);
+                    logger.Info($"Mapper {DeviceType} applying profile '{Path.GetFileNameWithoutExtension(profileFile)}' output={actionProfile.OutputGamepadSettings.OutputGamepad} enabled={actionProfile.OutputGamepadSettings.Enabled}");
                 }
                 catch (JsonException e)
                 {
@@ -1159,6 +1164,7 @@ namespace DS4MapperTest
                             !IsPlausibleViiperDeviceHandle(deviceHandle))
                         {
                             Trace.WriteLine($"Fatal Error: Failed to create Xbox 360 virtual device. Handle={deviceHandle}");
+                            logger.Error($"Failed to create VIIPER Xbox 360 device. Handle={deviceHandle} Bus={viiperBusId}");
                             deviceHandle = 0;
                             viiperBusId = 0;
                             outputControlType = OutputContType.None;
@@ -1166,6 +1172,7 @@ namespace DS4MapperTest
                         }
 
                         outputControlType = OutputContType.Xbox360;
+                        logger.Info($"Created VIIPER Xbox 360 device. Handle={deviceHandle} Bus={viiperBusId}");
                     }
                     else if (actionProfile.OutputGamepadSettings.OutputGamepad == OutputContType.DualShock4)
                     {
@@ -1182,6 +1189,7 @@ namespace DS4MapperTest
                             !IsPlausibleViiperDeviceHandle(deviceHandle))
                         {
                             Trace.WriteLine($"Fatal Error: Failed to create DS4 virtual device. Handle={deviceHandle}");
+                            logger.Error($"Failed to create VIIPER DS4 device. Handle={deviceHandle} Bus={viiperBusId}");
                             deviceHandle = 0;
                             viiperBusId = 0;
                             outputControlType = OutputContType.None;
@@ -1190,6 +1198,7 @@ namespace DS4MapperTest
 
                         //outputController = null;
                         outputControlType = OutputContType.DualShock4;
+                        logger.Info($"Created VIIPER DS4 device. Handle={deviceHandle} Bus={viiperBusId}");
                     }
                     else if (actionProfile.OutputGamepadSettings.OutputGamepad == OutputContType.DualSense)
                     {
@@ -1205,6 +1214,7 @@ namespace DS4MapperTest
                             !IsPlausibleViiperDeviceHandle(deviceHandle))
                         {
                             Trace.WriteLine($"Fatal Error: Failed to create DualSense virtual device. Handle={deviceHandle}");
+                            logger.Error($"Failed to create VIIPER DualSense device. Handle={deviceHandle} Bus={viiperBusId}");
                             deviceHandle = 0;
                             viiperBusId = 0;
                             outputControlType = OutputContType.None;
@@ -1212,6 +1222,7 @@ namespace DS4MapperTest
                         }
 
                         outputControlType = OutputContType.DualSense;
+                        logger.Info($"Created VIIPER DualSense device. Handle={deviceHandle} Bus={viiperBusId}");
                     }
                 }
                 else if (!actionProfile.OutputGamepadSettings.enabled && outputControlType != OutputContType.None)
@@ -2390,6 +2401,11 @@ namespace DS4MapperTest
                 xboxState.RT = (byte)(intermediateState.RTrigger * 255);
 
                 LibVIIPER.SetXbox360DeviceState(deviceHandle, xboxState);
+                if (!loggedFirstVirtualState)
+                {
+                    logger.Info($"Submitted first Xbox 360 state. Handle={deviceHandle} Buttons=0x{xboxState.Buttons:X4} LT={xboxState.LT} RT={xboxState.RT}");
+                    loggedFirstVirtualState = true;
+                }
             }
         }
 
@@ -2462,6 +2478,11 @@ namespace DS4MapperTest
             ds4State.Accelz = intermediateState.AccelZ;
 
             LibVIIPER.SetDS4DeviceState(deviceHandle, ds4State);
+            if (!loggedFirstVirtualState)
+            {
+                logger.Info($"Submitted first DS4 state. Handle={deviceHandle} Buttons=0x{ds4State.Buttons:X4} L2={ds4State.Triggerl2} R2={ds4State.Triggerr2}");
+                loggedFirstVirtualState = true;
+            }
 
             intermediateState.PacketCounter = intermediateState.PacketCounter + 1;
         }
@@ -2534,6 +2555,11 @@ namespace DS4MapperTest
             dualSenseState.AccelZ = intermediateState.AccelZ;
 
             LibVIIPER.SetDualSenseDeviceState(deviceHandle, dualSenseState);
+            if (!loggedFirstVirtualState)
+            {
+                logger.Info($"Submitted first DualSense state. Handle={deviceHandle} Buttons=0x{dualSenseState.Buttons:X8} L2={dualSenseState.L2} R2={dualSenseState.R2}");
+                loggedFirstVirtualState = true;
+            }
 
             intermediateState.PacketCounter = intermediateState.PacketCounter + 1;
         }
