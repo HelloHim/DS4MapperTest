@@ -49,6 +49,9 @@ namespace DS4MapperTest.TouchpadActions
             public const string COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT = "OppositeTapLengthVariancePercent";
             public const string COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS = "OppositeTapLengthMinimumMs";
             public const string COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS = "OppositeTapLengthMaximumMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_MODE = "OppositeTapStartDelayMode";
+            public const string COUNTER_MOVEMENT_START_DELAY_FIXED_MS = "OppositeTapStartDelayMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT = "OppositeTapStartDelayVariancePercent";
             public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "OppositeTapStartDelayMinimumMs";
             public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "OppositeTapStartDelayMaximumMs";
             public const string COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED = "CounterMovementDeadZoneReleaseEnabled";
@@ -87,6 +90,9 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT,
             PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS,
             PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE,
+            PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT,
             PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS,
             PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS,
             PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED,
@@ -1290,6 +1296,15 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
                             releaseBrake.OppositeTapLengthMaximumMs = tempPadAction.releaseBrake.OppositeTapLengthMaximumMs;
                             break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE:
+                            releaseBrake.OppositeTapStartDelayMode = tempPadAction.releaseBrake.OppositeTapStartDelayMode;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS:
+                            releaseBrake.OppositeTapStartDelayMs = tempPadAction.releaseBrake.OppositeTapStartDelayMs;
+                            break;
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT:
+                            releaseBrake.OppositeTapStartDelayVariancePercent = tempPadAction.releaseBrake.OppositeTapStartDelayVariancePercent;
+                            break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
                             releaseBrake.OppositeTapStartDelayMinimumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMinimumMs;
                             break;
@@ -1467,6 +1482,15 @@ namespace DS4MapperTest.TouchpadActions
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
                     releaseBrake.OppositeTapLengthMaximumMs = tempPadAction.releaseBrake.OppositeTapLengthMaximumMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE:
+                    releaseBrake.OppositeTapStartDelayMode = tempPadAction.releaseBrake.OppositeTapStartDelayMode;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS:
+                    releaseBrake.OppositeTapStartDelayMs = tempPadAction.releaseBrake.OppositeTapStartDelayMs;
+                    break;
+                case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT:
+                    releaseBrake.OppositeTapStartDelayVariancePercent = tempPadAction.releaseBrake.OppositeTapStartDelayVariancePercent;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
                     releaseBrake.OppositeTapStartDelayMinimumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMinimumMs;

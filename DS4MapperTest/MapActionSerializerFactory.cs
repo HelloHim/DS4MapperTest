@@ -19,6 +19,9 @@ namespace DS4MapperTest
                 case "ButtonNoAction":
                     serializer = new ButtonNoActionSerializer(layer, action);
                     break;
+                case "TouchpadPressureDualStageAction":
+                    serializer = new TouchpadPressureDualStageActionSerializer(layer, action);
+                    break;
                 case "StickPadAction":
                     serializer = new StickPadActionSerializer(layer, action);
                     break;

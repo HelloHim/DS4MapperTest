@@ -48,7 +48,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border Style="{StaticResource JsmccCardBorder}">
-                        <DockPanel LastChildFill="True">
+                        <StackPanel Orientation="Vertical">
                             <DockPanel DockPanel.Dock="Top" LastChildFill="False" Margin="0,0,0,2">
                                 <StackPanel DockPanel.Dock="Left">
                                     <TextBlock Text="{Binding DisplayName}"
@@ -99,6 +99,7 @@
                             </DockPanel>
 
                             <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                    HorizontalAlignment="Stretch"
                                     Visibility="{Binding IsTouchpadPressureBinding, Converter={StaticResource BoolToVis}}"
                                     Margin="0,0,0,6">
                                 <StackPanel>
@@ -196,10 +197,12 @@
                                 </StackPanel>
                             </Border>
 
-                            <ItemsControl ItemsSource="{Binding FunctionItems}">
+                            <ItemsControl ItemsSource="{Binding FunctionItems}"
+                                          HorizontalAlignment="Stretch">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Style="{StaticResource JsmccSettingRowBorder}">
+                                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                                HorizontalAlignment="Stretch">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto"/>
@@ -498,7 +501,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </DockPanel>
+                        </StackPanel>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

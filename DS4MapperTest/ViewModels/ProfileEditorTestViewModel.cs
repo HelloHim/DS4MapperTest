@@ -1380,6 +1380,12 @@ namespace DS4MapperTest.ViewModels
             return null;
         }
 
+        private static readonly HashSet<string> PressureCapableClickBindingNames =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "LeftPadClick", "LeftTouchpadClick", "RightPadClick", "RightTouchpadClick",
+            };
+
         private FaceButtonBindingItem AddTouchpadButtonBinding(BindingItemsTest item,
             string displayName, string subtitle)
         {
@@ -1394,8 +1400,14 @@ namespace DS4MapperTest.ViewModels
                 return existing;
             }
 
+            // Only Steam Controller 2 exposes analog touchpad pressure - every other
+            // controller's touchpad click (DualSense, DS4, original Steam Controller) keeps
+            // the plain Regular Press behaviour untouched.
+            bool isTouchpadPressureCapable = mapper?.DeviceType == InputDeviceType.SteamControllerTriton &&
+                PressureCapableClickBindingNames.Contains(item.BindingName);
+
             FaceButtonBindingItem bindingItem =
-                new FaceButtonBindingItem(this, item, displayName, subtitle);
+                new FaceButtonBindingItem(this, item, displayName, subtitle, isTouchpadPressureCapable);
             touchpadButtonBindingItems.Add(item.BindingName, bindingItem);
             touchpadButtonBindings.Add(bindingItem);
             return bindingItem;
@@ -1588,11 +1600,109 @@ namespace DS4MapperTest.ViewModels
             return newAction;
         }
 
+        // Mirrors EnsureEditableFaceButtonAction for a Steam Controller 2 touchpad click
+        // binding: clone-on-write into the current layer, upgrading from whatever the
+        // binding currently is (ButtonNoAction on a never-edited binding, or a legacy
+        // Regular Press ButtonAction that predates pressure support) into a
+        // TouchpadPressureDualStageAction.
+        internal TouchpadPressureDualStageAction EnsureEditableTouchpadPressureAction(FaceButtonBindingItem faceItem)
+        {
+            ActionSet editSet = actionSetItems[selectedActionSetIndex].Set;
+            ActionLayer editLayer = layerItems[selectedActionLayerIndex].Layer;
+            ButtonMapAction oldAction = faceItem.MappedAction;
+
+            if (oldAction is TouchpadPressureDualStageAction existingAction &&
+                editLayer.LayerActions.Contains(existingAction))
+            {
+                EnsureSoftFullPressFuncs(existingAction);
+                return existingAction;
+            }
+
+            TouchpadPressureDualStageAction newAction = new TouchpadPressureDualStageAction();
+            if (oldAction is TouchpadPressureDualStageAction oldTouchAction)
+            {
+                newAction.CopyBaseProps(oldTouchAction);
+                newAction.CopyAction(oldTouchAction);
+            }
+            else if (oldAction is ButtonAction oldButtonAction)
+            {
+                // Legacy Regular Press ButtonAction that predates pressure support (or
+                // wasn't migrated for some other reason). Move its entire output onto Full
+                // Press, exactly like the load-time migration, leaving Soft Press unbound.
+                newAction.CopyBaseProps(oldButtonAction);
+                newAction.FullPressActButton.ActionFuncs.AddRange(oldButtonAction.ActionFuncs);
+                FaceButtonBindingItem.MarkFunctionsChanged(newAction.FullPressActButton);
+            }
+            else
+            {
+                newAction.CopyBaseProps(oldAction);
+            }
+
+            newAction.MappingId = oldAction.MappingId;
+            newAction.Id = editLayer.LayerActions.Contains(oldAction) &&
+                oldAction.Id != MapAction.DEFAULT_UNBOUND_ID
+                    ? oldAction.Id
+                    : editLayer.FindNextAvailableId();
+
+            EnsureSoftFullPressFuncs(newAction);
+
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                oldAction.Release(mapper, ignoreReleaseActions: true);
+                if (editLayer.LayerActions.Contains(oldAction))
+                {
+                    editLayer.ReplaceButtonAction(oldAction, newAction);
+                }
+                else
+                {
+                    editLayer.AddButtonMapAction(newAction);
+                }
+
+                if (editSet.UsingCompositeLayer)
+                {
+                    editSet.RecompileCompositeLayer(mapper);
+                }
+                else
+                {
+                    editLayer.SyncActions();
+                    editSet.ClearCompositeLayerActions();
+                    editSet.PrepareCompositeLayer();
+                }
+            });
+
+            if (buttonBindingsIndexDict.TryGetValue(newAction.MappingId, out int buttonIndex))
+            {
+                buttonBindings[buttonIndex].UpdateAction(newAction);
+            }
+
+            faceItem.UpdateAction(newAction);
+            return newAction;
+        }
+
+        private static void EnsureSoftFullPressFuncs(TouchpadPressureDualStageAction action)
+        {
+            if (!action.SoftPressActButton.ActionFuncs.OfType<ActionUtil.NormalPressFunc>().Any())
+            {
+                action.SoftPressActButton.ActionFuncs.Insert(0, new ActionUtil.NormalPressFunc(
+                    new MapperUtil.OutputActionData(MapperUtil.OutputActionData.ActionType.Empty, 0)));
+            }
+
+            if (!action.FullPressActButton.ActionFuncs.OfType<ActionUtil.NormalPressFunc>().Any())
+            {
+                action.FullPressActButton.ActionFuncs.Insert(0, new ActionUtil.NormalPressFunc(
+                    new MapperUtil.OutputActionData(MapperUtil.OutputActionData.ActionType.Empty, 0)));
+            }
+        }
+
         internal void ReleaseFaceAction(FaceButtonBindingItem faceItem)
         {
             if (faceItem?.MappedAction is ButtonAction action)
             {
                 action.Release(mapper, ignoreReleaseActions: true);
+            }
+            else if (faceItem?.MappedAction is TouchpadPressureDualStageAction touchAction)
+            {
+                touchAction.Release(mapper, ignoreReleaseActions: true);
             }
         }
 
