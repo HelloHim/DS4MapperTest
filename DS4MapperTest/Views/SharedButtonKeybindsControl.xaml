@@ -72,27 +72,93 @@
                                             <MenuItem Header="Hold Press"
                                                       Tag="Hold"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddHoldPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                      Click="AddExtraBindingMenuItem_Click"/>
+                                                      Click="AddExtraBindingMenuItem_Click">
+                                                <MenuItem.Style>
+                                                    <Style TargetType="MenuItem">
+                                                        <Setter Property="Header" Value="Hold Press"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
+                                                                <Setter Property="Header" Value="Hold Click"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </MenuItem.Style>
+                                            </MenuItem>
                                             <MenuItem Header="Double Press"
                                                       Tag="Double"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddDoublePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                      Click="AddExtraBindingMenuItem_Click"/>
+                                                      Click="AddExtraBindingMenuItem_Click">
+                                                <MenuItem.Style>
+                                                    <Style TargetType="MenuItem">
+                                                        <Setter Property="Header" Value="Double Press"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
+                                                                <Setter Property="Header" Value="Double Click"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </MenuItem.Style>
+                                            </MenuItem>
                                             <MenuItem Header="Chorded Press"
                                                       Tag="Chorded"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                      Click="AddExtraBindingMenuItem_Click"/>
+                                                      Click="AddExtraBindingMenuItem_Click">
+                                                <MenuItem.Style>
+                                                    <Style TargetType="MenuItem">
+                                                        <Setter Property="Header" Value="Chorded Press"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
+                                                                <Setter Property="Header" Value="Chorded Click"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </MenuItem.Style>
+                                            </MenuItem>
                                             <MenuItem Header="Simultaneous Press"
                                                       Tag="SimPress"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                      Click="AddExtraBindingMenuItem_Click"/>
+                                                      Click="AddExtraBindingMenuItem_Click">
+                                                <MenuItem.Style>
+                                                    <Style TargetType="MenuItem">
+                                                        <Setter Property="Header" Value="Simultaneous Press"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
+                                                                <Setter Property="Header" Value="Simultaneous Click"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </MenuItem.Style>
+                                            </MenuItem>
                                             <MenuItem Header="Start Press"
                                                       Tag="Start"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                      Click="AddExtraBindingMenuItem_Click"/>
+                                                      Click="AddExtraBindingMenuItem_Click">
+                                                <MenuItem.Style>
+                                                    <Style TargetType="MenuItem">
+                                                        <Setter Property="Header" Value="Start Press"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
+                                                                <Setter Property="Header" Value="Start Click"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </MenuItem.Style>
+                                            </MenuItem>
                                             <MenuItem Header="Release Press"
                                                       Tag="Release"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                      Click="AddExtraBindingMenuItem_Click"/>
+                                                      Click="AddExtraBindingMenuItem_Click">
+                                                <MenuItem.Style>
+                                                    <Style TargetType="MenuItem">
+                                                        <Setter Property="Header" Value="Release Press"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
+                                                                <Setter Property="Header" Value="Release Click"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </MenuItem.Style>
+                                            </MenuItem>
                                             <MenuItem Header="Distance"
                                                       Tag="Distance"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddDistancePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
@@ -229,9 +295,18 @@
                                                     <StackPanel Grid.Column="0" Margin="0,0,12,0">
                                                         <TextBlock Text="{Binding DisplayName}"
                                                                    Style="{StaticResource JsmccLabelText}"/>
-                                                        <TextBlock Text="Press behaviour"
-                                                                   Style="{StaticResource JsmccMutedText}"
-                                                                   Margin="0,3,0,0"/>
+                                                        <TextBlock Margin="0,3,0,0">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock" BasedOn="{StaticResource JsmccMutedText}">
+                                                                    <Setter Property="Text" Value="Press behaviour"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
+                                                                            <Setter Property="Text" Value="Click behaviour"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
                                                     </StackPanel>
                                                     <Button Grid.Column="1"
                                                             Content="Remove Binding"
