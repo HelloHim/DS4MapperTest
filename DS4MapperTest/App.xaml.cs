@@ -131,9 +131,16 @@ namespace DS4MapperTest
 
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            Logger logger = logHolder.Logger;
-            logger.Error($"Thread Crashed with message {e.Exception.Message}");
-            logger.Error(e.Exception.ToString());
+            Logger logger = logHolder?.Logger;
+            if (logger != null)
+            {
+                logger.Error($"Thread Crashed with message {e.Exception.Message}");
+                logger.Error(e.Exception.ToString());
+            }
+            else
+            {
+                Trace.WriteLine($"Unhandled dispatcher exception: {e.Exception}");
+            }
 
             // Log and keep the app running. The app should only close when the
             // user closes it manually, not because a UI-thread exception occurred
@@ -146,11 +153,18 @@ namespace DS4MapperTest
             Exception exp = e.ExceptionObject as Exception;
             bool canAccessMain = Current.Dispatcher.CheckAccess();
             //Trace.WriteLine($"CRASHED {help}");
-            Logger logger = logHolder.Logger;
+            Logger logger = logHolder?.Logger;
             if (e.IsTerminating)
             {
-                logger.Error($"Thread Crashed with message {exp.Message}");
-                logger.Error(exp.ToString());
+                if (logger != null && exp != null)
+                {
+                    logger.Error($"Thread Crashed with message {exp.Message}");
+                    logger.Error(exp.ToString());
+                }
+                else
+                {
+                    Trace.WriteLine($"Unhandled domain exception: {exp}");
+                }
 
                 if (canAccessMain)
                 {

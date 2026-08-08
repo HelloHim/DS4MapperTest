@@ -256,7 +256,7 @@ namespace DS4MapperTest
 
         protected static bool IsPlausibleViiperDeviceHandle(nuint handle)
         {
-            return handle != 0 && handle <= uint.MaxValue;
+            return handle != 0 && handle != nuint.MaxValue;
         }
 
         // TODO: Move elsewhere
