@@ -529,14 +529,26 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
 
 
                 tempBtnAct = currentLayer.buttonActionDict["LeftPadClick"];
-                if (currentMapperState.LeftPad.Click || currentMapperState.LeftPad.Click != previousMapperState.LeftPad.Click)
+                if (tempBtnAct is TouchpadPressureDualStageAction leftPadPressureAction)
+                {
+                    // Pressure-capable pad (Steam Controller 2): drive Soft/Full Press from
+                    // analog force + finger touch every frame rather than the digital click bit.
+                    leftPadPressureAction.PrepareTouchpadPressure(this,
+                        currentMapperState.LeftPad.Pressure, currentMapperState.LeftPad.Touch);
+                }
+                else if (currentMapperState.LeftPad.Click || currentMapperState.LeftPad.Click != previousMapperState.LeftPad.Click)
                 {
                     tempBtnAct.Prepare(this, currentMapperState.LeftPad.Click);
                 }
                 if (tempBtnAct.active) tempBtnAct.Event(this);
 
                 tempBtnAct = currentLayer.buttonActionDict["RightPadClick"];
-                if (currentMapperState.RightPad.Click || currentMapperState.RightPad.Click != previousMapperState.RightPad.Click)
+                if (tempBtnAct is TouchpadPressureDualStageAction rightPadPressureAction)
+                {
+                    rightPadPressureAction.PrepareTouchpadPressure(this,
+                        currentMapperState.RightPad.Pressure, currentMapperState.RightPad.Touch);
+                }
+                else if (currentMapperState.RightPad.Click || currentMapperState.RightPad.Click != previousMapperState.RightPad.Click)
                 {
                     tempBtnAct.Prepare(this, currentMapperState.RightPad.Click);
                 }

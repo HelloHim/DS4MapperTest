@@ -15,12 +15,6 @@ namespace DS4MapperTest.TouchpadActions
             Braking,
         }
 
-        private const int MIN_START_DELAY_MS = 0;
-        private const int MAX_START_DELAY_MS = DigitalReleaseBrakePulse.MAX_BRAKE_DURATION_MS;
-
-        public const int DEFAULT_START_DELAY_MINIMUM_MS = 0;
-        public const int DEFAULT_START_DELAY_MAXIMUM_MS = 0;
-
         public const int CS2_TAP_LENGTH_MINIMUM_MS = CounterMovementReleasePressProcessor.CS2_TAP_LENGTH_MINIMUM_MS;
         public const int CS2_TAP_LENGTH_MAXIMUM_MS = CounterMovementReleasePressProcessor.CS2_TAP_LENGTH_MAXIMUM_MS;
 
@@ -137,19 +131,66 @@ namespace DS4MapperTest.TouchpadActions
             }
         }
 
-        private int oppositeTapStartDelayMinimumMs = DEFAULT_START_DELAY_MINIMUM_MS;
-        public int OppositeTapStartDelayMinimumMs
+        // All start-delay representation storage and computation (mode, Fixed, Percent,
+        // Minimum, Maximum, the percentage/best-fit maths) lives in this one shared object,
+        // mirroring tapLengthTiming above; CounterMovementReleasePressProcessor composes the
+        // same type rather than duplicating any of it.
+        private readonly OppositeTapStartDelayTiming startDelayTiming = new OppositeTapStartDelayTiming();
+
+        public OppositeTapStartDelayMode OppositeTapStartDelayMode
         {
-            get => oppositeTapStartDelayMinimumMs;
-            set => oppositeTapStartDelayMinimumMs = Math.Clamp(value, MIN_START_DELAY_MS, MAX_START_DELAY_MS);
+            get => startDelayTiming.Mode;
+            set => startDelayTiming.Mode = value;
         }
 
-        private int oppositeTapStartDelayMaximumMs = DEFAULT_START_DELAY_MAXIMUM_MS;
+        public int OppositeTapStartDelayMs
+        {
+            get => startDelayTiming.FixedMs;
+            set => startDelayTiming.FixedMs = value;
+        }
+
+        public int OppositeTapStartDelayVariancePercent
+        {
+            get => startDelayTiming.VariancePercent;
+            set => startDelayTiming.VariancePercent = value;
+        }
+
+        public int OppositeTapStartDelayMinimumMs
+        {
+            get => startDelayTiming.MinimumMs;
+            set => startDelayTiming.MinimumMs = value;
+        }
+
         public int OppositeTapStartDelayMaximumMs
         {
-            get => oppositeTapStartDelayMaximumMs;
-            set => oppositeTapStartDelayMaximumMs = Math.Clamp(value, MIN_START_DELAY_MS, MAX_START_DELAY_MS);
+            get => startDelayTiming.MaximumMs;
+            set => startDelayTiming.MaximumMs = value;
         }
+
+        /// <summary>
+        /// User-edit entry point for Fixed mode / Wait Variance Percentage mode for the start
+        /// delay. See OppositeTapStartDelayTiming.ApplyFixedAndPercentage. Only ever called
+        /// from a ViewModel edit or profile migration - never from the per-report runtime path.
+        /// </summary>
+        public void ApplyStartDelayFixedAndPercentage(int fixedMs, int percent) => startDelayTiming.ApplyFixedAndPercentage(fixedMs, percent);
+
+        /// <summary>
+        /// User-edit entry point for Minimum and Maximum mode for the start delay. See
+        /// OppositeTapStartDelayTiming.ApplyMinimumAndMaximum. Only ever called from a
+        /// ViewModel edit or profile migration - never from the per-report runtime path.
+        /// </summary>
+        public void ApplyStartDelayMinimumAndMaximum(int minimumMs, int maximumMs)
+        {
+            startDelayTiming.ApplyMinimumAndMaximum(minimumMs, maximumMs);
+            NormalizeRanges();
+        }
+
+        /// <summary>
+        /// Returns the runtime effective Minimum/Maximum for the currently selected start
+        /// delay mode. See GetEffectiveOppositeTapLengthRange's class doc: the state machine
+        /// below must only ever consult this, never branch on the mode itself.
+        /// </summary>
+        public (int Minimum, int Maximum) GetEffectiveOppositeTapStartDelayRange() => startDelayTiming.GetEffectiveRange();
 
         private int minimumHoldMs = DigitalReleaseBrakePulse.DEFAULT_MINIMUM_HOLD_MS;
         public int MinimumHoldMs
@@ -192,19 +233,19 @@ namespace DS4MapperTest.TouchpadActions
                 OppositeTapLengthMaximumMs = OppositeTapLengthMinimumMs;
             }
 
-            if (oppositeTapStartDelayMinimumMs > oppositeTapStartDelayMaximumMs)
+            if (OppositeTapStartDelayMinimumMs > OppositeTapStartDelayMaximumMs)
             {
-                oppositeTapStartDelayMaximumMs = oppositeTapStartDelayMinimumMs;
+                OppositeTapStartDelayMaximumMs = OppositeTapStartDelayMinimumMs;
             }
 
-            if (oppositeTapStartDelayMaximumMs > OppositeTapLengthMinimumMs)
+            if (OppositeTapStartDelayMaximumMs > OppositeTapLengthMinimumMs)
             {
-                oppositeTapStartDelayMaximumMs = OppositeTapLengthMinimumMs;
+                OppositeTapStartDelayMaximumMs = OppositeTapLengthMinimumMs;
             }
 
-            if (oppositeTapStartDelayMinimumMs > oppositeTapStartDelayMaximumMs)
+            if (OppositeTapStartDelayMinimumMs > OppositeTapStartDelayMaximumMs)
             {
-                oppositeTapStartDelayMinimumMs = oppositeTapStartDelayMaximumMs;
+                OppositeTapStartDelayMinimumMs = OppositeTapStartDelayMaximumMs;
             }
         }
 
@@ -437,8 +478,17 @@ namespace DS4MapperTest.TouchpadActions
                 selectedTotalTapWindowMs = randomProvider.NextInclusive(effectiveMinimumMs, effectiveMaximumMs);
             }
 
-            selectedStartDelayMs = randomProvider.NextInclusive(
-                oppositeTapStartDelayMinimumMs, oppositeTapStartDelayMaximumMs);
+            if (OppositeTapStartDelayMode == OppositeTapStartDelayMode.Fixed)
+            {
+                // Fixed mode is deterministic: every qualifying activation uses exactly the
+                // fixed delay, so the random provider is never consulted for it at all.
+                selectedStartDelayMs = OppositeTapStartDelayMs;
+            }
+            else
+            {
+                (int effectiveStartDelayMinimumMs, int effectiveStartDelayMaximumMs) = GetEffectiveOppositeTapStartDelayRange();
+                selectedStartDelayMs = randomProvider.NextInclusive(effectiveStartDelayMinimumMs, effectiveStartDelayMaximumMs);
+            }
             actualOppositeHoldMs = Math.Max(0, selectedTotalTapWindowMs - selectedStartDelayMs);
             pendingOppositeComponents = DigitalReleaseBrakePulse.OppositeMask(eligible);
             releasePressElapsedSeconds = 0.0;

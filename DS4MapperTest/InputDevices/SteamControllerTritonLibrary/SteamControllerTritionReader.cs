@@ -338,14 +338,12 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
                         current.LeftPad.X = (short)((inputReportBuffer[19] << 8) | inputReportBuffer[18]);
                         current.LeftPad.Y = (short)((inputReportBuffer[21] << 8) | inputReportBuffer[20]);
 
-                        // TODO: Use this somewhere.
                         short tempTouchpadPressure = (short)((inputReportBuffer[23] << 8) | inputReportBuffer[22]);
                         current.LeftPad.Pressure = tempTouchpadPressure;
 
                         current.RightPad.X = (short)((inputReportBuffer[25] << 8) | inputReportBuffer[24]);
                         current.RightPad.Y = (short)((inputReportBuffer[27] << 8) | inputReportBuffer[26]);
 
-                        // TODO: Use this somewhere.
                         tempTouchpadPressure = (short)((inputReportBuffer[29] << 8) | inputReportBuffer[28]);
                         current.RightPad.Pressure = tempTouchpadPressure;
 

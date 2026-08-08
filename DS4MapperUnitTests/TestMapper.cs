@@ -42,6 +42,17 @@ namespace DS4MapperUnitTests
 
         public override DeviceReaderBase BaseReader => throw new NotImplementedException();
 
+        // Lets tests exercise device-type-gated Mapper behaviour (e.g. the Steam Controller 2
+        // touchpad pressure migration pass) without needing a real device backend. Defaults to
+        // None so every pre-existing test that never sets this keeps its original behaviour.
+        public InputDeviceType DeviceTypeOverride { get; set; } = InputDeviceType.None;
+        public override InputDeviceType DeviceType => DeviceTypeOverride;
+
+        public void RunMigrateLegacyTouchpadClickBindings(Profile profile)
+        {
+            MigrateLegacyTouchpadClickBindings(profile);
+        }
+
         public static Dictionary<uint, int> KeyReferenceCountDict => keyReferenceCountDict;
         public static Dictionary<int, int> MouseButtonReferenceCountDict => mouseButtonReferenceCountDict;
 

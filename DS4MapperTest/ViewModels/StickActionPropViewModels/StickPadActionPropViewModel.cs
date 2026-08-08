@@ -535,17 +535,107 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler OppositeTapLengthMaximumMsChanged;
 
+        private List<EnumChoiceSelection<OppositeTapStartDelayMode>> startDelayModeItems =
+            new List<EnumChoiceSelection<OppositeTapStartDelayMode>>()
+            {
+                new EnumChoiceSelection<OppositeTapStartDelayMode>("Fixed", OppositeTapStartDelayMode.Fixed),
+                new EnumChoiceSelection<OppositeTapStartDelayMode>("Time Variance (%)", OppositeTapStartDelayMode.WaitVariancePercentage),
+                new EnumChoiceSelection<OppositeTapStartDelayMode>("Time Variance (Range)", OppositeTapStartDelayMode.MinimumAndMaximum),
+            };
+        public List<EnumChoiceSelection<OppositeTapStartDelayMode>> StartDelayModeItems => startDelayModeItems;
+
+        public OppositeTapStartDelayMode OppositeTapStartDelayMode
+        {
+            get => action.CounterMovementReleasePress.OppositeTapStartDelayMode;
+            set
+            {
+                if (action.CounterMovementReleasePress.OppositeTapStartDelayMode == value) return;
+                action.CounterMovementReleasePress.OppositeTapStartDelayMode = value;
+                OppositeTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
+                ShowStartDelayFixedModeFieldsChanged?.Invoke(this, EventArgs.Empty);
+                ShowStartDelayWaitVariancePercentageModeFieldsChanged?.Invoke(this, EventArgs.Empty);
+                ShowStartDelayMinimumAndMaximumModeFieldsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapStartDelayModeChanged;
+
+        public string OppositeTapStartDelayModeDescription
+        {
+            get
+            {
+                switch (action.CounterMovementReleasePress.OppositeTapStartDelayMode)
+                {
+                    case OppositeTapStartDelayMode.Fixed:
+                        return "Uses the same neutral delay before every generated opposite press.";
+                    case OppositeTapStartDelayMode.WaitVariancePercentage:
+                        return "Varies the neutral delay below and above the fixed value by the selected percentage.";
+                    default:
+                        return "Selects a neutral delay at random from the specified inclusive range.";
+                }
+            }
+        }
+        public event EventHandler OppositeTapStartDelayModeDescriptionChanged;
+
+        public bool ShowStartDelayFixedModeFields =>
+            action.CounterMovementReleasePress.OppositeTapStartDelayMode == OppositeTapStartDelayMode.Fixed;
+        public event EventHandler ShowStartDelayFixedModeFieldsChanged;
+
+        public bool ShowStartDelayWaitVariancePercentageModeFields =>
+            action.CounterMovementReleasePress.OppositeTapStartDelayMode == OppositeTapStartDelayMode.WaitVariancePercentage;
+        public event EventHandler ShowStartDelayWaitVariancePercentageModeFieldsChanged;
+
+        public bool ShowStartDelayMinimumAndMaximumModeFields =>
+            action.CounterMovementReleasePress.OppositeTapStartDelayMode == OppositeTapStartDelayMode.MinimumAndMaximum;
+        public event EventHandler ShowStartDelayMinimumAndMaximumModeFieldsChanged;
+
+        public int OppositeTapStartDelayMs
+        {
+            get => action.CounterMovementReleasePress.OppositeTapStartDelayMs;
+            set
+            {
+                if (action.CounterMovementReleasePress.OppositeTapStartDelayMs == value) return;
+                action.CounterMovementReleasePress.ApplyStartDelayFixedAndPercentage(value, action.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent);
+                action.CounterMovementReleasePress.NormalizeRanges();
+                OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapStartDelayMsChanged;
+
+        public int OppositeTapStartDelayVariancePercent
+        {
+            get => action.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent;
+            set
+            {
+                if (action.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent == value) return;
+                action.CounterMovementReleasePress.ApplyStartDelayFixedAndPercentage(action.CounterMovementReleasePress.OppositeTapStartDelayMs, value);
+                action.CounterMovementReleasePress.NormalizeRanges();
+                OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler OppositeTapStartDelayVariancePercentChanged;
+
         public int OppositeTapStartDelayMinimumMs
         {
             get => action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs;
             set
             {
                 if (action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs == value) return;
-                action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs = value;
+                action.CounterMovementReleasePress.ApplyStartDelayMinimumAndMaximum(value, action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
                 // Start delay edits never change the selected tap-length preset.
-                action.CounterMovementReleasePress.NormalizeRanges();
                 OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -557,10 +647,11 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             set
             {
                 if (action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs == value) return;
-                action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs = value;
-                action.CounterMovementReleasePress.NormalizeRanges();
+                action.CounterMovementReleasePress.ApplyStartDelayMinimumAndMaximum(action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs, value);
                 OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                OppositeTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -648,6 +739,27 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler HighlightOppositeTapLengthMaximumMsChanged;
 
+        public bool HighlightOppositeTapStartDelayMode
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
+        }
+        public event EventHandler HighlightOppositeTapStartDelayModeChanged;
+
+        public bool HighlightOppositeTapStartDelayMs
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
+        }
+        public event EventHandler HighlightOppositeTapStartDelayMsChanged;
+
+        public bool HighlightOppositeTapStartDelayVariancePercent
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
+        }
+        public event EventHandler HighlightOppositeTapStartDelayVariancePercentChanged;
+
         public bool HighlightOppositeTapStartDelayMinimumMs
         {
             get => action.ParentAction == null ||
@@ -730,6 +842,9 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             OppositeTapLengthVariancePercentChanged += StickPadActionPropViewModel_OppositeTapLengthVariancePercentChanged;
             OppositeTapLengthMinimumMsChanged += StickPadActionPropViewModel_OppositeTapLengthMinimumMsChanged;
             OppositeTapLengthMaximumMsChanged += StickPadActionPropViewModel_OppositeTapLengthMaximumMsChanged;
+            OppositeTapStartDelayModeChanged += StickPadActionPropViewModel_OppositeTapStartDelayModeChanged;
+            OppositeTapStartDelayMsChanged += StickPadActionPropViewModel_OppositeTapStartDelayMsChanged;
+            OppositeTapStartDelayVariancePercentChanged += StickPadActionPropViewModel_OppositeTapStartDelayVariancePercentChanged;
             OppositeTapStartDelayMinimumMsChanged += StickPadActionPropViewModel_OppositeTapStartDelayMinimumMsChanged;
             OppositeTapStartDelayMaximumMsChanged += StickPadActionPropViewModel_OppositeTapStartDelayMaximumMsChanged;
             BrakeMinimumHoldMsChanged += StickPadActionPropViewModel_BrakeMinimumHoldMsChanged;
@@ -790,6 +905,27 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
             action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
             HighlightOppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickPadActionPropViewModel_OppositeTapStartDelayModeChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
+            HighlightOppositeTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickPadActionPropViewModel_OppositeTapStartDelayMsChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
+            HighlightOppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickPadActionPropViewModel_OppositeTapStartDelayVariancePercentChanged(object sender, EventArgs e)
+        {
+            action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
+            HighlightOppositeTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickPadActionPropViewModel_OppositeTapStartDelayMinimumMsChanged(object sender, EventArgs e)

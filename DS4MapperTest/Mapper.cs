@@ -685,6 +685,8 @@ namespace DS4MapperTest
                 }
             }
 
+            MigrateLegacyTouchpadClickBindings(tempProfile);
+
             //tempProfile.CurrentActionSet.CreateDupActionLayer();
             //tempLayer.buttonActionDict[tempBind.id] = tempAction as ButtonMapAction;
             //(tempProfile.CurrentActionSet.ActionLayers[1].buttonActionDict["A"] as ButtonAction).ActionFuncs.Clear();
@@ -724,6 +726,59 @@ namespace DS4MapperTest
             }
 
             //tempProfile.CurrentActionSet.SwitchActionLayer(this, 1);
+        }
+
+        // Steam Controller 2 previously drove LeftPadClick/RightPadClick purely off the
+        // digital click bit through a plain ButtonAction ("Regular Press"). Profiles saved
+        // before pressure support was added still have that shape on disk. Upgrade them here,
+        // once per load, into a TouchpadPressureDualStageAction: the old binding's entire
+        // output (including any Hold/Double/etc. the user already configured) moves onto
+        // Full Press unchanged, Soft Press starts unbound, and defaults are
+        // Threshold/4096/17096/100ms.
+        // Other device types never carry a TouchpadPressureDualStageAction, so this is a no-op
+        // for them even if a binding named LeftPadClick/RightPadClick happens to exist.
+        protected void MigrateLegacyTouchpadClickBindings(Profile tempProfile)
+        {
+            if (DeviceType != InputDeviceType.SteamControllerTriton) return;
+
+            string[] pressureBindingIds = { "LeftPadClick", "RightPadClick" };
+
+            foreach (ActionSet set in tempProfile.ActionSets)
+            {
+                foreach (ActionLayer layer in set.ActionLayers)
+                {
+                    foreach (string bindingId in pressureBindingIds)
+                    {
+                        if (!layer.buttonActionDict.TryGetValue(bindingId, out ButtonMapAction existing) ||
+                            existing is not ButtonAction legacyAction)
+                        {
+                            continue;
+                        }
+
+                        TouchpadPressureDualStageAction migrated = new TouchpadPressureDualStageAction
+                        {
+                            Id = legacyAction.Id,
+                            MappingId = bindingId,
+                            Name = legacyAction.Name,
+                            ActivationStyle = TriggerDualStageAction.DualStageMode.Threshold,
+                            SoftPressThreshold = TouchpadPressureDualStageAction.DEFAULT_SOFT_THRESHOLD,
+                            FullPressThreshold = TouchpadPressureDualStageAction.DEFAULT_FULL_THRESHOLD,
+                        };
+
+                        migrated.FullPressActButton.ActionFuncs.Clear();
+                        migrated.FullPressActButton.ActionFuncs.AddRange(legacyAction.ActionFuncs);
+                        migrated.FullPressActButton.Name = legacyAction.Name;
+
+                        layer.buttonActionDict[bindingId] = migrated;
+
+                        int layerActionIndex = layer.LayerActions.IndexOf(legacyAction);
+                        if (layerActionIndex >= 0)
+                        {
+                            layer.LayerActions[layerActionIndex] = migrated;
+                        }
+                    }
+                }
+            }
         }
 
         public void UseBlankProfile()

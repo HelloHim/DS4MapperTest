@@ -1202,6 +1202,263 @@ namespace DS4MapperTest
         }
     }
 
+    // Mirrors TriggerDualStageActionSerializer field-for-field. Used only for the
+    // Steam Controller 2 touchpad click Soft Press / Full Press binding.
+    public class TouchpadPressureDualStageActionSerializer : MapActionSerializer
+    {
+        public class TouchpadPressureDualStageSettings
+        {
+            private TouchpadPressureDualStageAction touchDualAction;
+
+            [JsonConverter(typeof(StringEnumConverter))]
+            public TriggerDualStageAction.DualStageMode ActivationStyle
+            {
+                get => touchDualAction.ActivationStyle;
+                set
+                {
+                    touchDualAction.ActivationStyle = value;
+                    ActivationStyleChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler ActivationStyleChanged;
+
+            public int SoftPressThreshold
+            {
+                get => touchDualAction.SoftPressThreshold;
+                set
+                {
+                    touchDualAction.SoftPressThreshold = value;
+                    SoftPressThresholdChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SoftPressThresholdChanged;
+
+            public int FullPressThreshold
+            {
+                get => touchDualAction.FullPressThreshold;
+                set
+                {
+                    touchDualAction.FullPressThreshold = value;
+                    FullPressThresholdChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler FullPressThresholdChanged;
+
+            public int HipFireDelay
+            {
+                get => touchDualAction.HipFireDelayMs;
+                set
+                {
+                    touchDualAction.HipFireDelayMs = value;
+                    HipFireDelayChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler HipFireDelayChanged;
+
+            public bool ForceHipFireDelay
+            {
+                get => touchDualAction.ForceHipFireDelay;
+                set
+                {
+                    touchDualAction.ForceHipFireDelay = value;
+                    ForceHipFireDelayChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler ForceHipFireDelayChanged;
+
+            public TouchpadPressureDualStageSettings(TouchpadPressureDualStageAction action)
+            {
+                touchDualAction = action;
+            }
+        }
+
+        public class StageButtonBinding
+        {
+            private string actionDirName;
+            [JsonProperty("Name", Required = Required.Default)]
+            public string ActionDirName
+            {
+                get => actionDirName;
+                set => actionDirName = value;
+            }
+            public bool ShouldSerializeActionDirName()
+            {
+                return !string.IsNullOrEmpty(actionDirName);
+            }
+
+            private List<ActionFuncSerializer> actionFuncSerializers =
+                new List<ActionFuncSerializer>();
+            [JsonProperty("Functions", Required = Required.Always)]
+            public List<ActionFuncSerializer> ActionFuncSerializers
+            {
+                get => actionFuncSerializers;
+                set
+                {
+                    actionFuncSerializers = value;
+                    ActionFuncSerializersChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler ActionFuncSerializersChanged;
+        }
+
+        private TouchpadPressureDualStageAction touchDualAction = new TouchpadPressureDualStageAction();
+
+        private StageButtonBinding softPressStageButton = new StageButtonBinding();
+        public StageButtonBinding SoftPress
+        {
+            get => softPressStageButton;
+            set
+            {
+                softPressStageButton = value;
+                SoftPressChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler SoftPressChanged;
+        public bool ShouldSerializeSoftPress()
+        {
+            return softPressStageButton.ActionFuncSerializers != null &&
+                softPressStageButton.ActionFuncSerializers.Count > 0;
+        }
+
+        private StageButtonBinding fullPressStageButton = new StageButtonBinding();
+        public StageButtonBinding FullPress
+        {
+            get => fullPressStageButton;
+            set
+            {
+                fullPressStageButton = value;
+                FullPressChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler FullPressChanged;
+        public bool ShouldSerializeFullPress()
+        {
+            return fullPressStageButton.ActionFuncSerializers != null &&
+                fullPressStageButton.ActionFuncSerializers.Count > 0;
+        }
+
+        private TouchpadPressureDualStageSettings settings;
+        public TouchpadPressureDualStageSettings Settings
+        {
+            get => settings;
+            set => settings = value;
+        }
+
+        // Deserialize
+        public TouchpadPressureDualStageActionSerializer() : base()
+        {
+            mapAction = touchDualAction;
+            settings = new TouchpadPressureDualStageSettings(touchDualAction);
+
+            NameChanged += TouchpadPressureDualStageActionSerializer_NameChanged;
+            SoftPressChanged += TouchpadPressureDualStageActionSerializer_SoftPressChanged;
+            FullPressChanged += TouchpadPressureDualStageActionSerializer_FullPressChanged;
+            settings.ActivationStyleChanged += Settings_ActivationStyleChanged;
+            settings.SoftPressThresholdChanged += Settings_SoftPressThresholdChanged;
+            settings.FullPressThresholdChanged += Settings_FullPressThresholdChanged;
+            settings.HipFireDelayChanged += Settings_HipFireDelayChanged;
+            settings.ForceHipFireDelayChanged += Settings_ForceHipFireDelayChanged;
+        }
+
+        private void Settings_ForceHipFireDelayChanged(object sender, EventArgs e)
+        {
+            touchDualAction.ChangedProperties.Add(TouchpadPressureDualStageAction.PropertyKeyStrings.FORCE_HIP_FIRE_TIME);
+        }
+
+        private void Settings_HipFireDelayChanged(object sender, EventArgs e)
+        {
+            touchDualAction.ChangedProperties.Add(TouchpadPressureDualStageAction.PropertyKeyStrings.HIPFIRE_DELAY);
+        }
+
+        private void Settings_FullPressThresholdChanged(object sender, EventArgs e)
+        {
+            touchDualAction.ChangedProperties.Add(TouchpadPressureDualStageAction.PropertyKeyStrings.FULL_THRESHOLD);
+        }
+
+        private void Settings_SoftPressThresholdChanged(object sender, EventArgs e)
+        {
+            touchDualAction.ChangedProperties.Add(TouchpadPressureDualStageAction.PropertyKeyStrings.SOFT_THRESHOLD);
+        }
+
+        private void Settings_ActivationStyleChanged(object sender, EventArgs e)
+        {
+            touchDualAction.ChangedProperties.Add(TouchpadPressureDualStageAction.PropertyKeyStrings.ACTIVATION_STYLE);
+        }
+
+        private void TouchpadPressureDualStageActionSerializer_FullPressChanged(object sender, EventArgs e)
+        {
+            touchDualAction.ChangedProperties.Add(TouchpadPressureDualStageAction.PropertyKeyStrings.FULLPRESS_BUTTON);
+        }
+
+        private void TouchpadPressureDualStageActionSerializer_SoftPressChanged(object sender, EventArgs e)
+        {
+            touchDualAction.ChangedProperties.Add(TouchpadPressureDualStageAction.PropertyKeyStrings.SOFTPRESS_BUTTON);
+        }
+
+        private void TouchpadPressureDualStageActionSerializer_NameChanged(object sender, EventArgs e)
+        {
+            touchDualAction.ChangedProperties.Add(TouchpadPressureDualStageAction.PropertyKeyStrings.NAME);
+        }
+
+        // Pre-serialize ctor
+        public TouchpadPressureDualStageActionSerializer(ActionLayer tempLayer, MapAction mapAction) :
+            base(tempLayer, mapAction)
+        {
+            if (mapAction is TouchpadPressureDualStageAction temp)
+            {
+                touchDualAction = temp;
+                settings = new TouchpadPressureDualStageSettings(touchDualAction);
+
+                softPressStageButton.ActionDirName = touchDualAction.SoftPressActButton.Name;
+                fullPressStageButton.ActionDirName = touchDualAction.FullPressActButton.Name;
+
+                PopulateFuncs();
+            }
+        }
+
+        // Deserialize
+        public override void PopulateMap()
+        {
+            touchDualAction.SoftPressActButton.ActionFuncs.Clear();
+            touchDualAction.FullPressActButton.ActionFuncs.Clear();
+
+            AxisDirButton tempButton = touchDualAction.SoftPressActButton;
+            foreach (ActionFuncSerializer serializer in softPressStageButton.ActionFuncSerializers)
+            {
+                serializer.PopulateFunc();
+                tempButton.ActionFuncs.Add(serializer.ActionFunc);
+            }
+            tempButton.Name = softPressStageButton.ActionDirName;
+
+            tempButton = touchDualAction.FullPressActButton;
+            foreach (ActionFuncSerializer serializer in fullPressStageButton.ActionFuncSerializers)
+            {
+                serializer.PopulateFunc();
+                tempButton.ActionFuncs.Add(serializer.ActionFunc);
+            }
+            tempButton.Name = fullPressStageButton.ActionDirName;
+        }
+
+        public void PopulateFuncs()
+        {
+            List<ActionFuncSerializer> tempFuncs = new List<ActionFuncSerializer>();
+            foreach (ActionFunc tempFunc in touchDualAction.SoftPressActButton.ActionFuncs)
+            {
+                tempFuncs.Add(ActionFuncSerializerFactory.CreateSerializer(tempFunc));
+            }
+            softPressStageButton.ActionFuncSerializers.AddRange(tempFuncs);
+
+            tempFuncs.Clear();
+
+            foreach (ActionFunc tempFunc in touchDualAction.FullPressActButton.ActionFuncs)
+            {
+                tempFuncs.Add(ActionFuncSerializerFactory.CreateSerializer(tempFunc));
+            }
+
+            fullPressStageButton.ActionFuncSerializers.AddRange(tempFuncs);
+        }
+    }
+
     public class TriggerButtonActionSerializer : MapActionSerializer
     {
         public class TriggerButtonActionSettings
@@ -1672,6 +1929,52 @@ namespace DS4MapperTest
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
             }
 
+            [JsonConverter(typeof(StringEnumConverter))]
+            public OppositeTapStartDelayMode OppositeTapStartDelayMode
+            {
+                get => touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMode;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMode = value;
+                    OppositeTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayModeChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMode()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
+            }
+
+            public int OppositeTapStartDelayMs
+            {
+                get => touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMs;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMs = value;
+                    OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayMsChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMs()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
+            }
+
+            public int OppositeTapStartDelayVariancePercent
+            {
+                get => touchActionPadAction.ReleaseBrake.OppositeTapStartDelayVariancePercent;
+                set
+                {
+                    touchActionPadAction.ReleaseBrake.OppositeTapStartDelayVariancePercent = value;
+                    OppositeTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayVariancePercentChanged;
+            public bool ShouldSerializeOppositeTapStartDelayVariancePercent()
+            {
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
+            }
+
             public int OppositeTapStartDelayMinimumMs
             {
                 get => touchActionPadAction.ReleaseBrake.OppositeTapStartDelayMinimumMs;
@@ -1831,6 +2134,9 @@ namespace DS4MapperTest
             settings.OppositeTapLengthVariancePercentChanged += Settings_OppositeTapLengthVariancePercentChanged;
             settings.OppositeTapLengthMinimumMsChanged += Settings_OppositeTapLengthMinimumMsChanged;
             settings.OppositeTapLengthMaximumMsChanged += Settings_OppositeTapLengthMaximumMsChanged;
+            settings.OppositeTapStartDelayModeChanged += Settings_OppositeTapStartDelayModeChanged;
+            settings.OppositeTapStartDelayMsChanged += Settings_OppositeTapStartDelayMsChanged;
+            settings.OppositeTapStartDelayVariancePercentChanged += Settings_OppositeTapStartDelayVariancePercentChanged;
             settings.OppositeTapStartDelayMinimumMsChanged += Settings_OppositeTapStartDelayMinimumMsChanged;
             settings.OppositeTapStartDelayMaximumMsChanged += Settings_OppositeTapStartDelayMaximumMsChanged;
             settings.CounterMovementDeadZoneReleaseEnabledChanged += Settings_CounterMovementDeadZoneReleaseEnabledChanged;
@@ -1870,6 +2176,21 @@ namespace DS4MapperTest
         private void Settings_OppositeTapLengthMaximumMsChanged(object sender, EventArgs e)
         {
             touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayModeChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
+        }
+
+        private void Settings_OppositeTapStartDelayMsChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayVariancePercentChanged(object sender, EventArgs e)
+        {
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
         }
 
         private void Settings_OppositeTapStartDelayMinimumMsChanged(object sender, EventArgs e)
@@ -6569,6 +6890,52 @@ namespace DS4MapperTest
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
             }
 
+            [JsonConverter(typeof(StringEnumConverter))]
+            public OppositeTapStartDelayMode OppositeTapStartDelayMode
+            {
+                get => padAction.CounterMovementReleasePress.OppositeTapStartDelayMode;
+                set
+                {
+                    padAction.CounterMovementReleasePress.OppositeTapStartDelayMode = value;
+                    OppositeTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayModeChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMode()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
+            }
+
+            public int OppositeTapStartDelayMs
+            {
+                get => padAction.CounterMovementReleasePress.OppositeTapStartDelayMs;
+                set
+                {
+                    padAction.CounterMovementReleasePress.OppositeTapStartDelayMs = value;
+                    OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayMsChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMs()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
+            }
+
+            public int OppositeTapStartDelayVariancePercent
+            {
+                get => padAction.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent;
+                set
+                {
+                    padAction.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent = value;
+                    OppositeTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayVariancePercentChanged;
+            public bool ShouldSerializeOppositeTapStartDelayVariancePercent()
+            {
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
+            }
+
             public int OppositeTapStartDelayMinimumMs
             {
                 get => padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs;
@@ -6774,6 +7141,9 @@ namespace DS4MapperTest
             settings.OppositeTapLengthVariancePercentChanged += Settings_OppositeTapLengthVariancePercentChanged;
             settings.OppositeTapLengthMinimumMsChanged += Settings_OppositeTapLengthMinimumMsChanged;
             settings.OppositeTapLengthMaximumMsChanged += Settings_OppositeTapLengthMaximumMsChanged;
+            settings.OppositeTapStartDelayModeChanged += Settings_OppositeTapStartDelayModeChanged;
+            settings.OppositeTapStartDelayMsChanged += Settings_OppositeTapStartDelayMsChanged;
+            settings.OppositeTapStartDelayVariancePercentChanged += Settings_OppositeTapStartDelayVariancePercentChanged;
             settings.OppositeTapStartDelayMinimumMsChanged += Settings_OppositeTapStartDelayMinimumMsChanged;
             settings.OppositeTapStartDelayMaximumMsChanged += Settings_OppositeTapStartDelayMaximumMsChanged;
             settings.BrakeMinimumHoldMsChanged += Settings_BrakeMinimumHoldMsChanged;
@@ -6818,6 +7188,21 @@ namespace DS4MapperTest
         private void Settings_OppositeTapLengthMaximumMsChanged(object sender, EventArgs e)
         {
             stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayModeChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
+        }
+
+        private void Settings_OppositeTapStartDelayMsChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayVariancePercentChanged(object sender, EventArgs e)
+        {
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
         }
 
         private void Settings_OppositeTapStartDelayMinimumMsChanged(object sender, EventArgs e)
@@ -7532,6 +7917,52 @@ namespace DS4MapperTest
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
             }
 
+            [JsonConverter(typeof(StringEnumConverter))]
+            public OppositeTapStartDelayMode OppositeTapStartDelayMode
+            {
+                get => analogAction.CounterMovementReleasePress.OppositeTapStartDelayMode;
+                set
+                {
+                    analogAction.CounterMovementReleasePress.OppositeTapStartDelayMode = value;
+                    OppositeTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayModeChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMode()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
+            }
+
+            public int OppositeTapStartDelayMs
+            {
+                get => analogAction.CounterMovementReleasePress.OppositeTapStartDelayMs;
+                set
+                {
+                    analogAction.CounterMovementReleasePress.OppositeTapStartDelayMs = value;
+                    OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayMsChanged;
+            public bool ShouldSerializeOppositeTapStartDelayMs()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
+            }
+
+            public int OppositeTapStartDelayVariancePercent
+            {
+                get => analogAction.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent;
+                set
+                {
+                    analogAction.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent = value;
+                    OppositeTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler OppositeTapStartDelayVariancePercentChanged;
+            public bool ShouldSerializeOppositeTapStartDelayVariancePercent()
+            {
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
+            }
+
             public int OppositeTapStartDelayMinimumMs
             {
                 get => analogAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs;
@@ -7678,6 +8109,9 @@ namespace DS4MapperTest
             settings.OppositeTapLengthVariancePercentChanged += Settings_OppositeTapLengthVariancePercentChanged;
             settings.OppositeTapLengthMinimumMsChanged += Settings_OppositeTapLengthMinimumMsChanged;
             settings.OppositeTapLengthMaximumMsChanged += Settings_OppositeTapLengthMaximumMsChanged;
+            settings.OppositeTapStartDelayModeChanged += Settings_OppositeTapStartDelayModeChanged;
+            settings.OppositeTapStartDelayMsChanged += Settings_OppositeTapStartDelayMsChanged;
+            settings.OppositeTapStartDelayVariancePercentChanged += Settings_OppositeTapStartDelayVariancePercentChanged;
             settings.OppositeTapStartDelayMinimumMsChanged += Settings_OppositeTapStartDelayMinimumMsChanged;
             settings.OppositeTapStartDelayMaximumMsChanged += Settings_OppositeTapStartDelayMaximumMsChanged;
             settings.BrakeMinimumHoldMsChanged += Settings_BrakeMinimumHoldMsChanged;
@@ -7722,6 +8156,21 @@ namespace DS4MapperTest
         private void Settings_OppositeTapLengthMaximumMsChanged(object sender, EventArgs e)
         {
             analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayModeChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
+        }
+
+        private void Settings_OppositeTapStartDelayMsChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
+        }
+
+        private void Settings_OppositeTapStartDelayVariancePercentChanged(object sender, EventArgs e)
+        {
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
         }
 
         private void Settings_OppositeTapStartDelayMinimumMsChanged(object sender, EventArgs e)
@@ -11699,6 +12148,12 @@ namespace DS4MapperTest
                         ButtonNoActionSerializer btnNoActinstance = new ButtonNoActionSerializer();
                         JsonConvert.PopulateObject(j.ToString(), btnNoActinstance);
                         resultInstance = btnNoActinstance;
+                        break;
+                    case "TouchpadPressureDualStageAction":
+                        TouchpadPressureDualStageActionSerializer touchPressureDualActInstance =
+                            new TouchpadPressureDualStageActionSerializer();
+                        JsonConvert.PopulateObject(j.ToString(), touchPressureDualActInstance);
+                        resultInstance = touchPressureDualActInstance;
                         break;
                     case "StickPadAction":
                         StickPadActionSerializer stickPadInstance = new StickPadActionSerializer();
