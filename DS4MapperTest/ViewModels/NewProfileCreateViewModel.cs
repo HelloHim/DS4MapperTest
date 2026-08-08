@@ -71,6 +71,7 @@ namespace DS4MapperTest.ViewModels
         {
             new OutputContTypeAssoc() {Name="Xbox 360", Type=OutputContType.Xbox360 },
             new OutputContTypeAssoc() {Name="DualShock 4", Type=OutputContType.DualShock4 },
+            new OutputContTypeAssoc() {Name="DualSense", Type=OutputContType.DualSense },
             new OutputContTypeAssoc() {Name="None", Type=OutputContType.None },
         };
         public List<OutputContTypeAssoc> OutputContList => outputContList;

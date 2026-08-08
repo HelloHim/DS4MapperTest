@@ -458,6 +458,7 @@ namespace DS4MapperTest.ViewModels
         {
             new EnumChoiceSelection<Mapper.OutputContType>("Xbox 360", Mapper.OutputContType.Xbox360),
             new EnumChoiceSelection<Mapper.OutputContType>("DualShock 4", Mapper.OutputContType.DualShock4),
+            new EnumChoiceSelection<Mapper.OutputContType>("DualSense", Mapper.OutputContType.DualSense),
         };
         public List<EnumChoiceSelection<Mapper.OutputContType>> OutputControllerTypeOptions => outputControllerTypeChoices;
 
@@ -487,6 +488,9 @@ namespace DS4MapperTest.ViewModels
                     case Mapper.OutputContType.DualShock4:
                         result = 1;
                         break;
+                    case Mapper.OutputContType.DualSense:
+                        result = 2;
+                        break;
                     default:
                         break;
                 }
@@ -502,6 +506,9 @@ namespace DS4MapperTest.ViewModels
                         break;
                     case 1:
                         tempProfile.OutputGamepadSettings.OutputGamepad = Mapper.OutputContType.DualShock4;
+                        break;
+                    case 2:
+                        tempProfile.OutputGamepadSettings.OutputGamepad = Mapper.OutputContType.DualSense;
                         break;
                     default:
                         break;
@@ -3226,6 +3233,7 @@ namespace DS4MapperTest.ViewModels
             get => mappedAction switch
             {
                 GyroNoMapAction => "Unbound",
+                GyroPassthruAction => "Passthru",
                 GyroMouse => "Gyro Mouse",
                 GyroMouseJoystick => "Gyro Mouse-like Joystick",
                 GyroDirectionalSwipe => "Gyro Directional Swipe",
@@ -3237,7 +3245,8 @@ namespace DS4MapperTest.ViewModels
         {
             get => mappedAction switch
             {
-                GyroNoMapAction => "No gyro action is assigned.",
+                GyroNoMapAction => "Gyro output is disabled.",
+                GyroPassthruAction => "Native gyro and accelerometer data pass through to the virtual DualShock 4 output when available.",
                 GyroMouse => "Sensitivity, acceleration, and noise steadying settings are available in the Sensitivity and Noise & Steadying tabs.",
                 GyroMouseJoystick => "Joystick output settings are available below.",
                 GyroDirectionalSwipe => "Swipe deadzone, trigger, and directional binding settings are available below.",

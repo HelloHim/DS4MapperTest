@@ -11918,6 +11918,26 @@ namespace DS4MapperTest
         }
     }
 
+    public class GyroPassthruActionSerializer : MapActionSerializer
+    {
+        private GyroPassthruAction gyroPassthruAction = new GyroPassthruAction();
+
+        public GyroPassthruActionSerializer() : base()
+        {
+            mapAction = gyroPassthruAction;
+        }
+
+        public GyroPassthruActionSerializer(ActionLayer tempLayer, MapAction action) :
+            base(tempLayer, action)
+        {
+            if (action is GyroPassthruAction temp)
+            {
+                gyroPassthruAction = temp;
+                mapAction = gyroPassthruAction;
+            }
+        }
+    }
+
     public class GyroPadActionSerializer : MapActionSerializer
     {
         public class GyroPadDirBinding
@@ -12430,6 +12450,11 @@ namespace DS4MapperTest
                         GyroDirectionalSwipeSerializer gyroDirSwipeInstance = new GyroDirectionalSwipeSerializer();
                         JsonConvert.PopulateObject(j.ToString(), gyroDirSwipeInstance);
                         resultInstance = gyroDirSwipeInstance;
+                        break;
+                    case "GyroPassthruAction":
+                        GyroPassthruActionSerializer gyroPassthruInstance = new GyroPassthruActionSerializer();
+                        JsonConvert.PopulateObject(j.ToString(), gyroPassthruInstance);
+                        resultInstance = gyroPassthruInstance;
                         break;
                     case "GyroNoAction":
                         GyroNoMapActionSerializer gyroNoActinstance = new GyroNoMapActionSerializer();

@@ -572,7 +572,8 @@ namespace DS4MapperTest.DualSense
                         elapsedReference = gyroSensDefinition.elapsedReference,
                     };
 
-                    PopulateStateGyro(ref gyroFrame);
+                    if (gyroAct.OutputsNativeGyro) PopulateStateGyro(ref gyroFrame);
+                    else ClearStateGyro();
                     gyroAct.Prepare(this, ref gyroFrame);
                     if (gyroAct.active)
                     {
@@ -1077,15 +1078,30 @@ namespace DS4MapperTest.DualSense
 
         public override void HookFeedback()
         {
-            viiper360Feedback = TestVIIPER360Feedback;
-            bool result = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
-            //Trace.WriteLine($"RESULT {result}");
+            if (outputControlType == OutputContType.Xbox360)
+            {
+                viiper360Feedback = TestVIIPER360Feedback;
+                bool result = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
+            }
+            else if (outputControlType == OutputContType.DualSense)
+            {
+                viiperDSFeedback = TestVIIPERDSFeedback;
+                bool result = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
+            }
         }
 
         public void TestVIIPER360Feedback(nuint handle, byte leftMotor, byte rightMotor)
         {
             device.FeedbackStateRef.LeftHeavy = leftMotor;
             device.FeedbackStateRef.RightLight = rightMotor;
+            device.RumbleDirty = true;
+        }
+
+        public void TestVIIPERDSFeedback(nuint handle, byte rumbleSmall, byte rumbleLarge,
+            byte ledRed, byte ledGreen, byte ledBlue, byte playerLeds)
+        {
+            device.FeedbackStateRef.LeftHeavy = rumbleLarge;
+            device.FeedbackStateRef.RightLight = rumbleSmall;
             device.RumbleDirty = true;
         }
 

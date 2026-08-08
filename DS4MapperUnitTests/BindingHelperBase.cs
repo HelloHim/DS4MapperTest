@@ -83,7 +83,7 @@ namespace DS4MapperUnitTests
                                     break;
                                 case InputBindingMeta.InputControlType.Gyro:
                                     {
-                                        GyroNoMapAction gyroNoMapAct = new GyroNoMapAction();
+                                        GyroPassthruAction gyroNoMapAct = new GyroPassthruAction();
                                         gyroNoMapAct.MappingId = tempMeta.Key;
                                         if (mapper.KnownGyroSensDefinitions.TryGetValue(tempMeta.Key,
                                             out GyroSensDefinition tempDef))

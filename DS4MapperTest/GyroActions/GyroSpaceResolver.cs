@@ -210,6 +210,60 @@ namespace DS4MapperTest.GyroActions
     /// </summary>
     public static class GyroMotionAxisAdapter
     {
+        public static void ToDualShock4OutputSpace(InputDeviceType deviceType,
+            short frameGyroYaw, short frameGyroPitch, short frameGyroRoll,
+            short frameAccelX, short frameAccelY, short frameAccelZ,
+            out short gyroX, out short gyroY, out short gyroZ,
+            out short accelX, out short accelY, out short accelZ)
+        {
+            switch (deviceType)
+            {
+                case InputDeviceType.SteamController:
+                case InputDeviceType.SteamControllerTriton:
+                    gyroX = (short)-frameGyroPitch;
+                    gyroY = (short)-frameGyroYaw;
+                    gyroZ = frameGyroRoll;
+
+                    accelX = (short)-frameAccelX;
+                    accelY = frameAccelZ;
+                    accelZ = (short)-frameAccelY;
+                    break;
+
+                case InputDeviceType.SwitchPro:
+                case InputDeviceType.JoyCon:
+                    gyroX = (short)-frameGyroPitch;
+                    gyroY = (short)-frameGyroYaw;
+                    gyroZ = (short)-frameGyroRoll;
+
+                    accelX = (short)-frameAccelX;
+                    accelY = frameAccelZ;
+                    accelZ = (short)-frameAccelY;
+                    break;
+
+                case InputDeviceType.EightBitDoUltimate2Wireless:
+                    gyroX = (short)-frameGyroPitch;
+                    gyroY = (short)-frameGyroYaw;
+                    gyroZ = frameGyroRoll;
+
+                    accelX = frameAccelY;
+                    accelY = frameAccelX;
+                    accelZ = frameAccelZ;
+                    break;
+
+                case InputDeviceType.DS4:
+                case InputDeviceType.DualSense:
+                default:
+                    gyroX = (short)-frameGyroPitch;
+                    gyroY = (short)-frameGyroYaw;
+                    gyroZ = (short)-frameGyroRoll;
+
+                    accelX = (short)-frameAccelX;
+                    accelY = (short)-frameAccelY;
+                    accelZ = frameAccelZ;
+                    break;
+            }
+        }
+
         public static void ToMotionSpace(InputDeviceType deviceType,
             double frameAngGyroYaw, double frameAngGyroPitch, double frameAngGyroRoll,
             double frameAccelXG, double frameAccelYG, double frameAccelZG,
