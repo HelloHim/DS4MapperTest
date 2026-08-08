@@ -29,6 +29,12 @@ namespace DS4MapperTest.MapperUtil
         public bool BtnSelect;
         public bool BtnHome;
         public bool BtnExtra;
+        public bool BtnLGrip;
+        public bool BtnRGrip;
+        public bool BtnMode2;
+        public bool BtnMode3;
+        public bool BtnLGrip2;
+        public bool BtnRGrip2;
         public bool BtnThumbL;
         public bool BtnThumbR;
         public bool BtnTouchClick;
@@ -50,6 +56,13 @@ namespace DS4MapperTest.MapperUtil
         public short AccelXG;
         public short AccelYG;
         public short AccelZG;
+
+        public double Touch1XNorm;
+        public double Touch1YNorm;
+        public bool Touch1Active;
+        public double Touch2XNorm;
+        public double Touch2YNorm;
+        public bool Touch2Active;
 
         public bool Dirty;
     }
