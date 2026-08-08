@@ -66,7 +66,7 @@ namespace DS4MapperUnitTests
             GyroBindEditViewModel editViewModel =
                 new GyroBindEditViewModel(mapper, new GyroNoMapAction());
 
-            GyroMouse action = editViewModel.PrepareNewAction(1) as GyroMouse;
+            GyroMouse action = editViewModel.PrepareNewAction(2) as GyroMouse;
 
             Assert.IsNotNull(action);
             Assert.AreEqual(profile.CalibRwc, action.mouseParams.realWorldCalibration);

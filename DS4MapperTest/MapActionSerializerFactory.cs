@@ -115,6 +115,9 @@ namespace DS4MapperTest
                 case "GyroDirSwipeAction":
                     serializer = new GyroDirectionalSwipeSerializer(layer, action);
                     break;
+                case "GyroPassthruAction":
+                    serializer = new GyroPassthruActionSerializer(layer, action);
+                    break;
                 case "GyroNoAction":
                     serializer = new GyroNoMapActionSerializer(layer, action);
                     break;
