@@ -263,6 +263,115 @@ namespace DS4MapperTest
             return handle != 0 && handle != nuint.MaxValue;
         }
 
+        protected bool EnsureViiperOutputLocked()
+        {
+            OutputContType desiredType = actionProfile.OutputGamepadSettings.OutputGamepad;
+            bool desiredEnabled = actionProfile.OutputGamepadSettings.Enabled &&
+                desiredType != OutputContType.None;
+
+            if (outputControlType != OutputContType.None)
+            {
+                bool handleValid = IsPlausibleViiperDeviceHandle(deviceHandle);
+                if (!desiredEnabled || desiredType != outputControlType || !handleValid)
+                {
+                    RemoveViiperDeviceLocked();
+                    Thread.Sleep(100);
+                }
+            }
+
+            if (desiredEnabled && outputControlType == OutputContType.None)
+            {
+                if (!LibVIIPER.CreateUSBBus(viiperServerHandle, ref viiperBusId))
+                {
+                    deviceHandle = 0;
+                    viiperBusId = 0;
+                    outputControlType = OutputContType.None;
+                    return false;
+                }
+
+                Thread.Sleep(200);
+
+                if (desiredType == OutputContType.Xbox360)
+                {
+                    if (!LibVIIPER.CreateXbox360Device(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0, 0) ||
+                        !IsPlausibleViiperDeviceHandle(deviceHandle))
+                    {
+                        deviceHandle = 0;
+                        viiperBusId = 0;
+                        outputControlType = OutputContType.None;
+                        return false;
+                    }
+
+                    outputControlType = OutputContType.Xbox360;
+                    logger.Info($"Created VIIPER Xbox 360 device. Handle={deviceHandle} Bus={viiperBusId}");
+                }
+                else if (desiredType == OutputContType.DualShock4)
+                {
+                    if (!LibVIIPER.CreateDS4Device(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0) ||
+                        !IsPlausibleViiperDeviceHandle(deviceHandle))
+                    {
+                        deviceHandle = 0;
+                        viiperBusId = 0;
+                        outputControlType = OutputContType.None;
+                        return false;
+                    }
+
+                    outputControlType = OutputContType.DualShock4;
+                    logger.Info($"Created VIIPER DS4 device. Handle={deviceHandle} Bus={viiperBusId}");
+                }
+                else if (desiredType == OutputContType.DualSense)
+                {
+                    if (!LibVIIPER.CreateDualSenseDevice(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0) ||
+                        !IsPlausibleViiperDeviceHandle(deviceHandle))
+                    {
+                        Trace.WriteLine($"Fatal Error: Failed to create DualSense virtual device. Handle={deviceHandle}");
+                        logger.Error($"Failed to create VIIPER DualSense device. Handle={deviceHandle} Bus={viiperBusId}");
+                        deviceHandle = 0;
+                        viiperBusId = 0;
+                        outputControlType = OutputContType.None;
+                        return false;
+                    }
+
+                    outputControlType = OutputContType.DualSense;
+                    logger.Info($"Created VIIPER DualSense device. Handle={deviceHandle} Bus={viiperBusId}");
+                }
+            }
+
+            return true;
+        }
+
+        protected void RefreshViiperOutput()
+        {
+            lock (viiperDeviceLock)
+            {
+                if (!EnsureViiperOutputLocked())
+                {
+                    return;
+                }
+            }
+
+            if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
+                (outputControlType == OutputContType.Xbox360 ||
+                outputControlType == OutputContType.DualSense))
+            {
+                Thread.Sleep(100);
+                EstablishForceFeedback();
+                HookFeedback();
+            }
+            else if (outputControlType == OutputContType.Xbox360 ||
+                outputControlType == OutputContType.DualSense)
+            {
+                RemoveFeedback();
+            }
+        }
+
+        public void ApplyOutputSettings()
+        {
+            loggedFirstVirtualState = false;
+            RefreshViiperOutput();
+            PostProfileChange?.Invoke(this, EventArgs.Empty);
+        }
+
         protected void RemoveViiperDeviceLocked()
         {
             if (outputControlType == OutputContType.Xbox360)
@@ -1140,140 +1249,7 @@ namespace DS4MapperTest
                     throw e;
                 }
 
-                // Check if requested output controller is different than the currently
-                // connected type
-                if (actionProfile.OutputGamepadSettings.Enabled &&
-                    actionProfile.OutputGamepadSettings.OutputGamepad != outputControlType)
-                {
-                    lock (viiperDeviceLock)
-                    {
-                        if (deviceHandle != 0 || outputControlType != OutputContType.None)
-                        {
-                            RemoveViiperDeviceLocked();
-                        }
-                    }
-                    Thread.Sleep(100); // More of a pre-caution
-                }
-
-                // Create virtual controller if desired
-                if (actionProfile.OutputGamepadSettings.Enabled && actionProfile.OutputGamepadSettings.OutputGamepad != OutputContType.None)
-                {
-                    if (actionProfile.OutputGamepadSettings.OutputGamepad == OutputContType.Xbox360)
-                    {
-                        lock (viiperDeviceLock)
-                        {
-                            if (!LibVIIPER.CreateUSBBus(viiperServerHandle, ref viiperBusId))
-                            {
-                                deviceHandle = 0;
-                                viiperBusId = 0;
-                                outputControlType = OutputContType.None;
-                                return;
-                            }
-
-                            // Add a small delay before plugging in virtual device
-                            Thread.Sleep(200);
-
-                            if (!LibVIIPER.CreateXbox360Device(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0, 0) ||
-                                deviceHandle == 0)
-                            {
-                                deviceHandle = 0;
-                                viiperBusId = 0;
-                                outputControlType = OutputContType.None;
-                                return;
-                            }
-
-                            outputControlType = OutputContType.Xbox360;
-                            logger.Info($"Created VIIPER Xbox 360 device. Handle={deviceHandle} Bus={viiperBusId}");
-                        }
-                    }
-                    else if (actionProfile.OutputGamepadSettings.OutputGamepad == OutputContType.DualShock4)
-                    {
-                        lock (viiperDeviceLock)
-                        {
-                            if (!LibVIIPER.CreateUSBBus(viiperServerHandle, ref viiperBusId))
-                            {
-                                deviceHandle = 0;
-                                viiperBusId = 0;
-                                outputControlType = OutputContType.None;
-                                return;
-                            }
-
-                            // Add a small delay before plugging in virtual device
-                            Thread.Sleep(200);
-
-                            if (!LibVIIPER.CreateDS4Device(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0) ||
-                                deviceHandle == 0)
-                            {
-                                deviceHandle = 0;
-                                viiperBusId = 0;
-                                outputControlType = OutputContType.None;
-                                return;
-                            }
-
-                            outputControlType = OutputContType.DualShock4;
-                            logger.Info($"Created VIIPER DS4 device. Handle={deviceHandle} Bus={viiperBusId}");
-                        }
-                    }
-                    else if (actionProfile.OutputGamepadSettings.OutputGamepad == OutputContType.DualSense)
-                    {
-                        lock (viiperDeviceLock)
-                        {
-                            if (!LibVIIPER.CreateUSBBus(viiperServerHandle, ref viiperBusId))
-                            {
-                                deviceHandle = 0;
-                                viiperBusId = 0;
-                                outputControlType = OutputContType.None;
-                                return;
-                            }
-
-                            Thread.Sleep(200);
-
-                            if (!LibVIIPER.CreateDualSenseDevice(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0) ||
-                                !IsPlausibleViiperDeviceHandle(deviceHandle))
-                            {
-                                Trace.WriteLine($"Fatal Error: Failed to create DualSense virtual device. Handle={deviceHandle}");
-                                logger.Error($"Failed to create VIIPER DualSense device. Handle={deviceHandle} Bus={viiperBusId}");
-                                deviceHandle = 0;
-                                viiperBusId = 0;
-                                outputControlType = OutputContType.None;
-                                return;
-                            }
-
-                            outputControlType = OutputContType.DualSense;
-                            logger.Info($"Created VIIPER DualSense device. Handle={deviceHandle} Bus={viiperBusId}");
-                        }
-                    }
-                }
-                else if (!actionProfile.OutputGamepadSettings.enabled && outputControlType != OutputContType.None)
-                {
-                    RemoveFeedback();
-
-                    lock (viiperDeviceLock)
-                    {
-                        if (deviceHandle != 0 || outputControlType != OutputContType.None)
-                        {
-                            RemoveViiperDeviceLocked();
-                        }
-                    }
-                }
-
-                // Check for current output controller and check for desired vibration
-                // status
-                if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
-                    (outputControlType == OutputContType.Xbox360 ||
-                    outputControlType == OutputContType.DualSense))
-                {
-                    Thread.Sleep(100);
-                    EstablishForceFeedback();
-                    HookFeedback();
-                }
-                else if (!actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
-                    (outputControlType == OutputContType.Xbox360 ||
-                    outputControlType == OutputContType.DualSense))
-                {
-                    RemoveFeedback();
-                }
-
+                RefreshViiperOutput();
                 PostProfileChange?.Invoke(this, EventArgs.Empty);
             }
         }
