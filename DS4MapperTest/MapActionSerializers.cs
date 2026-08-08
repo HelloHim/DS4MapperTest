@@ -5875,6 +5875,75 @@ namespace DS4MapperTest
         }
     }
 
+    public class TouchpadPassthruActionSerializer : MapActionSerializer
+    {
+        public class TouchpadPassthruSettings
+        {
+            private readonly TouchpadPassthruAction touchPassthruAction;
+
+            public int VirtualClickPressureThreshold
+            {
+                get => touchPassthruAction.VirtualClickPressureThreshold;
+                set
+                {
+                    touchPassthruAction.VirtualClickPressureThreshold = value;
+                    VirtualClickPressureThresholdChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VirtualClickPressureThresholdChanged;
+
+            public TouchpadPassthruSettings(TouchpadPassthruAction action)
+            {
+                touchPassthruAction = action;
+            }
+        }
+
+        private TouchpadPassthruAction touchPassthruAction = new TouchpadPassthruAction();
+        private TouchpadPassthruSettings settings;
+
+        [JsonProperty("Settings", Required = Required.Default)]
+        public TouchpadPassthruSettings Settings
+        {
+            get => settings;
+            set
+            {
+                settings = value ?? new TouchpadPassthruSettings(touchPassthruAction);
+                settings.VirtualClickPressureThresholdChanged += Settings_VirtualClickPressureThresholdChanged;
+            }
+        }
+        public bool ShouldSerializeSettings()
+        {
+            return touchPassthruAction.VirtualClickPressureThreshold !=
+                TouchpadPassthruAction.DEFAULT_VIRTUAL_CLICK_PRESSURE_THRESHOLD;
+        }
+
+        public TouchpadPassthruActionSerializer() : base()
+        {
+            mapAction = touchPassthruAction;
+            settings = new TouchpadPassthruSettings(touchPassthruAction);
+            settings.VirtualClickPressureThresholdChanged += Settings_VirtualClickPressureThresholdChanged;
+        }
+
+        public TouchpadPassthruActionSerializer(ActionLayer tempLayer, MapAction action) :
+            base(tempLayer, action)
+        {
+            if (action is TouchpadPassthruAction temp)
+            {
+                touchPassthruAction = temp;
+                mapAction = touchPassthruAction;
+            }
+
+            settings = new TouchpadPassthruSettings(touchPassthruAction);
+            settings.VirtualClickPressureThresholdChanged += Settings_VirtualClickPressureThresholdChanged;
+        }
+
+        private void Settings_VirtualClickPressureThresholdChanged(object sender, EventArgs e)
+        {
+            touchPassthruAction.ChangedProperties.Add(
+                TouchpadPassthruAction.PropertyKeyStrings.VIRTUAL_CLICK_PRESSURE_THRESHOLD);
+        }
+    }
+
 
     public class TouchpadFlickStickActionSerializer : MapActionSerializer
     {
@@ -12415,6 +12484,11 @@ namespace DS4MapperTest
                         TouchpadNoActionSerializer touchNoActinstance = new TouchpadNoActionSerializer();
                         JsonConvert.PopulateObject(j.ToString(), touchNoActinstance);
                         resultInstance = touchNoActinstance;
+                        break;
+                    case "TouchPassthruAction":
+                        TouchpadPassthruActionSerializer touchPassthruInstance = new TouchpadPassthruActionSerializer();
+                        JsonConvert.PopulateObject(j.ToString(), touchPassthruInstance);
+                        resultInstance = touchPassthruInstance;
                         break;
                     case "DPadAction":
                         DpadActionSerializer dpadActSerializer = new DpadActionSerializer();

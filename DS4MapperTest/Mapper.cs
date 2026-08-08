@@ -568,7 +568,7 @@ namespace DS4MapperTest
                                     break;
                                 case InputBindingMeta.InputControlType.Touchpad:
                                     {
-                                        TouchpadNoAction touchNoAct = new TouchpadNoAction();
+                                        TouchpadPassthruAction touchNoAct = new TouchpadPassthruAction();
                                         touchNoAct.MappingId = tempMeta.Key;
                                         if (knownTouchpadDefinitions.TryGetValue(tempMeta.Key,
                                             out TouchpadDefinition tempDef))
@@ -581,7 +581,7 @@ namespace DS4MapperTest
                                     break;
                                 case InputBindingMeta.InputControlType.TouchpadRegion:
                                     {
-                                        TouchpadNoAction touchNoAct = new TouchpadNoAction();
+                                        TouchpadPassthruAction touchNoAct = new TouchpadPassthruAction();
                                         touchNoAct.MappingId = tempMeta.Key;
                                         if (knownTouchpadDefinitions.TryGetValue(tempMeta.Key,
                                             out TouchpadDefinition tempDef))
@@ -927,7 +927,7 @@ namespace DS4MapperTest
                                     break;
                                 case InputBindingMeta.InputControlType.Touchpad:
                                     {
-                                        TouchpadNoAction touchNoAct = new TouchpadNoAction();
+                                        TouchpadPassthruAction touchNoAct = new TouchpadPassthruAction();
                                         touchNoAct.MappingId = tempMeta.Key;
                                         if (knownTouchpadDefinitions.TryGetValue(tempMeta.Key, out TouchpadDefinition tempDef))
                                         {
@@ -939,7 +939,7 @@ namespace DS4MapperTest
                                     break;
                                 case InputBindingMeta.InputControlType.TouchpadRegion:
                                     {
-                                        TouchpadNoAction touchNoAct = new TouchpadNoAction();
+                                        TouchpadPassthruAction touchNoAct = new TouchpadPassthruAction();
                                         touchNoAct.MappingId = tempMeta.Key;
                                         if (knownTouchpadDefinitions.TryGetValue(tempMeta.Key, out TouchpadDefinition tempDef))
                                         {
@@ -1189,7 +1189,7 @@ namespace DS4MapperTest
                         break;
                     case InputBindingMeta.InputControlType.Touchpad:
                         {
-                            TouchpadNoAction touchNoAct = new TouchpadNoAction();
+                            TouchpadPassthruAction touchNoAct = new TouchpadPassthruAction();
                             touchNoAct.MappingId = tempMeta.Key;
                             if (knownTouchpadDefinitions.TryGetValue(tempMeta.Key, out TouchpadDefinition tempDef))
                             {
@@ -3360,6 +3360,24 @@ namespace DS4MapperTest
             intermediateState.Touch2XNorm = ClampUnit(xNorm);
             intermediateState.Touch2YNorm = ClampUnit(yNorm);
             intermediateState.Touch2Active = active;
+        }
+
+        protected void ApplyVirtualTouchState(double touch1XNorm, double touch1YNorm, bool touch1Active,
+            double touch2XNorm, double touch2YNorm, bool touch2Active, bool touchClick)
+        {
+            bool contact1Changed = intermediateState.Touch1Active != touch1Active ||
+                intermediateState.Touch1XNorm != ClampUnit(touch1XNorm) ||
+                intermediateState.Touch1YNorm != ClampUnit(touch1YNorm);
+            bool contact2Changed = intermediateState.Touch2Active != touch2Active ||
+                intermediateState.Touch2XNorm != ClampUnit(touch2XNorm) ||
+                intermediateState.Touch2YNorm != ClampUnit(touch2YNorm);
+            bool oldTouchClick = intermediateState.BtnTouchClick;
+
+            SetVirtualTouchContact1(touch1XNorm, touch1YNorm, touch1Active);
+            SetVirtualTouchContact2(touch2XNorm, touch2YNorm, touch2Active);
+            intermediateState.BtnTouchClick |= touchClick;
+            intermediateState.Dirty |= contact1Changed || contact2Changed ||
+                oldTouchClick != intermediateState.BtnTouchClick;
         }
 
         public virtual void SetFeedback(string mappingId, double ratio,

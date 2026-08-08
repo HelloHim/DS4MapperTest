@@ -197,7 +197,7 @@
             },
             {
               "Id": 12,
-              "ActionMode": "TouchMouseAction",
+              "ActionMode": "TouchPassthruAction",
               "Settings": {
                 "Sensitivity": 1.0,
                 "VerticalScale": 1.0,

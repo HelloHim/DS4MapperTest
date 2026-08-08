@@ -11,6 +11,7 @@
             <Label Content="Transform Type" />
             <ComboBox SelectedIndex="{Binding SelectedIndex}" MinWidth="200" Margin="8,0,0,0">
                 <ComboBoxItem>Unbound</ComboBoxItem>
+                <ComboBoxItem>Passthru</ComboBoxItem>
                 <ComboBoxItem>Joystick</ComboBoxItem>
                 <ComboBoxItem>DPad</ComboBoxItem>
                 <ComboBoxItem>Mouse-like Joystick</ComboBoxItem>
