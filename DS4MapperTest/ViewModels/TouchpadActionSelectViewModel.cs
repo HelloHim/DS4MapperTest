@@ -39,32 +39,35 @@ namespace DS4MapperTest.ViewModels
                 case TouchpadNoAction:
                     selectedIndex = 0;
                     break;
-                case TouchpadStickAction:
+                case TouchpadPassthruAction:
                     selectedIndex = 1;
                     break;
-                case TouchpadActionPad:
+                case TouchpadStickAction:
                     selectedIndex = 2;
                     break;
-                case TouchpadMouseJoystick:
+                case TouchpadActionPad:
                     selectedIndex = 3;
                     break;
-                case TouchpadMouse:
+                case TouchpadMouseJoystick:
                     selectedIndex = 4;
                     break;
-                case TouchpadCircular:
+                case TouchpadMouse:
                     selectedIndex = 5;
                     break;
-                case TouchpadAbsAction:
+                case TouchpadCircular:
                     selectedIndex = 6;
                     break;
-                case TouchpadDirectionalSwipe:
+                case TouchpadAbsAction:
                     selectedIndex = 7;
                     break;
-                case TouchpadSingleButton:
+                case TouchpadDirectionalSwipe:
                     selectedIndex = 8;
                     break;
-                case TouchpadFlickStick:
+                case TouchpadSingleButton:
                     selectedIndex = 9;
+                    break;
+                case TouchpadFlickStick:
+                    selectedIndex = 10;
                     break;
                 default:
                     selectedIndex = -1;

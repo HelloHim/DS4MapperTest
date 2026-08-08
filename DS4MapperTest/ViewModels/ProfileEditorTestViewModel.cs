@@ -2650,15 +2650,16 @@ namespace DS4MapperTest.ViewModels
             new List<TouchpadActionOption>
             {
                 new TouchpadActionOption(0, "Unbound"),
-                new TouchpadActionOption(1, "Joystick"),
-                new TouchpadActionOption(2, "D-Pad Zones"),
-                new TouchpadActionOption(3, "Mouse-like Joystick"),
-                new TouchpadActionOption(4, "Relative Mouse"),
-                new TouchpadActionOption(5, "Circular Scroll"),
-                new TouchpadActionOption(6, "Absolute Mouse"),
-                new TouchpadActionOption(7, "Directional Swipes"),
-                new TouchpadActionOption(8, "Single Button"),
-                new TouchpadActionOption(9, "Flick Stick"),
+                new TouchpadActionOption(1, "Passthru"),
+                new TouchpadActionOption(2, "Joystick"),
+                new TouchpadActionOption(3, "D-Pad Zones"),
+                new TouchpadActionOption(4, "Mouse-like Joystick"),
+                new TouchpadActionOption(5, "Relative Mouse"),
+                new TouchpadActionOption(6, "Circular Scroll"),
+                new TouchpadActionOption(7, "Absolute Mouse"),
+                new TouchpadActionOption(8, "Directional Swipes"),
+                new TouchpadActionOption(9, "Single Button"),
+                new TouchpadActionOption(10, "Flick Stick"),
             };
 
         public IReadOnlyList<TouchpadActionOption> AvailableActionOptions => ActionOptions;
@@ -2716,6 +2717,7 @@ namespace DS4MapperTest.ViewModels
                 return mappedAction switch
                 {
                     TouchpadNoAction => "Unbound",
+                    TouchpadPassthruAction => "Passthru",
                     TouchpadSingleButton => "Single Button",
                     TouchpadMouse => "Relative Mouse",
                     TouchpadAbsAction => "Absolute Mouse",
@@ -2756,6 +2758,7 @@ namespace DS4MapperTest.ViewModels
                 return mappedAction switch
                 {
                     TouchpadNoAction => "No touchpad output is assigned.",
+                    TouchpadPassthruAction => "Native touch coordinates pass through to the virtual PlayStation touchpad output.",
                     TouchpadSingleButton => "Maps touchpad activation to a button-style output.",
                     TouchpadMouse => "Uses touch movement for relative mouse output, including supported trackball settings.",
                     TouchpadAbsAction => "Uses touch position for absolute mouse output.",
@@ -2777,6 +2780,7 @@ namespace DS4MapperTest.ViewModels
                 return mappedAction switch
                 {
                     TouchpadNoAction => "No touchpad output is assigned.",
+                    TouchpadPassthruAction => "Native touch coordinates and touchpad press pass through to the virtual PlayStation touchpad output. Action name is in Mode.",
                     TouchpadSingleButton => "Button binding settings are available below.",
                     TouchpadMouse => "Movement is in Mouse & Movement. Sensitivity and calibration are in Sensitivity & Calibration. Deadzone, smoothing, and trackball settings are in the later settings tabs. Action name is in Mode.",
                     TouchpadAbsAction => "Movement is in Mouse & Movement. Deadzone, outer ring, and release settings are in the later settings tabs. Action name is in Mode.",
@@ -2837,6 +2841,25 @@ namespace DS4MapperTest.ViewModels
 
         public bool IsUnbound => mappedAction is TouchpadNoAction;
 
+        public bool SupportsPassthruClickThreshold =>
+            bindingName is "LeftTouchpad" or "RightTouchpad" &&
+            mapper is InputDevices.SteamControllerTritonLibrary.SteamControllerTritonMapper;
+
+        public bool ShowsPassthruClickThreshold =>
+            mappedAction is TouchpadPassthruAction && SupportsPassthruClickThreshold;
+
+        public int PassthruClickThreshold
+        {
+            get => (mappedAction as TouchpadPassthruAction)?.VirtualClickPressureThreshold ??
+                TouchpadPassthruAction.DEFAULT_VIRTUAL_CLICK_PRESSURE_THRESHOLD;
+            set
+            {
+                if (mappedAction is not TouchpadPassthruAction action) return;
+                action.VirtualClickPressureThreshold = value;
+                RaiseUIUpdate();
+            }
+        }
+
         public bool HasAdvancedTouchpadSettings =>
             IsFilteringStabilisationAction ||
             IsZoneAction ||
@@ -2894,6 +2917,9 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(IsAdvancedAction));
             OnPropertyChanged(nameof(IsExtraAction));
             OnPropertyChanged(nameof(IsUnbound));
+            OnPropertyChanged(nameof(SupportsPassthruClickThreshold));
+            OnPropertyChanged(nameof(ShowsPassthruClickThreshold));
+            OnPropertyChanged(nameof(PassthruClickThreshold));
             OnPropertyChanged(nameof(HasAdvancedTouchpadSettings));
             OnPropertyChanged(nameof(ShowAdvancedTouchpadSettingsEmptyMessage));
             OnPropertyChanged(nameof(AdvancedTouchpadSettingsEmptyMessage));
@@ -2904,15 +2930,16 @@ namespace DS4MapperTest.ViewModels
             return action switch
             {
                 TouchpadNoAction => 0,
-                TouchpadStickAction => 1,
-                TouchpadActionPad => 2,
-                TouchpadMouseJoystick => 3,
-                TouchpadMouse => 4,
-                TouchpadCircular => 5,
-                TouchpadAbsAction => 6,
-                TouchpadDirectionalSwipe => 7,
-                TouchpadSingleButton => 8,
-                TouchpadFlickStick => 9,
+                TouchpadPassthruAction => 1,
+                TouchpadStickAction => 2,
+                TouchpadActionPad => 3,
+                TouchpadMouseJoystick => 4,
+                TouchpadMouse => 5,
+                TouchpadCircular => 6,
+                TouchpadAbsAction => 7,
+                TouchpadDirectionalSwipe => 8,
+                TouchpadSingleButton => 9,
+                TouchpadFlickStick => 10,
                 _ => -1,
             };
         }

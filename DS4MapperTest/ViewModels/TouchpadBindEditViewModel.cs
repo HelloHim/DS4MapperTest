@@ -78,6 +78,9 @@ namespace DS4MapperTest.ViewModels
                     result = new TouchpadNoAction();
                     break;
                 case 1:
+                    result = new TouchpadPassthruAction();
+                    break;
+                case 2:
                     {
                         TouchpadStickAction tempAction = new TouchpadStickAction();
                         // TODO: Fix
@@ -87,7 +90,7 @@ namespace DS4MapperTest.ViewModels
                     }
 
                     break;
-                case 2:
+                case 3:
                     {
                         TouchpadActionPad tempAction = new TouchpadActionPad();
                         // TODO: Fix
@@ -97,7 +100,7 @@ namespace DS4MapperTest.ViewModels
                     }
 
                     break;
-                case 3:
+                case 4:
                     {
                         TouchpadMouseJoystick tempAction = new TouchpadMouseJoystick();
                         // TODO: Fix
@@ -107,7 +110,7 @@ namespace DS4MapperTest.ViewModels
                     }
 
                     break;
-                case 4:
+                case 5:
                     {
                         TouchpadMouse tempAction = new TouchpadMouse();
                         // TODO: Fix
@@ -117,7 +120,7 @@ namespace DS4MapperTest.ViewModels
                     }
 
                     break;
-                case 5:
+                case 6:
                     {
                         TouchpadCircular tempAction = new TouchpadCircular();
                         // TODO: Fix
@@ -127,7 +130,7 @@ namespace DS4MapperTest.ViewModels
                     }
 
                     break;
-                case 6:
+                case 7:
                     {
                         TouchpadAbsAction tempAction = new TouchpadAbsAction();
                         //var joyDefaults = mapper.DeviceActionDefaults.GrabTouchMouseDefaults();
@@ -136,7 +139,7 @@ namespace DS4MapperTest.ViewModels
                     }
 
                     break;
-                case 7:
+                case 8:
                     {
                         TouchpadDirectionalSwipe tempAction = new TouchpadDirectionalSwipe();
                         var joyDefaults = mapper.DeviceActionDefaults.GetTouchDirectionSwipeActionDefaults();
@@ -145,7 +148,7 @@ namespace DS4MapperTest.ViewModels
                     }
 
                     break;
-                case 8:
+                case 9:
                     {
                         TouchpadSingleButton tempAction = new TouchpadSingleButton();
                         //var joyDefaults = mapper.DeviceActionDefaults.GrabTouchCircularActionDefaults();
@@ -154,7 +157,7 @@ namespace DS4MapperTest.ViewModels
                     }
 
                     break;
-                case 9:
+                case 10:
                     {
                         TouchpadFlickStick tempAction = new TouchpadFlickStick();
                         // Flick stick uses these values at runtime, so seed a newly selected

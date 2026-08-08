@@ -27,7 +27,7 @@
           "MappedActions": [
             {
               "Id": 0,
-              "ActionMode": "TouchCircularAction",
+        "ActionMode": "TouchPassthruAction",
               "Clockwise": {
                 "Functions": [
                   {
@@ -61,7 +61,7 @@
             },
             {
               "Id": 1,
-              "ActionMode": "TouchMouseAction",
+        "ActionMode": "TouchPassthruAction",
               "Settings": {
                 "DeadZone": 8,
                 "Sensitivity": 1.0,
