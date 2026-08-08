@@ -2681,11 +2681,27 @@ namespace DS4MapperTest.ViewModels
                 new TouchpadActionOption(6, "Circular Scroll"),
                 new TouchpadActionOption(7, "Absolute Mouse"),
                 new TouchpadActionOption(8, "Directional Swipes"),
+                new TouchpadActionOption(9, "Flick Stick"),
+            };
+
+        public static readonly IReadOnlyList<TouchpadActionOption> LegacySingleButtonActionOptions =
+            new List<TouchpadActionOption>
+            {
+                new TouchpadActionOption(0, "Unbound"),
+                new TouchpadActionOption(1, "Passthru"),
+                new TouchpadActionOption(2, "Joystick"),
+                new TouchpadActionOption(3, "D-Pad Zones"),
+                new TouchpadActionOption(4, "Mouse-like Joystick"),
+                new TouchpadActionOption(5, "Relative Mouse"),
+                new TouchpadActionOption(6, "Circular Scroll"),
+                new TouchpadActionOption(7, "Absolute Mouse"),
+                new TouchpadActionOption(8, "Directional Swipes"),
                 new TouchpadActionOption(9, "Single Button"),
                 new TouchpadActionOption(10, "Flick Stick"),
             };
 
-        public IReadOnlyList<TouchpadActionOption> AvailableActionOptions => ActionOptions;
+        public IReadOnlyList<TouchpadActionOption> AvailableActionOptions =>
+            mappedAction is TouchpadSingleButton ? LegacySingleButtonActionOptions : ActionOptions;
 
         private string displayInputMapString;
         public string DisplayInputMapString
@@ -2812,7 +2828,7 @@ namespace DS4MapperTest.ViewModels
                 {
                     TouchpadNoAction => "No touchpad output is assigned.",
                     TouchpadPassthruAction => $"Native touch coordinates pass through to the virtual PlayStation touchpad output. Touchpad click output is controlled separately in {TouchpadClickBindingsLabel}. When Center Touchpad is set to Passthru, side touchpad passthru modes are ignored. Action name is in Mode.",
-                    TouchpadSingleButton => "Button binding settings are available below.",
+                    TouchpadSingleButton => $"Button binding settings are available in {TouchpadClickBindingsLabel}.",
                     TouchpadMouse => "Movement is in Mouse & Movement. Sensitivity and calibration are in Sensitivity & Calibration. Deadzone, smoothing, and trackball settings are in the later settings tabs. Action name is in Mode.",
                     TouchpadAbsAction => "Movement is in Mouse & Movement. Deadzone, outer ring, and release settings are in the later settings tabs. Action name is in Mode.",
                     TouchpadMouseJoystick => "Movement is in Mouse & Movement. Output curve is in Sensitivity & Calibration. Deadzone, smoothing, and trackball settings are in the later settings tabs. Action name is in Mode.",
@@ -3014,7 +3030,7 @@ namespace DS4MapperTest.ViewModels
                 TouchpadAbsAction => 7,
                 TouchpadDirectionalSwipe => 8,
                 TouchpadSingleButton => 9,
-                TouchpadFlickStick => 10,
+                TouchpadFlickStick => 9,
                 _ => -1,
             };
         }
