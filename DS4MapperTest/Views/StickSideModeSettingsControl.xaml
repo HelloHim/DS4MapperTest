@@ -269,8 +269,8 @@
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Diagonal Zone Width" Style="{StaticResource JsmccLabelText}"/>
-                        <hc:NumericUpDown Grid.Column="1" Minimum="1" Maximum="89" DecimalPlaces="0" Increment="1"
+                        <TextBlock Grid.Column="0" Text="Diagonal Range" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="90" DecimalPlaces="0" Increment="1"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                           Value="{Binding DiagonalRange, UpdateSourceTrigger=LostFocus}"
                                           HorizontalAlignment="Left"/>
@@ -482,6 +482,19 @@
                                 </Style>
                             </hc:NumericUpDown.Style>
                         </hc:NumericUpDown>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Diagonal Range" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="90" DecimalPlaces="0" Increment="1"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding DiagonalRange, UpdateSourceTrigger=LostFocus}"/>
                     </Grid>
                 </Border>
 

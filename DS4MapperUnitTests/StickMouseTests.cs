@@ -24,5 +24,55 @@ namespace DS4MapperUnitTests
             action.MouseSpeed = -1;
             Assert.AreEqual(0, action.MouseSpeed);
         }
+
+        [TestMethod]
+        public void UsesExpectedDefaultDiagonalRange()
+        {
+            StickMouse action = new StickMouse();
+
+            Assert.AreEqual(90, action.DiagonalRange);
+        }
+
+        [TestMethod]
+        public void ClampsDiagonalRangeToSupportedRange()
+        {
+            StickMouse action = new StickMouse();
+
+            action.DiagonalRange = 120;
+            Assert.AreEqual(90, action.DiagonalRange);
+
+            action.DiagonalRange = -1;
+            Assert.AreEqual(0, action.DiagonalRange);
+        }
+
+        [TestMethod]
+        public void ZeroDiagonalRangeSuppressesMinorAxisOutput()
+        {
+            TestMapper mapper = new TestMapper();
+            StickMouse action = new StickMouse(mapper.KnownStickDefinitions["Stick"]);
+            action.DeadMod.DeadZone = 0.0;
+            action.DiagonalRange = 0;
+
+            action.Prepare(mapper, 30000, 15000);
+            action.Event(mapper);
+
+            Assert.IsTrue(mapper.MouseX > 0.0);
+            Assert.AreEqual(0.0, mapper.MouseY, 1e-9);
+        }
+
+        [TestMethod]
+        public void ReducedDiagonalRangePreservesDiagonalOutputNearDiagonalAngle()
+        {
+            TestMapper mapper = new TestMapper();
+            StickMouse action = new StickMouse(mapper.KnownStickDefinitions["Stick"]);
+            action.DeadMod.DeadZone = 0.0;
+            action.DiagonalRange = 30;
+
+            action.Prepare(mapper, 30000, 25000);
+            action.Event(mapper);
+
+            Assert.IsTrue(mapper.MouseX > 0.0);
+            Assert.IsTrue(mapper.MouseY < 0.0);
+        }
     }
 }

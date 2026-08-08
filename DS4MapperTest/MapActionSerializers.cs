@@ -8550,6 +8550,17 @@ namespace DS4MapperTest
             }
             public event EventHandler MaxZoneChanged;
 
+            public int DiagonalRange
+            {
+                get => stickMouseAction.DiagonalRange;
+                set
+                {
+                    stickMouseAction.DiagonalRange = value;
+                    DiagonalRangeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DiagonalRangeChanged;
+
             [JsonConverter(typeof(SafeStringEnumConverter),
                 StickOutCurve.Curve.Linear)]
             public StickOutCurve.Curve OutputCurve
@@ -8607,6 +8618,7 @@ namespace DS4MapperTest
             settings.MouseSpeedChanged += Settings_MouseSpeedChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
             settings.MaxZoneChanged += Settings_MaxZoneChanged;
+            settings.DiagonalRangeChanged += Settings_DiagonalRangeChanged;
             settings.OutputCurveChanged += Settings_OutputCurveChanged;
             settings.DeltaSettingsChanged += Settings_DeltaSettingsChanged;
             settings.VerticalScaleChanged += Settings_VerticalScaleChanged;
@@ -8636,6 +8648,11 @@ namespace DS4MapperTest
         private void Settings_MaxZoneChanged(object sender, EventArgs e)
         {
             stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.MAX_ZONE);
+        }
+
+        private void Settings_DiagonalRangeChanged(object sender, EventArgs e)
+        {
+            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DIAGONAL_RANGE);
         }
 
         private void StickMouseSerializer_NameChanged(object sender, EventArgs e)

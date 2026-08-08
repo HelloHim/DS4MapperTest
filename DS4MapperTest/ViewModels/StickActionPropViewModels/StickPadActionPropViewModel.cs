@@ -74,7 +74,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler ShowDiagonalPadChanged;
 
-        public bool ShowDiagonalZoneWidth => action.CurrentMode == StickPadAction.DPadMode.EightWay;
+        public bool ShowDiagonalZoneWidth => action.CurrentMode == StickPadAction.DPadMode.Standard ||
+            action.CurrentMode == StickPadAction.DPadMode.EightWay;
         public event EventHandler ShowDiagonalZoneWidthChanged;
 
         public bool ShowCardinalPad

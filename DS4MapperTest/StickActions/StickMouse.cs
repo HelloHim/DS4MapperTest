@@ -24,6 +24,7 @@ namespace DS4MapperTest.StickActions
             public const string NAME = "Name";
             public const string DEAD_ZONE = "DeadZone";
             public const string MAX_ZONE = "MaxZone";
+            public const string DIAGONAL_RANGE = "DiagonalRange";
             public const string OUTPUT_CURVE = "OutputCurve";
             public const string MOUSE_SPEED = "MouseSpeed";
             public const string DELTA_SETTINGS = "DeltaSettings";
@@ -35,6 +36,7 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.NAME,
             PropertyKeyStrings.DEAD_ZONE,
             PropertyKeyStrings.MAX_ZONE,
+            PropertyKeyStrings.DIAGONAL_RANGE,
             PropertyKeyStrings.OUTPUT_CURVE,
             PropertyKeyStrings.MOUSE_SPEED,
             PropertyKeyStrings.DELTA_SETTINGS,
@@ -47,6 +49,7 @@ namespace DS4MapperTest.StickActions
         public const int MaxMouseSpeed = MouseMotionSettings.MaxMouseSpeed;
         public const double DefaultVerticalScale = MouseMotionSettings.DefaultVerticalScale;
         public const double MaxVerticalScale = MouseMotionSettings.MaxVerticalScale;
+        public const int DefaultDiagonalRange = 90;
         //private const double MOUSE_VELOCITY_OFFSET = 0.12;
         private const double MOUSE_VELOCITY_OFFSET = 0.013;
         public const string ACTION_TYPE_NAME = "StickMouseAction";
@@ -67,6 +70,13 @@ namespace DS4MapperTest.StickActions
         {
             get => motion.VerticalScale;
             set => motion.VerticalScale = value;
+        }
+
+        private int diagonalRange = DefaultDiagonalRange;
+        public int DiagonalRange
+        {
+            get => diagonalRange;
+            set => diagonalRange = Math.Clamp(value, 0, 90);
         }
 
         public StickDeadZone DeadMod { get => deadMod; }
@@ -322,6 +332,8 @@ namespace DS4MapperTest.StickActions
                     }
                 }
 
+                ApplyDiagonalRange(ref outXNorm, ref outYNorm);
+
                 double timeDelta = mapper.CurrentLatency;
                 timeDelta = timeDelta - (mapper.remainderCutoff(timeDelta * 10000.0, 1.0) / 10000.0);
                 int mouseVelocity = motion.MouseSpeed * MOUSESPEEDFACTOR;
@@ -333,8 +345,9 @@ namespace DS4MapperTest.StickActions
                 double ySign = yNorm >= 0.0 ? 1.0 : -1.0;
                 double absXNorm = Math.Abs(outXNorm);
                 double absYNorm = Math.Abs(outYNorm);
-                double tempMouseOffsetX = unitXRatio * mouseOffset;
-                double tempMouseOffsetY = unitYRatio * verticalMouseOffset;
+                double motionAngle = Math.Atan2(absYNorm, absXNorm);
+                double tempMouseOffsetX = Math.Abs(Math.Cos(motionAngle)) * mouseOffset;
+                double tempMouseOffsetY = Math.Abs(Math.Sin(motionAngle)) * verticalMouseOffset;
 
                 xMotion = ((mouseVelocity - tempMouseOffsetX) * timeDelta * absXNorm + (tempMouseOffsetX * timeDelta)) * xSign;
                 yMotion = ((verticalMouseVelocity - tempMouseOffsetY) * timeDelta * absYNorm + (tempMouseOffsetY * timeDelta)) * -ySign;
@@ -377,6 +390,39 @@ namespace DS4MapperTest.StickActions
             return new StickMouse(this);
         }
 
+        private void ApplyDiagonalRange(ref double outXNorm, ref double outYNorm)
+        {
+            if (diagonalRange >= 90)
+            {
+                return;
+            }
+
+            double absX = Math.Abs(outXNorm);
+            double absY = Math.Abs(outYNorm);
+            if (absX <= double.Epsilon || absY <= double.Epsilon)
+            {
+                return;
+            }
+
+            double angle = Math.Atan2(absY, absX) * (180.0 / Math.PI);
+            double halfRange = diagonalRange * 0.5;
+            double diagonalStart = 45.0 - halfRange;
+            double diagonalEnd = 45.0 + halfRange;
+            if (angle >= diagonalStart && angle <= diagonalEnd)
+            {
+                return;
+            }
+
+            if (absX >= absY)
+            {
+                outYNorm = 0.0;
+            }
+            else
+            {
+                outXNorm = 0.0;
+            }
+        }
+
         public override void SoftRelease(Mapper mapper, MapAction _, bool resetState = true)
         {
             xMotion = yMotion = 0.0;
@@ -416,6 +462,9 @@ namespace DS4MapperTest.StickActions
                             break;
                         case PropertyKeyStrings.MAX_ZONE:
                             deadMod.MaxZone = tempMouseAction.deadMod.MaxZone;
+                            break;
+                        case PropertyKeyStrings.DIAGONAL_RANGE:
+                            diagonalRange = tempMouseAction.diagonalRange;
                             break;
                         case PropertyKeyStrings.OUTPUT_CURVE:
                             motion.OutputCurve = tempMouseAction.motion.OutputCurve;
@@ -466,6 +515,9 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.MAX_ZONE:
                     deadMod.MaxZone = tempMouseAction.deadMod.MaxZone;
+                    break;
+                case PropertyKeyStrings.DIAGONAL_RANGE:
+                    diagonalRange = tempMouseAction.diagonalRange;
                     break;
                 case PropertyKeyStrings.OUTPUT_CURVE:
                     motion.OutputCurve = tempMouseAction.motion.OutputCurve;
