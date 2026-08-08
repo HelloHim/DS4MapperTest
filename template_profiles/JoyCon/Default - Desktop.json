@@ -1,13 +1,10 @@
 {
-  "Name": "Xbox",
-  "Description": "Xbox",
+  "Name": "Default - Desktop",
+  "Description": "Desktop",
   "Creator": "ryochan7",
-  "CreationDate": "2025-06-12T04:22:09.7493533Z",
-  "ControllerType": "EightBitDoUltimate2Wireless",
+  "CreationDate": "2023-06-22T14:07:10.8775577Z",
   "OutputGamepadSettings": {
-    "Enabled": true,
-    "OutputGamepad": "Xbox360",
-    "ForceFeedbackEnabled": true
+    "Enabled": false
   },
   "LightbarSettings": {
     "Mode": "SolidColor",
@@ -21,11 +18,11 @@
   "ActionSets": [
     {
       "Index": 0,
-      "Name": "Main",
+      "Name": "Default - Desktop",
       "ActionLayers": [
         {
           "Index": 0,
-          "Name": "Default",
+          "Name": "Default - Desktop",
           "MappedActions": [
             {
               "Id": 0,
@@ -35,8 +32,8 @@
                   "Type": "NormalPress",
                   "OutputActions": [
                     {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_A"
+                      "Type": "Keyboard",
+                      "Code": "Space"
                     }
                   ]
                 }
@@ -44,33 +41,62 @@
             },
             {
               "Id": 1,
-              "ActionMode": "ButtonAction",
-              "Functions": [
-                {
-                  "Type": "NormalPress",
-                  "OutputActions": [
-                    {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_B"
-                    }
-                  ]
+              "ActionMode": "StickMouseAction",
+              "Settings": {
+                "MouseSpeed": 3000,
+                "DeadZone": 0.15,
+                "MaxZone": 1.0,
+                "OutputCurve": "Linear",
+                "DeltaSettings": {
+                  "Enabled": false,
+                  "Multiplier": 4.0,
+                  "MaxTravel": 0.2,
+                  "MinTravel": 0.01,
+                  "EasingDuration": 0.2,
+                  "MinFactor": 1.0
                 }
-              ]
+              }
             },
             {
               "Id": 2,
-              "ActionMode": "ButtonAction",
-              "Functions": [
-                {
-                  "Type": "NormalPress",
-                  "OutputActions": [
+              "ActionMode": "DPadAction",
+              "Bindings": {
+                "Up": {
+                  "Functions": [
                     {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_X"
+                      "Type": "NormalPress",
+                      "OutputActions": [
+                        {
+                          "Type": "MouseWheel",
+                          "Code": "WheelUp"
+                        }
+                      ]
                     }
                   ]
+                },
+                "Down": {
+                  "Functions": [
+                    {
+                      "Type": "NormalPress",
+                      "OutputActions": [
+                        {
+                          "Type": "MouseWheel",
+                          "Code": "WheelDown"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "Left": {
+                  "Functions": []
+                },
+                "Right": {
+                  "Functions": []
                 }
-              ]
+              },
+              "Settings": {
+                "PadMode": "Standard"
+              }
             },
             {
               "Id": 3,
@@ -80,8 +106,8 @@
                   "Type": "NormalPress",
                   "OutputActions": [
                     {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_Y"
+                      "Type": "MouseButton",
+                      "Code": "LeftButton"
                     }
                   ]
                 }
@@ -95,8 +121,8 @@
                   "Type": "NormalPress",
                   "OutputActions": [
                     {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_LB"
+                      "Type": "MouseButton",
+                      "Code": "RightButton"
                     }
                   ]
                 }
@@ -110,8 +136,8 @@
                   "Type": "NormalPress",
                   "OutputActions": [
                     {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_RB"
+                      "Type": "Keyboard",
+                      "Code": "LeftWindows"
                     }
                   ]
                 }
@@ -125,8 +151,8 @@
                   "Type": "NormalPress",
                   "OutputActions": [
                     {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_ThumbL"
+                      "Type": "Keyboard",
+                      "Code": "Tab"
                     }
                   ]
                 }
@@ -140,8 +166,8 @@
                   "Type": "NormalPress",
                   "OutputActions": [
                     {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_ThumbR"
+                      "Type": "Keyboard",
+                      "Code": "Escape"
                     }
                   ]
                 }
@@ -155,8 +181,8 @@
                   "Type": "NormalPress",
                   "OutputActions": [
                     {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_Back"
+                      "Type": "Keyboard",
+                      "Code": "LeftShift"
                     }
                   ]
                 }
@@ -170,8 +196,8 @@
                   "Type": "NormalPress",
                   "OutputActions": [
                     {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_Start"
+                      "Type": "Keyboard",
+                      "Code": "LeftControl"
                     }
                   ]
                 }
@@ -179,51 +205,7 @@
             },
             {
               "Id": 10,
-              "ActionMode": "TriggerTranslateAction",
-              "Settings": {
-                "OutputTrigger": "X360_LT",
-                "DeadZone": 0.0,
-                "MaxZone": 1.0,
-                "AntiDeadZone": 0.0
-              }
-            },
-            {
-              "Id": 11,
-              "ActionMode": "TriggerTranslateAction",
-              "Settings": {
-                "OutputTrigger": "AxisRTrigger",
-                "DeadZone": 0.0,
-                "MaxZone": 1.0,
-                "AntiDeadZone": 0.0
-              }
-            },
-            {
-              "Id": 12,
-              "ActionMode": "StickTranslateAction",
-              "Settings": {
-                "OutputStick": "X360_LS",
-                "DeadZone": 0.1,
-                "MaxZone": 0.95,
-                "AntiDeadZone": 0.3,
-                "VerticalScale": 1.0,
-                "SquareStickRoundness": 5.0
-              }
-            },
-            {
-              "Id": 13,
-              "ActionMode": "StickTranslateAction",
-              "Settings": {
-                "OutputStick": "RS",
-                "DeadZone": 0.1,
-                "MaxZone": 0.95,
-                "AntiDeadZone": 0.3,
-                "VerticalScale": 1.0,
-                "SquareStickRoundness": 5.0
-              }
-            },
-            {
-              "Id": 14,
-              "ActionMode": "DPadAction",
+              "ActionMode": "StickPadAction",
               "Bindings": {
                 "Up": {
                   "Functions": [
@@ -231,8 +213,8 @@
                       "Type": "NormalPress",
                       "OutputActions": [
                         {
-                          "Type": "GamepadControl",
-                          "PadOutput": "X360_DPAD_UP"
+                          "Type": "Keyboard",
+                          "Code": "Up"
                         }
                       ]
                     }
@@ -244,8 +226,8 @@
                       "Type": "NormalPress",
                       "OutputActions": [
                         {
-                          "Type": "GamepadControl",
-                          "PadOutput": "X360_DPAD_DOWN"
+                          "Type": "Keyboard",
+                          "Code": "Down"
                         }
                       ]
                     }
@@ -257,8 +239,8 @@
                       "Type": "NormalPress",
                       "OutputActions": [
                         {
-                          "Type": "GamepadControl",
-                          "PadOutput": "X360_DPAD_LEFT"
+                          "Type": "Keyboard",
+                          "Code": "Left"
                         }
                       ]
                     }
@@ -270,8 +252,8 @@
                       "Type": "NormalPress",
                       "OutputActions": [
                         {
-                          "Type": "GamepadControl",
-                          "PadOutput": "X360_DPAD_RIGHT"
+                          "Type": "Keyboard",
+                          "Code": "Right"
                         }
                       ]
                     }
@@ -279,8 +261,68 @@
                 }
               },
               "Settings": {
-                "PadMode": "Standard"
+                "DeadZone": 0.3
               }
+            },
+            {
+              "Id": 11,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "Keyboard",
+                      "Code": "PrintScreen"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Id": 12,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "Keyboard",
+                      "Code": "Q"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Id": 13,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "Keyboard",
+                      "Code": "R"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Id": 14,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "Keyboard",
+                      "Code": "C"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "Id": 15,
@@ -290,8 +332,23 @@
                   "Type": "NormalPress",
                   "OutputActions": [
                     {
-                      "Type": "GamepadControl",
-                      "PadOutput": "X360_Guide"
+                      "Type": "Keyboard",
+                      "Code": "E"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Id": 16,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "Keyboard",
+                      "Code": "F"
                     }
                   ]
                 }
@@ -308,68 +365,72 @@
       "ActionLayer": 0,
       "InputMappings": [
         {
-          "Input": "A",
+          "Input": "B",
           "Action": 0
         },
         {
-          "Input": "B",
+          "Input": "RS",
           "Action": 1
         },
         {
-          "Input": "X",
+          "Input": "DPad",
           "Action": 2
         },
         {
-          "Input": "Y",
+          "Input": "ZL",
           "Action": 3
         },
         {
-          "Input": "LB",
+          "Input": "ZR",
           "Action": 4
         },
         {
-          "Input": "RB",
+          "Input": "Home",
           "Action": 5
         },
         {
-          "Input": "LSClick",
+          "Input": "Minus",
           "Action": 6
         },
         {
-          "Input": "RSClick",
+          "Input": "Plus",
           "Action": 7
         },
         {
-          "Input": "Minus",
+          "Input": "LSClick",
           "Action": 8
         },
         {
-          "Input": "Plus",
+          "Input": "RSClick",
           "Action": 9
         },
         {
-          "Input": "LT",
+          "Input": "LS",
           "Action": 10
         },
         {
-          "Input": "RT",
+          "Input": "Capture",
           "Action": 11
         },
         {
-          "Input": "LS",
+          "Input": "LShoulder",
           "Action": 12
         },
         {
-          "Input": "RS",
+          "Input": "RShoulder",
           "Action": 13
         },
         {
-          "Input": "DPad",
+          "Input": "A",
           "Action": 14
         },
         {
-          "Input": "Guide",
+          "Input": "X",
           "Action": 15
+        },
+        {
+          "Input": "Y",
+          "Action": 16
         }
       ]
     }
