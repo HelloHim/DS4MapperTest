@@ -580,6 +580,51 @@
                         </Grid>
                     </Border>
                 </StackPanel>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                            <TextBlock Text="Directional Binds"
+                                       Style="{StaticResource JsmccLabelText}"/>
+                            <TextBlock Text="Quick bind"
+                                       Style="{StaticResource JsmccMutedText}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding CardinalDirectionItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource ModeRowBorder}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           Style="{StaticResource JsmccLabelText}"/>
+                                                <TextBlock Text="{Binding Subtitle}"
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="0,3,0,0"/>
+                                            </StackPanel>
+                                            <views:ActionOutputListControl Grid.Column="1"
+                                                                           Grid.ColumnSpan="2"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
             </StackPanel>
         </DataTemplate>
 

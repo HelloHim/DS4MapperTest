@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DS4MapperTest.ActionUtil;
+using DS4MapperTest.ButtonActions;
+using DS4MapperTest.MapperUtil;
 using DS4MapperTest.ViewModels.Common;
 using DS4MapperTest.StickModifiers;
 using DS4MapperTest.StickActions;
+using DS4MapperTest.ViewModels;
 using System.Threading;
 
 namespace DS4MapperTest.ViewModels.StickActionPropViewModels
@@ -158,6 +163,9 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DIAGONAL_RANGE);
         }
         public event EventHandler HighlightDiagonalRangeChanged;
+
+        private List<StickMouseDirectionBindItem> cardinalDirectionItems;
+        public List<StickMouseDirectionBindItem> CardinalDirectionItems => cardinalDirectionItems;
 
         private List<EnumChoiceSelection<StickOutCurve.Curve>> outputCurveChoiceItems =
             new List<EnumChoiceSelection<StickOutCurve.Curve>>()
@@ -554,7 +562,238 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
         private void PrepareModel()
         {
+            PrepareDirectionItems();
+        }
 
+        private void PrepareDirectionItems()
+        {
+            cardinalDirectionItems = new List<StickMouseDirectionBindItem>()
+            {
+                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Up, "Up", "Cardinal direction"),
+                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Down, "Down", "Cardinal direction"),
+                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Left, "Left", "Cardinal direction"),
+                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Right, "Right", "Cardinal direction"),
+            };
+        }
+
+        internal ButtonAction GetDirectionAction(StickMouse.DirSlot direction)
+        {
+            return action.DirButtons[(int)direction];
+        }
+
+        internal AxisDirButton EnsureEditableDirectionAction(StickMouse.DirSlot direction)
+        {
+            if (!usingRealAction)
+            {
+                ReplaceExistingLayerAction(this, EventArgs.Empty);
+            }
+
+            AxisDirButton dirAction = action.DirButtons[(int)direction];
+            if (dirAction == null)
+            {
+                dirAction = new AxisDirButton(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                action.DirButtons[(int)direction] = dirAction;
+            }
+
+            MarkDirectionChanged(direction, dirAction);
+            return dirAction;
+        }
+
+        internal void MarkDirectionChanged(StickMouse.DirSlot direction, ButtonAction dirAction)
+        {
+            string propertyName = GetDirectionPropertyName(direction);
+            if (!action.ChangedProperties.Contains(propertyName))
+            {
+                action.ChangedProperties.Add(propertyName);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, propertyName);
+            FaceButtonBindingItem.MarkFunctionsChanged(dirAction);
+        }
+
+        internal EditFaceBindingContext PrepareDirectionEdit(StickMouseDirectionBindItem item)
+        {
+            AxisDirButton dirAction = EnsureEditableDirectionAction(item.Direction);
+            ActionFunc func = dirAction.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault();
+            if (func == null)
+            {
+                func = new NormalPressFunc(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                mapper.ProcessMappingChangeAction(() =>
+                {
+                    dirAction.Release(mapper, ignoreReleaseActions: true);
+                    dirAction.ActionFuncs.Insert(0, func);
+                    MarkDirectionChanged(item.Direction, dirAction);
+                });
+            }
+
+            return new EditFaceBindingContext(mapper, dirAction, func);
+        }
+
+        internal void RefreshDirectionBindings()
+        {
+            foreach (StickMouseDirectionBindItem item in cardinalDirectionItems)
+            {
+                item.Refresh();
+            }
+        }
+
+        private static string GetDirectionPropertyName(StickMouse.DirSlot direction)
+        {
+            return direction switch
+            {
+                StickMouse.DirSlot.Up => StickMouse.PropertyKeyStrings.DIR_UP,
+                StickMouse.DirSlot.Down => StickMouse.PropertyKeyStrings.DIR_DOWN,
+                StickMouse.DirSlot.Left => StickMouse.PropertyKeyStrings.DIR_LEFT,
+                StickMouse.DirSlot.Right => StickMouse.PropertyKeyStrings.DIR_RIGHT,
+                _ => StickMouse.PropertyKeyStrings.DIR_UP,
+            };
+        }
+    }
+
+    public class StickMouseDirectionBindItem : INotifyPropertyChanged, IQuickBindTarget,
+        IActionOutputListOwner
+    {
+        private readonly StickMousePropViewModel owner;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public StickMouse.DirSlot Direction { get; }
+        public string DisplayName { get; }
+        public string Subtitle { get; }
+        public ObservableCollection<ActionOutputItem> OutputItems { get; } =
+            new ObservableCollection<ActionOutputItem>();
+
+        public string DisplayBind
+        {
+            get
+            {
+                ButtonAction action = owner.GetDirectionAction(Direction);
+                string result = action?.DescribeActions(((IQuickBindTarget)this).Mapper);
+                return string.IsNullOrWhiteSpace(result) ? "Unbound" : result;
+            }
+        }
+
+        public StickMouseDirectionBindItem(StickMousePropViewModel owner,
+            StickMouse.DirSlot direction, string displayName, string subtitle)
+        {
+            this.owner = owner;
+            Direction = direction;
+            DisplayName = displayName;
+            Subtitle = subtitle;
+            RefreshOutputItems();
+        }
+
+        Mapper IQuickBindTarget.Mapper => owner.Mapper;
+        string IQuickBindTarget.RowLabel => DisplayName;
+        string IQuickBindTarget.SlotLabel => "Regular Press";
+        bool IQuickBindTarget.IsComplexBinding =>
+            !QuickBindActionApplier.IsSimpleFunc(
+                owner.GetDirectionAction(Direction)?.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault());
+
+        EditFaceBindingContext IQuickBindTarget.GetEditContext()
+        {
+            return owner.PrepareDirectionEdit(this);
+        }
+
+        void IQuickBindTarget.NotifyBindingChanged()
+        {
+            owner.MarkDirectionChanged(Direction, owner.GetDirectionAction(Direction));
+            Refresh();
+        }
+
+        Mapper IActionOutputListOwner.Mapper => owner.Mapper;
+        string IActionOutputListOwner.RowLabel => DisplayName;
+        string IActionOutputListOwner.SlotLabel => "Regular Press";
+        ActionFunc IActionOutputListOwner.Func => CurrentFunc;
+        EditFaceBindingContext IActionOutputListOwner.PrepareEdit(ActionOutputItem item) => PrepareEdit(item);
+        void IActionOutputListOwner.AddOutputAction() => AddOutputAction();
+        void IActionOutputListOwner.RemoveOutputAction(ActionOutputItem item) => RemoveOutputAction(item);
+        void IActionOutputListOwner.NotifyBindingChanged()
+        {
+            owner.MarkDirectionChanged(Direction, owner.GetDirectionAction(Direction));
+            Refresh();
+        }
+
+        private ActionFunc CurrentFunc =>
+            owner.GetDirectionAction(Direction)?.ActionFuncs.OfType<NormalPressFunc>().FirstOrDefault();
+
+        public EditFaceBindingContext PrepareEdit(ActionOutputItem item)
+        {
+            EditFaceBindingContext ctx = owner.PrepareDirectionEdit(this);
+            int index = item?.Index ?? 0;
+            EnsureOutputSlot(ctx, index);
+            return new EditFaceBindingContext(ctx.Mapper, ctx.Action, ctx.Func, index);
+        }
+
+        public void AddOutputAction()
+        {
+            EditFaceBindingContext ctx = owner.PrepareDirectionEdit(this);
+            owner.Mapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Mapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                owner.MarkDirectionChanged(Direction, ctx.Action);
+            });
+
+            RefreshOutputItems();
+        }
+
+        public void RemoveOutputAction(ActionOutputItem item)
+        {
+            if (item == null || item.Index <= 0)
+            {
+                return;
+            }
+
+            EditFaceBindingContext ctx = owner.PrepareDirectionEdit(this);
+            if (item.Index >= ctx.Func.OutputActions.Count)
+            {
+                return;
+            }
+
+            owner.Mapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Mapper, ignoreReleaseActions: true);
+                ctx.Func.OutputActions.RemoveAt(item.Index);
+                owner.MarkDirectionChanged(Direction, ctx.Action);
+            });
+
+            RefreshOutputItems();
+        }
+
+        private void EnsureOutputSlot(EditFaceBindingContext ctx, int index)
+        {
+            if (ctx.Func.OutputActions.Count > index)
+            {
+                return;
+            }
+
+            owner.Mapper.ProcessMappingChangeAction(() =>
+            {
+                ctx.Action.Release(owner.Mapper, ignoreReleaseActions: true);
+                while (ctx.Func.OutputActions.Count <= index)
+                {
+                    ctx.Func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Empty, 0));
+                }
+
+                owner.MarkDirectionChanged(Direction, ctx.Action);
+            });
+        }
+
+        private void RefreshOutputItems()
+        {
+            OutputItems.Clear();
+            int count = Math.Max(1, CurrentFunc?.OutputActions.Count ?? 0);
+            for (int i = 0; i < count; i++)
+            {
+                OutputItems.Add(new ActionOutputItem(this, i));
+            }
+        }
+
+        public void Refresh()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayBind)));
+            RefreshOutputItems();
         }
     }
 }

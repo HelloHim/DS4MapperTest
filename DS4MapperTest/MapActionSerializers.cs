@@ -8465,6 +8465,8 @@ namespace DS4MapperTest
 
     public class StickMouseSerializer : MapActionSerializer
     {
+        private static readonly string[] SlotNames = { "Up", "Down", "Left", "Right" };
+
         public class StickMouseSettings
         {
             public class DeltaAccelSettingsSerializer
@@ -8606,6 +8608,20 @@ namespace DS4MapperTest
         private StickMouse stickMouseAction =
             new StickMouse();
 
+        private Dictionary<string, StickPadActionSerializer.StickPadDirBinding> dictDirBindings =
+            new Dictionary<string, StickPadActionSerializer.StickPadDirBinding>();
+
+        public Dictionary<string, StickPadActionSerializer.StickPadDirBinding> DictDirBindings
+        {
+            get => dictDirBindings;
+            set => dictDirBindings = value;
+        }
+
+        public bool ShouldSerializeDictDirBindings()
+        {
+            return dictDirBindings.Count > 0;
+        }
+
         private StickMouseSettings settings;
         public StickMouseSettings Settings { get => settings; set => settings = value; }
 
@@ -8632,6 +8648,63 @@ namespace DS4MapperTest
                 stickMouseAction = temp;
                 mapAction = stickMouseAction;
                 settings = new StickMouseSettings(stickMouseAction);
+                PopulateFuncs();
+            }
+        }
+
+        private void PopulateFuncs()
+        {
+            List<ActionFuncSerializer> tempFuncs = new List<ActionFuncSerializer>();
+
+            for (int i = 0; i < SlotNames.Length; i++)
+            {
+                AxisDirButton dirButton = stickMouseAction.DirButtons[i];
+                if (dirButton == null) continue;
+
+                tempFuncs.Clear();
+                foreach (ActionFunc tempFunc in dirButton.ActionFuncs)
+                {
+                    ActionFuncSerializer tempSerializer =
+                        ActionFuncSerializerFactory.CreateSerializer(tempFunc);
+                    if (tempSerializer != null)
+                    {
+                        tempFuncs.Add(tempSerializer);
+                    }
+                }
+
+                dictDirBindings.Add(SlotNames[i],
+                    new StickPadActionSerializer.StickPadDirBinding()
+                    {
+                        ActionDirName = dirButton.Name,
+                        ActionFuncSerializers = new List<ActionFuncSerializer>(tempFuncs),
+                    });
+            }
+        }
+
+        public override void PopulateMap()
+        {
+            foreach (AxisDirButton dirButton in stickMouseAction.DirButtons)
+            {
+                dirButton?.ActionFuncs.Clear();
+            }
+
+            foreach (KeyValuePair<string, StickPadActionSerializer.StickPadDirBinding> tempKeyPair in dictDirBindings)
+            {
+                int idx = Array.IndexOf(SlotNames, tempKeyPair.Key);
+                if (idx < 0) continue;
+
+                AxisDirButton tempDirButton = stickMouseAction.DirButtons[idx];
+                if (tempDirButton == null) continue;
+
+                tempDirButton.Name = tempKeyPair.Value.ActionDirName;
+
+                foreach (ActionFuncSerializer serializer in tempKeyPair.Value.ActionFuncSerializers)
+                {
+                    serializer.PopulateFunc();
+                    tempDirButton.ActionFuncs.Add(serializer.ActionFunc);
+                }
+
+                FlagBtnChangedDirection(idx, stickMouseAction);
             }
         }
 
@@ -8673,6 +8746,25 @@ namespace DS4MapperTest
         private void Settings_VerticalScaleChanged(object sender, EventArgs e)
         {
             stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.VERTICAL_SCALE);
+        }
+
+        private static void FlagBtnChangedDirection(int index, StickMouse action)
+        {
+            switch (index)
+            {
+                case (int)StickMouse.DirSlot.Up:
+                    action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DIR_UP);
+                    break;
+                case (int)StickMouse.DirSlot.Down:
+                    action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DIR_DOWN);
+                    break;
+                case (int)StickMouse.DirSlot.Left:
+                    action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DIR_LEFT);
+                    break;
+                case (int)StickMouse.DirSlot.Right:
+                    action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DIR_RIGHT);
+                    break;
+            }
         }
     }
 
