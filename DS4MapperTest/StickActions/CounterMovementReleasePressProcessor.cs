@@ -59,10 +59,10 @@ namespace DS4MapperTest.StickActions
 
         public static readonly int DEFAULT_TAP_LENGTH_MS = DigitalReleaseBrakePulse.DEFAULT_BRAKE_DURATION_MS;
 
-        public const int CS2_TAP_LENGTH_MINIMUM_MS = 75;
-        public const int CS2_TAP_LENGTH_MAXIMUM_MS = 120;
-        public const int CS2_FIXED_TAP_LENGTH_MS = 98;
-        public const int CS2_WAIT_VARIANCE_PERCENT = 23;
+        public const int CS2_TAP_LENGTH_MINIMUM_MS = 78;
+        public const int CS2_TAP_LENGTH_MAXIMUM_MS = 90;
+        public const int CS2_FIXED_TAP_LENGTH_MS = 84;
+        public const int CS2_WAIT_VARIANCE_PERCENT = 7;
 
         public const int MIN_WAIT_VARIANCE_PERCENT = 0;
         public const int MAX_WAIT_VARIANCE_PERCENT = 100;
@@ -310,8 +310,8 @@ namespace DS4MapperTest.StickActions
         }
 
         /// <summary>
-        /// Applies the CS2 preset (its 98ms/23% Fixed and Wait Variance Percentage values,
-        /// and their equivalent 75-120ms Minimum/Maximum; start delay and every other setting
+        /// Applies the CS2 preset (its 84ms/7% Fixed and Wait Variance Percentage values,
+        /// and their equivalent 78-90ms Minimum/Maximum; start delay and every other setting
         /// are left untouched) and marks the preset as CS2. Does not change the selected
         /// timing mode: which representation the preset actually drives at runtime depends on
         /// whatever mode is already selected.

@@ -406,14 +406,14 @@ namespace DS4MapperUnitTests
         public void NormalizeRanges_ClampsStartDelayMaximumToTapLengthMinimum()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapLengthMinimumMs = 75;
-            processor.OppositeTapLengthMaximumMs = 120;
+            processor.OppositeTapLengthMinimumMs = 78;
+            processor.OppositeTapLengthMaximumMs = 90;
             processor.OppositeTapStartDelayMinimumMs = 0;
             processor.OppositeTapStartDelayMaximumMs = 90;
 
             processor.NormalizeRanges();
 
-            Assert.AreEqual(75, processor.OppositeTapStartDelayMaximumMs,
+            Assert.AreEqual(78, processor.OppositeTapStartDelayMaximumMs,
                 "Start delay maximum must never exceed the tap-length minimum.");
         }
 
@@ -421,8 +421,8 @@ namespace DS4MapperUnitTests
         public void NormalizeRanges_LoweringTapLengthMinimumPullsDownStartDelayMaximum()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapLengthMinimumMs = 75;
-            processor.OppositeTapLengthMaximumMs = 120;
+            processor.OppositeTapLengthMinimumMs = 78;
+            processor.OppositeTapLengthMaximumMs = 90;
             processor.OppositeTapStartDelayMaximumMs = 70;
             processor.NormalizeRanges();
             Assert.AreEqual(70, processor.OppositeTapStartDelayMaximumMs);
@@ -481,8 +481,8 @@ namespace DS4MapperUnitTests
 
             processor.ApplyCs2Preset();
 
-            Assert.AreEqual(75, processor.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, processor.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(78, processor.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, processor.OppositeTapLengthMaximumMs);
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, processor.TapLengthPreset);
             Assert.AreEqual(3, processor.OppositeTapStartDelayMinimumMs, "CS2 must not alter the start delay.");
             Assert.AreEqual(15, processor.OppositeTapStartDelayMaximumMs, "CS2 must not alter the start delay.");
@@ -494,8 +494,8 @@ namespace DS4MapperUnitTests
         public void EffectiveTapLengthPreset_MatchingCs2Values_DisplaysCs2()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapLengthMinimumMs = 75;
-            processor.OppositeTapLengthMaximumMs = 120;
+            processor.OppositeTapLengthMinimumMs = 78;
+            processor.OppositeTapLengthMaximumMs = 90;
             processor.TapLengthPreset = CounterMovementTapLengthPreset.CS2;
 
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, processor.EffectiveTapLengthPreset);
@@ -518,7 +518,7 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void LoadingCs2Preset_WithMatchingValues_ResolvesToCs2()
         {
-            var (_, padAction) = LoadMapper(tapLengthMin: 75, tapLengthMax: 120, startDelayMin: 0, startDelayMax: 20, preset: "CS2");
+            var (_, padAction) = LoadMapper(tapLengthMin: 78, tapLengthMax: 90, startDelayMin: 0, startDelayMax: 20, preset: "CS2");
 
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, padAction.CounterMovementReleasePress.EffectiveTapLengthPreset);
         }
@@ -734,8 +734,8 @@ namespace DS4MapperUnitTests
             StickPadAction padAction = tempProfile.ActionSets[0].ActionLayers[0].stickActionDict["Stick"] as StickPadAction;
 
             Assert.IsFalse(padAction.CounterMovementReleasePress.Enabled);
-            Assert.AreEqual(75, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(78, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
             Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
             Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
         }
@@ -852,7 +852,7 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void CurrentGenerationProfile_MigrationPreservesExistingPresetWhenConsistent()
         {
-            var (_, padAction) = LoadMapper(tapLengthMin: 75, tapLengthMax: 120, startDelayMin: 0, startDelayMax: 20, preset: "CS2");
+            var (_, padAction) = LoadMapper(tapLengthMin: 78, tapLengthMax: 90, startDelayMin: 0, startDelayMax: 20, preset: "CS2");
 
             Assert.AreEqual(OppositeTapLengthMode.MinimumAndMaximum, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, padAction.CounterMovementReleasePress.EffectiveTapLengthPreset);
