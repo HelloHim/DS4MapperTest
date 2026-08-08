@@ -2789,7 +2789,7 @@ namespace DS4MapperTest.ViewModels
                 return mappedAction switch
                 {
                     TouchpadNoAction => "No touchpad output is assigned.",
-                    TouchpadPassthruAction => "Native touch coordinates pass through to the virtual PlayStation touchpad output.",
+                    TouchpadPassthruAction => $"Native touch coordinates pass through to the virtual PlayStation touchpad output. Touchpad click output is configured separately in {TouchpadClickBindingsLabel}.",
                     TouchpadSingleButton => "Maps touchpad activation to a button-style output.",
                     TouchpadMouse => "Uses touch movement for relative mouse output, including supported trackball settings.",
                     TouchpadAbsAction => "Uses touch position for absolute mouse output.",
@@ -2811,7 +2811,7 @@ namespace DS4MapperTest.ViewModels
                 return mappedAction switch
                 {
                     TouchpadNoAction => "No touchpad output is assigned.",
-                    TouchpadPassthruAction => "Native touch coordinates and touchpad press pass through to the virtual PlayStation touchpad output. Action name is in Mode.",
+                    TouchpadPassthruAction => $"Native touch coordinates pass through to the virtual PlayStation touchpad output. Touchpad click output is controlled separately in {TouchpadClickBindingsLabel}. When Center Touchpad is set to Passthru, side touchpad passthru modes are ignored. Action name is in Mode.",
                     TouchpadSingleButton => "Button binding settings are available below.",
                     TouchpadMouse => "Movement is in Mouse & Movement. Sensitivity and calibration are in Sensitivity & Calibration. Deadzone, smoothing, and trackball settings are in the later settings tabs. Action name is in Mode.",
                     TouchpadAbsAction => "Movement is in Mouse & Movement. Deadzone, outer ring, and release settings are in the later settings tabs. Action name is in Mode.",
@@ -2872,6 +2872,45 @@ namespace DS4MapperTest.ViewModels
 
         public bool IsUnbound => mappedAction is TouchpadNoAction;
 
+        public bool IsWholeTouchpadBinding => bindingName == "Touchpad";
+
+        public bool IsSideTouchpadBinding =>
+            bindingName == "TouchpadLeft" ||
+            bindingName == "LeftTouchpad" ||
+            bindingName == "TouchpadRight" ||
+            bindingName == "RightTouchpad";
+
+        public bool ShowPassthruPrecedenceNotice =>
+            UsesClickTerminology &&
+            ((IsWholeTouchpadBinding && mappedAction is TouchpadPassthruAction) ||
+            IsSideTouchpadBinding);
+
+        public string TouchpadClickBindingsLabel =>
+            UsesClickTerminology ? "Click Bindings" : "Press Bindings";
+
+        public string PassthruPrecedenceMessage
+        {
+            get
+            {
+                if (IsWholeTouchpadBinding && mappedAction is TouchpadPassthruAction)
+                {
+                    return $"Center Touchpad passthrough takes priority over left and right touchpad passthrough. While Center Touchpad is set to Passthru, the side touchpad passthru modes are ignored. Touchpad clicks still come from {TouchpadClickBindingsLabel}.";
+                }
+
+                if (UsesClickTerminology && IsSideTouchpadBinding && WholeTouchpadUsesPassthru)
+                {
+                    return $"This {DisplayName.ToLowerInvariant()} passthrough is currently inactive because Center Touchpad is set to Passthru. Turn Center Touchpad off Passthru to use side passthrough here.";
+                }
+
+                if (UsesClickTerminology && IsSideTouchpadBinding)
+                {
+                    return "Side touchpad passthrough only applies when Center Touchpad is not set to Passthru.";
+                }
+
+                return string.Empty;
+            }
+        }
+
         public bool HasAdvancedTouchpadSettings =>
             IsFilteringStabilisationAction ||
             IsZoneAction ||
@@ -2908,6 +2947,14 @@ namespace DS4MapperTest.ViewModels
             RaiseUIUpdate();
         }
 
+        public void RefreshPassthruUI()
+        {
+            OnPropertyChanged(nameof(ActionSummary));
+            OnPropertyChanged(nameof(BindingStatus));
+            OnPropertyChanged(nameof(ShowPassthruPrecedenceNotice));
+            OnPropertyChanged(nameof(PassthruPrecedenceMessage));
+        }
+
         private void RaiseUIUpdate()
         {
             MappedActionTypeChanged?.Invoke(this, EventArgs.Empty);
@@ -2929,9 +2976,28 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(IsAdvancedAction));
             OnPropertyChanged(nameof(IsExtraAction));
             OnPropertyChanged(nameof(IsUnbound));
+            OnPropertyChanged(nameof(IsWholeTouchpadBinding));
+            OnPropertyChanged(nameof(IsSideTouchpadBinding));
+            OnPropertyChanged(nameof(ShowPassthruPrecedenceNotice));
+            OnPropertyChanged(nameof(TouchpadClickBindingsLabel));
+            OnPropertyChanged(nameof(PassthruPrecedenceMessage));
             OnPropertyChanged(nameof(HasAdvancedTouchpadSettings));
             OnPropertyChanged(nameof(ShowAdvancedTouchpadSettingsEmptyMessage));
             OnPropertyChanged(nameof(AdvancedTouchpadSettingsEmptyMessage));
+        }
+
+        private bool WholeTouchpadUsesPassthru
+        {
+            get
+            {
+                if (mapper?.ActionProfile?.CurrentActionSet?.CurrentActionLayer?.touchpadActionDict != null &&
+                    mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.touchpadActionDict.TryGetValue("Touchpad", out TouchpadMapAction wholeTouchAction))
+                {
+                    return wholeTouchAction.OutputsNativeTouch;
+                }
+
+                return false;
+            }
         }
 
         private static int GetActionIndex(TouchpadMapAction action)

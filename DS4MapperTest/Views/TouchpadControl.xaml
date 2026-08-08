@@ -114,6 +114,18 @@
                                       SelectedValue="{Binding SelectedActionIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                       Style="{StaticResource ComboBoxBaseStyle}"
                                       MinWidth="180"/>
+                            <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                    Visibility="{Binding ShowPassthruPrecedenceNotice, Converter={StaticResource BoolToVis}}"
+                                    Margin="0,10,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="Passthru Priority"
+                                               Style="{StaticResource JsmccLabelText}"/>
+                                    <TextBlock Text="{Binding PassthruPrecedenceMessage}"
+                                               Style="{StaticResource JsmccBodyText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
                             <ContentControl Tag="Extra"
                                             DataContext="{Binding}"
                                             Loaded="InlineSettingsHost_Loaded"
