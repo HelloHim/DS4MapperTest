@@ -246,6 +246,23 @@ namespace DS4MapperTest.ViewModels
 
         public bool HasSteamPadRotation => SteamPadRotation != null;
 
+        public bool UsesPlayStationTouchpadClickNames =>
+            mapper?.DeviceType == InputDeviceType.DS4 ||
+            mapper?.DeviceType == InputDeviceType.DualSense;
+
+        public string TouchpadClickBindingsTabHeader =>
+            UsesPlayStationTouchpadClickNames ? "Click Bindings" : "Press Bindings";
+
+        public string TouchpadClickBindingsDescription =>
+            UsesPlayStationTouchpadClickNames ?
+                "Touchpad physical click bindings." :
+                "Touchpad physical press bindings.";
+
+        public string TouchpadClickBindingsEmptyText =>
+            UsesPlayStationTouchpadClickNames ?
+                "No touchpad click bindings were found for this controller." :
+                "No touchpad press bindings were found for this controller.";
+
         private ObservableCollection<TouchBindingItemsTest> touchpadMouseMovementBindings =
             new ObservableCollection<TouchBindingItemsTest>();
         public ObservableCollection<TouchBindingItemsTest> TouchpadMouseMovementBindings => touchpadMouseMovementBindings;
@@ -1145,20 +1162,23 @@ namespace DS4MapperTest.ViewModels
 
             item = AddTouchpadButtonBinding(
                 new string[] { "TouchClick" },
-                "Main Press",
-                "Physical full-pad press");
+                UsesPlayStationTouchpadClickNames ? "Center Click" : "Main Press",
+                UsesPlayStationTouchpadClickNames ? "Physical full-pad click" : "Physical full-pad press",
+                UsesPlayStationTouchpadClickNames);
             if (item != null) touchpadPressBindings.Add(item);
 
             item = AddTouchpadButtonBinding(
                 new string[] { "LeftPadClick", "LeftTouchpadClick" },
-                "Left Press",
-                "Physical left-pad press");
+                UsesPlayStationTouchpadClickNames ? "Left-side Click" : "Left Press",
+                UsesPlayStationTouchpadClickNames ? "Physical left-side click" : "Physical left-pad press",
+                UsesPlayStationTouchpadClickNames);
             if (item != null) touchpadPressBindings.Add(item);
 
             item = AddTouchpadButtonBinding(
                 new string[] { "RightPadClick", "RightTouchpadClick" },
-                "Right Press",
-                "Physical right-pad press");
+                UsesPlayStationTouchpadClickNames ? "Right-side Click" : "Right Press",
+                UsesPlayStationTouchpadClickNames ? "Physical right-side click" : "Physical right-pad press",
+                UsesPlayStationTouchpadClickNames);
             if (item != null) touchpadPressBindings.Add(item);
         }
 
@@ -1368,9 +1388,10 @@ namespace DS4MapperTest.ViewModels
                 {
                     return AddTouchpadButtonBinding(buttonBindings[index],
                         touchpadItem.BindingName == "RightTouchpad" || touchpadItem.BindingName == "TouchpadRight"
-                            ? "Right Press"
-                            : "Left Press",
-                        "Physical touchpad press");
+                            ? (UsesPlayStationTouchpadClickNames ? "Right-side Click" : "Right Press")
+                            : (UsesPlayStationTouchpadClickNames ? "Left-side Click" : "Left Press"),
+                        UsesPlayStationTouchpadClickNames ? "Physical touchpad click" : "Physical touchpad press",
+                        UsesPlayStationTouchpadClickNames);
                 }
             }
 
@@ -1378,13 +1399,14 @@ namespace DS4MapperTest.ViewModels
         }
 
         private FaceButtonBindingItem AddTouchpadButtonBinding(string[] aliases,
-            string displayName, string subtitle)
+            string displayName, string subtitle, bool usesClickTerminology = false)
         {
             foreach (string alias in aliases)
             {
                 if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
                 {
-                    return AddTouchpadButtonBinding(buttonBindings[index], displayName, subtitle);
+                    return AddTouchpadButtonBinding(buttonBindings[index], displayName, subtitle,
+                        usesClickTerminology);
                 }
             }
 
@@ -1398,7 +1420,7 @@ namespace DS4MapperTest.ViewModels
             };
 
         private FaceButtonBindingItem AddTouchpadButtonBinding(BindingItemsTest item,
-            string displayName, string subtitle)
+            string displayName, string subtitle, bool usesClickTerminology = false)
         {
             if (item == null)
             {
@@ -1418,7 +1440,8 @@ namespace DS4MapperTest.ViewModels
                 PressureCapableClickBindingNames.Contains(item.BindingName);
 
             FaceButtonBindingItem bindingItem =
-                new FaceButtonBindingItem(this, item, displayName, subtitle, isTouchpadPressureCapable);
+                new FaceButtonBindingItem(this, item, displayName, subtitle,
+                    isTouchpadPressureCapable, usesClickTerminology);
             touchpadButtonBindingItems.Add(item.BindingName, bindingItem);
             touchpadButtonBindings.Add(bindingItem);
             return bindingItem;
@@ -2713,6 +2736,10 @@ namespace DS4MapperTest.ViewModels
         public bool UsesSteamTouchpadSideNames =>
             mapper?.DeviceType == InputDeviceType.SteamController ||
             mapper?.DeviceType == InputDeviceType.SteamControllerTriton;
+
+        public bool UsesClickTerminology =>
+            mapper?.DeviceType == InputDeviceType.DS4 ||
+            mapper?.DeviceType == InputDeviceType.DualSense;
 
         public string ActionDisplayName
         {

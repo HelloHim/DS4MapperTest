@@ -32,6 +32,7 @@ namespace DS4MapperTest.ViewModels
         private readonly ProfileEditorTestViewModel owner;
         private ButtonMapAction mappedAction;
         private readonly bool isTouchpadPressureCapable;
+        private readonly bool usesClickTerminology;
         private readonly ObservableCollection<FaceButtonFuncItem> functionItems =
             new ObservableCollection<FaceButtonFuncItem>();
 
@@ -49,6 +50,7 @@ namespace DS4MapperTest.ViewModels
         public string Subtitle { get; }
         public bool HasSubtitle => !string.IsNullOrWhiteSpace(Subtitle);
         public ObservableCollection<FaceButtonFuncItem> FunctionItems => functionItems;
+        public bool UsesClickTerminology => usesClickTerminology;
 
         public ButtonMapAction MappedAction
         {
@@ -237,7 +239,7 @@ namespace DS4MapperTest.ViewModels
 
         public FaceButtonBindingItem(ProfileEditorTestViewModel owner,
             BindingItemsTest sourceItem, string displayName, string subtitle = null,
-            bool isTouchpadPressureCapable = false)
+            bool isTouchpadPressureCapable = false, bool usesClickTerminology = false)
         {
             this.owner = owner;
             BindingName = sourceItem.BindingName;
@@ -245,6 +247,7 @@ namespace DS4MapperTest.ViewModels
             Subtitle = subtitle;
             mappedAction = sourceItem.MappedAction;
             this.isTouchpadPressureCapable = isTouchpadPressureCapable;
+            this.usesClickTerminology = usesClickTerminology;
 
             RefreshFunctions();
         }
@@ -550,16 +553,16 @@ namespace DS4MapperTest.ViewModels
 
         public string DisplayName => Kind switch
         {
-            FaceBindingFuncKind.Regular => "Regular Press",
-            FaceBindingFuncKind.SoftPress => "Soft Press",
-            FaceBindingFuncKind.FullPress => "Full Press",
-            FaceBindingFuncKind.Hold => "Hold Press",
-            FaceBindingFuncKind.Double => "Double Press",
+            FaceBindingFuncKind.Regular => owner.UsesClickTerminology ? "Regular Click" : "Regular Press",
+            FaceBindingFuncKind.SoftPress => owner.UsesClickTerminology ? "Soft Click" : "Soft Press",
+            FaceBindingFuncKind.FullPress => owner.UsesClickTerminology ? "Full Click" : "Full Press",
+            FaceBindingFuncKind.Hold => owner.UsesClickTerminology ? "Hold Click" : "Hold Press",
+            FaceBindingFuncKind.Double => owner.UsesClickTerminology ? "Double Click" : "Double Press",
             FaceBindingFuncKind.Distance => "Distance",
-            FaceBindingFuncKind.Chorded => "Chorded Press",
-            FaceBindingFuncKind.SimPress => "Simultaneous Press",
-            FaceBindingFuncKind.Start => "Start Press",
-            FaceBindingFuncKind.Release => "Release Press",
+            FaceBindingFuncKind.Chorded => owner.UsesClickTerminology ? "Chorded Click" : "Chorded Press",
+            FaceBindingFuncKind.SimPress => owner.UsesClickTerminology ? "Simultaneous Click" : "Simultaneous Press",
+            FaceBindingFuncKind.Start => owner.UsesClickTerminology ? "Start Click" : "Start Press",
+            FaceBindingFuncKind.Release => owner.UsesClickTerminology ? "Release Click" : "Release Press",
             _ => "Binding",
         };
 

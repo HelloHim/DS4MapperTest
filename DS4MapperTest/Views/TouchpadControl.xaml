@@ -300,14 +300,15 @@
                         ItemsSource="{Binding TouchpadTouchBindings}"/>
                 </StackPanel>
             </TabItem>
-            <TabItem Header="Press Bindings">
+            <TabItem Header="{Binding TouchpadClickBindingsTabHeader}">
                 <StackPanel>
                     <views:SharedButtonKeybindsControl
-                        SectionTitle="Press Bindings"
-                        Description="Touchpad physical press bindings."
-                        EmptyText="No touchpad press bindings were found for this controller."
+                        SectionTitle="{Binding TouchpadClickBindingsTabHeader}"
+                        Description="{Binding TouchpadClickBindingsDescription}"
+                        EmptyText="{Binding TouchpadClickBindingsEmptyText}"
                         CardSubtitle="Touchpad input"
-                        ItemsSource="{Binding TouchpadPressBindings}"/>
+                        ItemsSource="{Binding TouchpadPressBindings}"
+                        UseClickTerminology="{Binding UsesPlayStationTouchpadClickNames}"/>
                 </StackPanel>
             </TabItem>
         </TabControl>
