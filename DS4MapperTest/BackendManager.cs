@@ -9,8 +9,10 @@ using DS4MapperTest.DS4Library;
 using System.Windows.Threading;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.IO;
 using DS4MapperTest.JoyConLibrary;
 using DS4MapperTest.PhysicalMouse;
+using NLog;
 
 namespace DS4MapperTest
 {
@@ -36,6 +38,7 @@ namespace DS4MapperTest
 
     public class BackendManager
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public const int CONTROLLER_LIMIT = 8;
         private const bool JOYCON_JOINED = true;
         private const string DEFAULT_VKBM_IDENTIFIER = SendInputHandler.IDENTIFIER;
@@ -127,6 +130,22 @@ namespace DS4MapperTest
         {
             _argParser = argParse;
             this.appGlobal = appGlobal;
+            _logCb = (level, message) =>
+            {
+                string text = $"VIIPER[{level}] {message}";
+                if (level >= VIIPERLogLevel.Error)
+                {
+                    logger.Error(text);
+                }
+                else if (level >= VIIPERLogLevel.Warn)
+                {
+                    logger.Warn(text);
+                }
+                else
+                {
+                    logger.Info(text);
+                }
+            };
             physicalMouseService.StatusChanged += (_, _) => PhysicalMouseStatusChanged?.Invoke(this, EventArgs.Empty);
 
             mapperDict = new Dictionary<int, Mapper>();
@@ -192,6 +211,56 @@ namespace DS4MapperTest
         private readonly VIIPERLogCallbackDelegate _logCb;
         private readonly Xbox360RumbleCallbackDelegate _rumbleCb;
 
+        private void EnsureUsbipAvailable()
+        {
+            string currentPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+            List<string> candidateDirs = new List<string>()
+            {
+                AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "USBip"),
+            };
+
+            List<string> updatedDirs = new List<string>();
+            if (!string.IsNullOrWhiteSpace(currentPath))
+            {
+                updatedDirs.AddRange(currentPath.Split(Path.PathSeparator).
+                    Where(item => !string.IsNullOrWhiteSpace(item)));
+            }
+
+            bool foundUsbip = false;
+            foreach (string candidateDir in candidateDirs)
+            {
+                if (string.IsNullOrWhiteSpace(candidateDir) || !Directory.Exists(candidateDir))
+                {
+                    continue;
+                }
+
+                string usbipPath = Path.Combine(candidateDir, "usbip.exe");
+                if (!File.Exists(usbipPath))
+                {
+                    continue;
+                }
+
+                foundUsbip = true;
+                if (!updatedDirs.Any(item => string.Equals(item.TrimEnd(Path.DirectorySeparatorChar),
+                    candidateDir, StringComparison.OrdinalIgnoreCase)))
+                {
+                    updatedDirs.Insert(0, candidateDir);
+                }
+            }
+
+            if (foundUsbip)
+            {
+                string newPath = string.Join(Path.PathSeparator.ToString(), updatedDirs);
+                Environment.SetEnvironmentVariable("PATH", newPath);
+                logger.Info($"USBIP runtime available via PATH. Search roots={string.Join(";", candidateDirs.Where(Directory.Exists))}");
+            }
+            else
+            {
+                logger.Warn("USBIP runtime not found in app directory or Program Files\\USBip");
+            }
+        }
+
         public bool ApplyPhysicalMouseSettings(bool enabled, string stableDeviceId, out string validationMessage)
         {
             validationMessage = null;
@@ -237,6 +306,7 @@ namespace DS4MapperTest
             changingService = true;
 
             InitOutputKBMHandler();
+            EnsureUsbipAvailable();
 
             bool physicalMouseEnabled = appGlobal.appSettings?.PhysicalMouseForwardingEnabled ?? false;
             string selectedPhysicalMouseId = appGlobal.appSettings?.SelectedPhysicalMouseId;

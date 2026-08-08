@@ -580,7 +580,8 @@ namespace DS4MapperTest.JoyConLibrary
                             elapsedReference = device.BaseElapsedReference,
                         };
 
-                        PopulateStateGyro(ref gyroFrame);
+                        if (gyroAct.OutputsNativeGyro) PopulateStateGyro(ref gyroFrame);
+                        else ClearStateGyro();
                         //if (currentDev || runPrepareAction)
                         {
                             gyroAct.Prepare(this, ref gyroFrame);
@@ -826,7 +827,8 @@ namespace DS4MapperTest.JoyConLibrary
             secondJoyDevice.Removal += SecondaryDeviceRemoval;
 
             if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
-                outputControlType == OutputContType.Xbox360)// &&
+                (outputControlType == OutputContType.Xbox360 ||
+                outputControlType == OutputContType.DualSense))// &&
                 //outputForceFeedbackSecondDel == null)
             {
                 EstablishSecondaryForceFeedback();
@@ -874,7 +876,8 @@ namespace DS4MapperTest.JoyConLibrary
                 }
 
                 if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
-                    outputControlType == OutputContType.Xbox360)// &&
+                    (outputControlType == OutputContType.Xbox360 ||
+                    outputControlType == OutputContType.DualSense))// &&
                     //outputForceFeedbackSecondDel != null)
                 {
                     HookSecondaryFeedback();
@@ -923,6 +926,14 @@ namespace DS4MapperTest.JoyConLibrary
 
                 HookSecondaryFeedback();                
             }
+            else if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
+                outputControlType == OutputContType.DualSense)
+            {
+                viiperDSFeedback = TestVIIPERDSFeedback;
+                bool result = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
+
+                HookSecondaryFeedback();
+            }
         }
 
         public void TestVIIPER360Feedback(nuint handle, byte leftMotor, byte rightMotor)
@@ -940,6 +951,24 @@ namespace DS4MapperTest.JoyConLibrary
                     secondJoyDevice.rumbleDirty = true;
                 }
                 //secondJoyReader.WriteRumbleReport();
+            }
+        }
+
+        public void TestVIIPERDSFeedback(nuint handle, byte rumbleSmall, byte rumbleLarge,
+            byte ledRed, byte ledGreen, byte ledBlue, byte playerLeds)
+        {
+            device.currentLeftAmpRatio = rumbleLarge / 255.0;
+            device.currentRightAmpRatio = rumbleSmall / 255.0;
+            device.rumbleDirty = true;
+
+            if (secondJoyDevice != null)
+            {
+                secondJoyDevice.currentLeftAmpRatio = rumbleLarge / 255.0;
+                secondJoyDevice.currentRightAmpRatio = rumbleSmall / 255.0;
+                using (WriteLocker locker = new WriteLocker(secondJoyDevice.rumbleDataLock))
+                {
+                    secondJoyDevice.rumbleDirty = true;
+                }
             }
         }
 

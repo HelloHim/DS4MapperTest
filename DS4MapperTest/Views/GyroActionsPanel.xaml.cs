@@ -180,6 +180,7 @@ namespace DS4MapperTest.Views
                         propControl.ActionTypeIndexChanged += (s, ind) => HandleActionTypeChanged(host, item, ind);
                         return propControl;
                     }
+                case GyroPassthruAction:
                 case GyroNoMapAction:
                 default:
                     {

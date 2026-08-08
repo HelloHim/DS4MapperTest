@@ -690,7 +690,8 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
                         elapsedReference = device.BaseElapsedReference,
                     };
 
-                    PopulateStateGyro(ref gyroFrame);
+                    if (gyroAct.OutputsNativeGyro) PopulateStateGyro(ref gyroFrame);
+                    else ClearStateGyro();
                     gyroAct.Prepare(this, ref gyroFrame);
                     if (gyroAct.active)
                     {
@@ -785,15 +786,32 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
 
         public override void HookFeedback()
         {
-            viiper360Feedback = TestVIIPER360Feedback;
-            bool result = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
-            //Trace.WriteLine($"RESULT {result}");
+            if (outputControlType == OutputContType.Xbox360)
+            {
+                viiper360Feedback = TestVIIPER360Feedback;
+                bool result = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
+                //Trace.WriteLine($"RESULT {result}");
+            }
+            else if (outputControlType == OutputContType.DualSense)
+            {
+                viiperDSFeedback = TestVIIPERDSFeedback;
+                bool result = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
+                //Trace.WriteLine($"RESULT {result}");
+            }
         }
 
         public void TestVIIPER360Feedback(nuint handle, byte leftMotor, byte rightMotor)
         {
             device.currentLeftAmpRatio = leftMotor / 255.0;
             device.currentRightAmpRatio = rightMotor / 255.0;
+            device.rumbleDirty = true;
+        }
+
+        public void TestVIIPERDSFeedback(nuint handle, byte rumbleSmall, byte rumbleLarge,
+            byte ledRed, byte ledGreen, byte ledBlue, byte playerLeds)
+        {
+            device.currentLeftAmpRatio = rumbleLarge / 255.0;
+            device.currentRightAmpRatio = rumbleSmall / 255.0;
             device.rumbleDirty = true;
         }
 

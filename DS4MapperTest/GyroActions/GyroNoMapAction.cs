@@ -10,6 +10,7 @@ namespace DS4MapperTest.GyroActions
     public class GyroNoMapAction : GyroMapAction
     {
         public const string ACTION_TYPE_NAME = "GyroNoAction";
+        public override bool OutputsNativeGyro => false;
         public GyroNoMapAction()
         {
             actionTypeName = ACTION_TYPE_NAME;

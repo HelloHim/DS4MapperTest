@@ -62,6 +62,31 @@ namespace DS4MapperTest
         public short Accelz;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    struct DSDeviceState
+    {
+        public sbyte LX;
+        public sbyte LY;
+        public sbyte RX;
+        public sbyte RY;
+        public uint Buttons;
+        public byte DPad;
+        public byte L2;
+        public byte R2;
+        public ushort Touch1X;
+        public ushort Touch1Y;
+        public byte Touch1Active;
+        public ushort Touch2X;
+        public ushort Touch2Y;
+        public byte Touch2Active;
+        public short GyroX;
+        public short GyroY;
+        public short GyroZ;
+        public short AccelX;
+        public short AccelY;
+        public short AccelZ;
+    }
+
     [Flags]
     enum VIIPERDPadDir : ushort
     {
@@ -109,9 +134,32 @@ namespace DS4MapperTest
         public static ushort Y = 32768;
     }
 
+    public static class DualSenseButton
+    {
+        public static uint Square = 0x00000010;
+        public static uint Cross = 0x00000020;
+        public static uint Circle = 0x00000040;
+        public static uint Triangle = 0x00000080;
+        public static uint ShoulderLeft = 0x00000100;
+        public static uint ShoulderRight = 0x00000200;
+        public static uint TriggerLeft = 0x00000400;
+        public static uint TriggerRight = 0x00000800;
+        public static uint Create = 0x00001000;
+        public static uint Options = 0x00002000;
+        public static uint ThumbLeft = 0x00004000;
+        public static uint ThumbRight = 0x00008000;
+        public static uint Ps = 0x00010000;
+        public static uint Touchpad = 0x00020000;
+    }
+
     [SuppressUnmanagedCodeSecurity]
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void Xbox360RumbleCallbackDelegate(nuint handle, byte leftMotor, byte rightMotor);
+
+    [SuppressUnmanagedCodeSecurity]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void DSOutputCallbackDelegate(nuint handle, byte rumbleSmall, byte rumbleLarge,
+        byte ledRed, byte ledGreen, byte ledBlue, byte playerLeds);
 
     [SuppressUnmanagedCodeSecurity]
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -161,6 +209,22 @@ namespace DS4MapperTest
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool SetDS4DeviceState(nuint deviceHandle, DS4DeviceState state);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool CreateDualSenseDevice(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool RemoveDualSenseDevice(nuint outDeviceHandle);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool SetDualSenseDeviceState(nuint deviceHandle, DSDeviceState state);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool SetDualSenseOutputCallback(nuint deviceHandle, DSOutputCallbackDelegate? callback);
     }
 
     [SuppressUnmanagedCodeSecurity]
