@@ -192,6 +192,13 @@ namespace DS4MapperTest.Views
             }
 
             RefreshInlineHosts(this, sender as TouchBindingItemsTest);
+            if (DataContext is ProfileEditorTestViewModel owner)
+            {
+                foreach (TouchBindingItemsTest touchItem in owner.TouchpadBindings)
+                {
+                    touchItem.RefreshPassthruUI();
+                }
+            }
         }
 
         private void RefreshInlineHosts(DependencyObject root, TouchBindingItemsTest item)
