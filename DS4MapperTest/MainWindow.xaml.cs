@@ -261,6 +261,56 @@ namespace DS4MapperTest
             UpdatePhysicalMouseStatus();
         }
 
+        private async void ApplyOutputControllerButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (editorTestVM == null) return;
+
+            IsEnabled = false;
+            try
+            {
+                ManualResetEventSlim resetEvent = new ManualResetEventSlim(false);
+                Exception applyException = null;
+
+                await Task.Run(() =>
+                {
+                    editorTestVM.DeviceMapper.ProcessMappingChangeAction(() =>
+                    {
+                        try
+                        {
+                            editorTestVM.DeviceMapper.ApplyOutputSettings();
+                        }
+                        catch (Exception ex)
+                        {
+                            applyException = ex;
+                        }
+                        finally
+                        {
+                            resetEvent.Set();
+                        }
+                    });
+
+                    if (!resetEvent.Wait(TimeSpan.FromSeconds(5)))
+                    {
+                        throw new TimeoutException("Timed out waiting to apply output controller changes.");
+                    }
+                });
+
+                if (applyException != null)
+                {
+                    throw applyException;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to apply output controller changes:\n{ex.Message}",
+                    "Apply Output Controller", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsEnabled = true;
+            }
+        }
+
         private void PhysicalMouseEnabledCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             if (updatingPhysicalMouseSettings) return;
