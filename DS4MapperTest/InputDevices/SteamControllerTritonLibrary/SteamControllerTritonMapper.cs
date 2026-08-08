@@ -656,15 +656,6 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
                 bool rightPassthru = rightTouchAction.OutputsNativeTouch;
                 bool leftTouchActive = leftPassthru && currentMapperState.LeftPad.Touch;
                 bool rightTouchActive = rightPassthru && currentMapperState.RightPad.Touch;
-                bool leftVirtualClick = leftPassthru &&
-                    leftTouchAction is TouchpadPassthruAction leftPassthruAction &&
-                    currentMapperState.LeftPad.Touch &&
-                    currentMapperState.LeftPad.Pressure >= leftPassthruAction.VirtualClickPressureThreshold;
-                bool rightVirtualClick = rightPassthru &&
-                    rightTouchAction is TouchpadPassthruAction rightPassthruAction &&
-                    currentMapperState.RightPad.Touch &&
-                    currentMapperState.RightPad.Pressure >= rightPassthruAction.VirtualClickPressureThreshold;
-
                 ApplyVirtualTouchState(
                     leftTouchActive ? NormaliseTouchAxis(currentMapperState.LeftPad.X, -32768.0, 32767.0) * 0.5 : 0.0,
                     leftTouchActive ? NormaliseTouchAxis(currentMapperState.LeftPad.Y, -32768.0, 32767.0) : 0.0,
@@ -672,7 +663,7 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
                     rightTouchActive ? 0.5 + (NormaliseTouchAxis(currentMapperState.RightPad.X, -32768.0, 32767.0) * 0.5) : 0.0,
                     rightTouchActive ? NormaliseTouchAxis(currentMapperState.RightPad.Y, -32768.0, 32767.0) : 0.0,
                     rightTouchActive,
-                    leftVirtualClick || rightVirtualClick);
+                    false);
 
                 DpadDirections currentDpad =
                     DpadDirections.Centered;

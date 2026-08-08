@@ -285,6 +285,36 @@
                 "DeadZone": 0.3,
                 "DiagonalRange": 45
               }
+            },
+            {
+              "Id": 16,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "GamepadControl",
+                      "PadOutput": "DS4_TOUCH_CLICK"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Id": 17,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "GamepadControl",
+                      "PadOutput": "DS4_TOUCH_CLICK"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -343,6 +373,14 @@
         {
           "Input": "Stick",
           "Action": 15
+        },
+        {
+          "Input": "LeftPadClick",
+          "Action": 16
+        },
+        {
+          "Input": "RightPadClick",
+          "Action": 17
         }
       ]
     }

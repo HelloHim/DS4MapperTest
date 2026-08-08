@@ -2841,25 +2841,6 @@ namespace DS4MapperTest.ViewModels
 
         public bool IsUnbound => mappedAction is TouchpadNoAction;
 
-        public bool SupportsPassthruClickThreshold =>
-            bindingName is "LeftTouchpad" or "RightTouchpad" &&
-            mapper is InputDevices.SteamControllerTritonLibrary.SteamControllerTritonMapper;
-
-        public bool ShowsPassthruClickThreshold =>
-            mappedAction is TouchpadPassthruAction && SupportsPassthruClickThreshold;
-
-        public int PassthruClickThreshold
-        {
-            get => (mappedAction as TouchpadPassthruAction)?.VirtualClickPressureThreshold ??
-                TouchpadPassthruAction.DEFAULT_VIRTUAL_CLICK_PRESSURE_THRESHOLD;
-            set
-            {
-                if (mappedAction is not TouchpadPassthruAction action) return;
-                action.VirtualClickPressureThreshold = value;
-                RaiseUIUpdate();
-            }
-        }
-
         public bool HasAdvancedTouchpadSettings =>
             IsFilteringStabilisationAction ||
             IsZoneAction ||
@@ -2917,9 +2898,6 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(IsAdvancedAction));
             OnPropertyChanged(nameof(IsExtraAction));
             OnPropertyChanged(nameof(IsUnbound));
-            OnPropertyChanged(nameof(SupportsPassthruClickThreshold));
-            OnPropertyChanged(nameof(ShowsPassthruClickThreshold));
-            OnPropertyChanged(nameof(PassthruClickThreshold));
             OnPropertyChanged(nameof(HasAdvancedTouchpadSettings));
             OnPropertyChanged(nameof(ShowAdvancedTouchpadSettingsEmptyMessage));
             OnPropertyChanged(nameof(AdvancedTouchpadSettingsEmptyMessage));

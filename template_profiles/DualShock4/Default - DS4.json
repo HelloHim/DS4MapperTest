@@ -226,6 +226,21 @@
                                                                               "Settings":  {
                                                                                                "OutputDPad":  "X360_DPAD"
                                                                                            }
+                                                                          },
+                                                                          {
+                                                                              "Id":  16,
+                                                                              "ActionMode":  "ButtonAction",
+                                                                              "Functions":  [
+                                                                                                {
+                                                                                                    "Type":  "NormalPress",
+                                                                                                    "OutputActions":  [
+                                                                                                                          {
+                                                                                                                              "Type":  "GamepadControl",
+                                                                                                                              "PadOutput":  "DS4_TOUCH_CLICK"
+                                                                                                                          }
+                                                                                                                      ]
+                                                                                                }
+                                                                                            ]
                                                                           }
                                                                       ]
                                                 }
@@ -300,6 +315,10 @@
                                                {
                                                    "Input":  "DPad",
                                                    "Action":  15
+                                               },
+                                               {
+                                                   "Input":  "TouchClick",
+                                                   "Action":  16
                                                }
                                            ]
                      }
