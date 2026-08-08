@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using WpfScreenHelper;
 using System.Windows;
 using System.Threading;
+using System.Reflection;
 
 namespace DS4MapperTest
 {
@@ -164,15 +165,21 @@ namespace DS4MapperTest
                 {
                     string exampleDevProfilesPath = Path.Combine(exedirpath, TEMPLATE_PROFILES_DIRNAME, devTemplateFolder);
                     string destDevProfilePath = Path.Combine(appdatapath, PROFILES_FOLDER_NAME, devTemplateFolder);
-                    //if (!Directory.Exists(destSCProfilePath))
-                    // Check if profiles dir is empty
-                    if (Directory.Exists(exampleDevProfilesPath) && Directory.Exists(destDevProfilePath) &&
+                    if (Directory.Exists(destDevProfilePath) &&
                         !Directory.EnumerateFileSystemEntries(destDevProfilePath).Any())
                     {
-                        foreach (string file in Directory.EnumerateFiles(exampleDevProfilesPath))
+                        if (!CopyBundledExampleProfiles(devTemplateFolder, destDevProfilePath))
                         {
-                            string destFilePath = Path.Combine(destDevProfilePath, Path.GetFileName(file));
-                            File.Copy(file, destFilePath);
+                            if (!Directory.Exists(exampleDevProfilesPath))
+                            {
+                                continue;
+                            }
+
+                            foreach (string file in Directory.EnumerateFiles(exampleDevProfilesPath))
+                            {
+                                string destFilePath = Path.Combine(destDevProfilePath, Path.GetFileName(file));
+                                File.Copy(file, destFilePath);
+                            }
                         }
                     }
                 }
@@ -183,6 +190,34 @@ namespace DS4MapperTest
             }
 
             return result;
+        }
+
+        private bool CopyBundledExampleProfiles(string devTemplateFolder, string destDevProfilePath)
+        {
+            Assembly assembly = typeof(AppGlobalData).Assembly;
+            string assemblyName = assembly.GetName().Name;
+            string resourcePrefix = $"{assemblyName}.{TEMPLATE_PROFILES_DIRNAME}.{devTemplateFolder}.";
+
+            string[] resourceNames = assembly.GetManifestResourceNames()
+                .Where(name => name.StartsWith(resourcePrefix, StringComparison.Ordinal))
+                .ToArray();
+
+            foreach (string resourceName in resourceNames)
+            {
+                string fileName = resourceName.Substring(resourcePrefix.Length);
+                string destFilePath = Path.Combine(destDevProfilePath, fileName);
+
+                using Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
+                if (resourceStream == null)
+                {
+                    continue;
+                }
+
+                using FileStream destStream = File.Create(destFilePath);
+                resourceStream.CopyTo(destStream);
+            }
+
+            return resourceNames.Length > 0;
         }
 
         public void RefreshBaseDriverInfo()
