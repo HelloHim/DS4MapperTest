@@ -83,6 +83,20 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler VerticalScaleChanged;
 
+        public int DiagonalRange
+        {
+            get => action.DiagonalRange;
+            set
+            {
+                int diagonalRange = Math.Clamp(value, 0, 90);
+                if (action.DiagonalRange == diagonalRange) return;
+                action.DiagonalRange = diagonalRange;
+                DiagonalRangeChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler DiagonalRangeChanged;
+
         public double VerticalSensitivity
         {
             get => Math.Round(action.MouseSpeed * action.VerticalScale, 4);
@@ -137,6 +151,13 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_SCALE);
         }
         public event EventHandler HighlightVerticalScaleChanged;
+
+        public bool HighlightDiagonalRange
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DIAGONAL_RANGE);
+        }
+        public event EventHandler HighlightDiagonalRangeChanged;
 
         private List<EnumChoiceSelection<StickOutCurve.Curve>> outputCurveChoiceItems =
             new List<EnumChoiceSelection<StickOutCurve.Curve>>()
@@ -350,6 +371,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             MouseSpeedChanged += RenderUpdatedOutputMouseSpeed;
             MouseSpeedChanged += StickMousePropViewModel_MouseSpeedChangedForVerticalSensitivity;
             VerticalScaleChanged += StickMousePropViewModel_VerticalScaleChanged;
+            DiagonalRangeChanged += StickMousePropViewModel_DiagonalRangeChanged;
             OutputCurveChoiceChanged += StickMousePropViewModel_OutputCurveChoiceChanged;
             DeltaEnabledChanged += StickMousePropViewModel_DeltaEnabledChanged;
             DeltaMultiplierChanged += StickMousePropViewModel_DeltaMultiplierChanged;
@@ -375,6 +397,17 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
+        }
+
+        private void StickMousePropViewModel_DiagonalRangeChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DIAGONAL_RANGE))
+            {
+                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DIAGONAL_RANGE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.DIAGONAL_RANGE);
+            HighlightDiagonalRangeChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickMousePropViewModel_DeltaMinFactorChanged(object sender, EventArgs e)
