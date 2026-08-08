@@ -1,5 +1,5 @@
 {
-  "Name": "Desktop",
+  "Name": "Default - Desktop",
   "Description": "Desktop",
   "Creator": "ryochan7",
   "CreationDate": "2022-11-27T21:45:06.4749397Z",
@@ -9,11 +9,11 @@
   "ActionSets": [
     {
       "Index": 0,
-      "Name": "Main",
+      "Name": "Default - Desktop",
       "ActionLayers": [
         {
           "Index": 0,
-          "Name": "Default",
+          "Name": "Default - Desktop",
           "MappedActions": [
             {
               "Id": 0,

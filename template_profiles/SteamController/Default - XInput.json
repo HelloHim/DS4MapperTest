@@ -1,22 +1,22 @@
 {
-  "Name": "XInput",
+  "Name": "Default - XInput",
   "Description": "X360",
   "Creator": "ryochan7",
   "CreationDate": "2022-04-07T16:23:39+0000",
   "ActionSets": [
     {
       "Index": "0",
-      "Name": "Set 1",
+      "Name": "Default - XInput",
       "Description": "Only ActionSets",
       "ActionLayers": [
         {
           "Index": "0",
-          "Name": "Default",
+          "Name": "Default - XInput",
           "Description": "Only Action Layer",
           "MappedActions": [
             {
               "Id": "0",
-              "Name": "LS Action",
+              "Name": "Default - XInput",
               "ActionMode": "TouchStickTranslateAction",
               "Settings":
               {
@@ -29,7 +29,7 @@
             },
             {
               "Id": "1",
-              "Name": "RS Action",
+              "Name": "Default - XInput",
               "ActionMode": "TouchMouseJoystickAction",
               "Settings":
               {
@@ -38,7 +38,7 @@
             },
             {
               "Id": "2",
-              "Name": "DPad Action",
+              "Name": "Default - XInput",
               "ActionMode": "DPadTranslateAction",
               "Settings":
               {
@@ -47,7 +47,7 @@
             },
             {
               "Id": "3",
-              "Name": "X360 A Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -63,7 +63,7 @@
             },
             {
               "Id": "4",
-              "Name": "X360 B Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -79,7 +79,7 @@
             },
             {
               "Id": "5",
-              "Name": "X360 X Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -95,7 +95,7 @@
             },
             {
               "Id": "6",
-              "Name": "X360 Y Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -111,7 +111,7 @@
             },
             {
               "Id": "7",
-              "Name": "X360 LB Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -127,7 +127,7 @@
             },
             {
               "Id": "8",
-              "Name": "X360 RB Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -143,7 +143,7 @@
             },
             {
               "Id": "9",
-              "Name": "X360 LT Button",
+              "Name": "Default - XInput",
               "ActionMode": "TriggerTranslateAction",
               "Settings":
               {
@@ -152,7 +152,7 @@
             },
             {
               "Id": "10",
-              "Name": "X360 RT Button",
+              "Name": "Default - XInput",
               "ActionMode": "TriggerTranslateAction",
               "Settings":
               {
@@ -161,7 +161,7 @@
             },
             {
               "Id": "11",
-              "Name": "X360 Back Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -177,7 +177,7 @@
             },
             {
               "Id": "12",
-              "Name": "X360 Start Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -193,7 +193,7 @@
             },
             {
               "Id": "13",
-              "Name": "X360 ThumbL Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -209,7 +209,7 @@
             },
             {
               "Id": "14",
-              "Name": "X360 ThumbR Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -225,7 +225,7 @@
             },
             {
               "Id": "15",
-              "Name": "X",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -241,7 +241,7 @@
             },
             {
               "Id": "16",
-              "Name": "A",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {
@@ -257,13 +257,13 @@
             },
             {
               "Id": "17",
-              "Name": "StickDPAD",
+              "Name": "Default - XInput",
               "ActionMode": "StickPadAction",
               "Bindings":
               {
                 "Up":
                 {
-                    "Name": "Dpad Up",
+                    "Name": "Default - XInput",
                     "Functions": [
                       {
                         "Type": "NormalPress",
@@ -278,7 +278,7 @@
                 },
                 "Down":
                 {
-                    "Name": "Dpad Down",
+                    "Name": "Default - XInput",
                     "Functions": [
                       {
                         "Type": "NormalPress",
@@ -293,7 +293,7 @@
                 },
                 "Left":
                 {
-                    "Name": "Dpad Left",
+                    "Name": "Default - XInput",
                     "Functions": [
                       {
                         "Type": "NormalPress",
@@ -308,7 +308,7 @@
                 },
                 "Right":
                 {
-                    "Name": "Dpad Right",
+                    "Name": "Default - XInput",
                     "Functions": [
                       {
                         "Type": "NormalPress",
@@ -330,7 +330,7 @@
             },
             {
               "Id": "18",
-              "Name": "X360 Start Button",
+              "Name": "Default - XInput",
               "ActionMode": "TriggerButtonAction",
               "Functions": [
                 {
@@ -346,13 +346,13 @@
             },
             {
               "Id": "19",
-              "Name": "TouchPAD",
+              "Name": "Default - XInput",
               "ActionMode": "TouchActionPadAction",
               "Bindings":
               {
                 "Up":
                 {
-                    "Name": "Dpad Up",
+                    "Name": "Default - XInput",
                     "Functions": [
                       {
                         "Type": "NormalPress",
@@ -367,7 +367,7 @@
                 },
                 "Down":
                 {
-                    "Name": "Dpad Down",
+                    "Name": "Default - XInput",
                     "Functions": [
                       {
                         "Type": "NormalPress",
@@ -382,7 +382,7 @@
                 },
                 "Left":
                 {
-                    "Name": "Dpad Left",
+                    "Name": "Default - XInput",
                     "Functions": [
                       {
                         "Type": "NormalPress",
@@ -397,7 +397,7 @@
                 },
                 "Right":
                 {
-                    "Name": "Dpad Right",
+                    "Name": "Default - XInput",
                     "Functions": [
                       {
                         "Type": "NormalPress",
@@ -419,7 +419,7 @@
             },
             {
               "Id": "20",
-              "Name": "LS Action",
+              "Name": "Default - XInput",
               "ActionMode": "StickTranslateAction",
               "Settings":
               {
@@ -433,12 +433,12 @@
         },
         {
           "Index": "1",
-          "Name": "Test Layer",
+          "Name": "Default - XInput",
           "Description": "Action Layer",
           "MappedActions": [
             {
               "Id": "0",
-              "Name": "X360 X Button",
+              "Name": "Default - XInput",
               "ActionMode": "ButtonAction",
               "Functions": [
                 {

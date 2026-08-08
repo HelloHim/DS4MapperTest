@@ -263,9 +263,17 @@ namespace DS4MapperTest
             return handle != 0 && handle != nuint.MaxValue;
         }
 
+        public static OutputContType ResolveOutputControllerType(OutputContType type)
+        {
+            return type == OutputContType.DualSense
+                ? OutputContType.DualSenseEdge
+                : type;
+        }
+
         protected bool EnsureViiperOutputLocked()
         {
-            OutputContType desiredType = actionProfile.OutputGamepadSettings.OutputGamepad;
+            OutputContType desiredType =
+                ResolveOutputControllerType(actionProfile.OutputGamepadSettings.OutputGamepad);
             bool desiredEnabled = actionProfile.OutputGamepadSettings.Enabled &&
                 desiredType != OutputContType.None;
 
@@ -318,22 +326,6 @@ namespace DS4MapperTest
 
                     outputControlType = OutputContType.DualShock4;
                     logger.Info($"Created VIIPER DS4 device. Handle={deviceHandle} Bus={viiperBusId}");
-                }
-                else if (desiredType == OutputContType.DualSense)
-                {
-                    if (!LibVIIPER.CreateDualSenseDevice(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0) ||
-                        !IsPlausibleViiperDeviceHandle(deviceHandle))
-                    {
-                        Trace.WriteLine($"Fatal Error: Failed to create DualSense virtual device. Handle={deviceHandle}");
-                        logger.Error($"Failed to create VIIPER DualSense device. Handle={deviceHandle} Bus={viiperBusId}");
-                        deviceHandle = 0;
-                        viiperBusId = 0;
-                        outputControlType = OutputContType.None;
-                        return false;
-                    }
-
-                    outputControlType = OutputContType.DualSense;
-                    logger.Info($"Created VIIPER DualSense device. Handle={deviceHandle} Bus={viiperBusId}");
                 }
                 else if (desiredType == OutputContType.DualSenseEdge)
                 {
@@ -400,11 +392,8 @@ namespace DS4MapperTest
             {
                 LibVIIPER.RemoveDS4Device(deviceHandle);
             }
-            else if (outputControlType == OutputContType.DualSense)
-            {
-                LibVIIPER.RemoveDualSenseDevice(deviceHandle);
-            }
-            else if (outputControlType == OutputContType.DualSenseEdge)
+            else if (outputControlType == OutputContType.DualSense ||
+                outputControlType == OutputContType.DualSenseEdge)
             {
                 LibVIIPER.RemoveDualSenseDevice(deviceHandle);
             }
@@ -2782,11 +2771,8 @@ namespace DS4MapperTest
                     {
                         PopulateDualShock4();
                     }
-                    else if (outputControlType == OutputContType.DualSense)
-                    {
-                        PopulateDualSense();
-                    }
-                    else if (outputControlType == OutputContType.DualSenseEdge)
+                    else if (outputControlType == OutputContType.DualSense ||
+                        outputControlType == OutputContType.DualSenseEdge)
                     {
                         PopulateDualSense();
                     }
