@@ -828,7 +828,8 @@ namespace DS4MapperTest.JoyConLibrary
 
             if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
                 (outputControlType == OutputContType.Xbox360 ||
-                outputControlType == OutputContType.DualSense))// &&
+                outputControlType == OutputContType.DualSense ||
+                outputControlType == OutputContType.DualSenseEdge))// &&
                 //outputForceFeedbackSecondDel == null)
             {
                 EstablishSecondaryForceFeedback();
@@ -877,7 +878,8 @@ namespace DS4MapperTest.JoyConLibrary
 
                 if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
                     (outputControlType == OutputContType.Xbox360 ||
-                    outputControlType == OutputContType.DualSense))// &&
+                    outputControlType == OutputContType.DualSense ||
+                    outputControlType == OutputContType.DualSenseEdge))// &&
                     //outputForceFeedbackSecondDel != null)
                 {
                     HookSecondaryFeedback();
@@ -927,7 +929,8 @@ namespace DS4MapperTest.JoyConLibrary
                 HookSecondaryFeedback();                
             }
             else if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
-                outputControlType == OutputContType.DualSense)
+                (outputControlType == OutputContType.DualSense ||
+                outputControlType == OutputContType.DualSenseEdge))
             {
                 viiperDSFeedback = TestVIIPERDSFeedback;
                 bool result = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
