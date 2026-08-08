@@ -1464,7 +1464,8 @@ namespace DS4MapperTest.ViewModels
             };
 
         private bool UsingDualShock4Output =>
-            mapper.ActionProfile.OutputGamepadSettings.OutputGamepad == Mapper.OutputContType.DualShock4;
+            mapper.ActionProfile.OutputGamepadSettings.OutputGamepad == Mapper.OutputContType.DualShock4 ||
+            mapper.ActionProfile.OutputGamepadSettings.OutputGamepad == Mapper.OutputContType.DualSense;
 
         public void PopulateComboBoxAliases()
         {
