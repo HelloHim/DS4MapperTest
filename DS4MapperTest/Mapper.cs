@@ -252,6 +252,7 @@ namespace DS4MapperTest
         protected OutputContType outputControlType = OutputContType.None;
 
         protected Xbox360RumbleCallbackDelegate viiper360Feedback;
+        protected DSOutputCallbackDelegate viiperDSFeedback;
 
         // TODO: Move elsewhere
         public enum OutputContType : ushort
@@ -259,6 +260,7 @@ namespace DS4MapperTest
             None,
             Xbox360,
             DualShock4,
+            DualSense,
         }
 
         // Keep reference to current editing action set from GUI
@@ -1122,6 +1124,10 @@ namespace DS4MapperTest
                         {
                             LibVIIPER.RemoveDS4Device(deviceHandle);
                         }
+                        else if (outputControlType == OutputContType.DualSense)
+                        {
+                            LibVIIPER.RemoveDualSenseDevice(deviceHandle);
+                        }
                     }
 
                     deviceHandle = 0;
@@ -1172,6 +1178,23 @@ namespace DS4MapperTest
                         //outputController = null;
                         outputControlType = OutputContType.DualShock4;
                     }
+                    else if (actionProfile.OutputGamepadSettings.OutputGamepad == OutputContType.DualSense)
+                    {
+                        if (!LibVIIPER.CreateUSBBus(viiperServerHandle, ref viiperBusId))
+                        {
+                            Trace.WriteLine("Fatal Error: Failed to create USB bus.");
+                            return;
+                        }
+
+                        Thread.Sleep(200);
+
+                        if (!LibVIIPER.CreateDualSenseDevice(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0))
+                        {
+                            Trace.WriteLine("Fatal Error: Failed to create DualSense virtual device.");
+                        }
+
+                        outputControlType = OutputContType.DualSense;
+                    }
                 }
                 else if (!actionProfile.OutputGamepadSettings.enabled && outputControlType != OutputContType.None)
                 {
@@ -1187,6 +1210,10 @@ namespace DS4MapperTest
                         {
                             LibVIIPER.RemoveDS4Device(deviceHandle);
                         }
+                        else if (outputControlType == OutputContType.DualSense)
+                        {
+                            LibVIIPER.RemoveDualSenseDevice(deviceHandle);
+                        }
                     }
 
                     deviceHandle = 0;
@@ -1197,14 +1224,16 @@ namespace DS4MapperTest
                 // Check for current output controller and check for desired vibration
                 // status
                 if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
-                    outputControlType == OutputContType.Xbox360)
+                    (outputControlType == OutputContType.Xbox360 ||
+                    outputControlType == OutputContType.DualSense))
                 {
                     Thread.Sleep(100);
                     EstablishForceFeedback();
                     HookFeedback();
                 }
                 else if (!actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
-                    outputControlType == OutputContType.Xbox360)
+                    (outputControlType == OutputContType.Xbox360 ||
+                    outputControlType == OutputContType.DualSense))
                 {
                     RemoveFeedback();
                 }
@@ -1215,13 +1244,31 @@ namespace DS4MapperTest
 
         public virtual void HookFeedback()
         {
-            bool _ = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
-            //Trace.WriteLine($"RESULT {result}");
+            if (outputControlType == OutputContType.Xbox360)
+            {
+                bool _ = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
+            }
+            else if (outputControlType == OutputContType.DualSense)
+            {
+                bool _ = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
+            }
         }
 
         public virtual void RemoveFeedback()
         {
+            if (deviceHandle == 0)
+            {
+                return;
+            }
 
+            if (outputControlType == OutputContType.Xbox360)
+            {
+                bool _ = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, null);
+            }
+            else if (outputControlType == OutputContType.DualSense)
+            {
+                bool _ = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, null);
+            }
         }
 
         public void SyncKeyboard()
@@ -2264,6 +2311,7 @@ namespace DS4MapperTest
 
         Xbox360DeviceState xboxState = new Xbox360DeviceState();
         DS4DeviceState ds4State = new DS4DeviceState();
+        DSDeviceState dualSenseState = new DSDeviceState();
 
         protected void PopulateXbox()
         {
@@ -2375,6 +2423,70 @@ namespace DS4MapperTest
             ds4State.Accelz = intermediateState.AccelZ;
 
             LibVIIPER.SetDS4DeviceState(deviceHandle, ds4State);
+
+            intermediateState.PacketCounter = intermediateState.PacketCounter + 1;
+        }
+
+        protected void PopulateDualSense()
+        {
+            unchecked
+            {
+                uint tempButtons = 0;
+                VIIPERDPadDir tempDPad = 0;
+                if (intermediateState.BtnSouth) tempButtons |= DualSenseButton.Cross;
+                if (intermediateState.BtnEast) tempButtons |= DualSenseButton.Circle;
+                if (intermediateState.BtnWest) tempButtons |= DualSenseButton.Square;
+                if (intermediateState.BtnNorth) tempButtons |= DualSenseButton.Triangle;
+                if (intermediateState.BtnStart) tempButtons |= DualSenseButton.Options;
+                if (intermediateState.BtnSelect) tempButtons |= DualSenseButton.Create;
+
+                if (intermediateState.BtnLShoulder) tempButtons |= DualSenseButton.ShoulderLeft;
+                if (intermediateState.BtnRShoulder) tempButtons |= DualSenseButton.ShoulderRight;
+                if (intermediateState.LTrigger > 0) tempButtons |= DualSenseButton.TriggerLeft;
+                if (intermediateState.RTrigger > 0) tempButtons |= DualSenseButton.TriggerRight;
+
+                if (intermediateState.BtnThumbL) tempButtons |= DualSenseButton.ThumbLeft;
+                if (intermediateState.BtnThumbR) tempButtons |= DualSenseButton.ThumbRight;
+
+                if (intermediateState.DpadUp && intermediateState.DpadRight) tempDPad = VIIPERDPadDir.PadUp | VIIPERDPadDir.PadRight;
+                else if (intermediateState.DpadUp && intermediateState.DpadLeft) tempDPad = VIIPERDPadDir.PadUp | VIIPERDPadDir.PadLeft;
+                else if (intermediateState.DpadUp) tempDPad = VIIPERDPadDir.PadUp;
+                else if (intermediateState.DpadRight && intermediateState.DpadDown) tempDPad = VIIPERDPadDir.PadDown | VIIPERDPadDir.PadRight;
+                else if (intermediateState.DpadRight) tempDPad = VIIPERDPadDir.PadRight;
+                else if (intermediateState.DpadDown && intermediateState.DpadLeft) tempDPad = VIIPERDPadDir.PadDown | VIIPERDPadDir.PadLeft;
+                else if (intermediateState.DpadDown) tempDPad = VIIPERDPadDir.PadDown;
+                else if (intermediateState.DpadLeft) tempDPad = VIIPERDPadDir.PadLeft;
+
+                if (intermediateState.BtnMode) tempButtons |= DualSenseButton.Ps;
+                if (intermediateState.BtnTouchClick) tempButtons |= DualSenseButton.Touchpad;
+
+                dualSenseState.Buttons = tempButtons;
+                dualSenseState.DPad = (byte)tempDPad;
+            }
+
+            dualSenseState.LX = (sbyte)((intermediateState.LX >= 0 ? (DS4_STICK_MAX - DS4_STICK_MID) : -(DS4_STICK_MIN - DS4_STICK_MID)) * intermediateState.LX);
+            dualSenseState.LY = (sbyte)((intermediateState.LY >= 0 ? -(DS4_STICK_MIN - DS4_STICK_MID) : (DS4_STICK_MAX - DS4_STICK_MID)) * -intermediateState.LY);
+            dualSenseState.RX = (sbyte)((intermediateState.RX >= 0 ? (DS4_STICK_MAX - DS4_STICK_MID) : -(DS4_STICK_MIN - DS4_STICK_MID)) * intermediateState.RX);
+            dualSenseState.RY = (sbyte)((intermediateState.RY >= 0 ? -(DS4_STICK_MIN - DS4_STICK_MID) : (DS4_STICK_MAX - DS4_STICK_MID)) * -intermediateState.RY);
+
+            dualSenseState.L2 = (byte)(intermediateState.LTrigger * 255);
+            dualSenseState.R2 = (byte)(intermediateState.RTrigger * 255);
+
+            dualSenseState.Touch1X = 0;
+            dualSenseState.Touch1Y = 0;
+            dualSenseState.Touch1Active = 0;
+            dualSenseState.Touch2X = 0;
+            dualSenseState.Touch2Y = 0;
+            dualSenseState.Touch2Active = 0;
+
+            dualSenseState.GyroX = intermediateState.GyroYaw;
+            dualSenseState.GyroY = intermediateState.GyroPitch;
+            dualSenseState.GyroZ = intermediateState.GyroRoll;
+            dualSenseState.AccelX = intermediateState.AccelX;
+            dualSenseState.AccelY = intermediateState.AccelY;
+            dualSenseState.AccelZ = intermediateState.AccelZ;
+
+            LibVIIPER.SetDualSenseDeviceState(deviceHandle, dualSenseState);
 
             intermediateState.PacketCounter = intermediateState.PacketCounter + 1;
         }
@@ -2578,6 +2690,10 @@ namespace DS4MapperTest
                     else if (outputControlType == OutputContType.DualShock4)
                     {
                         PopulateDualShock4();
+                    }
+                    else if (outputControlType == OutputContType.DualSense)
+                    {
+                        PopulateDualSense();
                     }
                 }
 
@@ -3114,6 +3230,10 @@ namespace DS4MapperTest
                 else if (outputControlType == OutputContType.DualShock4)
                 {
                     LibVIIPER.RemoveDS4Device(deviceHandle);
+                }
+                else if (outputControlType == OutputContType.DualSense)
+                {
+                    LibVIIPER.RemoveDualSenseDevice(deviceHandle);
                 }
 
                 Thread.Sleep(100);
