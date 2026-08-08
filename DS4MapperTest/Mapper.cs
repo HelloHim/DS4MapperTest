@@ -335,6 +335,22 @@ namespace DS4MapperTest
                     outputControlType = OutputContType.DualSense;
                     logger.Info($"Created VIIPER DualSense device. Handle={deviceHandle} Bus={viiperBusId}");
                 }
+                else if (desiredType == OutputContType.DualSenseEdge)
+                {
+                    if (!LibVIIPER.CreateDualSenseEdgeDevice(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0) ||
+                        !IsPlausibleViiperDeviceHandle(deviceHandle))
+                    {
+                        Trace.WriteLine($"Fatal Error: Failed to create DualSense Edge virtual device. Handle={deviceHandle}");
+                        logger.Error($"Failed to create VIIPER DualSense Edge device. Handle={deviceHandle} Bus={viiperBusId}");
+                        deviceHandle = 0;
+                        viiperBusId = 0;
+                        outputControlType = OutputContType.None;
+                        return false;
+                    }
+
+                    outputControlType = OutputContType.DualSenseEdge;
+                    logger.Info($"Created VIIPER DualSense Edge device. Handle={deviceHandle} Bus={viiperBusId}");
+                }
             }
 
             return true;
@@ -352,14 +368,16 @@ namespace DS4MapperTest
 
             if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
                 (outputControlType == OutputContType.Xbox360 ||
-                outputControlType == OutputContType.DualSense))
+                outputControlType == OutputContType.DualSense ||
+                outputControlType == OutputContType.DualSenseEdge))
             {
                 Thread.Sleep(100);
                 EstablishForceFeedback();
                 HookFeedback();
             }
             else if (outputControlType == OutputContType.Xbox360 ||
-                outputControlType == OutputContType.DualSense)
+                outputControlType == OutputContType.DualSense ||
+                outputControlType == OutputContType.DualSenseEdge)
             {
                 RemoveFeedback();
             }
@@ -386,6 +404,10 @@ namespace DS4MapperTest
             {
                 LibVIIPER.RemoveDualSenseDevice(deviceHandle);
             }
+            else if (outputControlType == OutputContType.DualSenseEdge)
+            {
+                LibVIIPER.RemoveDualSenseDevice(deviceHandle);
+            }
 
             deviceHandle = 0;
             viiperBusId = 0;
@@ -399,6 +421,7 @@ namespace DS4MapperTest
             Xbox360,
             DualShock4,
             DualSense,
+            DualSenseEdge,
         }
 
         // Keep reference to current editing action set from GUI
@@ -1267,7 +1290,8 @@ namespace DS4MapperTest
                 {
                     LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
                 }
-                else if (outputControlType == OutputContType.DualSense)
+                else if (outputControlType == OutputContType.DualSense ||
+                    outputControlType == OutputContType.DualSenseEdge)
                 {
                     LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
                 }
@@ -1285,7 +1309,8 @@ namespace DS4MapperTest
             {
                 bool _ = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, null);
             }
-            else if (outputControlType == OutputContType.DualSense)
+            else if (outputControlType == OutputContType.DualSense ||
+                outputControlType == OutputContType.DualSenseEdge)
             {
                 bool _ = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, null);
             }
@@ -2438,6 +2463,12 @@ namespace DS4MapperTest
 
                 ds4State.Triggerl2 = (byte)(intermediateState.LTrigger * 255);
                 ds4State.Triggerr2 = (byte)(intermediateState.RTrigger * 255);
+                ds4State.Touch1x = ScaleTouchAxis(intermediateState.Touch1XNorm, DS4Library.DS4State.TouchInfo.TOUCHPAD_MAX_X);
+                ds4State.Touch1y = ScaleTouchAxis(intermediateState.Touch1YNorm, DS4Library.DS4State.TouchInfo.TOUCHPAD_MAX_Y);
+                ds4State.Touch1active = (byte)(intermediateState.Touch1Active ? 1 : 0);
+                ds4State.Touch2x = ScaleTouchAxis(intermediateState.Touch2XNorm, DS4Library.DS4State.TouchInfo.TOUCHPAD_MAX_X);
+                ds4State.Touch2y = ScaleTouchAxis(intermediateState.Touch2YNorm, DS4Library.DS4State.TouchInfo.TOUCHPAD_MAX_Y);
+                ds4State.Touch2active = (byte)(intermediateState.Touch2Active ? 1 : 0);
                 ds4State.Gyrox = intermediateState.GyroYaw;
                 ds4State.Gyroy = intermediateState.GyroPitch;
                 ds4State.Gyroz = intermediateState.GyroRoll;
@@ -2498,6 +2529,13 @@ namespace DS4MapperTest
 
                     if (intermediateState.BtnMode) tempButtons |= DualSenseButton.Ps;
                     if (intermediateState.BtnTouchClick) tempButtons |= DualSenseButton.Touchpad;
+                    if (outputControlType == OutputContType.DualSenseEdge)
+                    {
+                        if (intermediateState.BtnMode2) tempButtons |= DualSenseButton.LFn;
+                        if (intermediateState.BtnMode3) tempButtons |= DualSenseButton.RFn;
+                        if (intermediateState.BtnLGrip) tempButtons |= DualSenseButton.L4;
+                        if (intermediateState.BtnRGrip) tempButtons |= DualSenseButton.R4;
+                    }
 
                     dualSenseState.Buttons = tempButtons;
                     dualSenseState.DPad = (byte)tempDPad;
@@ -2510,13 +2548,12 @@ namespace DS4MapperTest
 
                 dualSenseState.L2 = (byte)(intermediateState.LTrigger * 255);
                 dualSenseState.R2 = (byte)(intermediateState.RTrigger * 255);
-
-                dualSenseState.Touch1X = 0;
-                dualSenseState.Touch1Y = 0;
-                dualSenseState.Touch1Active = 0;
-                dualSenseState.Touch2X = 0;
-                dualSenseState.Touch2Y = 0;
-                dualSenseState.Touch2Active = 0;
+                dualSenseState.Touch1X = ScaleTouchAxis(intermediateState.Touch1XNorm, DualSense.DualSenseState.TouchInfo.TOUCHPAD_MAX_X);
+                dualSenseState.Touch1Y = ScaleTouchAxis(intermediateState.Touch1YNorm, DualSense.DualSenseState.TouchInfo.TOUCHPAD_MAX_Y);
+                dualSenseState.Touch1Active = (byte)(intermediateState.Touch1Active ? 1 : 0);
+                dualSenseState.Touch2X = ScaleTouchAxis(intermediateState.Touch2XNorm, DualSense.DualSenseState.TouchInfo.TOUCHPAD_MAX_X);
+                dualSenseState.Touch2Y = ScaleTouchAxis(intermediateState.Touch2YNorm, DualSense.DualSenseState.TouchInfo.TOUCHPAD_MAX_Y);
+                dualSenseState.Touch2Active = (byte)(intermediateState.Touch2Active ? 1 : 0);
 
                 dualSenseState.GyroX = intermediateState.GyroYaw;
                 dualSenseState.GyroY = intermediateState.GyroPitch;
@@ -2746,6 +2783,10 @@ namespace DS4MapperTest
                         PopulateDualShock4();
                     }
                     else if (outputControlType == OutputContType.DualSense)
+                    {
+                        PopulateDualSense();
+                    }
+                    else if (outputControlType == OutputContType.DualSenseEdge)
                     {
                         PopulateDualSense();
                     }
@@ -3000,12 +3041,40 @@ namespace DS4MapperTest
                     intermediateState.BtnMode = pressed;
                     intermediateState.Dirty = true;
                     break;
+                case JoypadActionCodes.BtnHome:
+                    intermediateState.BtnHome = pressed;
+                    intermediateState.Dirty = true;
+                    break;
                 case JoypadActionCodes.BtnStart:
                     intermediateState.BtnStart = pressed;
                     intermediateState.Dirty = true;
                     break;
                 case JoypadActionCodes.BtnSelect:
                     intermediateState.BtnSelect = pressed;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnLGrip:
+                    intermediateState.BtnLGrip = pressed;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnRGrip:
+                    intermediateState.BtnRGrip = pressed;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnMode2:
+                    intermediateState.BtnMode2 = pressed;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnMode3:
+                    intermediateState.BtnMode3 = pressed;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnLGrip2:
+                    intermediateState.BtnLGrip2 = pressed;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnRGrip2:
+                    intermediateState.BtnRGrip2 = pressed;
                     intermediateState.Dirty = true;
                     break;
                 case JoypadActionCodes.BtnLShoulder:
@@ -3103,12 +3172,40 @@ namespace DS4MapperTest
                     intermediateState.BtnMode = active;
                     intermediateState.Dirty = true;
                     break;
+                case JoypadActionCodes.BtnHome:
+                    intermediateState.BtnHome = active;
+                    intermediateState.Dirty = true;
+                    break;
                 case JoypadActionCodes.BtnStart:
                     intermediateState.BtnStart = active;
                     intermediateState.Dirty = true;
                     break;
                 case JoypadActionCodes.BtnSelect:
                     intermediateState.BtnSelect = active;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnLGrip:
+                    intermediateState.BtnLGrip = active;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnRGrip:
+                    intermediateState.BtnRGrip = active;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnMode2:
+                    intermediateState.BtnMode2 = active;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnMode3:
+                    intermediateState.BtnMode3 = active;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnLGrip2:
+                    intermediateState.BtnLGrip2 = active;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnRGrip2:
+                    intermediateState.BtnRGrip2 = active;
                     intermediateState.Dirty = true;
                     break;
                 case JoypadActionCodes.BtnLShoulder:
@@ -3243,6 +3340,40 @@ namespace DS4MapperTest
                 default:
                     break;
             }
+        }
+
+        protected static double ClampUnit(double value)
+        {
+            return Math.Clamp(value, 0.0, 1.0);
+        }
+
+        protected static double NormaliseTouchAxis(double value, double min, double max)
+        {
+            if (max <= min)
+            {
+                return 0.0;
+            }
+
+            return ClampUnit((value - min) / (max - min));
+        }
+
+        protected static ushort ScaleTouchAxis(double normalisedValue, int max)
+        {
+            return (ushort)Math.Clamp((int)Math.Round(ClampUnit(normalisedValue) * max), 0, max);
+        }
+
+        protected void SetVirtualTouchContact1(double xNorm, double yNorm, bool active)
+        {
+            intermediateState.Touch1XNorm = ClampUnit(xNorm);
+            intermediateState.Touch1YNorm = ClampUnit(yNorm);
+            intermediateState.Touch1Active = active;
+        }
+
+        protected void SetVirtualTouchContact2(double xNorm, double yNorm, bool active)
+        {
+            intermediateState.Touch2XNorm = ClampUnit(xNorm);
+            intermediateState.Touch2YNorm = ClampUnit(yNorm);
+            intermediateState.Touch2Active = active;
         }
 
         public virtual void SetFeedback(string mappingId, double ratio,

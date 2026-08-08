@@ -150,6 +150,11 @@ namespace DS4MapperTest
         public static uint ThumbRight = 0x00008000;
         public static uint Ps = 0x00010000;
         public static uint Touchpad = 0x00020000;
+        public static uint Mute = 0x00040000;
+        public static uint LFn = 0x00100000;
+        public static uint RFn = 0x00200000;
+        public static uint L4 = 0x00400000;
+        public static uint R4 = 0x00800000;
     }
 
     [SuppressUnmanagedCodeSecurity]
@@ -213,6 +218,10 @@ namespace DS4MapperTest
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool CreateDualSenseDevice(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool CreateDualSenseEdgeDevice(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct);
 
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]

@@ -693,6 +693,24 @@ namespace DS4MapperTest.DualSense
                 }
             }
 
+            SetVirtualTouchContact1(
+                NormaliseTouchAxis(currentMapperState.Touch1.X, 0.0, DualSenseState.TouchInfo.TOUCHPAD_MAX_X),
+                NormaliseTouchAxis(currentMapperState.Touch1.Y, 0.0, DualSenseState.TouchInfo.TOUCHPAD_MAX_Y),
+                currentMapperState.Touch1.Touch);
+            SetVirtualTouchContact2(
+                NormaliseTouchAxis(currentMapperState.Touch2.X, 0.0, DualSenseState.TouchInfo.TOUCHPAD_MAX_X),
+                NormaliseTouchAxis(currentMapperState.Touch2.Y, 0.0, DualSenseState.TouchInfo.TOUCHPAD_MAX_Y),
+                currentMapperState.Touch2.Touch);
+            intermediateState.BtnTouchClick |= currentMapperState.TouchClickButton;
+            intermediateState.Dirty |=
+                currentMapperState.TouchClickButton != previousMapperState.TouchClickButton ||
+                currentMapperState.Touch1.Touch != previousMapperState.Touch1.Touch ||
+                currentMapperState.Touch1.X != previousMapperState.Touch1.X ||
+                currentMapperState.Touch1.Y != previousMapperState.Touch1.Y ||
+                currentMapperState.Touch2.Touch != previousMapperState.Touch2.Touch ||
+                currentMapperState.Touch2.X != previousMapperState.Touch2.X ||
+                currentMapperState.Touch2.Y != previousMapperState.Touch2.Y;
+
             lightProcess.UpdateLightbarDS(device, actionProfile);
 
             gamepadSync = intermediateState.Dirty;
@@ -1083,7 +1101,8 @@ namespace DS4MapperTest.DualSense
                 viiper360Feedback = TestVIIPER360Feedback;
                 bool result = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
             }
-            else if (outputControlType == OutputContType.DualSense)
+            else if (outputControlType == OutputContType.DualSense ||
+                outputControlType == OutputContType.DualSenseEdge)
             {
                 viiperDSFeedback = TestVIIPERDSFeedback;
                 bool result = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);

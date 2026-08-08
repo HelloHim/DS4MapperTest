@@ -471,7 +471,8 @@ namespace DS4MapperTest.InputDevices.EightBitDoLibrary
                 bool result = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
                 //Trace.WriteLine($"RESULT {result}");
             }
-            else if (outputControlType == OutputContType.DualSense)
+            else if (outputControlType == OutputContType.DualSense ||
+                outputControlType == OutputContType.DualSenseEdge)
             {
                 viiperDSFeedback = TestVIIPERDSFeedback;
                 bool result = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
