@@ -23,6 +23,10 @@ namespace DS4MapperTest.Views
             DependencyProperty.Register(nameof(CardSubtitle), typeof(string),
                 typeof(SharedButtonKeybindsControl), new PropertyMetadata(""));
 
+        public static readonly DependencyProperty UseClickTerminologyProperty =
+            DependencyProperty.Register(nameof(UseClickTerminology), typeof(bool),
+                typeof(SharedButtonKeybindsControl), new PropertyMetadata(false));
+
         public static readonly DependencyProperty ItemsSourceProperty =
             DependencyProperty.Register(nameof(ItemsSource), typeof(IEnumerable),
                 typeof(SharedButtonKeybindsControl), new PropertyMetadata(null));
@@ -49,6 +53,12 @@ namespace DS4MapperTest.Views
         {
             get => (string)GetValue(CardSubtitleProperty);
             set => SetValue(CardSubtitleProperty, value);
+        }
+
+        public bool UseClickTerminology
+        {
+            get => (bool)GetValue(UseClickTerminologyProperty);
+            set => SetValue(UseClickTerminologyProperty, value);
         }
 
         public IEnumerable ItemsSource
