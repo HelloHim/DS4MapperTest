@@ -254,6 +254,11 @@ namespace DS4MapperTest
         protected Xbox360RumbleCallbackDelegate viiper360Feedback;
         protected DSOutputCallbackDelegate viiperDSFeedback;
 
+        protected static bool IsPlausibleViiperDeviceHandle(nuint handle)
+        {
+            return handle != 0 && handle <= uint.MaxValue;
+        }
+
         // TODO: Move elsewhere
         public enum OutputContType : ushort
         {
@@ -1150,10 +1155,14 @@ namespace DS4MapperTest
                         // Add a small delay before plugging in virtual device
                         Thread.Sleep(200);
 
-                        if (!LibVIIPER.CreateXbox360Device(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0, 0))
+                        if (!LibVIIPER.CreateXbox360Device(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0, 0) ||
+                            !IsPlausibleViiperDeviceHandle(deviceHandle))
                         {
-                            Trace.WriteLine("Fatal Error: Failed to create Xbox 360 virtual device.");
-                            //return;
+                            Trace.WriteLine($"Fatal Error: Failed to create Xbox 360 virtual device. Handle={deviceHandle}");
+                            deviceHandle = 0;
+                            viiperBusId = 0;
+                            outputControlType = OutputContType.None;
+                            return;
                         }
 
                         outputControlType = OutputContType.Xbox360;
@@ -1169,10 +1178,14 @@ namespace DS4MapperTest
                         // Add a small delay before plugging in virtual device
                         Thread.Sleep(200);
 
-                        if (!LibVIIPER.CreateDS4Device(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0))
+                        if (!LibVIIPER.CreateDS4Device(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0) ||
+                            !IsPlausibleViiperDeviceHandle(deviceHandle))
                         {
-                            Trace.WriteLine("Fatal Error: Failed to create DS4 virtual device.");
-                            //return;
+                            Trace.WriteLine($"Fatal Error: Failed to create DS4 virtual device. Handle={deviceHandle}");
+                            deviceHandle = 0;
+                            viiperBusId = 0;
+                            outputControlType = OutputContType.None;
+                            return;
                         }
 
                         //outputController = null;
@@ -1188,9 +1201,14 @@ namespace DS4MapperTest
 
                         Thread.Sleep(200);
 
-                        if (!LibVIIPER.CreateDualSenseDevice(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0))
+                        if (!LibVIIPER.CreateDualSenseDevice(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0) ||
+                            !IsPlausibleViiperDeviceHandle(deviceHandle))
                         {
-                            Trace.WriteLine("Fatal Error: Failed to create DualSense virtual device.");
+                            Trace.WriteLine($"Fatal Error: Failed to create DualSense virtual device. Handle={deviceHandle}");
+                            deviceHandle = 0;
+                            viiperBusId = 0;
+                            outputControlType = OutputContType.None;
+                            return;
                         }
 
                         outputControlType = OutputContType.DualSense;
@@ -1244,6 +1262,11 @@ namespace DS4MapperTest
 
         public virtual void HookFeedback()
         {
+            if (!IsPlausibleViiperDeviceHandle(deviceHandle))
+            {
+                return;
+            }
+
             if (outputControlType == OutputContType.Xbox360)
             {
                 bool _ = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
@@ -1256,7 +1279,7 @@ namespace DS4MapperTest
 
         public virtual void RemoveFeedback()
         {
-            if (deviceHandle == 0)
+            if (!IsPlausibleViiperDeviceHandle(deviceHandle))
             {
                 return;
             }
@@ -2315,6 +2338,14 @@ namespace DS4MapperTest
 
         protected void PopulateXbox()
         {
+            if (!IsPlausibleViiperDeviceHandle(deviceHandle))
+            {
+                deviceHandle = 0;
+                outputControlType = OutputContType.None;
+                viiperBusId = 0;
+                return;
+            }
+
             unchecked
             {
                 ushort tempButtons = 0;
@@ -2364,6 +2395,14 @@ namespace DS4MapperTest
 
         protected void PopulateDualShock4()
         {
+            if (!IsPlausibleViiperDeviceHandle(deviceHandle))
+            {
+                deviceHandle = 0;
+                outputControlType = OutputContType.None;
+                viiperBusId = 0;
+                return;
+            }
+
             unchecked
             {
                 ushort tempButtons = 0;
@@ -2429,6 +2468,14 @@ namespace DS4MapperTest
 
         protected void PopulateDualSense()
         {
+            if (!IsPlausibleViiperDeviceHandle(deviceHandle))
+            {
+                deviceHandle = 0;
+                outputControlType = OutputContType.None;
+                viiperBusId = 0;
+                return;
+            }
+
             unchecked
             {
                 uint tempButtons = 0;
