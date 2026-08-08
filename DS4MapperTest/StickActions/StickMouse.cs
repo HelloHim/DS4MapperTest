@@ -7,6 +7,7 @@ using DS4MapperTest.MapperUtil;
 using DS4MapperTest.AxisModifiers;
 using DS4MapperTest.StickModifiers;
 using DS4MapperTest.ActionUtil;
+using DS4MapperTest.ButtonActions;
 using DS4MapperTest.MouseModifiers;
 using System.Diagnostics;
 
@@ -24,6 +25,10 @@ namespace DS4MapperTest.StickActions
             public const string NAME = "Name";
             public const string DEAD_ZONE = "DeadZone";
             public const string MAX_ZONE = "MaxZone";
+            public const string DIR_UP = "DirUp";
+            public const string DIR_DOWN = "DirDown";
+            public const string DIR_LEFT = "DirLeft";
+            public const string DIR_RIGHT = "DirRight";
             public const string DIAGONAL_RANGE = "DiagonalRange";
             public const string OUTPUT_CURVE = "OutputCurve";
             public const string MOUSE_SPEED = "MouseSpeed";
@@ -36,6 +41,10 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.NAME,
             PropertyKeyStrings.DEAD_ZONE,
             PropertyKeyStrings.MAX_ZONE,
+            PropertyKeyStrings.DIR_UP,
+            PropertyKeyStrings.DIR_DOWN,
+            PropertyKeyStrings.DIR_LEFT,
+            PropertyKeyStrings.DIR_RIGHT,
             PropertyKeyStrings.DIAGONAL_RANGE,
             PropertyKeyStrings.OUTPUT_CURVE,
             PropertyKeyStrings.MOUSE_SPEED,
@@ -56,10 +65,21 @@ namespace DS4MapperTest.StickActions
 
         private StickDeadZone deadMod;
         private MouseMotionSettings motion = new MouseMotionSettings();
+        private AxisDirButton[] dirButtons = new AxisDirButton[4];
+        public AxisDirButton[] DirButtons { get => dirButtons; set => dirButtons = value; }
         //private StickDefinition stickDefinition;
         private double xNorm = 0.0, yNorm = 0.0;
         private double xMotion;
         private double yMotion;
+        private bool[] slotOn = new bool[4];
+
+        public enum DirSlot : int
+        {
+            Up = 0,
+            Down = 1,
+            Left = 2,
+            Right = 3,
+        }
         public int MouseSpeed
         {
             get => motion.MouseSpeed;
@@ -98,6 +118,7 @@ namespace DS4MapperTest.StickActions
             //deadMod = new StickDeadZone(0.10, 0.9, 0.0);
             deadMod = new StickDeadZone(0.10, 1.0, 0.0);
             deadMod.CircleDead = true;
+            FillDirectionButtons();
         }
 
         public StickMouse(StickDefinition stickDefinition)
@@ -107,6 +128,7 @@ namespace DS4MapperTest.StickActions
             //deadMod = new StickDeadZone(0.10, 0.9, 0.0);
             deadMod = new StickDeadZone(0.10, 1.0, 0.0);
             deadMod.CircleDead = true;
+            FillDirectionButtons();
         }
 
         public StickMouse(StickMouse parentAction)
@@ -118,6 +140,29 @@ namespace DS4MapperTest.StickActions
             this.stickDefinition = new StickDefinition(parentAction.stickDefinition);
             deadMod = new StickDeadZone(parentAction.deadMod);
             motion = new MouseMotionSettings(parentAction.motion);
+            for (int i = 0; i < dirButtons.Length; i++)
+            {
+                AxisDirButton srcBtn = parentAction.dirButtons[i];
+                dirButtons[i] = srcBtn != null ? (AxisDirButton)srcBtn.DuplicateAction() : null;
+            }
+        }
+
+        private void FillDirectionButtons()
+        {
+            AxisDirButton.AxisDirection[] axisDirs =
+            {
+                AxisDirButton.AxisDirection.YNeg,
+                AxisDirButton.AxisDirection.YPos,
+                AxisDirButton.AxisDirection.XNeg,
+                AxisDirButton.AxisDirection.XPos,
+            };
+
+            for (int i = 0; i < dirButtons.Length; i++)
+            {
+                AxisDirButton tempBtn = new AxisDirButton();
+                tempBtn.Direction = axisDirs[i];
+                dirButtons[i] = tempBtn;
+            }
         }
 
         double previousPointerX = 0.0;
@@ -352,8 +397,38 @@ namespace DS4MapperTest.StickActions
                 xMotion = ((mouseVelocity - tempMouseOffsetX) * timeDelta * absXNorm + (tempMouseOffsetX * timeDelta)) * xSign;
                 yMotion = ((verticalMouseVelocity - tempMouseOffsetY) * timeDelta * absYNorm + (tempMouseOffsetY * timeDelta)) * -ySign;
 
+                for (int i = 0; i < slotOn.Length; i++)
+                {
+                    slotOn[i] = false;
+                }
+
+                if (outYNorm > double.Epsilon)
+                {
+                    slotOn[(int)DirSlot.Up] = true;
+                }
+                else if (outYNorm < -double.Epsilon)
+                {
+                    slotOn[(int)DirSlot.Down] = true;
+                }
+
+                if (outXNorm > double.Epsilon)
+                {
+                    slotOn[(int)DirSlot.Right] = true;
+                }
+                else if (outXNorm < -double.Epsilon)
+                {
+                    slotOn[(int)DirSlot.Left] = true;
+                }
+
                 active = true;
                 activeEvent = true;
+            }
+            else
+            {
+                for (int i = 0; i < slotOn.Length; i++)
+                {
+                    slotOn[i] = false;
+                }
             }
         }
 
@@ -361,11 +436,24 @@ namespace DS4MapperTest.StickActions
         {
             mapper.MouseX = xMotion; mapper.MouseY = yMotion;
             mapper.MouseSync = true;
+
+            bool anyButtonActive = false;
+            for (int i = 0; i < dirButtons.Length; i++)
+            {
+                AxisDirButton btn = dirButtons[i];
+                if (btn == null) continue;
+
+                double val = slotOn[i] ? 1.0 : 0.0;
+                btn.PrepareAnalog(mapper, val, val);
+                btn.Event(mapper);
+                if (btn.active) anyButtonActive = true;
+            }
+
             if (xNorm != 0.0 || yNorm != 0.0)
             {
                 active = true;
             }
-            else
+            else if (!anyButtonActive)
             {
                 active = false;
             }
@@ -378,6 +466,20 @@ namespace DS4MapperTest.StickActions
             xMotion = yMotion = 0.0;
             active = false;
             activeEvent = false;
+            for (int i = 0; i < dirButtons.Length; i++)
+            {
+                AxisDirButton btn = dirButtons[i];
+                if (btn == null) continue;
+
+                btn.PrepareAnalog(mapper, 0.0, 0.0);
+                btn.Event(mapper);
+                btn.Release(mapper, resetState, ignoreReleaseActions);
+            }
+
+            for (int i = 0; i < slotOn.Length; i++)
+            {
+                slotOn[i] = false;
+            }
 
             //if (resetState)
             //{
@@ -428,6 +530,20 @@ namespace DS4MapperTest.StickActions
             xMotion = yMotion = 0.0;
             active = false;
             activeEvent = false;
+            for (int i = 0; i < dirButtons.Length; i++)
+            {
+                AxisDirButton btn = dirButtons[i];
+                if (btn == null) continue;
+
+                btn.PrepareAnalog(mapper, 0.0, 0.0);
+                btn.Event(mapper);
+                btn.Release(mapper, resetState);
+            }
+
+            for (int i = 0; i < slotOn.Length; i++)
+            {
+                slotOn[i] = false;
+            }
         }
 
         public override void SoftCopyFromParent(StickMapAction parentAction)
@@ -462,6 +578,18 @@ namespace DS4MapperTest.StickActions
                             break;
                         case PropertyKeyStrings.MAX_ZONE:
                             deadMod.MaxZone = tempMouseAction.deadMod.MaxZone;
+                            break;
+                        case PropertyKeyStrings.DIR_UP:
+                            CopyDirButton((int)DirSlot.Up, tempMouseAction);
+                            break;
+                        case PropertyKeyStrings.DIR_DOWN:
+                            CopyDirButton((int)DirSlot.Down, tempMouseAction);
+                            break;
+                        case PropertyKeyStrings.DIR_LEFT:
+                            CopyDirButton((int)DirSlot.Left, tempMouseAction);
+                            break;
+                        case PropertyKeyStrings.DIR_RIGHT:
+                            CopyDirButton((int)DirSlot.Right, tempMouseAction);
                             break;
                         case PropertyKeyStrings.DIAGONAL_RANGE:
                             diagonalRange = tempMouseAction.diagonalRange;
@@ -516,6 +644,18 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.MAX_ZONE:
                     deadMod.MaxZone = tempMouseAction.deadMod.MaxZone;
                     break;
+                case PropertyKeyStrings.DIR_UP:
+                    CopyDirButton((int)DirSlot.Up, tempMouseAction);
+                    break;
+                case PropertyKeyStrings.DIR_DOWN:
+                    CopyDirButton((int)DirSlot.Down, tempMouseAction);
+                    break;
+                case PropertyKeyStrings.DIR_LEFT:
+                    CopyDirButton((int)DirSlot.Left, tempMouseAction);
+                    break;
+                case PropertyKeyStrings.DIR_RIGHT:
+                    CopyDirButton((int)DirSlot.Right, tempMouseAction);
+                    break;
                 case PropertyKeyStrings.DIAGONAL_RANGE:
                     diagonalRange = tempMouseAction.diagonalRange;
                     break;
@@ -534,6 +674,13 @@ namespace DS4MapperTest.StickActions
                 default:
                     break;
             }
+        }
+
+        private void CopyDirButton(int slot, StickMouse sourceAction)
+        {
+            AxisDirButton sourceBtn = sourceAction.dirButtons[slot];
+            dirButtons[slot] = sourceBtn != null ?
+                (AxisDirButton)sourceBtn.DuplicateAction() : null;
         }
     }
 }
