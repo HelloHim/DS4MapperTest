@@ -78,7 +78,7 @@
                                       Style="{StaticResource JsmccComboBoxStyle}"
                                       HorizontalAlignment="Left"
                                       MinWidth="150"
-                                      ToolTip="Custom uses the values below. CS2 sets the fixed duration to 98ms with 23% variance (equivalent to a 75-120ms range) and leaves everything else, including the start delay, unchanged."/>
+                                      ToolTip="Custom uses the values below. CS2 sets the fixed duration to 84ms with 7% variance (equivalent to a 78-90ms range) and leaves everything else, including the start delay, unchanged."/>
                         </Grid>
                     </Border>
 
