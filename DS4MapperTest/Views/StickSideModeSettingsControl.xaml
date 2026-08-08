@@ -1244,42 +1244,44 @@
                 </Border>
 
                 <Border Style="{StaticResource ModeRowBorder}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Direction Pulse Time" Style="{StaticResource JsmccLabelText}"/>
-                        <hc:NumericUpDown Grid.Column="1" Minimum="1" Maximum="1000" DecimalPlaces="0" Increment="1"
-                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding DirectionPulseTimeMs, UpdateSourceTrigger=LostFocus}"/>
-                        <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
-                    </Grid>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Direction Pulse Time" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="1" Maximum="1000" DecimalPlaces="0" Increment="1"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding DirectionPulseTimeMs, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                        <TextBlock Text="Length of one complete secondary-direction-key pulse cycle."
+                                   Style="{StaticResource JsmccMutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="170,6,0,0"/>
+                    </StackPanel>
                 </Border>
-
-                <TextBlock Text="Length of one complete secondary-direction-key pulse cycle."
-                           Style="{StaticResource JsmccMutedText}"
-                           TextWrapping="Wrap"
-                           Margin="0,0,0,4"/>
 
                 <Border Style="{StaticResource ModeRowBorder}">
-                    <Grid IsEnabled="{Binding IsEightWayDirectionResolution}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Diagonal Zone Width" Style="{StaticResource JsmccLabelText}"/>
-                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="90" DecimalPlaces="0" Increment="1"
-                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding DiagonalZoneWidth, UpdateSourceTrigger=LostFocus}"/>
-                    </Grid>
+                    <StackPanel IsEnabled="{Binding IsEightWayDirectionResolution}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Diagonal Range" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="90" DecimalPlaces="0" Increment="1"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding DiagonalZoneWidth, UpdateSourceTrigger=LostFocus}"/>
+                        </Grid>
+                        <TextBlock Text="Controls the angle assigned to each diagonal zone in 8 Directions. It is not used by 16, 32, or Continuous Direction."
+                                   Style="{StaticResource JsmccMutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="170,6,0,0"/>
+                    </StackPanel>
                 </Border>
-
-                <TextBlock Text="Controls the angle assigned to each diagonal zone in 8 Directions. It is not used by 16, 32, or Continuous Direction."
-                           Style="{StaticResource JsmccMutedText}"
-                           TextWrapping="Wrap"
-                           Margin="0,0,0,4"/>
 
                 <TextBlock Text="Speed" Style="{StaticResource JsmccCardTitle}" Margin="0,14,0,8"/>
 
