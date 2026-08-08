@@ -86,10 +86,14 @@
     <None Update="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\template_profiles\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <EmbeddedResource Include="..\template_profiles\**\*">
       <Link>template_profiles\%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </None>
+    </EmbeddedResource>
   </ItemGroup>
+
+  <Target Name="RemoveLegacyTemplateProfilesOutput" AfterTargets="Build">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Remove-Item -LiteralPath '$(TargetDir)template_profiles' -Recurse -Force -ErrorAction SilentlyContinue&quot;"
+          Condition="Exists('$(TargetDir)template_profiles')" />
+  </Target>
 
 </Project>
