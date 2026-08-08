@@ -150,15 +150,6 @@ namespace DS4MapperTest.ViewModels
                     break;
                 case 9:
                     {
-                        TouchpadSingleButton tempAction = new TouchpadSingleButton();
-                        //var joyDefaults = mapper.DeviceActionDefaults.GrabTouchCircularActionDefaults();
-                        //joyDefaults.Process(tempAction);
-                        result = tempAction;
-                    }
-
-                    break;
-                case 10:
-                    {
                         TouchpadFlickStick tempAction = new TouchpadFlickStick();
                         // Flick stick uses these values at runtime, so seed a newly selected
                         // touchpad action from the profile-wide calibration immediately. The
