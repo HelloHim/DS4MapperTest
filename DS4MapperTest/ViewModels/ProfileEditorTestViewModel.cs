@@ -458,17 +458,20 @@ namespace DS4MapperTest.ViewModels
         {
             new EnumChoiceSelection<Mapper.OutputContType>("Xbox 360", Mapper.OutputContType.Xbox360),
             new EnumChoiceSelection<Mapper.OutputContType>("DualShock 4", Mapper.OutputContType.DualShock4),
-            new EnumChoiceSelection<Mapper.OutputContType>("DualSense", Mapper.OutputContType.DualSense),
+            new EnumChoiceSelection<Mapper.OutputContType>("DualSense Edge", Mapper.OutputContType.DualSenseEdge),
         };
         public List<EnumChoiceSelection<Mapper.OutputContType>> OutputControllerTypeOptions => outputControllerTypeChoices;
 
         public Mapper.OutputContType CurrentOutputControllerType
         {
-            get => tempProfile.OutputGamepadSettings.OutputGamepad;
+            get => Mapper.ResolveOutputControllerType(
+                tempProfile.OutputGamepadSettings.OutputGamepad);
             set
             {
-                if (tempProfile.OutputGamepadSettings.OutputGamepad == value) return;
-                tempProfile.OutputGamepadSettings.OutputGamepad = value;
+                Mapper.OutputContType resolvedValue = Mapper.ResolveOutputControllerType(value);
+                if (Mapper.ResolveOutputControllerType(
+                    tempProfile.OutputGamepadSettings.OutputGamepad) == resolvedValue) return;
+                tempProfile.OutputGamepadSettings.OutputGamepad = resolvedValue;
                 RaisePropertyChanged(nameof(CurrentOutputControllerType));
                 RaisePropertyChanged(nameof(OutputControllerTypeIdx));
                 MarkProfileDirty();
@@ -489,6 +492,7 @@ namespace DS4MapperTest.ViewModels
                         result = 1;
                         break;
                     case Mapper.OutputContType.DualSense:
+                    case Mapper.OutputContType.DualSenseEdge:
                         result = 2;
                         break;
                     default:
@@ -508,7 +512,7 @@ namespace DS4MapperTest.ViewModels
                         tempProfile.OutputGamepadSettings.OutputGamepad = Mapper.OutputContType.DualShock4;
                         break;
                     case 2:
-                        tempProfile.OutputGamepadSettings.OutputGamepad = Mapper.OutputContType.DualSense;
+                        tempProfile.OutputGamepadSettings.OutputGamepad = Mapper.OutputContType.DualSenseEdge;
                         break;
                     default:
                         break;

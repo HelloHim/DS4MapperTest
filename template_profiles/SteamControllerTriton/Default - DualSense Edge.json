@@ -1,21 +1,31 @@
 {
-  "Name": "XInput",
-  "Description": "XInput",
+  "Name": "Default - DualSense Edge",
+  "Description": "DualSense Edge",
   "Creator": "ryochan7",
-  "CreationDate": "2022-11-27T21:40:12.8038408Z",
+  "CreationDate": "2026-08-08T00:00:00Z",
+  "ProfileSpecVersion": 2,
   "OutputGamepadSettings": {
     "Enabled": true,
-    "OutputGamepad": "Xbox360",
+    "OutputGamepad": "DualSenseEdge",
     "ForceFeedbackEnabled": true
+  },
+  "LightbarSettings": {
+    "Mode": "SolidColor",
+    "SolidColor": {
+      "red": 0,
+      "green": 0,
+      "blue": 255
+    },
+    "RainbowSecondsCycle": 5
   },
   "ActionSets": [
     {
       "Index": 0,
-      "Name": "Main",
+      "Name": "Default - DualSense Edge",
       "ActionLayers": [
         {
           "Index": 0,
-          "Name": "Default",
+          "Name": "Default - DualSense Edge",
           "MappedActions": [
             {
               "Id": 0,
@@ -86,7 +96,7 @@
                   "OutputActions": [
                     {
                       "Type": "GamepadControl",
-                      "PadOutput": "X360_LB"
+                      "PadOutput": "X360_Back"
                     }
                   ]
                 }
@@ -101,7 +111,7 @@
                   "OutputActions": [
                     {
                       "Type": "GamepadControl",
-                      "PadOutput": "X360_RB"
+                      "PadOutput": "X360_Start"
                     }
                   ]
                 }
@@ -116,7 +126,7 @@
                   "OutputActions": [
                     {
                       "Type": "GamepadControl",
-                      "PadOutput": "X360_ThumbL"
+                      "PadOutput": "X360_LB"
                     }
                   ]
                 }
@@ -131,7 +141,7 @@
                   "OutputActions": [
                     {
                       "Type": "GamepadControl",
-                      "PadOutput": "X360_ThumbR"
+                      "PadOutput": "X360_RB"
                     }
                   ]
                 }
@@ -146,7 +156,7 @@
                   "OutputActions": [
                     {
                       "Type": "GamepadControl",
-                      "PadOutput": "X360_Back"
+                      "PadOutput": "X360_ThumbL"
                     }
                   ]
                 }
@@ -161,7 +171,7 @@
                   "OutputActions": [
                     {
                       "Type": "GamepadControl",
-                      "PadOutput": "X360_Start"
+                      "PadOutput": "X360_ThumbR"
                     }
                   ]
                 }
@@ -186,8 +196,8 @@
               "Id": 11,
               "ActionMode": "TriggerTranslateAction",
               "Settings": {
-                "OutputTrigger": "X360_LT",
-                "DeadZone": 0.0,
+                "OutputTrigger": "AxisLTrigger",
+                "DeadZone": 0.05,
                 "MaxZone": 1.0,
                 "AntiDeadZone": 0.0
               }
@@ -197,7 +207,7 @@
               "ActionMode": "TriggerTranslateAction",
               "Settings": {
                 "OutputTrigger": "X360_RT",
-                "DeadZone": 0.0,
+                "DeadZone": 0.05,
                 "MaxZone": 1.0,
                 "AntiDeadZone": 0.0
               }
@@ -207,8 +217,11 @@
               "ActionMode": "StickTranslateAction",
               "Settings": {
                 "OutputStick": "X360_LS",
-                "DeadZone": 0.08,
-                "AntiDeadZone": 0.24
+                "DeadZone": 0.1,
+                "MaxZone": 1.0,
+                "AntiDeadZone": 0.0,
+                "VerticalScale": 1.0,
+                "SquareStickRoundness": 5.0
               }
             },
             {
@@ -216,8 +229,11 @@
               "ActionMode": "StickTranslateAction",
               "Settings": {
                 "OutputStick": "RS",
-                "DeadZone": 0.06,
-                "AntiDeadZone": 0.24
+                "DeadZone": 0.1,
+                "MaxZone": 1.0,
+                "AntiDeadZone": 0.0,
+                "VerticalScale": 1.0,
+                "SquareStickRoundness": 5.0
               }
             },
             {
@@ -226,6 +242,81 @@
               "Settings": {
                 "OutputDPad": "X360_DPAD"
               }
+            },
+            {
+              "Id": 16,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "GamepadControl",
+                      "PadOutput": "X360_Back"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Id": 17,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "GamepadControl",
+                      "PadOutput": "BtnLGrip"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Id": 18,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "GamepadControl",
+                      "PadOutput": "BtnRGrip"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Id": 19,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "GamepadControl",
+                      "PadOutput": "BtnMode2"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Id": 20,
+              "ActionMode": "ButtonAction",
+              "Functions": [
+                {
+                  "Type": "NormalPress",
+                  "OutputActions": [
+                    {
+                      "Type": "GamepadControl",
+                      "PadOutput": "BtnMode3"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -238,47 +329,47 @@
       "ActionLayer": 0,
       "InputMappings": [
         {
-          "Input": "Cross",
+          "Input": "A",
           "Action": 0
         },
         {
-          "Input": "Circle",
+          "Input": "B",
           "Action": 1
         },
         {
-          "Input": "Square",
+          "Input": "X",
           "Action": 2
         },
         {
-          "Input": "Triangle",
+          "Input": "Y",
           "Action": 3
         },
         {
-          "Input": "L1",
+          "Input": "Select",
           "Action": 4
         },
         {
-          "Input": "R1",
+          "Input": "Start",
           "Action": 5
         },
         {
-          "Input": "L3",
+          "Input": "L1",
           "Action": 6
         },
         {
-          "Input": "R3",
+          "Input": "R1",
           "Action": 7
         },
         {
-          "Input": "Share",
+          "Input": "L3",
           "Action": 8
         },
         {
-          "Input": "Options",
+          "Input": "R3",
           "Action": 9
         },
         {
-          "Input": "PS",
+          "Input": "Steam",
           "Action": 10
         },
         {
@@ -300,6 +391,26 @@
         {
           "Input": "DPad",
           "Action": 15
+        },
+        {
+          "Input": "QAM",
+          "Action": 16
+        },
+        {
+          "Input": "L4",
+          "Action": 17
+        },
+        {
+          "Input": "R4",
+          "Action": 18
+        },
+        {
+          "Input": "L5",
+          "Action": 19
+        },
+        {
+          "Input": "R5",
+          "Action": 20
         }
       ]
     }

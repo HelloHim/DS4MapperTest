@@ -488,6 +488,18 @@ namespace DS4MapperTest
                 case JoypadActionCodes.X360_ThumbR:
                     result = "RStick Click";
                     break;
+                case JoypadActionCodes.BtnLGrip:
+                    result = "L4";
+                    break;
+                case JoypadActionCodes.BtnRGrip:
+                    result = "R4";
+                    break;
+                case JoypadActionCodes.BtnMode2:
+                    result = "Fn Left";
+                    break;
+                case JoypadActionCodes.BtnMode3:
+                    result = "Fn Right";
+                    break;
                 case JoypadActionCodes.X360_DPAD_UP:
                     result = "DPad Up";
                     break;
