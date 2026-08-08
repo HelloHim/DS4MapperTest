@@ -78,7 +78,7 @@ namespace DS4MapperTest.DS4Library
                 new InputBindingMeta("Share", "Share", InputBindingMeta.InputControlType.Button),
                 new InputBindingMeta("Options", "Options", InputBindingMeta.InputControlType.Button),
                 new InputBindingMeta("PS", "PS", InputBindingMeta.InputControlType.Button),
-                new InputBindingMeta("TouchClick", "Touch Click", InputBindingMeta.InputControlType.Button),
+                new InputBindingMeta("TouchClick", "PS Touchpad Click", InputBindingMeta.InputControlType.Button),
                 new InputBindingMeta("LS", "Left Stick", InputBindingMeta.InputControlType.Stick),
                 new InputBindingMeta("RS", "Right Stick", InputBindingMeta.InputControlType.Stick),
                 new InputBindingMeta("DPad", "DPad", InputBindingMeta.InputControlType.DPad),
@@ -229,7 +229,7 @@ namespace DS4MapperTest.DS4Library
                 new ActionTriggerItem("L3", JoypadActionCodes.BtnThumbL),
                 new ActionTriggerItem("R3", JoypadActionCodes.BtnThumbR),
                 new ActionTriggerItem("Touchpad Touch", JoypadActionCodes.CenterPadTouch),
-                new ActionTriggerItem("Touchpad Click", JoypadActionCodes.CenterPadClick),
+                new ActionTriggerItem("PS Touchpad Click", JoypadActionCodes.CenterPadClick),
 
                 new ActionTriggerItem("TouchpadLeft Touch", JoypadActionCodes.LPadTouch),
                 new ActionTriggerItem("TouchpadLeft Click", JoypadActionCodes.LPadClick),

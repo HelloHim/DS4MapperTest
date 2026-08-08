@@ -276,12 +276,27 @@
                                                                               "Id":  19,
                                                                               "ActionMode":  "ButtonAction",
                                                                               "Functions":  [
+                                                                                               {
+                                                                                                   "Type":  "NormalPress",
+                                                                                                   "OutputActions":  [
+                                                                                                                         {
+                                                                                                                             "Type":  "GamepadControl",
+                                                                                                                             "PadOutput":  "BtnMode3"
+                                                                                                                         }
+                                                                                                                     ]
+                                                                                               }
+                                                                                           ]
+                                                                          },
+                                                                          {
+                                                                              "Id":  20,
+                                                                              "ActionMode":  "ButtonAction",
+                                                                              "Functions":  [
                                                                                                 {
                                                                                                     "Type":  "NormalPress",
                                                                                                     "OutputActions":  [
                                                                                                                           {
                                                                                                                               "Type":  "GamepadControl",
-                                                                                                                              "PadOutput":  "BtnMode3"
+                                                                                                                              "PadOutput":  "DS4_TOUCH_CLICK"
                                                                                                                           }
                                                                                                                       ]
                                                                                                 }
@@ -376,6 +391,10 @@
                                                {
                                                    "Input":  "FnR",
                                                    "Action":  19
+                                               },
+                                               {
+                                                   "Input":  "TouchClick",
+                                                   "Action":  20
                                                }
                                            ]
                      }
