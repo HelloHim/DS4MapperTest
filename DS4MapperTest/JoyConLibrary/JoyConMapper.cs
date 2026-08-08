@@ -580,7 +580,8 @@ namespace DS4MapperTest.JoyConLibrary
                             elapsedReference = device.BaseElapsedReference,
                         };
 
-                        PopulateStateGyro(ref gyroFrame);
+                        if (gyroAct.OutputsNativeGyro) PopulateStateGyro(ref gyroFrame);
+                        else ClearStateGyro();
                         //if (currentDev || runPrepareAction)
                         {
                             gyroAct.Prepare(this, ref gyroFrame);

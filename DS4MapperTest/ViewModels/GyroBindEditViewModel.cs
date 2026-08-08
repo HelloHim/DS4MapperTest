@@ -65,6 +65,9 @@ namespace DS4MapperTest.ViewModels
                     result = new GyroNoMapAction();
                     break;
                 case 1:
+                    result = new GyroPassthruAction();
+                    break;
+                case 2:
                     GyroMouse tempAction = new GyroMouse();
 
                     var joyDefaults = mapper.DeviceActionDefaults.GrabGyroMouseActionDefaults();
@@ -78,10 +81,10 @@ namespace DS4MapperTest.ViewModels
 
                     result = tempAction;
                     break;
-                case 2:
+                case 3:
                     result = new GyroMouseJoystick();
                     break;
-                case 3:
+                case 4:
                     result = new GyroDirectionalSwipe();
                     break;
                 default:

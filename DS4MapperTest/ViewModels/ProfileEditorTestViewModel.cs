@@ -3233,6 +3233,7 @@ namespace DS4MapperTest.ViewModels
             get => mappedAction switch
             {
                 GyroNoMapAction => "Unbound",
+                GyroPassthruAction => "Passthru",
                 GyroMouse => "Gyro Mouse",
                 GyroMouseJoystick => "Gyro Mouse-like Joystick",
                 GyroDirectionalSwipe => "Gyro Directional Swipe",
@@ -3244,7 +3245,8 @@ namespace DS4MapperTest.ViewModels
         {
             get => mappedAction switch
             {
-                GyroNoMapAction => "No gyro action is assigned.",
+                GyroNoMapAction => "Gyro output is disabled.",
+                GyroPassthruAction => "Native gyro and accelerometer data pass through to the virtual DualShock 4 output when available.",
                 GyroMouse => "Sensitivity, acceleration, and noise steadying settings are available in the Sensitivity and Noise & Steadying tabs.",
                 GyroMouseJoystick => "Joystick output settings are available below.",
                 GyroDirectionalSwipe => "Swipe deadzone, trigger, and directional binding settings are available below.",

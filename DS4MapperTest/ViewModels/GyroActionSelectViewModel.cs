@@ -38,14 +38,17 @@ namespace DS4MapperTest.ViewModels
                 case GyroNoMapAction:
                     selectedIndex = 0;
                     break;
-                case GyroMouse:
+                case GyroPassthruAction:
                     selectedIndex = 1;
                     break;
-                case GyroMouseJoystick:
+                case GyroMouse:
                     selectedIndex = 2;
                     break;
-                case GyroDirectionalSwipe:
+                case GyroMouseJoystick:
                     selectedIndex = 3;
+                    break;
+                case GyroDirectionalSwipe:
+                    selectedIndex = 4;
                     break;
                 default:
                     selectedIndex = -1;
