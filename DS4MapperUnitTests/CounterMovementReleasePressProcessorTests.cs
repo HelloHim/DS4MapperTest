@@ -86,8 +86,8 @@ namespace DS4MapperUnitTests
         {
             CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
 
-            Assert.AreEqual(75, brake.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, brake.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(78, brake.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, brake.OppositeTapLengthMaximumMs);
         }
 
         [TestMethod]
@@ -118,7 +118,7 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(CounterMovementTapLengthPreset.Custom, brake.EffectiveTapLengthPreset,
                 "Editing away from the CS2 values must switch the displayed preset to Custom.");
 
-            brake.OppositeTapLengthMinimumMs = 75;
+            brake.OppositeTapLengthMinimumMs = 78;
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.EffectiveTapLengthPreset,
                 "Editing back to exactly the CS2 values must switch the displayed preset back to CS2.");
         }
@@ -299,10 +299,10 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, vm.OppositeTapLengthMode,
                 "Enabling for the first time must always land on Wait Variance Percentage mode.");
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, vm.TapLengthPreset);
-            Assert.AreEqual(98, vm.OppositeTapLengthMs);
-            Assert.AreEqual(23, vm.OppositeTapLengthVariancePercent);
-            Assert.AreEqual(75, vm.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, vm.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(84, vm.OppositeTapLengthMs);
+            Assert.AreEqual(7, vm.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(78, vm.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, vm.OppositeTapLengthMaximumMs);
         }
 
         [TestMethod]

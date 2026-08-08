@@ -22,10 +22,10 @@ namespace DS4MapperUnitTests
             Assert.IsFalse(processor.Enabled);
             Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, processor.OppositeTapLengthMode);
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, processor.EffectiveTapLengthPreset);
-            Assert.AreEqual(98, processor.OppositeTapLengthMs);
-            Assert.AreEqual(23, processor.OppositeTapLengthVariancePercent);
-            Assert.AreEqual(75, processor.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, processor.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(84, processor.OppositeTapLengthMs);
+            Assert.AreEqual(7, processor.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(78, processor.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, processor.OppositeTapLengthMaximumMs);
         }
 
         [TestMethod]
@@ -36,10 +36,10 @@ namespace DS4MapperUnitTests
             Assert.IsFalse(brake.Enabled);
             Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, brake.OppositeTapLengthMode);
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.EffectiveTapLengthPreset);
-            Assert.AreEqual(98, brake.OppositeTapLengthMs);
-            Assert.AreEqual(23, brake.OppositeTapLengthVariancePercent);
-            Assert.AreEqual(75, brake.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, brake.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(84, brake.OppositeTapLengthMs);
+            Assert.AreEqual(7, brake.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(78, brake.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, brake.OppositeTapLengthMaximumMs);
         }
 
         [TestMethod]
@@ -49,10 +49,10 @@ namespace DS4MapperUnitTests
             processor.Enabled = true;
 
             Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, processor.OppositeTapLengthMode);
-            Assert.AreEqual(98, processor.OppositeTapLengthMs);
-            Assert.AreEqual(23, processor.OppositeTapLengthVariancePercent);
-            Assert.AreEqual(75, processor.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, processor.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(84, processor.OppositeTapLengthMs);
+            Assert.AreEqual(7, processor.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(78, processor.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, processor.OppositeTapLengthMaximumMs);
         }
 
         // --- Fixed mode ---------------------------------------------------------------
@@ -101,7 +101,7 @@ namespace DS4MapperUnitTests
         // --- Wait Variance Percentage mode ---------------------------------------------
 
         [TestMethod]
-        [DataRow(98, 23, 75, 120)]
+        [DataRow(84, 7, 78, 90)]
         [DataRow(100, 0, 100, 100)]
         [DataRow(100, 10, 90, 110)]
         public void ComputePercentageRange_MatchesExpectedFloorBoundaries(int fixedMs, int percent, int expectedMin, int expectedMax)
@@ -134,11 +134,11 @@ namespace DS4MapperUnitTests
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
             processor.OppositeTapLengthMode = OppositeTapLengthMode.WaitVariancePercentage;
-            processor.ApplyFixedAndPercentage(98, 23);
+            processor.ApplyFixedAndPercentage(84, 7);
 
             var (minimum, maximum) = processor.GetEffectiveOppositeTapLengthRange();
-            Assert.AreEqual(75, minimum);
-            Assert.AreEqual(120, maximum);
+            Assert.AreEqual(78, minimum);
+            Assert.AreEqual(90, maximum);
         }
 
         [TestMethod]
@@ -190,11 +190,11 @@ namespace DS4MapperUnitTests
         // --- Best-fit conversion (Minimum/Maximum -> Fixed/Percentage) ------------------
 
         [TestMethod]
-        public void BestFit_75To120_ProducesCs2FixedAndPercentage()
+        public void BestFit_78To90_ProducesCs2FixedAndPercentage()
         {
-            var (fixedMs, percent) = OppositeTapLengthTiming.BestFitFixedAndPercentage(75, 120);
-            Assert.AreEqual(98, fixedMs);
-            Assert.AreEqual(23, percent);
+            var (fixedMs, percent) = OppositeTapLengthTiming.BestFitFixedAndPercentage(78, 90);
+            Assert.AreEqual(84, fixedMs);
+            Assert.AreEqual(7, percent);
         }
 
         [TestMethod]
@@ -228,8 +228,8 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void BestFit_InvertedInputStillProducesOrderedResult()
         {
-            var forward = OppositeTapLengthTiming.BestFitFixedAndPercentage(75, 120);
-            var reversed = OppositeTapLengthTiming.BestFitFixedAndPercentage(120, 75);
+            var forward = OppositeTapLengthTiming.BestFitFixedAndPercentage(78, 90);
+            var reversed = OppositeTapLengthTiming.BestFitFixedAndPercentage(90, 78);
             Assert.AreEqual(forward, reversed);
         }
 
@@ -237,9 +237,9 @@ namespace DS4MapperUnitTests
         public void ApplyMinimumAndMaximum_MatchesStandaloneBestFitFunction()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.ApplyMinimumAndMaximum(75, 120);
+            processor.ApplyMinimumAndMaximum(78, 90);
 
-            var (expectedFixed, expectedPercent) = OppositeTapLengthTiming.BestFitFixedAndPercentage(75, 120);
+            var (expectedFixed, expectedPercent) = OppositeTapLengthTiming.BestFitFixedAndPercentage(78, 90);
             Assert.AreEqual(expectedFixed, processor.OppositeTapLengthMs);
             Assert.AreEqual(expectedPercent, processor.OppositeTapLengthVariancePercent);
         }
@@ -254,10 +254,10 @@ namespace DS4MapperUnitTests
 
             processor.ApplyCs2Preset();
 
-            Assert.AreEqual(98, processor.OppositeTapLengthMs);
-            Assert.AreEqual(23, processor.OppositeTapLengthVariancePercent);
-            Assert.AreEqual(75, processor.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, processor.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(84, processor.OppositeTapLengthMs);
+            Assert.AreEqual(7, processor.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(78, processor.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, processor.OppositeTapLengthMaximumMs);
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, processor.TapLengthPreset);
         }
 
@@ -273,9 +273,9 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        [DataRow(OppositeTapLengthMode.Fixed, 98, 98)]
-        [DataRow(OppositeTapLengthMode.WaitVariancePercentage, 75, 120)]
-        [DataRow(OppositeTapLengthMode.MinimumAndMaximum, 75, 120)]
+        [DataRow(OppositeTapLengthMode.Fixed, 84, 84)]
+        [DataRow(OppositeTapLengthMode.WaitVariancePercentage, 78, 90)]
+        [DataRow(OppositeTapLengthMode.MinimumAndMaximum, 78, 90)]
         public void Cs2Preset_ProducesExpectedRuntimeRangePerMode(OppositeTapLengthMode mode, int expectedMin, int expectedMax)
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
@@ -302,10 +302,10 @@ namespace DS4MapperUnitTests
                 processor.OppositeTapLengthMode = OppositeTapLengthMode.WaitVariancePercentage;
             }
 
-            Assert.AreEqual(98, processor.OppositeTapLengthMs);
-            Assert.AreEqual(23, processor.OppositeTapLengthVariancePercent);
-            Assert.AreEqual(75, processor.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, processor.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(84, processor.OppositeTapLengthMs);
+            Assert.AreEqual(7, processor.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(78, processor.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, processor.OppositeTapLengthMaximumMs);
         }
 
         [TestMethod]
@@ -325,24 +325,24 @@ namespace DS4MapperUnitTests
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
             processor.OppositeTapLengthMode = OppositeTapLengthMode.MinimumAndMaximum;
-            processor.ApplyMinimumAndMaximum(75, 120);
+            processor.ApplyMinimumAndMaximum(78, 90);
 
             processor.OppositeTapLengthMode = OppositeTapLengthMode.WaitVariancePercentage;
 
-            Assert.AreEqual(98, processor.OppositeTapLengthMs);
-            Assert.AreEqual(23, processor.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(84, processor.OppositeTapLengthMs);
+            Assert.AreEqual(7, processor.OppositeTapLengthVariancePercent);
         }
 
         [TestMethod]
         public void WaitVariancePercentageToMinimumAndMaximum_ShowsSynchronisedRange()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.ApplyFixedAndPercentage(98, 23);
+            processor.ApplyFixedAndPercentage(84, 7);
 
             processor.OppositeTapLengthMode = OppositeTapLengthMode.MinimumAndMaximum;
 
-            Assert.AreEqual(75, processor.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, processor.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(78, processor.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, processor.OppositeTapLengthMaximumMs);
         }
     }
 }
