@@ -2700,15 +2700,19 @@ namespace DS4MapperTest.ViewModels
             {
                 return bindingName switch
                 {
-                    "Touchpad" => "Main Touchpad",
-                    "TouchpadLeft" => "Left Touchpad",
-                    "LeftTouchpad" => "Left Touchpad",
-                    "TouchpadRight" => "Right Touchpad",
-                    "RightTouchpad" => "Right Touchpad",
+                    "Touchpad" => "Center Touchpad",
+                    "TouchpadLeft" => UsesSteamTouchpadSideNames ? "Left Touchpad" : "Left-side Touchpad",
+                    "LeftTouchpad" => UsesSteamTouchpadSideNames ? "Left Touchpad" : "Left-side Touchpad",
+                    "TouchpadRight" => UsesSteamTouchpadSideNames ? "Right Touchpad" : "Right-side Touchpad",
+                    "RightTouchpad" => UsesSteamTouchpadSideNames ? "Right Touchpad" : "Right-side Touchpad",
                     _ => displayInputMapString,
                 };
             }
         }
+
+        public bool UsesSteamTouchpadSideNames =>
+            mapper?.DeviceType == InputDeviceType.SteamController ||
+            mapper?.DeviceType == InputDeviceType.SteamControllerTriton;
 
         public string ActionDisplayName
         {

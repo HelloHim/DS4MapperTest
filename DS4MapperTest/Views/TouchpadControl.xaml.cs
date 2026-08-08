@@ -82,7 +82,7 @@ namespace DS4MapperTest.Views
             {
                 TabItem emptyTab = new TabItem
                 {
-                    Header = "Touchpad Settings",
+                    Header = "Center Touchpad",
                     Content = CreateMessage("No supported touchpad binding inputs are available for this controller."),
                 };
                 touchpadSideTabs.Add(emptyTab);
@@ -152,9 +152,9 @@ namespace DS4MapperTest.Views
         {
             return side switch
             {
-                TouchpadPadSide.Whole => "Touchpad Settings",
-                TouchpadPadSide.Left => "Left Touchpad Settings",
-                TouchpadPadSide.Right => "Right Touchpad Settings",
+                TouchpadPadSide.Whole => "Center Touchpad",
+                TouchpadPadSide.Left => item.UsesSteamTouchpadSideNames ? "Left Touchpad" : "Left-side Touchpad",
+                TouchpadPadSide.Right => item.UsesSteamTouchpadSideNames ? "Right Touchpad" : "Right-side Touchpad",
                 _ => $"{item.DisplayName} Settings",
             };
         }
