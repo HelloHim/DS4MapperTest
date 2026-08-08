@@ -318,7 +318,6 @@ namespace DS4MapperTest.TriggerActions
             fullPullClick = false;
             stageState.ResetStageState();
             feedbackActive = wasFeedbackActive = false;
-            outputActive = false;
             softPullFeedbackActive = wasSoftPullFeedbackActive = false;
             active = activeEvent = false;
         }
@@ -353,7 +352,6 @@ namespace DS4MapperTest.TriggerActions
             fullPullClick = false;
             stageState.ResetStageState();
             feedbackActive = wasFeedbackActive = false;
-            outputActive = false;
             softPullFeedbackActive = wasSoftPullFeedbackActive = false;
             active = activeEvent = false;
         }
