@@ -216,7 +216,7 @@
                                         <ColumnDefinition Width="260"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Opposite Tap Length Mode" Style="{StaticResource JsmccLabelText}"/>
+                                    <TextBlock Grid.Column="0" Text="Counter Tap Length Mode" Style="{StaticResource JsmccLabelText}"/>
                                     <ComboBox Grid.Column="1"
                                               ItemsSource="{Binding TapLengthModeItems}"
                                               DisplayMemberPath="DisplayName"
@@ -239,7 +239,7 @@
                                     <ColumnDefinition Width="260"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Opposite Tap Length Preset" Style="{StaticResource JsmccLabelText}"/>
+                                <TextBlock Grid.Column="0" Text="Counter Tap Length Preset" Style="{StaticResource JsmccLabelText}"/>
                                 <ComboBox Grid.Column="1"
                                           ItemsSource="{Binding TapLengthPresetItems}"
                                           DisplayMemberPath="DisplayName"
@@ -261,7 +261,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Opposite Tap Length" Style="{StaticResource JsmccLabelText}"/>
+                                    <TextBlock Grid.Column="0" Text="Counter Tap Length" Style="{StaticResource JsmccLabelText}"/>
                                     <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
                                                       Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                       Value="{Binding OppositeTapLengthMs, UpdateSourceTrigger=LostFocus}"/>
@@ -283,7 +283,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Opposite Tap Length" Style="{StaticResource JsmccLabelText}"/>
+                                    <TextBlock Grid.Column="0" Text="Counter Tap Length" Style="{StaticResource JsmccLabelText}"/>
                                     <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
                                                       Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                       Value="{Binding OppositeTapLengthMs, UpdateSourceTrigger=LostFocus}"/>
@@ -331,7 +331,7 @@
                         <Border Style="{StaticResource ModeRowBorder}"
                                 Visibility="{Binding ShowMinimumAndMaximumModeFields, Converter={StaticResource BoolToVis}}">
                             <StackPanel>
-                                <TextBlock Text="Opposite Tap Length Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Counter Tap Length Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="170"/>
@@ -368,7 +368,7 @@
                                                 <ColumnDefinition Width="260"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="Opposite Tap Start Delay Mode" Style="{StaticResource JsmccLabelText}"/>
+                                            <TextBlock Grid.Column="0" Text="Counter Tap Start Delay Mode" Style="{StaticResource JsmccLabelText}"/>
                                             <ComboBox Grid.Column="1"
                                                       ItemsSource="{Binding StartDelayModeItems}"
                                                       DisplayMemberPath="DisplayName"
@@ -394,7 +394,7 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="Opposite Tap Start Delay" Style="{StaticResource JsmccLabelText}"/>
+                                            <TextBlock Grid.Column="0" Text="Counter Tap Start Delay" Style="{StaticResource JsmccLabelText}"/>
                                             <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="150" DecimalPlaces="0" Increment="1"
                                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                               Value="{Binding OppositeTapStartDelayMs, UpdateSourceTrigger=LostFocus}"/>
@@ -416,7 +416,7 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="Opposite Tap Start Delay" Style="{StaticResource JsmccLabelText}"/>
+                                            <TextBlock Grid.Column="0" Text="Counter Tap Start Delay" Style="{StaticResource JsmccLabelText}"/>
                                             <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="150" DecimalPlaces="0" Increment="1"
                                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                               Value="{Binding OppositeTapStartDelayMs, UpdateSourceTrigger=LostFocus}"/>
@@ -444,7 +444,7 @@
                                 <Border Style="{StaticResource ModeRowBorder}"
                                         Visibility="{Binding ShowStartDelayMinimumAndMaximumModeFields, Converter={StaticResource BoolToVis}}">
                                     <StackPanel>
-                                        <TextBlock Text="Opposite Tap Start Delay Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
+                                        <TextBlock Text="Counter Tap Start Delay Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="170"/>
