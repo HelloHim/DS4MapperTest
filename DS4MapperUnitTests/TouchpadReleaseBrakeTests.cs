@@ -345,8 +345,9 @@ namespace DS4MapperUnitTests
 
             string json = JsonConvert.SerializeObject(new TouchpadActionPadSerializer(null, padAction));
             JObject parsed = JObject.Parse(json);
-            Assert.AreEqual(true, parsed["Settings"]?["BrakeEnabled"]?.Value<bool>());
-            Assert.AreEqual(77, parsed["Settings"]?["BrakeDurationMs"]?.Value<int>());
+            Assert.AreEqual(true, parsed["Settings"]?["CounterMovementReleasePressEnabled"]?.Value<bool>());
+            Assert.AreEqual(77, parsed["Settings"]?["OppositeTapLengthMinimumMs"]?.Value<int>());
+            Assert.AreEqual(77, parsed["Settings"]?["OppositeTapLengthMaximumMs"]?.Value<int>());
             Assert.AreEqual(123, parsed["Settings"]?["BrakeMinimumHoldMs"]?.Value<int>());
 
             TouchpadActionPad parent = new TouchpadActionPad();

@@ -13,6 +13,8 @@ namespace DS4MapperUnitTests
         public void TouchpadButtons_AreSharedBetweenKeybindAndTouchpadViews()
         {
             Profile profile = new Profile();
+            profile.Name = "TouchpadMirror";
+            profile.ActionSets[0].ActionLayers[0].Name = "Default";
             mapper = new TestMapper(profile);
             AddButtonBinding("LeftPadTouch", "Left Pad Touch");
             AddButtonBinding("RightPadTouch", "Right Pad Touch");
@@ -32,15 +34,15 @@ namespace DS4MapperUnitTests
             vm.Test();
 
             CollectionAssert.AreEquivalent(
-                new string[] { "Left Touch", "Right Touch", "Main Click", "Left Click", "Right Click" },
+                new string[] { "Left Touch", "Right Touch", "Main Press", "Left Press", "Right Press" },
                 vm.TouchpadButtonBindings.Select(item => item.DisplayName).ToArray());
 
             AssertTouchpadButton(vm, "Left Touch", "LeftPadTouch");
             AssertTouchpadButton(vm, "Right Touch", "RightPadTouch");
-            AssertTouchpadButton(vm, "Main Click", "TouchClick");
+            AssertTouchpadButton(vm, "Main Press", "TouchClick");
 
-            FaceButtonBindingItem leftClick = AssertTouchpadButton(vm, "Left Click", "LeftPadClick");
-            FaceButtonBindingItem rightClick = AssertTouchpadButton(vm, "Right Click", "RightPadClick");
+            FaceButtonBindingItem leftClick = AssertTouchpadButton(vm, "Left Press", "LeftPadClick");
+            FaceButtonBindingItem rightClick = AssertTouchpadButton(vm, "Right Press", "RightPadClick");
             Assert.AreSame(leftClick,
                 vm.TouchpadBindings.First(item => item.BindingName == "LeftTouchpad").TouchpadClickBinding);
             Assert.AreSame(rightClick,
