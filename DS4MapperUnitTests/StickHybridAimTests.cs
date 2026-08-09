@@ -1,3 +1,4 @@
+using DS4MapperTest;
 using DS4MapperTest.StickActions;
 
 namespace DS4MapperUnitTests
@@ -5,6 +6,10 @@ namespace DS4MapperUnitTests
     [TestClass]
     public class StickHybridAimTests
     {
+        private static bool TryGetJoystickRouteState(TestMapper mapper,
+            out Mapper.RouteMouseStateSnapshot snapshot) =>
+            mapper.TryGetRouteMouseStateForTest(MouseOutputRoute.JoystickMouse, out snapshot);
+
         [TestMethod]
         public void UsesExpectedDefaults()
         {
@@ -59,8 +64,9 @@ namespace DS4MapperUnitTests
             action.Prepare(mapper, 0, 0);
             action.Event(mapper);
 
-            Assert.AreEqual(0.0, mapper.MouseX);
-            Assert.AreEqual(0.0, mapper.MouseY);
+            Assert.IsTrue(TryGetJoystickRouteState(mapper, out Mapper.RouteMouseStateSnapshot snapshot));
+            Assert.AreEqual(0.0, snapshot.X);
+            Assert.AreEqual(0.0, snapshot.Y);
         }
 
         [TestMethod]
@@ -72,9 +78,10 @@ namespace DS4MapperUnitTests
             action.Prepare(mapper, 30000, 0);
             action.Event(mapper);
 
-            Assert.IsFalse(double.IsNaN(mapper.MouseX));
-            Assert.IsFalse(double.IsNaN(mapper.MouseY));
-            Assert.IsTrue(mapper.MouseX > 0.0);
+            Assert.IsTrue(TryGetJoystickRouteState(mapper, out Mapper.RouteMouseStateSnapshot snapshot));
+            Assert.IsFalse(double.IsNaN(snapshot.X));
+            Assert.IsFalse(double.IsNaN(snapshot.Y));
+            Assert.IsTrue(snapshot.X > 0.0);
         }
 
         [TestMethod]
@@ -110,8 +117,9 @@ namespace DS4MapperUnitTests
             action.Prepare(mapper, 0, 0);
             action.Event(mapper);
 
-            Assert.AreEqual(0.0, mapper.MouseX);
-            Assert.AreEqual(0.0, mapper.MouseY);
+            Assert.IsTrue(TryGetJoystickRouteState(mapper, out Mapper.RouteMouseStateSnapshot snapshot));
+            Assert.AreEqual(0.0, snapshot.X);
+            Assert.AreEqual(0.0, snapshot.Y);
         }
     }
 }

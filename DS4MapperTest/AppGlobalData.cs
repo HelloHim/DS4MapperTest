@@ -398,6 +398,17 @@ namespace DS4MapperTest
             fakerInputVersion = FakerInputVersion();
         }
 
+        public MouseOutputRoutingAvailabilitySnapshot GetMouseOutputRoutingAvailabilitySnapshot()
+        {
+            return new MouseOutputRoutingAvailabilitySnapshot(
+                sendInputAvailable: true,
+                fakerInputMouseAvailable: fakerInputInstalled,
+                viiperMouse1Available: false,
+                viiperMouse2Available: false,
+                viiperMouse3Available: false,
+                viiperAbsoluteMouseSupported: false);
+        }
+
         private static string FakerInputVersion()
         {
             // Start with BLANK_FAKERINPUT_VERSION for result

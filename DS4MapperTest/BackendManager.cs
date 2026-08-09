@@ -67,6 +67,10 @@ namespace DS4MapperTest
 
         private VirtualKBMMapping eventInputMapping;// = new FakerInputMapping();
         public VirtualKBMMapping EventInputMapping => eventInputMapping;
+        private MouseOutputDispatcher mouseOutputDispatcher;
+        private readonly MouseOutputRoutingController mouseOutputRoutingController;
+        public MouseOutputRoutingController MouseOutputRoutingController =>
+            mouseOutputRoutingController;
 
         // Phase-2 physical-mouse forwarding. Owned here (not by the WPF UI)
         // so it starts/stops with the backend service regardless of which
@@ -130,6 +134,7 @@ namespace DS4MapperTest
         {
             _argParser = argParse;
             this.appGlobal = appGlobal;
+            mouseOutputRoutingController = new MouseOutputRoutingController(appGlobal);
             _logCb = (level, message) =>
             {
                 string text = $"VIIPER[{level}] {message}";
@@ -293,7 +298,7 @@ namespace DS4MapperTest
             if (isRunning)
             {
                 physicalMouseService.Reconfigure(enabled, stableDeviceId,
-                    virtualEventHandler, eventInputMapping);
+                    mouseOutputDispatcher);
             }
             return true;
         }
@@ -307,11 +312,6 @@ namespace DS4MapperTest
 
             InitOutputKBMHandler();
             EnsureUsbipAvailable();
-
-            bool physicalMouseEnabled = appGlobal.appSettings?.PhysicalMouseForwardingEnabled ?? false;
-            string selectedPhysicalMouseId = appGlobal.appSettings?.SelectedPhysicalMouseId;
-            physicalMouseService.Start(physicalMouseEnabled, selectedPhysicalMouseId, virtualEventHandler, eventInputMapping);
-            LogDebug($"Physical mouse forwarding: {physicalMouseService.Status}");
 
             // Change thread affinity of bus object to not be tied
             // to GUI thread
@@ -339,6 +339,17 @@ namespace DS4MapperTest
             {
                 LogDebug($"VIIPER connection established");
             }
+
+            mouseOutputDispatcher = new MouseOutputDispatcher(appGlobal,
+                virtualEventHandler, eventInputMapping, serverHandle);
+            mouseOutputRoutingController.AttachRuntime(mouseOutputDispatcher,
+                isServiceRunning: false);
+
+            bool physicalMouseEnabled = appGlobal.appSettings?.PhysicalMouseForwardingEnabled ?? false;
+            string selectedPhysicalMouseId = appGlobal.appSettings?.SelectedPhysicalMouseId;
+            physicalMouseService.Start(physicalMouseEnabled, selectedPhysicalMouseId,
+                mouseOutputDispatcher);
+            LogDebug($"Physical mouse forwarding: {physicalMouseService.Status}");
 
             Thread temper = new Thread(() =>
             {
@@ -430,10 +441,10 @@ namespace DS4MapperTest
                 int tempInd = ind;
                 //testMapper.VIIPERDeviceHanle = deviceHandle;
                 testMapper.PassVIIPERConnection(serverHandle);
+                testMapper.PassMouseOutputDispatcher(mouseOutputDispatcher);
                 //testMapper.Start(vigemTestClient, virtualEventHandler, eventInputMapping);
                 testMapper.Start(virtualEventHandler, eventInputMapping);
-                testMapper.ProfileChanged += (object sender, string e) =>
-                {
+                testMapper.ProfileChanged += (object sender, string e) => {
                     appGlobal.activeProfiles[tempInd] = e;
                     appGlobal.SaveControllerDeviceSettings(device, device.DeviceOptions);
                 };
@@ -450,6 +461,7 @@ namespace DS4MapperTest
 
             isRunning = true;
             changingService = false;
+            mouseOutputRoutingController.SetServiceRunning(true);
 
             ServiceStarted?.Invoke(this, EventArgs.Empty);
 
@@ -458,32 +470,19 @@ namespace DS4MapperTest
 
         private void InitOutputKBMHandler()
         {
-            if (!string.IsNullOrEmpty(_argParser.VirtualkbmHandler))
+            string configuredHandlerIdentifier =
+                DetermineConfiguredOutputHandlerIdentifier(_argParser, appGlobal);
+
+            switch (configuredHandlerIdentifier)
             {
-                switch (_argParser.VirtualkbmHandler)
-                {
-                    case "fakerinput":
-                        virtualEventHandler = new FakerInputHandler();
-                        virtualEventHandler.version = new Version(appGlobal.fakerInputVersion);
-                        break;
-                    case "sendinput":
-                    default:
-                        virtualEventHandler = new SendInputHandler();
-                        break;
-                }
-            }
-            else
-            {
-                if (appGlobal.fakerInputInstalled)
-                {
+                case FakerInputHandler.IDENTIFIER:
                     virtualEventHandler = new FakerInputHandler();
                     virtualEventHandler.version = new Version(appGlobal.fakerInputVersion);
-                }
-                else
-                {
-                    // Use fallback handler
+                    break;
+                case SendInputHandler.IDENTIFIER:
+                default:
                     virtualEventHandler = GetFallbackKBMHandler();
-                }
+                    break;
             }
 
             bool checkConnect = virtualEventHandler.Connect();
@@ -511,6 +510,26 @@ namespace DS4MapperTest
             ProfileSerializer.EventInputMapper = eventInputMapping;
 
             LogDebug($"KBM Event Handler: {virtualEventHandler.GetFullDisplayName()}");
+        }
+
+        internal static string DetermineConfiguredOutputHandlerIdentifier(
+            ArgumentParser argParser, AppGlobalData appGlobal)
+        {
+            if (!string.IsNullOrEmpty(argParser?.VirtualkbmHandler))
+            {
+                switch (argParser.VirtualkbmHandler)
+                {
+                    case "fakerinput":
+                        return FakerInputHandler.IDENTIFIER;
+                    case "sendinput":
+                    default:
+                        return SendInputHandler.IDENTIFIER;
+                }
+            }
+
+            return appGlobal.fakerInputInstalled
+                ? FakerInputHandler.IDENTIFIER
+                : SendInputHandler.IDENTIFIER;
         }
 
         private VirtualKBMBase GetFallbackKBMHandler()
@@ -624,11 +643,13 @@ namespace DS4MapperTest
 
                 //testMapper.Start(device, reader);
                 testMapper.PassVIIPERConnection(serverHandle);
+                testMapper.PassMouseOutputDispatcher(mouseOutputDispatcher);
                 //testMapper.Start(vigemTestClient, virtualEventHandler, eventInputMapping);
                 testMapper.Start(virtualEventHandler, eventInputMapping);
                 //testMapper.RequestOSD += TestMapper_RequestOSD;
                 int tempInd = ind;
-                testMapper.ProfileChanged += (object sender, string e) => {
+                testMapper.ProfileChanged += (object sender, string e) =>
+                {
                     appGlobal.activeProfiles[tempInd] = e;
                     appGlobal.SaveControllerDeviceSettings(device, device.DeviceOptions);
                 };
@@ -747,6 +768,11 @@ namespace DS4MapperTest
             //vigemTestClient?.Dispose();
             //vigemTestClient = null;
 
+            mouseOutputDispatcher?.Dispose();
+            mouseOutputDispatcher = null;
+            mouseOutputRoutingController.DetachRuntime();
+            mouseOutputRoutingController.SetServiceRunning(false);
+
             if (serverHandle != 0)
             {
                 LogDebug($"Closing VIIPER connection");
@@ -778,6 +804,7 @@ namespace DS4MapperTest
 
         public void ShutDown()
         {
+            mouseOutputRoutingController.Dispose();
             physicalMouseService.Dispose();
         }
 
@@ -931,6 +958,7 @@ namespace DS4MapperTest
 
             int tempInd = ind;
             mapper.PassVIIPERConnection(serverHandle);
+            mapper.PassMouseOutputDispatcher(mouseOutputDispatcher);
             //mapper.Start(vigemTestClient, virtualEventHandler, eventInputMapping);
             mapper.Start(virtualEventHandler, eventInputMapping);
             mapper.ProfileChanged += (object sender, string e) => {

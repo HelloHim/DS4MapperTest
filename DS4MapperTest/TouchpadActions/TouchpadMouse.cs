@@ -381,16 +381,16 @@ namespace DS4MapperTest.TouchpadActions
                     mapper.GenerateMouseEventFilteredV2(smoothingFilterSettings.filterX,
                         smoothingFilterSettings.filterY,
                         ref xMotion, ref yMotion);
-                    mapper.MouseSync = true;
+                    mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
                     //mapper.MouseEventFired = true;
                 }
                 else
                 {
                     // Allow mapper to handle event
-                    mapper.MouseSync = true;
+                    mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
                 }
 
-                mapper.MouseX += xMotion; mapper.MouseY += yMotion;
+                mapper.AddRouteRelativeMouseMotion(MouseOutputRoute.Trackpad, xMotion, yMotion);
 
                 active = true;
             }
@@ -403,16 +403,16 @@ namespace DS4MapperTest.TouchpadActions
                     mapper.GenerateMouseEventFilteredV2(smoothingFilterSettings.filterX,
                         smoothingFilterSettings.filterY,
                         ref xMotion, ref yMotion);
-                    mapper.MouseSync = true;
+                    mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
                     //mapper.MouseEventFired = true;
                 }
                 else
                 {
                     // Allow mapper to handle event
-                    mapper.MouseSync = true;
+                    mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
                 }
 
-                mapper.MouseX += xMotion; mapper.MouseY += yMotion;
+                mapper.AddRouteRelativeMouseMotion(MouseOutputRoute.Trackpad, xMotion, yMotion);
 
                 //mapper.MouseX = xMotion; mapper.MouseY = yMotion;
                 //mapper.MouseXRemainder = mapper.MouseYRemainder = 0.0;

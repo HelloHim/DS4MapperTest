@@ -149,7 +149,8 @@ namespace DS4MapperTest.TouchpadActions
                                 int relativeX = (int)temp;
                                 if (relativeX != 0)
                                 {
-                                    mapper.MouseX = relativeX; mapper.MouseSync = true;
+                                    mapper.SetRouteRelativeMouseMotion(MouseOutputRoute.Trackpad, relativeX, 0.0);
+                                    mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
                                 }
 
                                 relXRemainder = temp - relativeX;
@@ -167,7 +168,8 @@ namespace DS4MapperTest.TouchpadActions
                                 int relativeX = (int)temp;
                                 if (relativeX != 0)
                                 {
-                                    mapper.MouseY = relativeX; mapper.MouseSync = true;
+                                    mapper.SetRouteRelativeMouseMotion(MouseOutputRoute.Trackpad, 0.0, relativeX);
+                                    mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
                                 }
 
                                 relXRemainder = temp - relativeX;
@@ -185,7 +187,7 @@ namespace DS4MapperTest.TouchpadActions
                                 int relativeX = (int)temp;
                                 if (relativeX != 0)
                                 {
-                                    mapper.MouseWheelX = relativeX; mapper.MouseWheelSync = true;
+                                    mapper.SetRouteWheel(MouseOutputRoute.Trackpad, relativeX, 0);
                                 }
 
                                 relXRemainder = temp - relativeX;
@@ -203,7 +205,7 @@ namespace DS4MapperTest.TouchpadActions
                                 int relativeX = (int)temp;
                                 if (relativeX != 0)
                                 {
-                                    mapper.MouseWheelY = relativeX; mapper.MouseWheelSync = true;
+                                    mapper.SetRouteWheel(MouseOutputRoute.Trackpad, 0, relativeX);
                                 }
 
                                 relXRemainder = temp - relativeX;
@@ -238,7 +240,8 @@ namespace DS4MapperTest.TouchpadActions
                                 int relativeY = (int)temp;
                                 if (relativeY != 0)
                                 {
-                                    mapper.MouseX = relativeY; mapper.MouseSync = true;
+                                    mapper.SetRouteRelativeMouseMotion(MouseOutputRoute.Trackpad, relativeY, 0.0);
+                                    mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
                                 }
 
                                 relYRemainder = temp - relativeY;
@@ -256,7 +259,8 @@ namespace DS4MapperTest.TouchpadActions
                                 int relativeY = (int)temp;
                                 if (relativeY != 0)
                                 {
-                                    mapper.MouseY = relativeY; mapper.MouseSync = true;
+                                    mapper.SetRouteRelativeMouseMotion(MouseOutputRoute.Trackpad, 0.0, relativeY);
+                                    mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
                                 }
 
                                 relYRemainder = temp - relativeY;
@@ -274,7 +278,7 @@ namespace DS4MapperTest.TouchpadActions
                                 int relativeY = (int)temp;
                                 if (relativeY != 0)
                                 {
-                                    mapper.MouseWheelX = relativeY; mapper.MouseWheelSync = true;
+                                    mapper.SetRouteWheel(MouseOutputRoute.Trackpad, relativeY, 0);
                                 }
 
                                 relYRemainder = temp - relativeY;
@@ -292,7 +296,7 @@ namespace DS4MapperTest.TouchpadActions
                                 int relativeY = (int)temp;
                                 if (relativeY != 0)
                                 {
-                                    mapper.MouseWheelY = relativeY; mapper.MouseWheelSync = true;
+                                    mapper.SetRouteWheel(MouseOutputRoute.Trackpad, 0, relativeY);
                                 }
 
                                 relYRemainder = temp - relativeY;
