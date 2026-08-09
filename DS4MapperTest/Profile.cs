@@ -123,7 +123,7 @@ namespace DS4MapperTest
         }
         public event EventHandler CalibCountsChanged;
 
-        private CalibMode calibMode = CalibMode.RwcMode;
+        private CalibMode calibMode = CalibMode.CountsMode;
         public CalibMode CalibMode
         {
             get => calibMode;
