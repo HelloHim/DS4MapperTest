@@ -98,6 +98,43 @@ namespace DS4MapperTest
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    struct NS2ProDeviceState
+    {
+        public uint Buttons;
+        public ushort LX;
+        public ushort LY;
+        public ushort RX;
+        public ushort RY;
+        public short AccelX;
+        public short AccelY;
+        public short AccelZ;
+        public short GyroX;
+        public short GyroY;
+        public short GyroZ;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NS2ProMetaState
+    {
+        public IntPtr SerialNumber;
+        public byte BatteryLevel;
+        public byte Charging;
+        public byte ExternalPower;
+        public ushort BatteryVolts;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct NS2ProOutputState
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public byte[] LeftRumble;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public byte[] RightRumble;
+        public byte Flags;
+        public byte PlayerLedMask;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     struct DSMetaState
     {
         public IntPtr SerialNumber;
@@ -189,6 +226,32 @@ namespace DS4MapperTest
         public static uint R4 = 0x00800000;
     }
 
+    public static class NS2ProButton
+    {
+        public const uint B = 0x00000001;
+        public const uint A = 0x00000002;
+        public const uint Y = 0x00000004;
+        public const uint X = 0x00000008;
+        public const uint R = 0x00000010;
+        public const uint ZR = 0x00000020;
+        public const uint Plus = 0x00000040;
+        public const uint RightStick = 0x00000080;
+        public const uint Down = 0x00000100;
+        public const uint Right = 0x00000200;
+        public const uint Left = 0x00000400;
+        public const uint Up = 0x00000800;
+        public const uint L = 0x00001000;
+        public const uint ZL = 0x00002000;
+        public const uint Minus = 0x00004000;
+        public const uint LeftStick = 0x00008000;
+        public const uint Home = 0x00010000;
+        public const uint Capture = 0x00020000;
+        public const uint GR = 0x00040000;
+        public const uint GL = 0x00080000;
+        public const uint C = 0x00100000;
+        public const uint Headset = 0x00200000;
+    }
+
     public static class VIIPERMouseButton
     {
         public const byte Left = 0x01;
@@ -206,6 +269,10 @@ namespace DS4MapperTest
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void DSOutputCallbackDelegate(nuint handle, byte rumbleSmall, byte rumbleLarge,
         byte ledRed, byte ledGreen, byte ledBlue, byte playerLeds);
+
+    [SuppressUnmanagedCodeSecurity]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void NS2ProOutputCallbackDelegate(nuint handle, NS2ProOutputState output);
 
     [SuppressUnmanagedCodeSecurity]
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -275,6 +342,22 @@ namespace DS4MapperTest
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool SetDualSenseOutputCallback(nuint deviceHandle, DSOutputCallbackDelegate? callback);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool CreateNS2ProDevice(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct, IntPtr meta);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool RemoveNS2ProDevice(nuint outDeviceHandle);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool SetNS2ProDeviceState(nuint deviceHandle, NS2ProDeviceState state);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool SetNS2ProOutputCallback(nuint deviceHandle, NS2ProOutputCallbackDelegate? callback);
 
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
