@@ -1,35 +1,36 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.Common;
+using DS4MapperTest.GyroActions;
 using DS4MapperTest.MapperUtil;
-using DS4MapperTest.ViewModels.Common;
-using DS4MapperTest.StickModifiers;
 using DS4MapperTest.StickActions;
-using DS4MapperTest.ViewModels;
-using System.Threading;
+using DS4MapperTest.StickModifiers;
+using DS4MapperTest.TouchpadActions;
+using DS4MapperTest.ViewModels.Common;
 
 namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 {
     public class StickMousePropViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        private Mapper mapper;
-        public Mapper Mapper
-        {
-            get => mapper;
-        }
 
+        private bool modelReady;
+        private bool applyingPreset;
+        private Mapper mapper;
         private StickMouse action;
-        public StickMouse Action
-        {
-            get => action;
-        }
+        private bool usingRealAction;
+        private bool verticalScaleIsAbsoluteMode;
+        private double fullTurnCounts = 1800.0;
+        private GameCalibPreset selectedPreset = GameCalibPreset.Custom;
+        private List<StickMouseDirectionBindItem> cardinalDirectionItems;
+
+        public Mapper Mapper => mapper;
+        public StickMouse Action => action;
 
         public string Name
         {
@@ -56,23 +57,21 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler DeadZoneChanged;
 
-        public int MouseSpeed
+        public double DegreesPerSecond
         {
-            get => action.MouseSpeed;
+            get => action.DegreesPerSecond;
             set
             {
-                action.MouseSpeed = value;
-                MouseSpeedChanged?.Invoke(this, EventArgs.Empty);
+                double next = double.IsFinite(value)
+                    ? Math.Clamp(value, 0.0, StickMouse.MaxDegreesPerSecond)
+                    : StickMouse.DefaultDegreesPerSecond;
+                if (action.DegreesPerSecond == next) return;
+                action.DegreesPerSecond = next;
+                DegreesPerSecondChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler MouseSpeedChanged;
-
-        public string MouseSpeedOutput
-        {
-            get => (action.MouseSpeed * 20).ToString();
-        }
-        public event EventHandler MouseSpeedOutputChanged;
+        public event EventHandler DegreesPerSecondChanged;
 
         public double VerticalScale
         {
@@ -88,29 +87,15 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler VerticalScaleChanged;
 
-        public int DiagonalRange
+        public double VerticalDegreesPerSecond
         {
-            get => action.DiagonalRange;
+            get => Math.Round(action.DegreesPerSecond * action.VerticalScale, 4);
             set
             {
-                int diagonalRange = Math.Clamp(value, 0, 90);
-                if (action.DiagonalRange == diagonalRange) return;
-                action.DiagonalRange = diagonalRange;
-                DiagonalRangeChanged?.Invoke(this, EventArgs.Empty);
-                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-        public event EventHandler DiagonalRangeChanged;
-
-        public double VerticalSensitivity
-        {
-            get => Math.Round(action.MouseSpeed * action.VerticalScale, 4);
-            set
-            {
-                double mouseSpeedD = action.MouseSpeed;
-                double verticalScale = Math.Abs(mouseSpeedD) < 1e-10
+                double baseDps = action.DegreesPerSecond;
+                double verticalScale = Math.Abs(baseDps) < 1e-10
                     ? 0.0
-                    : value / mouseSpeedD;
+                    : value / baseDps;
                 verticalScale = Math.Clamp(verticalScale, 0.0, StickMouse.MaxVerticalScale);
                 if (action.VerticalScale == verticalScale) return;
                 action.VerticalScale = verticalScale;
@@ -119,7 +104,6 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             }
         }
 
-        private bool verticalScaleIsAbsoluteMode = false;
         public bool VerticalScaleIsAbsoluteMode
         {
             get => verticalScaleIsAbsoluteMode;
@@ -142,41 +126,30 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             }
         }
 
-        private void NotifyVerticalScaleModeChanged()
+        public int DiagonalRange
         {
-            PropertyChanged?.Invoke(this,
-                new PropertyChangedEventArgs(nameof(VerticalScaleIsAbsoluteMode)));
-            PropertyChanged?.Invoke(this,
-                new PropertyChangedEventArgs(nameof(VerticalScaleIsMultiplierMode)));
+            get => action.DiagonalRange;
+            set
+            {
+                int diagonalRange = Math.Clamp(value, 0, 90);
+                if (action.DiagonalRange == diagonalRange) return;
+                action.DiagonalRange = diagonalRange;
+                DiagonalRangeChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
+        public event EventHandler DiagonalRangeChanged;
 
-        public bool HighlightVerticalScale
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_SCALE);
-        }
-        public event EventHandler HighlightVerticalScaleChanged;
-
-        public bool HighlightDiagonalRange
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DIAGONAL_RANGE);
-        }
-        public event EventHandler HighlightDiagonalRangeChanged;
-
-        private List<StickMouseDirectionBindItem> cardinalDirectionItems;
-        public List<StickMouseDirectionBindItem> CardinalDirectionItems => cardinalDirectionItems;
-
-        private List<EnumChoiceSelection<StickOutCurve.Curve>> outputCurveChoiceItems =
+        private readonly List<EnumChoiceSelection<StickOutCurve.Curve>> outputCurveChoiceItems =
             new List<EnumChoiceSelection<StickOutCurve.Curve>>()
-        {
-            new EnumChoiceSelection<StickOutCurve.Curve>("Linear", StickOutCurve.Curve.Linear),
-            new EnumChoiceSelection<StickOutCurve.Curve>("Enhanced Precision", StickOutCurve.Curve.EnhancedPrecision),
-            new EnumChoiceSelection<StickOutCurve.Curve>("Quadratic", StickOutCurve.Curve.Quadratic),
-            new EnumChoiceSelection<StickOutCurve.Curve>("Cubic", StickOutCurve.Curve.Cubic),
-            new EnumChoiceSelection<StickOutCurve.Curve>("EaseOut Quadratic", StickOutCurve.Curve.EaseoutQuad),
-            new EnumChoiceSelection<StickOutCurve.Curve>("EaseOut Cubic", StickOutCurve.Curve.EaseoutCubic),
-        };
+            {
+                new EnumChoiceSelection<StickOutCurve.Curve>("Linear", StickOutCurve.Curve.Linear),
+                new EnumChoiceSelection<StickOutCurve.Curve>("Enhanced Precision", StickOutCurve.Curve.EnhancedPrecision),
+                new EnumChoiceSelection<StickOutCurve.Curve>("Quadratic", StickOutCurve.Curve.Quadratic),
+                new EnumChoiceSelection<StickOutCurve.Curve>("Cubic", StickOutCurve.Curve.Cubic),
+                new EnumChoiceSelection<StickOutCurve.Curve>("EaseOut Quadratic", StickOutCurve.Curve.EaseoutQuad),
+                new EnumChoiceSelection<StickOutCurve.Curve>("EaseOut Cubic", StickOutCurve.Curve.EaseoutCubic),
+            };
         public List<EnumChoiceSelection<StickOutCurve.Curve>> OutputCurveChoiceItems => outputCurveChoiceItems;
 
         public StickOutCurve.Curve OutputCurveChoice
@@ -263,111 +236,170 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler DeltaMinFactorChanged;
 
-        public bool HighlightName
+        public CalibMode CalibMode
         {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.NAME);
+            get => mapper.ActionProfile.CalibMode;
+            set
+            {
+                if (!modelReady) return;
+                if (mapper.ActionProfile.CalibMode == value) return;
+                mapper.ActionProfile.CalibMode = value;
+                RaiseCalibModePropertyChanges();
+                SyncCalibToProfile();
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
+
+        public bool IsRwcMode
+        {
+            get => CalibMode == DS4MapperTest.CalibMode.RwcMode;
+            set { if (value) CalibMode = DS4MapperTest.CalibMode.RwcMode; }
+        }
+
+        public bool IsCountsMode
+        {
+            get => CalibMode == DS4MapperTest.CalibMode.CountsMode;
+            set { if (value) CalibMode = DS4MapperTest.CalibMode.CountsMode; }
+        }
+
+        public string MasterCalibrationLabel => IsCountsMode ? "Counts" : "RWC";
+
+        public double MasterCalibrationValue
+        {
+            get => IsCountsMode ? FullTurnCounts : RealWorldCalibration;
+            set
+            {
+                if (IsCountsMode) FullTurnCounts = value;
+                else RealWorldCalibration = value;
+            }
+        }
+
+        public double FullTurnCounts
+        {
+            get => fullTurnCounts;
+            set
+            {
+                if (!modelReady) return;
+                if (value == 0.0) return;
+                bool countsChanged = fullTurnCounts != value;
+                fullTurnCounts = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                if (!countsChanged) return;
+                if (IsCountsMode)
+                {
+                    CalculateRwcFromCounts();
+                    SyncCalibToProfile();
+                }
+            }
+        }
+
+        public double RealWorldCalibration
+        {
+            get => mapper.ActionProfile.CalibRwc;
+            set
+            {
+                if (!modelReady) return;
+                if (mapper.ActionProfile.CalibRwc == value) return;
+                mapper.ActionProfile.CalibRwc = value;
+                if (!applyingPreset) TryMatchPreset();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                SyncCalibToProfile();
+            }
+        }
+
+        public double InGameSens
+        {
+            get => mapper.ActionProfile.CalibInGameSens;
+            set
+            {
+                if (!modelReady) return;
+                if (mapper.ActionProfile.CalibInGameSens == value) return;
+                mapper.ActionProfile.CalibInGameSens = value;
+                if (IsCountsMode) CalculateCountsFromRwc();
+                if (!applyingPreset) TryMatchPreset();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                SyncCalibToProfile();
+            }
+        }
+
+        public IReadOnlyList<GameCalibPreset> GamePresets => GameCalibPreset.All;
+
+        public GameCalibPreset SelectedPreset
+        {
+            get => selectedPreset;
+            set
+            {
+                if (!modelReady) return;
+                if (selectedPreset == value) return;
+                selectedPreset = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+                if (value == null || value.IsCustom || FullTurnCounts <= 0.0) return;
+                applyingPreset = true;
+                mapper.ActionProfile.CalibInGameSens = value.RWC * 360.0 / FullTurnCounts;
+                mapper.ActionProfile.CalibRwc = value.RWC;
+                SyncCalibToProfile();
+                applyingPreset = false;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public bool HighlightName => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.NAME);
         public event EventHandler HighlightNameChanged;
 
-        public bool HighlightDeadZone
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DEAD_ZONE);
-        }
+        public bool HighlightDeadZone => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DEAD_ZONE);
         public event EventHandler HighlightDeadZoneChanged;
 
-        public bool HighlightMouseSpeed
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.MOUSE_SPEED);
-        }
-        public event EventHandler HighlightMouseSpeedChanged;
+        public bool HighlightDegreesPerSecond => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DEGREES_PER_SECOND);
+        public event EventHandler HighlightDegreesPerSecondChanged;
 
-        public bool HighlightOutputCurveChoice
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.OUTPUT_CURVE);
-        }
+        public bool HighlightVerticalScale => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_SCALE);
+        public event EventHandler HighlightVerticalScaleChanged;
+
+        public bool HighlightDiagonalRange => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DIAGONAL_RANGE);
+        public event EventHandler HighlightDiagonalRangeChanged;
+
+        public bool HighlightOutputCurveChoice => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.OUTPUT_CURVE);
         public event EventHandler HighlightOutputCurveChoiceChanged;
 
-        public bool HighlightDelta
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-        }
+        public bool HighlightDelta => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
         public event EventHandler HighlightDeltaChanged;
 
-        //public bool HighlightDeltaEnabled
-        //{
-        //    get => action.ParentAction == null ||
-        //        action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-        //}
-        //public event EventHandler HighlightDeltaEnabledChanged;
-
-        //public bool HighlightHighlightDeltaMultiplier
-        //{
-        //    get => action.ParentAction == null ||
-        //        action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-        //}
-        //public event EventHandler HighlightDeltaMultiplierChanged;
-
-        //public bool HighlightDeltaMinTravel
-        //{
-        //    get => action.ParentAction == null ||
-        //        action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-        //}
-        //public event EventHandler HighlightDeltaMinTravelChanged;
-
-        //public bool HighlightDeltaMaxTravel
-        //{
-        //    get => action.ParentAction == null ||
-        //        action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-        //}
-        //public event EventHandler HighlightDeltaMaxTravelChanged;
-
-        //public bool HighlightDeltaEasingDuration
-        //{
-        //    get => action.ParentAction == null ||
-        //        action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-        //}
-        //public event EventHandler HighlightDeltaEasingDurationChanged;
-
-        //public bool HighlightDeltaMinFactor
-        //{
-        //    get => action.ParentAction == null ||
-        //        action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-        //}
-        //public event EventHandler HighlightDeltaMinFactorChanged;
-
+        public List<StickMouseDirectionBindItem> CardinalDirectionItems => cardinalDirectionItems;
 
         public event EventHandler ActionPropertyChanged;
         public event EventHandler<StickMapAction> ActionChanged;
-
-        private bool usingRealAction = false;
 
         public StickMousePropViewModel(Mapper mapper, StickMapAction action)
         {
             this.mapper = mapper;
             this.action = action as StickMouse;
+            usingRealAction = true;
 
-            // Check if base ActionLayer action from composite layer
             if (action.ParentAction == null &&
                 mapper.EditActionSet.UsingCompositeLayer &&
                 !mapper.EditLayer.LayerActions.Contains(action) &&
                 MapAction.IsSameType(mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId], action))
             {
-                // Test with temporary object
-                StickMouse baseLayerAction = mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as StickMouse;
+                StickMouse baseLayerAction =
+                    mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as StickMouse;
                 StickMouse tempAction = new StickMouse();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
-                int tempId = mapper.EditLayer.FindNextAvailableId();
-                tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
-
+                tempAction.Id = mapper.EditLayer.FindNextAvailableId();
                 this.action = tempAction;
-
+                usingRealAction = false;
                 ActionPropertyChanged += ReplaceExistingLayerAction;
             }
 
@@ -375,9 +407,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             NameChanged += StickMousePropViewModel_NameChanged;
             DeadZoneChanged += StickMousePropViewModel_DeadZoneChanged;
-            MouseSpeedChanged += StickMousePropViewModel_MouseSpeedChanged;
-            MouseSpeedChanged += RenderUpdatedOutputMouseSpeed;
-            MouseSpeedChanged += StickMousePropViewModel_MouseSpeedChangedForVerticalSensitivity;
+            DegreesPerSecondChanged += StickMousePropViewModel_DegreesPerSecondChanged;
+            DegreesPerSecondChanged += StickMousePropViewModel_DegreesPerSecondChangedForVerticalDegrees;
             VerticalScaleChanged += StickMousePropViewModel_VerticalScaleChanged;
             DiagonalRangeChanged += StickMousePropViewModel_DiagonalRangeChanged;
             OutputCurveChoiceChanged += StickMousePropViewModel_OutputCurveChoiceChanged;
@@ -387,11 +418,166 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             DeltaMaxTravelChanged += StickMousePropViewModel_DeltaMaxTravelChanged;
             DeltaEasingDurationChanged += StickMousePropViewModel_DeltaEasingDurationChanged;
             DeltaMinFactorChanged += StickMousePropViewModel_DeltaMinFactorChanged;
+            mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
+            mapper.ActionProfile.CalibRwcChanged += ActionProfile_CalibValuesChanged;
+            mapper.ActionProfile.CalibInGameSensChanged += ActionProfile_CalibValuesChanged;
+            mapper.ActionProfile.CalibCountsChanged += ActionProfile_CalibValuesChanged;
+
+            double savedRwc = mapper.ActionProfile.CalibRwc;
+            double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
+            double savedCounts = fullTurnCounts;
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Background,
+                new Action(() =>
+                {
+                    mapper.ActionProfile.CalibRwc = savedRwc;
+                    mapper.ActionProfile.CalibInGameSens = savedInGameSens;
+                    fullTurnCounts = savedCounts;
+                    RaiseCalibrationPropertyChanges();
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                        System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                        new Action(() =>
+                        {
+                            mapper.ActionProfile.CalibRwc = savedRwc;
+                            mapper.ActionProfile.CalibInGameSens = savedInGameSens;
+                            fullTurnCounts = savedCounts;
+                            modelReady = true;
+                            TryMatchPreset();
+                            RaiseCalibrationPropertyChanges();
+                        }));
+                }));
         }
 
-        private void StickMousePropViewModel_MouseSpeedChangedForVerticalSensitivity(object sender, EventArgs e)
+        private void PrepareModel()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
+            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0
+                ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
+            PrepareDirectionItems();
+        }
+
+        private void PrepareDirectionItems()
+        {
+            cardinalDirectionItems = new List<StickMouseDirectionBindItem>()
+            {
+                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Up, "Up", "Cardinal direction"),
+                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Down, "Down", "Cardinal direction"),
+                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Left, "Left", "Cardinal direction"),
+                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Right, "Right", "Cardinal direction"),
+            };
+        }
+
+        private void NotifyVerticalScaleModeChanged()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScaleIsAbsoluteMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScaleIsMultiplierMode)));
+        }
+
+        private void CalculateRwcFromCounts()
+        {
+            double rwc = fullTurnCounts * InGameSens / 360.0;
+            if (mapper.ActionProfile.CalibRwc == rwc) return;
+            mapper.ActionProfile.CalibRwc = rwc;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+        }
+
+        private void CalculateCountsFromRwc()
+        {
+            double counts = InGameSens > 0.0
+                ? mapper.ActionProfile.CalibRwc * 360.0 / InGameSens
+                : 0.0;
+            if (fullTurnCounts == counts) return;
+            fullTurnCounts = counts;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+        }
+
+        private void TryMatchPreset()
+        {
+            double rwc = mapper.ActionProfile.CalibRwc;
+            GameCalibPreset match = GameCalibPreset.All.FirstOrDefault(
+                p => !p.IsCustom && Math.Abs(p.RWC - rwc) < 1e-3);
+            GameCalibPreset next = match ?? GameCalibPreset.Custom;
+            if (selectedPreset == next) return;
+            selectedPreset = next;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+        }
+
+        private void SyncCalibToProfile()
+        {
+            double inGameSens = mapper.ActionProfile.CalibInGameSens;
+            double rwc = IsCountsMode
+                ? fullTurnCounts * inGameSens / 360.0
+                : mapper.ActionProfile.CalibRwc;
+            double counts = IsCountsMode || inGameSens <= 0.0
+                ? fullTurnCounts
+                : rwc * 360.0 / inGameSens;
+            mapper.ActionProfile.CalibRwc = rwc;
+            mapper.ActionProfile.CalibInGameSens = inGameSens;
+            mapper.ActionProfile.CalibCounts = counts;
+            mapper.ProcessMappingChangeAction(() =>
+            {
+                foreach (var set in mapper.ActionProfile.ActionSets)
+                    foreach (var layer in set.ActionLayers)
+                        foreach (var mapAction in layer.normalActionDict.Values)
+                        {
+                            if (mapAction is GyroMouse gyroMouse)
+                            {
+                                gyroMouse.mouseParams.realWorldCalibration = rwc;
+                                gyroMouse.mouseParams.inGameSens = inGameSens;
+                            }
+                            if (mapAction is ButtonAction ba)
+                                foreach (var func in ba.ActionFuncs)
+                                    foreach (var data in func.OutputActions)
+                                        if (data.OutputType == OutputActionData.ActionType.CameraTurn)
+                                            data.cameraTurnCounts360 = counts;
+                            if (mapAction is StickFlickStick sfs)
+                            {
+                                sfs.RealWorldCalibration = rwc;
+                                sfs.InGameSens = inGameSens;
+                            }
+                            if (mapAction is TouchpadFlickStick tfs)
+                            {
+                                tfs.RealWorldCalibration = rwc;
+                                tfs.InGameSens = inGameSens;
+                            }
+                        }
+            });
+        }
+
+        private void RaiseCalibModePropertyChanges()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalibMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsRwcMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCountsMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationLabel)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+        }
+
+        private void RaiseCalibrationPropertyChanges()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+            RaiseCalibModePropertyChanges();
+        }
+
+        private void ActionProfile_CalibModeChanged(object sender, EventArgs e)
+        {
+            RaiseCalibModePropertyChanges();
+        }
+
+        private void ActionProfile_CalibValuesChanged(object sender, EventArgs e)
+        {
+            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0
+                ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
+            if (!applyingPreset) TryMatchPreset();
+            RaiseCalibrationPropertyChanges();
+        }
+
+        private void StickMousePropViewModel_DegreesPerSecondChangedForVerticalDegrees(object sender, EventArgs e)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalDegreesPerSecond)));
         }
 
         private void StickMousePropViewModel_VerticalScaleChanged(object sender, EventArgs e)
@@ -404,7 +590,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.VERTICAL_SCALE);
             HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalDegreesPerSecond)));
         }
 
         private void StickMousePropViewModel_DiagonalRangeChanged(object sender, EventArgs e)
@@ -420,61 +606,36 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
         private void StickMousePropViewModel_DeltaMinFactorChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS))
-            {
-                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-            }
-
-            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-            HighlightDeltaChanged?.Invoke(this, EventArgs.Empty);
+            MarkDeltaChanged();
         }
 
         private void StickMousePropViewModel_DeltaEasingDurationChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS))
-            {
-                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-            }
-
-            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-            HighlightDeltaChanged?.Invoke(this, EventArgs.Empty);
+            MarkDeltaChanged();
         }
 
         private void StickMousePropViewModel_DeltaMaxTravelChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS))
-            {
-                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-            }
-
-            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-            HighlightDeltaChanged?.Invoke(this, EventArgs.Empty);
+            MarkDeltaChanged();
         }
 
         private void StickMousePropViewModel_DeltaMinTravelChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS))
-            {
-                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-            }
-
-            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-            HighlightDeltaChanged?.Invoke(this, EventArgs.Empty);
+            MarkDeltaChanged();
         }
 
         private void StickMousePropViewModel_DeltaMultiplierChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS))
-            {
-                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-            }
-
-            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
-            HighlightDeltaChanged?.Invoke(this, EventArgs.Empty);
+            MarkDeltaChanged();
         }
 
         private void StickMousePropViewModel_DeltaEnabledChanged(object sender, EventArgs e)
         {
+            MarkDeltaChanged();
+        }
+
+        private void MarkDeltaChanged()
+        {
             if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS))
             {
                 action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
@@ -484,20 +645,16 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             HighlightDeltaChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void RenderUpdatedOutputMouseSpeed(object sender, EventArgs e)
+        private void StickMousePropViewModel_DegreesPerSecondChanged(object sender, EventArgs e)
         {
-            MouseSpeedOutputChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void StickMousePropViewModel_MouseSpeedChanged(object sender, EventArgs e)
-        {
-            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.MOUSE_SPEED))
+            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DEGREES_PER_SECOND))
             {
-                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.MOUSE_SPEED);
+                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DEGREES_PER_SECOND);
             }
 
-            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.MOUSE_SPEED);
-            HighlightMouseSpeedChanged?.Invoke(this, EventArgs.Empty);
+            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.DEGREES_PER_SECOND);
+            HighlightDegreesPerSecondChanged?.Invoke(this, EventArgs.Empty);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DegreesPerSecond)));
         }
 
         private void StickMousePropViewModel_DeadZoneChanged(object sender, EventArgs e)
@@ -535,45 +692,26 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
         private void ReplaceExistingLayerAction(object sender, EventArgs e)
         {
-            if (!usingRealAction)
+            if (usingRealAction) return;
+
+            mapper.ProcessMappingChangeAction(() =>
             {
-                mapper.ProcessMappingChangeAction(() =>
+                this.action.ParentAction.Release(mapper, ignoreReleaseActions: true);
+                mapper.EditLayer.AddStickAction(this.action);
+                if (mapper.EditActionSet.UsingCompositeLayer)
                 {
-                    this.action.ParentAction.Release(mapper, ignoreReleaseActions: true);
+                    mapper.EditActionSet.RecompileCompositeLayer(mapper);
+                }
+                else
+                {
+                    mapper.EditLayer.SyncActions();
+                    mapper.EditActionSet.ClearCompositeLayerActions();
+                    mapper.EditActionSet.PrepareCompositeLayer();
+                }
+            });
 
-                    mapper.EditLayer.AddStickAction(this.action);
-                    if (mapper.EditActionSet.UsingCompositeLayer)
-                    {
-                        mapper.EditActionSet.RecompileCompositeLayer(mapper);
-                    }
-                    else
-                    {
-                        mapper.EditLayer.SyncActions();
-                        mapper.EditActionSet.ClearCompositeLayerActions();
-                        mapper.EditActionSet.PrepareCompositeLayer();
-                    }
-                });
-
-                usingRealAction = true;
-
-                ActionChanged?.Invoke(this, action);
-            }
-        }
-
-        private void PrepareModel()
-        {
-            PrepareDirectionItems();
-        }
-
-        private void PrepareDirectionItems()
-        {
-            cardinalDirectionItems = new List<StickMouseDirectionBindItem>()
-            {
-                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Up, "Up", "Cardinal direction"),
-                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Down, "Down", "Cardinal direction"),
-                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Left, "Left", "Cardinal direction"),
-                new StickMouseDirectionBindItem(this, StickMouse.DirSlot.Right, "Right", "Cardinal direction"),
-            };
+            usingRealAction = true;
+            ActionChanged?.Invoke(this, action);
         }
 
         internal ButtonAction GetDirectionAction(StickMouse.DirSlot direction)

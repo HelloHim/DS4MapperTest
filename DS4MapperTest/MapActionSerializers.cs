@@ -8538,17 +8538,28 @@ namespace DS4MapperTest
             private StickMouse stickMouseAction;
             private DeltaAccelSettingsSerializer mouseDeltaSettingsSerializer;
 
-            public int MouseSpeed
+            public double DegreesPerSecond
             {
-                get => stickMouseAction.MouseSpeed;
+                get => stickMouseAction.DegreesPerSecond;
                 set
                 {
-                    stickMouseAction.MouseSpeed = value;
-                    MouseSpeedChanged?.Invoke(this, EventArgs.Empty);
+                    stickMouseAction.DegreesPerSecond = value;
+                    DegreesPerSecondChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
 
-            public event EventHandler MouseSpeedChanged;
+            public event EventHandler DegreesPerSecondChanged;
+
+            public int MouseSpeed
+            {
+                get => 0;
+                set => stickMouseAction.LegacyMouseSpeedLoaded = true;
+            }
+
+            public bool ShouldSerializeMouseSpeed()
+            {
+                return false;
+            }
 
             public double DeadZone
             {
@@ -8651,7 +8662,7 @@ namespace DS4MapperTest
             settings = new StickMouseSettings(stickMouseAction);
 
             NameChanged += StickMouseSerializer_NameChanged;
-            settings.MouseSpeedChanged += Settings_MouseSpeedChanged;
+            settings.DegreesPerSecondChanged += Settings_DegreesPerSecondChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
             settings.MaxZoneChanged += Settings_MaxZoneChanged;
             settings.DiagonalRangeChanged += Settings_DiagonalRangeChanged;
@@ -8753,9 +8764,9 @@ namespace DS4MapperTest
             stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.NAME);
         }
 
-        private void Settings_MouseSpeedChanged(object sender, EventArgs e)
+        private void Settings_DegreesPerSecondChanged(object sender, EventArgs e)
         {
-            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.MOUSE_SPEED);
+            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DEGREES_PER_SECOND);
         }
 
         private void Settings_DeadZoneChanged(object sender, EventArgs e)
