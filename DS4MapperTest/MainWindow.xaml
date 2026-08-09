@@ -136,6 +136,24 @@
                            VerticalAlignment="Center"/>
             </Grid>
         </DataTemplate>
+
+        <DataTemplate x:Key="MouseRoutingDestinationOptionTemplate">
+            <Grid MinWidth="210">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding DisplayName}"
+                           Foreground="{DynamicResource JsmccTextStrongBrush}"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding AvailabilityText}"
+                           Style="{StaticResource JsmccMutedText}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Background="{DynamicResource JsmccBg0Brush}">
@@ -321,6 +339,112 @@
                                            Style="{StaticResource JsmccMutedText}"
                                            FontSize="12"
                                            VerticalAlignment="Center"/>
+
+                                <Button x:Name="mouseRoutingButton"
+                                        Content="Mouse Routing"
+                                        Click="MouseRoutingButton_Click"
+                                        Margin="12,4,0,4"
+                                        ToolTip="Configure global controller mouse-output routing"
+                                        Style="{StaticResource JsmccButtonStyle}"/>
+
+                                <Popup x:Name="mouseRoutingPopup"
+                                       PlacementTarget="{Binding ElementName=mouseRoutingButton}"
+                                       Placement="Bottom"
+                                       StaysOpen="False"
+                                       AllowsTransparency="True"
+                                       PopupAnimation="Fade"
+                                       Closed="MouseRoutingPopup_Closed">
+                                    <Border x:Name="mouseRoutingPopupHost"
+                                            Style="{StaticResource JsmccPanelBorder}"
+                                            Width="560"
+                                            MaxHeight="560"
+                                            Margin="0,8,0,0">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <StackPanel x:Name="mouseRoutingPanelRoot"
+                                                        Margin="18">
+                                                <Grid Margin="0,0,0,14">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="Mouse Routing"
+                                                                   Style="{StaticResource JsmccSectionTitle}"/>
+                                                        <TextBlock Text="Configure global output routes for controller mouse producers. Changes are staged until you apply them."
+                                                                   Style="{StaticResource JsmccMutedText}"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,4,12,0"/>
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="1"
+                                                                Orientation="Horizontal"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top">
+                                                        <Button Content="Discard"
+                                                                Click="DiscardMouseRoutingButton_Click"
+                                                                Style="{StaticResource JsmccDangerButtonStyle}"
+                                                                IsEnabled="{Binding HasStagedChanges}"/>
+                                                        <Button Content="Apply"
+                                                                Click="ApplyMouseRoutingButton_Click"
+                                                                Style="{StaticResource JsmccAccentButtonStyle}"
+                                                                IsEnabled="{Binding HasStagedChanges}"
+                                                                Margin="8,0,0,0"/>
+                                                    </StackPanel>
+                                                </Grid>
+
+                                                <ItemsControl ItemsSource="{Binding RouteRows}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                                                    BorderThickness="0,0,0,1"
+                                                                    Padding="0,0,0,12"
+                                                                    Margin="0,0,0,12">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="146"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+
+                                                                    <TextBlock Text="{Binding RouteLabel}"
+                                                                               Style="{StaticResource OtherSettingLabel}"
+                                                                               Margin="0,6,14,0"/>
+
+                                                                    <StackPanel Grid.Column="1">
+                                                                        <ComboBox Width="250"
+                                                                                  HorizontalAlignment="Left"
+                                                                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                                                                  ItemsSource="{Binding DestinationOptions}"
+                                                                                  ItemTemplate="{StaticResource MouseRoutingDestinationOptionTemplate}"
+                                                                                  SelectedValuePath="Destination"
+                                                                                  SelectedValue="{Binding StagedDestination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                        <TextBlock Text="{Binding ConfiguredDestinationText, StringFormat=Configured: {0}}"
+                                                                                   Style="{StaticResource JsmccBodyText}"
+                                                                                   Margin="0,8,0,0"/>
+                                                                        <TextBlock Text="{Binding ActiveDestinationText, StringFormat=Active: {0}}"
+                                                                                   Style="{StaticResource JsmccBodyText}"
+                                                                                   Margin="0,2,0,0"/>
+                                                                        <TextBlock Text="{Binding StatusText}"
+                                                                                   Style="{StaticResource JsmccMutedText}"
+                                                                                   TextWrapping="Wrap"
+                                                                                   Margin="0,4,0,0"/>
+                                                                    </StackPanel>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <TextBlock Text="Absolute Mouse is limited to FakerInput and SendInput. VIIPER destinations are available only for relative routes."
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,0,0,12"/>
+
+                                                <TextBlock Text="{Binding ValidationMessage}"
+                                                           Foreground="{DynamicResource JsmccDangerTextBrush}"
+                                                           TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Popup>
                             </WrapPanel>
 
                             <WrapPanel Grid.Column="2"

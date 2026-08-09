@@ -594,7 +594,7 @@ namespace DS4MapperTest
         }
     }
 
-    public sealed class MouseOutputDispatcher : IDisposable
+    public sealed class MouseOutputDispatcher : IMouseOutputRoutingRuntime, IDisposable
     {
         private sealed class ProducerRouteState
         {
@@ -641,6 +641,7 @@ namespace DS4MapperTest
         private readonly Dictionary<MouseOutputDestination, IMouseOutputBackend> backends;
         private readonly MouseOutputRoutingResolver resolver = new MouseOutputRoutingResolver();
         private readonly MouseOutputViiperManager viiperManager;
+        public event EventHandler StateChanged;
 
         public MouseOutputDispatcher(AppGlobalData appGlobal, VirtualKBMBase fakerInputHandler,
             VirtualKBMMapping fakerInputMapping, nuint viiperServerHandle)
@@ -696,6 +697,8 @@ namespace DS4MapperTest
                 producers.Remove(producerId);
                 FlushAllDestinations(flushSharedFakerInput: false);
             }
+
+            StateChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void QueueRelative(MouseOutputProducerId producerId, MouseOutputRoute route, int x, int y)
@@ -774,47 +777,12 @@ namespace DS4MapperTest
 
                 MouseOutputRoutingAvailabilitySnapshot availability = CreateAvailabilitySnapshot();
                 MouseOutputRoutingTable routing = appGlobal.appSettings.MouseOutputRouting;
-
-                foreach ((MouseOutputRoute route, ProducerRouteState routeState) in producer.Routes)
-                {
-                    MouseOutputDestination configured = routing.GetRouteDestination(route);
-                    MouseOutputRouteResolution resolution = resolver.Resolve(route, configured, availability);
-                    if (routeState.ActiveDestination != resolution.ActiveDestination)
-                    {
-                        ReleaseRouteButtons(producerId, route, routeState);
-                        if (routeState.ActiveDestination.HasValue)
-                        {
-                            routeState.PendingRelativeX = 0;
-                            routeState.PendingRelativeY = 0;
-                            routeState.PendingWheel = 0;
-                            routeState.PendingPan = 0;
-                            routeState.HasAbsolute = false;
-                        }
-                        routeState.ActiveDestination = resolution.ActiveDestination;
-                        ApplyRouteButtons(producerId, route, routeState);
-                    }
-
-                    DestinationState destinationState = destinationStates[resolution.ActiveDestination];
-                    destinationState.PendingRelativeX += routeState.PendingRelativeX;
-                    destinationState.PendingRelativeY += routeState.PendingRelativeY;
-                    destinationState.PendingWheel += routeState.PendingWheel;
-                    destinationState.PendingPan += routeState.PendingPan;
-                    routeState.PendingRelativeX = 0;
-                    routeState.PendingRelativeY = 0;
-                    routeState.PendingWheel = 0;
-                    routeState.PendingPan = 0;
-
-                    if (routeState.HasAbsolute)
-                    {
-                        destinationState.AbsoluteX = routeState.AbsoluteX;
-                        destinationState.AbsoluteY = routeState.AbsoluteY;
-                        destinationState.HasAbsolute = true;
-                        routeState.HasAbsolute = false;
-                    }
-                }
+                FlushProducerState(producerId, producer, routing, availability);
 
                 FlushAllDestinations(flushSharedFakerInput);
             }
+
+            StateChanged?.Invoke(this, EventArgs.Empty);
         }
 
         internal MouseOutputBackendIdentity GetBackendIdentity(MouseOutputDestination destination) =>
@@ -824,6 +792,45 @@ namespace DS4MapperTest
 
         internal bool IsDestinationAvailable(MouseOutputDestination destination) =>
             backends.TryGetValue(destination, out IMouseOutputBackend backend) && backend.IsAvailable;
+
+        public MouseOutputRoutingAvailabilitySnapshot GetAvailabilitySnapshot()
+        {
+            lock (syncRoot)
+            {
+                return CreateAvailabilitySnapshot();
+            }
+        }
+
+        public IReadOnlyList<MouseOutputRouteResolution> GetRouteResolutions()
+        {
+            lock (syncRoot)
+            {
+                MouseOutputRoutingAvailabilitySnapshot availability = CreateAvailabilitySnapshot();
+                MouseOutputRoutingTable routing = appGlobal.appSettings.MouseOutputRouting;
+                return Enum.GetValues(typeof(MouseOutputRoute))
+                    .Cast<MouseOutputRoute>()
+                    .Select(route => resolver.Resolve(route,
+                        routing.GetRouteDestination(route), availability))
+                    .ToArray();
+            }
+        }
+
+        public void RefreshRouting(bool flushSharedFakerInput)
+        {
+            lock (syncRoot)
+            {
+                MouseOutputRoutingAvailabilitySnapshot availability = CreateAvailabilitySnapshot();
+                MouseOutputRoutingTable routing = appGlobal.appSettings.MouseOutputRouting;
+                foreach ((MouseOutputProducerId producerId, ProducerState producerState) in producers)
+                {
+                    FlushProducerState(producerId, producerState, routing, availability);
+                }
+
+                FlushAllDestinations(flushSharedFakerInput);
+            }
+
+            StateChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         private void FlushAllDestinations(bool flushSharedFakerInput)
         {
@@ -958,6 +965,49 @@ namespace DS4MapperTest
 
         private static string CreateButtonOwnerKey(MouseOutputProducerId producerId,
             MouseOutputRoute route) => $"{producerId.Value}:{route}";
+
+        private void FlushProducerState(MouseOutputProducerId producerId, ProducerState producer,
+            MouseOutputRoutingTable routing, MouseOutputRoutingAvailabilitySnapshot availability)
+        {
+            foreach ((MouseOutputRoute route, ProducerRouteState routeState) in producer.Routes)
+            {
+                MouseOutputDestination configured = routing.GetRouteDestination(route);
+                MouseOutputRouteResolution resolution = resolver.Resolve(route, configured, availability);
+                if (routeState.ActiveDestination != resolution.ActiveDestination)
+                {
+                    ReleaseRouteButtons(producerId, route, routeState);
+                    if (routeState.ActiveDestination.HasValue)
+                    {
+                        routeState.PendingRelativeX = 0;
+                        routeState.PendingRelativeY = 0;
+                        routeState.PendingWheel = 0;
+                        routeState.PendingPan = 0;
+                        routeState.HasAbsolute = false;
+                    }
+
+                    routeState.ActiveDestination = resolution.ActiveDestination;
+                    ApplyRouteButtons(producerId, route, routeState);
+                }
+
+                DestinationState destinationState = destinationStates[resolution.ActiveDestination];
+                destinationState.PendingRelativeX += routeState.PendingRelativeX;
+                destinationState.PendingRelativeY += routeState.PendingRelativeY;
+                destinationState.PendingWheel += routeState.PendingWheel;
+                destinationState.PendingPan += routeState.PendingPan;
+                routeState.PendingRelativeX = 0;
+                routeState.PendingRelativeY = 0;
+                routeState.PendingWheel = 0;
+                routeState.PendingPan = 0;
+
+                if (routeState.HasAbsolute)
+                {
+                    destinationState.AbsoluteX = routeState.AbsoluteX;
+                    destinationState.AbsoluteY = routeState.AbsoluteY;
+                    destinationState.HasAbsolute = true;
+                    routeState.HasAbsolute = false;
+                }
+            }
+        }
 
         private static byte CalculateButtonMask(DestinationState state)
         {
