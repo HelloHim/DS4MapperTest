@@ -56,6 +56,7 @@ namespace DS4MapperTest
         private static readonly Logger saveProfileLogger = LogManager.GetCurrentClassLogger();
         private readonly ObservableCollection<PhysicalMouseSettingsItem> physicalMouseItems =
             new ObservableCollection<PhysicalMouseSettingsItem>();
+        private MouseRoutingPanelViewModel mouseRoutingPanelVM;
         private bool updatingPhysicalMouseSettings;
         private bool stagedPhysicalMouseForwardingEnabled;
         private string stagedPhysicalMouseId;
@@ -108,6 +109,10 @@ namespace DS4MapperTest
             controlListVM.ControllerList.CollectionChanged += ControllerList_CollectionChanged;
             deviceComboBox.ItemsSource = controlListVM.ControllerList;
             physicalMouseComboBox.ItemsSource = physicalMouseItems;
+            mouseRoutingPanelVM = new MouseRoutingPanelViewModel(
+                manager.MouseOutputRoutingController,
+                action => Dispatcher.BeginInvoke(action));
+            mouseRoutingPanelRoot.DataContext = mouseRoutingPanelVM;
             manager.PhysicalMouseStatusChanged += BackendManager_PhysicalMouseStatusChanged;
             LoadPhysicalMouseSettings();
             _ = RefreshPhysicalMouseListAsync();
@@ -343,6 +348,44 @@ namespace DS4MapperTest
 
         private void BackendManager_PhysicalMouseStatusChanged(object sender, EventArgs e) =>
             Dispatcher.BeginInvoke((Action)UpdatePhysicalMouseStatus);
+
+        private void MouseRoutingButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (mouseRoutingPanelVM == null)
+            {
+                return;
+            }
+
+            mouseRoutingPanelVM.PopupOpen = !mouseRoutingPopup.IsOpen;
+            mouseRoutingPopup.IsOpen = mouseRoutingPanelVM.PopupOpen;
+        }
+
+        private void MouseRoutingPopup_Closed(object sender, EventArgs e)
+        {
+            if (mouseRoutingPanelVM != null)
+            {
+                mouseRoutingPanelVM.PopupOpen = false;
+            }
+        }
+
+        private void ApplyMouseRoutingButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (mouseRoutingPanelVM?.Apply() == true)
+            {
+                mouseRoutingPopup.IsOpen = false;
+            }
+        }
+
+        private void DiscardMouseRoutingButton_Click(object sender, RoutedEventArgs e)
+        {
+            mouseRoutingPanelVM?.DiscardStagedChanges();
+            mouseRoutingPopup.IsOpen = false;
+        }
+
+        private void ApplyMouseRoutingQuickSetButton_Click(object sender, RoutedEventArgs e)
+        {
+            mouseRoutingPanelVM?.ApplySelectedDestinationToCompatibleRoutes();
+        }
 
         private void UpdatePhysicalMouseStatus()
         {
@@ -1658,6 +1701,7 @@ namespace DS4MapperTest
 
             DataContext = null;
             editorTestVM?.UnregisterEvents();
+            mouseRoutingPanelVM?.Dispose();
 
             Util.UnregisterNotify(regHandle);
             Application.Current.Shutdown(0);

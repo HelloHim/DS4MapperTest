@@ -26,7 +26,8 @@ namespace DS4MapperTest.PhysicalMouse
     /// Owns the phase-2 physical-mouse capture + forwarding lifecycle:
     ///
     /// RawMouseCaptureDevice (Raw Input) -&gt; PhysicalMouseForwarder (button
-    /// ownership + wheel scaling) -&gt; BackendManager.EventInputHandler.
+    /// ownership + wheel scaling) -&gt; MouseOutputDispatcher using the
+    /// Unified Virtual Mouse route.
     ///
     /// Deliberately owned by BackendManager, not the WPF UI: it must start
     /// with the backend service and stop/dispose with it regardless of
@@ -62,7 +63,7 @@ namespace DS4MapperTest.PhysicalMouse
         /// calls (e.g. backend restarts) can't leak threads, windows or
         /// event subscriptions.
         /// </summary>
-        public void Start(bool enabled, string stableDeviceId, VirtualKBMBase handler, VirtualKBMMapping mapping)
+        public void Start(bool enabled, string stableDeviceId, IPhysicalMouseOutputRouter router)
         {
             Stop();
 
@@ -90,7 +91,7 @@ namespace DS4MapperTest.PhysicalMouse
             // Attach before starting capture so the very first Raw Input
             // report the capture thread could possibly see already has a
             // live output to forward to.
-            forwarder.AttachOutput(handler, mapping);
+            forwarder.AttachOutput(router);
 
             bool started = capture.Start(stableDeviceId);
             SetStatus(!started ? PhysicalMouseServiceStatus.RegistrationFailed
@@ -122,8 +123,8 @@ namespace DS4MapperTest.PhysicalMouse
         }
 
         public void Reconfigure(bool enabled, string stableDeviceId,
-            VirtualKBMBase handler, VirtualKBMMapping mapping) =>
-            Start(enabled, stableDeviceId, handler, mapping);
+            IPhysicalMouseOutputRouter router) =>
+            Start(enabled, stableDeviceId, router);
 
         private void Capture_SelectedDeviceArrived(object sender, EventArgs e) =>
             SetStatus(PhysicalMouseServiceStatus.Capturing);

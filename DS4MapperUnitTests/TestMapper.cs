@@ -503,7 +503,11 @@ namespace DS4MapperUnitTests
 
                 //ProcessSyncEvents();
 
-                SyncMouseButtons();
+                if (eventInputHandler != null && eventInputMapping != null)
+                {
+                    SyncMouseButtons();
+                }
+
                 SyncKeyboard();
 
                 ProcessActionSetLayerChecks();

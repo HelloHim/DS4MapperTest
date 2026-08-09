@@ -136,6 +136,42 @@
                            VerticalAlignment="Center"/>
             </Grid>
         </DataTemplate>
+
+        <DataTemplate x:Key="MouseRoutingDestinationOptionTemplate">
+            <Grid MinWidth="210">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding DisplayName}"
+                           Foreground="{DynamicResource JsmccTextStrongBrush}"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding AvailabilityText}"
+                           Style="{StaticResource JsmccMutedText}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="MouseRoutingBulkOptionTemplate">
+            <Grid MinWidth="210">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding DisplayName}"
+                           Foreground="{DynamicResource JsmccTextStrongBrush}"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding ScopeText}"
+                           Style="{StaticResource JsmccMutedText}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Background="{DynamicResource JsmccBg0Brush}">
@@ -321,6 +357,155 @@
                                            Style="{StaticResource JsmccMutedText}"
                                            FontSize="12"
                                            VerticalAlignment="Center"/>
+
+                                <Button x:Name="mouseRoutingButton"
+                                        Content="Mouse Routing"
+                                        Click="MouseRoutingButton_Click"
+                                        Margin="12,4,0,4"
+                                        ToolTip="Configure global controller mouse-output routing"
+                                        Style="{StaticResource JsmccButtonStyle}"/>
+
+                                <Popup x:Name="mouseRoutingPopup"
+                                       PlacementTarget="{Binding ElementName=mouseRoutingButton}"
+                                       Placement="Bottom"
+                                       StaysOpen="False"
+                                       AllowsTransparency="True"
+                                       PopupAnimation="Fade"
+                                       Closed="MouseRoutingPopup_Closed">
+                                    <Border x:Name="mouseRoutingPopupHost"
+                                            Style="{StaticResource JsmccPanelBorder}"
+                                            Width="600"
+                                            MaxHeight="560"
+                                            Margin="0,8,0,0">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <StackPanel x:Name="mouseRoutingPanelRoot"
+                                                        Margin="18">
+                                                <Grid Margin="0,0,0,14">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="Mouse Routing"
+                                                                   Style="{StaticResource JsmccSectionTitle}"/>
+                                                        <TextBlock Text="Configure global output routes for controller mouse producers. Changes are staged until you apply them."
+                                                                   Style="{StaticResource JsmccMutedText}"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,4,12,0"/>
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="1"
+                                                                Orientation="Horizontal"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top">
+                                                        <Button Content="Discard"
+                                                                Click="DiscardMouseRoutingButton_Click"
+                                                                Style="{StaticResource JsmccDangerButtonStyle}"
+                                                                IsEnabled="{Binding HasStagedChanges}"/>
+                                                        <Button Content="Apply"
+                                                                Click="ApplyMouseRoutingButton_Click"
+                                                                Style="{StaticResource JsmccAccentButtonStyle}"
+                                                                IsEnabled="{Binding HasStagedChanges}"
+                                                                Margin="8,0,0,0"/>
+                                                    </StackPanel>
+                                                </Grid>
+
+                                                <Border Style="{StaticResource JsmccCardBorder}"
+                                                        Padding="14"
+                                                        Margin="0,0,0,14">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Quick set"
+                                                                   Style="{StaticResource JsmccCardTitle}"/>
+                                                        <TextBlock Text="Pick one destination and stage it across every compatible route in one action."
+                                                                   Style="{StaticResource JsmccMutedText}"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,4,0,0"/>
+
+                                                        <Grid Margin="0,12,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="Destination"
+                                                                       Style="{StaticResource OtherSettingLabel}"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,12,0"/>
+                                                            <ComboBox Grid.Column="1"
+                                                                      MinWidth="260"
+                                                                      HorizontalAlignment="Stretch"
+                                                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                                                      ItemsSource="{Binding BulkApplyOptions}"
+                                                                      ItemTemplate="{StaticResource MouseRoutingBulkOptionTemplate}"
+                                                                      SelectedItem="{Binding SelectedBulkApplyOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        </Grid>
+
+                                                        <TextBlock Text="{Binding BulkApplyHelperText}"
+                                                                   Style="{StaticResource JsmccMutedText}"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,8,0,0"/>
+
+                                                        <Button Content="Apply to all"
+                                                                Click="ApplyMouseRoutingQuickSetButton_Click"
+                                                                Style="{StaticResource JsmccButtonStyle}"
+                                                                IsEnabled="{Binding HasSelectedBulkApplyOption}"
+                                                                HorizontalAlignment="Right"
+                                                                Margin="0,12,0,0"/>
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <ItemsControl ItemsSource="{Binding RouteRows}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                                                    BorderThickness="0,0,0,1"
+                                                                    Padding="0,0,0,12"
+                                                                    Margin="0,0,0,12">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="146"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+
+                                                                    <TextBlock Text="{Binding RouteLabel}"
+                                                                               Style="{StaticResource OtherSettingLabel}"
+                                                                               Margin="0,6,14,0"/>
+
+                                                                    <StackPanel Grid.Column="1">
+                                                                        <ComboBox Width="250"
+                                                                                  HorizontalAlignment="Left"
+                                                                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                                                                  ItemsSource="{Binding DestinationOptions}"
+                                                                                  ItemTemplate="{StaticResource MouseRoutingDestinationOptionTemplate}"
+                                                                                  SelectedValuePath="Destination"
+                                                                                  SelectedValue="{Binding StagedDestination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                        <TextBlock Text="{Binding ConfiguredDestinationText, StringFormat=Configured: {0}}"
+                                                                                   Style="{StaticResource JsmccBodyText}"
+                                                                                   Margin="0,8,0,0"/>
+                                                                        <TextBlock Text="{Binding ActiveDestinationText, StringFormat=Active: {0}}"
+                                                                                   Style="{StaticResource JsmccBodyText}"
+                                                                                   Margin="0,2,0,0"/>
+                                                                        <TextBlock Text="{Binding StatusText}"
+                                                                                   Style="{StaticResource JsmccMutedText}"
+                                                                                   TextWrapping="Wrap"
+                                                                                   Margin="0,4,0,0"/>
+                                                                    </StackPanel>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <TextBlock Text="Absolute Mouse is limited to FakerInput and SendInput. VIIPER destinations are available only for relative routes."
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,0,0,12"/>
+
+                                                <TextBlock Text="{Binding ValidationMessage}"
+                                                           Foreground="{DynamicResource JsmccDangerTextBrush}"
+                                                           TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Popup>
                             </WrapPanel>
 
                             <WrapPanel Grid.Column="2"
@@ -922,15 +1107,15 @@
                                                       HorizontalScrollBarVisibility="Disabled">
                                             <StackPanel Margin="0,4,0,0">
                                                 <TextBlock Text="Unified Virtual Mouse" Style="{StaticResource JsmccSectionTitle}"/>
-                                                <TextBlock Text="Route a selected physical mouse and controller mouse output through the same FakerInput virtual mouse."
+                                                <TextBlock Text="Capture a selected physical mouse and route it through the Unified Virtual Mouse destination from Mouse Routing."
                                                            Style="{StaticResource JsmccBodyText}" TextWrapping="Wrap" Margin="0,4,0,14"/>
                                                 <Border Style="{StaticResource JsmccCardBorder}">
                                     <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <StackPanel>
-                                                <TextBlock Text="Enable forwarding" Style="{StaticResource OtherSettingLabel}"/>
-                                                <TextBlock Text="Forward the selected mouse through FakerInput alongside controller mouse output."
+                                                <TextBlock Text="Forward physical mouse input" Style="{StaticResource OtherSettingLabel}"/>
+                                                <TextBlock Text="Forward the selected physical mouse through the Unified Virtual Mouse route. Choose FakerInput, SendInput, or a VIIPER mouse for that route in Mouse Routing."
                                                            Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,3,16,0"/>
                                             </StackPanel>
                                             <CheckBox x:Name="physicalMouseEnabledCheckBox" Grid.Column="1"

@@ -264,8 +264,8 @@ namespace DS4MapperTest.TriggerActions
 
         public override void Event(Mapper mapper)
         {
-            mapper.MouseX = xMotion; mapper.MouseY = yMotion;
-            mapper.MouseSync = true;
+            mapper.SetRouteRelativeMouseMotion(MouseOutputRoute.TriggerMouse, xMotion, yMotion);
+            mapper.SetRouteRelativeMouseSync(MouseOutputRoute.TriggerMouse, true);
             active = axisNorm != 0.0;
             activeEvent = false;
         }
