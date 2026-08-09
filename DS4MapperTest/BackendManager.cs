@@ -68,6 +68,9 @@ namespace DS4MapperTest
         private VirtualKBMMapping eventInputMapping;// = new FakerInputMapping();
         public VirtualKBMMapping EventInputMapping => eventInputMapping;
         private MouseOutputDispatcher mouseOutputDispatcher;
+        private readonly MouseOutputRoutingController mouseOutputRoutingController;
+        public MouseOutputRoutingController MouseOutputRoutingController =>
+            mouseOutputRoutingController;
 
         // Phase-2 physical-mouse forwarding. Owned here (not by the WPF UI)
         // so it starts/stops with the backend service regardless of which
@@ -131,6 +134,7 @@ namespace DS4MapperTest
         {
             _argParser = argParse;
             this.appGlobal = appGlobal;
+            mouseOutputRoutingController = new MouseOutputRoutingController(appGlobal);
             _logCb = (level, message) =>
             {
                 string text = $"VIIPER[{level}] {message}";
@@ -343,6 +347,8 @@ namespace DS4MapperTest
 
             mouseOutputDispatcher = new MouseOutputDispatcher(appGlobal,
                 virtualEventHandler, eventInputMapping, serverHandle);
+            mouseOutputRoutingController.AttachRuntime(mouseOutputDispatcher,
+                isServiceRunning: false);
 
             Thread temper = new Thread(() =>
             {
@@ -454,6 +460,7 @@ namespace DS4MapperTest
 
             isRunning = true;
             changingService = false;
+            mouseOutputRoutingController.SetServiceRunning(true);
 
             ServiceStarted?.Invoke(this, EventArgs.Empty);
 
@@ -762,6 +769,8 @@ namespace DS4MapperTest
 
             mouseOutputDispatcher?.Dispose();
             mouseOutputDispatcher = null;
+            mouseOutputRoutingController.DetachRuntime();
+            mouseOutputRoutingController.SetServiceRunning(false);
 
             if (serverHandle != 0)
             {
@@ -794,6 +803,7 @@ namespace DS4MapperTest
 
         public void ShutDown()
         {
+            mouseOutputRoutingController.Dispose();
             physicalMouseService.Dispose();
         }
 

@@ -299,6 +299,32 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void RefreshRoutingUsesUpdatedConfiguredRoutes()
+        {
+            AppGlobalData appGlobal = CreateAppGlobal(settings =>
+            {
+                settings.GyroMouseDestination = MouseOutputDestination.ViiperMouse1;
+            });
+            IMouseOutputBackend[] backends = CreateBackends(out _,
+                out _, out RecordingBackend viiper1, out RecordingBackend viiper2, out _);
+            MouseOutputDispatcher dispatcher = new MouseOutputDispatcher(appGlobal, backends);
+            MouseOutputProducerId producer = dispatcher.RegisterProducer();
+
+            dispatcher.SetButton(producer, MouseOutputRoute.Gyro,
+                MouseButtonCodes.MOUSE_LEFT_BUTTON, true);
+            dispatcher.FlushProducer(producer, false);
+
+            appGlobal.appSettings.GyroMouseDestination = MouseOutputDestination.ViiperMouse2;
+            dispatcher.RefreshRouting(flushSharedFakerInput: false);
+
+            Assert.AreEqual(2, viiper1.Submissions.Count);
+            Assert.AreEqual(VIIPERMouseButton.Left, viiper1.Submissions[0].Buttons);
+            Assert.AreEqual((byte)0, viiper1.Submissions[1].Buttons);
+            Assert.AreEqual(1, viiper2.Submissions.Count);
+            Assert.AreEqual(VIIPERMouseButton.Left, viiper2.Submissions[0].Buttons);
+        }
+
+        [TestMethod]
         public void FallbackPreservesConfiguredDestinationAndRestoresHeldButtons()
         {
             AppGlobalData appGlobal = CreateAppGlobal(settings =>
