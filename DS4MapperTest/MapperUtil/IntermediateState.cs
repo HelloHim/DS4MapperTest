@@ -28,6 +28,7 @@ namespace DS4MapperTest.MapperUtil
         public bool BtnStart;
         public bool BtnSelect;
         public bool BtnHome;
+        public bool BtnCapture;
         public bool BtnExtra;
         public bool BtnLGrip;
         public bool BtnRGrip;

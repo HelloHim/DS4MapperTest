@@ -2833,6 +2833,7 @@ namespace DS4MapperTest
                     if (intermediateState.DpadLeft) tempButtons |= NS2ProButton.Left;
                     if (intermediateState.DpadUp) tempButtons |= NS2ProButton.Up;
                     if (intermediateState.BtnMode) tempButtons |= NS2ProButton.Home;
+                    if (intermediateState.BtnCapture) tempButtons |= NS2ProButton.Capture;
                     if (intermediateState.BtnLGrip) tempButtons |= NS2ProButton.GL;
                     if (intermediateState.BtnRGrip) tempButtons |= NS2ProButton.GR;
                     if (intermediateState.BtnMode2) tempButtons |= NS2ProButton.C;
@@ -3408,6 +3409,10 @@ namespace DS4MapperTest
                     intermediateState.BtnHome = pressed;
                     intermediateState.Dirty = true;
                     break;
+                case JoypadActionCodes.BtnCapture:
+                    intermediateState.BtnCapture = pressed;
+                    intermediateState.Dirty = true;
+                    break;
                 case JoypadActionCodes.BtnStart:
                     intermediateState.BtnStart = pressed;
                     intermediateState.Dirty = true;
@@ -3537,6 +3542,10 @@ namespace DS4MapperTest
                     break;
                 case JoypadActionCodes.BtnHome:
                     intermediateState.BtnHome = active;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnCapture:
+                    intermediateState.BtnCapture = active;
                     intermediateState.Dirty = true;
                     break;
                 case JoypadActionCodes.BtnStart:

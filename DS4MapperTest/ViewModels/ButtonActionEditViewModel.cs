@@ -1468,6 +1468,7 @@ namespace DS4MapperTest.ViewModels
                 (JoypadActionCodes.X360_Guide, "Guide", "PS", "Home", false),
                 (JoypadActionCodes.X360_Back, "Back", "Share", "Minus", false),
                 (JoypadActionCodes.X360_Start, "Start", "Options", "Plus", false),
+                (JoypadActionCodes.BtnCapture, "Capture", "Capture", "Capture", true),
                 (JoypadActionCodes.X360_ThumbL, "LStick Click", "L3", "LStick Click", false),
                 (JoypadActionCodes.X360_ThumbR, "RStick Click", "R3", "RStick Click", false),
                 (JoypadActionCodes.BtnLGrip, "L4", "L4", "GL", true),
