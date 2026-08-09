@@ -382,6 +382,11 @@ namespace DS4MapperTest
             mouseRoutingPopup.IsOpen = false;
         }
 
+        private void ApplyMouseRoutingQuickSetButton_Click(object sender, RoutedEventArgs e)
+        {
+            mouseRoutingPanelVM?.ApplySelectedDestinationToCompatibleRoutes();
+        }
+
         private void UpdatePhysicalMouseStatus()
         {
             BackendManager manager = (App.Current as App).Manager;
