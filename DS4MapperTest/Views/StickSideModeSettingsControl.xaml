@@ -743,12 +743,12 @@
                                    TextWrapping="Wrap"
                                    Margin="0,0,0,6"/>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                            <RadioButton Content="Real World Calibration" GroupName="FlickStickCalibMode"
-                                         Style="{StaticResource CalibModeToggleStyle}"
-                                         IsChecked="{Binding IsRwcMode, Mode=TwoWay}"/>
                             <RadioButton Content="Counts" GroupName="FlickStickCalibMode"
                                          Style="{StaticResource CalibModeToggleStyle}"
-                                         IsChecked="{Binding IsCountsMode, Mode=TwoWay}"
+                                         IsChecked="{Binding IsCountsMode, Mode=TwoWay}"/>
+                            <RadioButton Content="Real World Calibration" GroupName="FlickStickCalibMode"
+                                         Style="{StaticResource CalibModeToggleStyle}"
+                                         IsChecked="{Binding IsRwcMode, Mode=TwoWay}"
                                          Margin="8,0,0,0"/>
                         </StackPanel>
 
@@ -794,7 +794,7 @@
                                               Value="{Binding InGameSens, UpdateSourceTrigger=LostFocus}"/>
                         </Grid>
 
-                        <TextBlock Text="Calibration is shared across all gyro, flick stick, and camera-turn bindings in this profile."
+                        <TextBlock Text="Calibration is shared across all gyro, trackpad, flick stick, and camera flick-turn bindings in this profile."
                                    Style="{StaticResource JsmccMutedText}"
                                    TextWrapping="Wrap"
                                    Margin="0,8,0,0"/>
