@@ -223,44 +223,51 @@
                 </Border>
 
                 <Border Style="{StaticResource ModeRowBorder}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource JsmccLabelText}" ToolTip="Used when Split Axes is off."/>
-                        <TextBox Grid.Column="1" Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus}" Width="80" ToolTip="Used when Split Axes is off.">
-                            <TextBox.Style>
-                                <Style TargetType="TextBox" BasedOn="{StaticResource JsmccTextBoxStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SeparateAxisDeadZones}" Value="True">
-                                            <Setter Property="IsEnabled" Value="False"/>
-                                            <Setter Property="Opacity" Value="0.5"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBox.Style>
-                        </TextBox>
-                        <TextBlock Grid.Column="2" Text="Split Axes" Style="{StaticResource JsmccLabelText}"/>
-                        <CheckBox Grid.Column="3" IsChecked="{Binding SeparateAxisDeadZones}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
-                    </Grid>
-                </Border>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource JsmccLabelText}" ToolTip="Used when Split Axes is off."/>
+                            <TextBox Grid.Column="1" Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus}" Width="80" ToolTip="Used when Split Axes is off.">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox" BasedOn="{StaticResource JsmccTextBoxStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SeparateAxisDeadZones}" Value="True">
+                                                <Setter Property="IsEnabled" Value="False"/>
+                                                <Setter Property="Opacity" Value="0.5"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                        </Grid>
 
-                <Border Style="{StaticResource ModeRowBorder}" Visibility="{Binding SeparateAxisDeadZones, Converter={StaticResource BoolToVis}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Horizontal Dead Zone" Style="{StaticResource JsmccLabelText}"/>
-                        <TextBox Grid.Column="1" Text="{Binding DeadZoneX, UpdateSourceTrigger=LostFocus}" Style="{StaticResource JsmccTextBoxStyle}" Width="80"/>
-                        <TextBlock Grid.Column="2" Text="Vertical Dead Zone" Style="{StaticResource JsmccLabelText}"/>
-                        <TextBox Grid.Column="3" Text="{Binding DeadZoneY, UpdateSourceTrigger=LostFocus}" Style="{StaticResource JsmccTextBoxStyle}" Width="80"/>
-                    </Grid>
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Split Axes" Style="{StaticResource JsmccLabelText}"/>
+                            <CheckBox Grid.Column="1" IsChecked="{Binding SeparateAxisDeadZones}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <Grid Margin="0,6,0,0" Visibility="{Binding SeparateAxisDeadZones, Converter={StaticResource BoolToVis}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Horizontal Dead Zone" Style="{StaticResource JsmccLabelText}"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding DeadZoneX, UpdateSourceTrigger=LostFocus}" Style="{StaticResource JsmccTextBoxStyle}" Width="80"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,6,0,0" Text="Vertical Dead Zone" Style="{StaticResource JsmccLabelText}"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Margin="0,6,0,0" Text="{Binding DeadZoneY, UpdateSourceTrigger=LostFocus}" Style="{StaticResource JsmccTextBoxStyle}" Width="80"/>
+                        </Grid>
+                    </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource ModeRowBorder}" Visibility="{Binding ShowDiagonalZoneWidth, Converter={StaticResource BoolToVis}}">
@@ -441,7 +448,7 @@
                             </RadioButton.Style>
                         </RadioButton>
                         <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.1"
-                                          Width="90" IsEnabled="{Binding VerticalScaleIsMultiplierMode}"
+                                          Width="90" HorizontalAlignment="Left" IsEnabled="{Binding VerticalScaleIsMultiplierMode}"
                                           ValueFormat="0.0###"
                                           Value="{Binding VerticalScale, UpdateSourceTrigger=LostFocus}">
                             <hc:NumericUpDown.Style>
@@ -490,49 +497,56 @@
                 </Border>
 
                 <Border Style="{StaticResource ModeRowBorder}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource JsmccLabelText}" ToolTip="Used when Split Axes is off."/>
-                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
-                                          Width="90" Value="{Binding DeadZone, UpdateSourceTrigger=LostFocus}">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SeparateAxisDeadZones}" Value="True">
-                                            <Setter Property="IsEnabled" Value="False"/>
-                                            <Setter Property="Opacity" Value="0.5"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-                        <TextBlock Grid.Column="2" Text="Split Axes" Style="{StaticResource JsmccLabelText}"/>
-                        <CheckBox Grid.Column="3" IsChecked="{Binding SeparateAxisDeadZones}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
-                    </Grid>
-                </Border>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource JsmccLabelText}" ToolTip="Used when Split Axes is off."/>
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                                              Width="90" Value="{Binding DeadZone, UpdateSourceTrigger=LostFocus}">
+                                <hc:NumericUpDown.Style>
+                                    <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SeparateAxisDeadZones}" Value="True">
+                                                <Setter Property="IsEnabled" Value="False"/>
+                                                <Setter Property="Opacity" Value="0.5"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </hc:NumericUpDown.Style>
+                            </hc:NumericUpDown>
+                        </Grid>
 
-                <Border Style="{StaticResource ModeRowBorder}" Visibility="{Binding SeparateAxisDeadZones, Converter={StaticResource BoolToVis}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Horizontal Dead Zone" Style="{StaticResource JsmccLabelText}"/>
-                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
-                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding DeadZoneX, UpdateSourceTrigger=LostFocus}"/>
-                        <TextBlock Grid.Column="2" Text="Vertical Dead Zone" Style="{StaticResource JsmccLabelText}"/>
-                        <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
-                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding DeadZoneY, UpdateSourceTrigger=LostFocus}"/>
-                    </Grid>
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Split Axes" Style="{StaticResource JsmccLabelText}"/>
+                            <CheckBox Grid.Column="1" IsChecked="{Binding SeparateAxisDeadZones}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <Grid Margin="0,6,0,0" Visibility="{Binding SeparateAxisDeadZones, Converter={StaticResource BoolToVis}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Horizontal Dead Zone" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding DeadZoneX, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,6,0,0" Text="Vertical Dead Zone" Style="{StaticResource JsmccLabelText}"/>
+                            <hc:NumericUpDown Grid.Row="1" Grid.Column="1" Margin="0,6,0,0" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding DeadZoneY, UpdateSourceTrigger=LostFocus}"/>
+                        </Grid>
+                    </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource ModeRowBorder}">
@@ -567,20 +581,21 @@
                 </Border>
 
                 <Border Style="{StaticResource ModeRowBorder}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Delta Acceleration" Style="{StaticResource JsmccLabelText}"/>
-                        <CheckBox Grid.Column="1" IsChecked="{Binding DeltaEnabled}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
-                    </Grid>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Delta Acceleration" Style="{StaticResource JsmccLabelText}"/>
+                            <CheckBox Grid.Column="1" IsChecked="{Binding DeltaEnabled}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                        </Grid>
+                        <TextBlock Text="Speeds up mouse output as the stick moves farther from centre."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,6,0,0"/>
+                    </StackPanel>
                 </Border>
-
-                <TextBlock Text="Speeds up mouse output as the stick moves farther from centre."
-                           Style="{StaticResource JsmccBodyText}"
-                           TextWrapping="Wrap"
-                           Margin="0,0,0,6"/>
 
                 <StackPanel Visibility="{Binding DeltaEnabled, Converter={StaticResource BoolToVis}}">
                     <Border Style="{StaticResource ModeRowBorder}">
