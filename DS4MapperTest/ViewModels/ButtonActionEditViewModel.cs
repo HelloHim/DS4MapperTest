@@ -376,7 +376,6 @@ namespace DS4MapperTest.ViewModels
             {
                 if (cameraTurnRWC == value) return;
                 cameraTurnRWC = value;
-                if (!_applyingCameraTurnPreset) TryMatchCameraTurnPreset();
                 CameraTurnRWCChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnRWC)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
@@ -386,46 +385,27 @@ namespace DS4MapperTest.ViewModels
 
         private bool _cameraTurnReady = false;
         private bool _applyingCameraTurnPreset = false;
-        private GameCalibPreset _selectedCameraTurnPreset = GameCalibPreset.Custom;
 
         public IReadOnlyList<GameCalibPreset> CameraTurnGamePresets => GameCalibPreset.All;
 
         public GameCalibPreset SelectedCameraTurnPreset
         {
-            get => _selectedCameraTurnPreset;
+            get => GameCalibPreset.FindByName(mapper.ActionProfile.CalibPresetName) ??
+                GameCalibPreset.Custom;
             set
             {
-                if (_selectedCameraTurnPreset == value) return;
-                _selectedCameraTurnPreset = value;
+                GameCalibPreset next = value ?? GameCalibPreset.Custom;
+                if (mapper.ActionProfile.CalibPresetName == next.Name) return;
+                mapper.ActionProfile.CalibPresetName = next.Name;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCameraTurnPreset)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
-                if (value == null || value.IsCustom || !_cameraTurnReady) return;
+                if (next.IsCustom || !_cameraTurnReady) return;
                 _applyingCameraTurnPreset = true;
                 double preservedCounts = CameraTurnCounts360;
-                CameraTurnInGameSens = value.RWC * 360.0 / preservedCounts;
-                CameraTurnRWC = value.RWC;
+                CameraTurnInGameSens = next.RWC * 360.0 / preservedCounts;
+                CameraTurnRWC = next.RWC;
                 _applyingCameraTurnPreset = false;
             }
-        }
-
-        private void SetSelectedCameraTurnPresetCustom()
-        {
-            _selectedCameraTurnPreset = GameCalibPreset.Custom;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCameraTurnPreset)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
-        }
-
-        private void TryMatchCameraTurnPreset()
-        {
-            double rwc = IsCountsMode ? cameraTurnCalculatedRWC : cameraTurnRWC;
-            GameCalibPreset match = GameCalibPreset.All.FirstOrDefault(
-                p => !p.IsCustom &&
-                     Math.Abs(p.RWC - rwc) < 1e-3);
-            GameCalibPreset next = match ?? GameCalibPreset.Custom;
-            if (_selectedCameraTurnPreset == next) return;
-            _selectedCameraTurnPreset = next;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCameraTurnPreset)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
         }
 
         private void LoadCameraTurnCalibFromProfile(bool updateSelectedSlot)
@@ -438,8 +418,6 @@ namespace DS4MapperTest.ViewModels
             cameraTurnCalculatedRWC = cameraTurnCounts360 > 0.0
                 ? cameraTurnInGameSens / (360.0 / cameraTurnCounts360)
                 : 0.0;
-
-            TryMatchCameraTurnPreset();
 
             if (updateSelectedSlot && selectedSlotItemIndex >= 0)
             {
@@ -559,6 +537,12 @@ namespace DS4MapperTest.ViewModels
         private void ActionProfile_CalibModeChanged(object sender, EventArgs e)
         {
             RaiseCalibModePropertyChanges();
+        }
+
+        private void ActionProfile_CalibPresetNameChanged(object sender, EventArgs e)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCameraTurnPreset)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
         }
 
         private double cameraTurnCalculatedRWC = 0.0;
@@ -717,6 +701,7 @@ namespace DS4MapperTest.ViewModels
             });
 
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
+            mapper.ActionProfile.CalibPresetNameChanged += ActionProfile_CalibPresetNameChanged;
             mapper.ActionProfile.OutputGamepadSettings.OutputGamepadChanged += OutputGamepadSettings_OutputGamepadChanged;
 
             SetupEvents();

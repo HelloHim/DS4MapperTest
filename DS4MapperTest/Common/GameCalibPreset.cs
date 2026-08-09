@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System;
+using System.Linq;
 
 namespace DS4MapperTest.Common
 {
@@ -30,7 +32,6 @@ namespace DS4MapperTest.Common
             new List<GameCalibPreset>
             {
                 Custom,
-                Valorant,
                 new GameCalibPreset("Apex Legends",            45.4545),
                 new GameCalibPreset("Battlefield 6",           465.1974),
                 new GameCalibPreset("COD / OW2",               151.5152),
@@ -44,6 +45,24 @@ namespace DS4MapperTest.Common
                 new GameCalibPreset("Rainbow Six Siege X",     4165.4636),
                 new GameCalibPreset("THE FINALS",              1000.0),
                 new GameCalibPreset("ULTRAKILL",               200.0),
+                Valorant,
             }.AsReadOnly();
+
+        public static GameCalibPreset FindByName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return null;
+            }
+
+            return All.FirstOrDefault(p =>
+                string.Equals(p.Name, name, StringComparison.Ordinal));
+        }
+
+        public static GameCalibPreset MatchByRwc(double rwc, double tolerance = 1e-3)
+        {
+            return All.FirstOrDefault(p =>
+                !p.IsCustom && Math.Abs(p.RWC - rwc) < tolerance);
+        }
     }
 }

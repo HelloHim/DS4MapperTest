@@ -136,6 +136,21 @@ namespace DS4MapperTest
         }
         public event EventHandler CalibModeChanged;
 
+        private string calibPresetName = GameCalibPreset.Valorant.Name;
+        public string CalibPresetName
+        {
+            get => calibPresetName;
+            set
+            {
+                string next = GameCalibPreset.FindByName(value)?.Name ??
+                    GameCalibPreset.Custom.Name;
+                if (calibPresetName == next) return;
+                calibPresetName = next;
+                CalibPresetNameChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler CalibPresetNameChanged;
+
         public bool dirty;
         public bool Dirty
         {

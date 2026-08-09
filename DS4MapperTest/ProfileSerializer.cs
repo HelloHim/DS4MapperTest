@@ -10,6 +10,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.Common;
 using DS4MapperTest.GyroActions;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
@@ -181,6 +182,19 @@ namespace DS4MapperTest
         public bool ShouldSerializeCalibMode()
         {
             return tempProfile.CalibMode == DS4MapperTest.CalibMode.CountsMode;
+        }
+
+        private bool calibPresetExplicitlySet = false;
+        public string CalibPreset
+        {
+            get => tempProfile.CalibPresetName;
+            set
+            {
+                tempProfile.CalibPresetName =
+                    GameCalibPreset.FindByName(value)?.Name ??
+                    GameCalibPreset.Custom.Name;
+                calibPresetExplicitlySet = true;
+            }
         }
 
         private LightbarSettingsSerializer lightbarSerializer;
@@ -385,6 +399,13 @@ namespace DS4MapperTest
                         if (found) break;
                     }
                 }
+            }
+
+            if (!calibPresetExplicitlySet)
+            {
+                tempProfile.CalibPresetName =
+                    GameCalibPreset.MatchByRwc(tempProfile.CalibRwc)?.Name ??
+                    GameCalibPreset.Custom.Name;
             }
 
             // Push profile calibration to all GyroMouse and CameraTurn action instances.
