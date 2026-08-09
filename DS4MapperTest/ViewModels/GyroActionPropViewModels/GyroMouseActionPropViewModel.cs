@@ -18,6 +18,9 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 {
     public class GyroMouseActionPropViewModel : GyroActionPropVMBase, INotifyPropertyChanged
     {
+        private static readonly Dictionary<string, bool> verticalScaleModeByMappingId =
+            new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected GyroMouse action;
         public GyroMouse Action
@@ -611,6 +614,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             {
                 if (!value || verticalScaleIsAbsoluteMode) return;
                 verticalScaleIsAbsoluteMode = value;
+                RememberVerticalScaleMode();
                 VerticalScaleIsAbsoluteModeChanged?.Invoke(this, EventArgs.Empty);
                 VerticalScaleIsMultiplierModeChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this,
@@ -628,6 +632,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             {
                 if (!value || !verticalScaleIsAbsoluteMode) return;
                 verticalScaleIsAbsoluteMode = !value;
+                RememberVerticalScaleMode();
                 VerticalScaleIsAbsoluteModeChanged?.Invoke(this, EventArgs.Empty);
                 VerticalScaleIsMultiplierModeChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this,
@@ -1721,6 +1726,12 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
         public override event EventHandler ActionPropertyChanged;
 
+        private void RememberVerticalScaleMode()
+        {
+            if (string.IsNullOrWhiteSpace(baseAction?.MappingId)) return;
+            verticalScaleModeByMappingId[baseAction.MappingId] = verticalScaleIsAbsoluteMode;
+        }
+
         public GyroMouseActionPropViewModel(Mapper mapper, GyroMapAction action)
         {
             this.mapper = mapper;
@@ -1749,6 +1760,12 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 usingRealAction = false;
 
                 ActionPropertyChanged += ReplaceExistingLayerAction;
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.baseAction?.MappingId) &&
+                verticalScaleModeByMappingId.TryGetValue(this.baseAction.MappingId, out bool savedVerticalScaleMode))
+            {
+                verticalScaleIsAbsoluteMode = savedVerticalScaleMode;
             }
 
             PopulateModel();
