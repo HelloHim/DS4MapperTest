@@ -204,7 +204,7 @@ namespace DS4MapperTest.ViewModels
             MouseRoutingDestinationOptionViewModel.GetDestinationDisplayName(Destination);
         public string ScopeText => CompatibleRouteCount == 7
             ? "All routes"
-            : "6 compatible routes";
+            : "7 compatible routes";
     }
 
     public sealed class MouseRoutingPanelViewModel : INotifyPropertyChanged, IDisposable
