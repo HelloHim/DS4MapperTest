@@ -78,6 +78,7 @@ namespace DS4MapperTest
         // capture -> FakerInput wiring.
         private readonly PhysicalMouseService physicalMouseService = new PhysicalMouseService();
         public PhysicalMouseServiceStatus PhysicalMouseStatus => physicalMouseService.Status;
+        private readonly HidHideVisibilityManager hidHideVisibilityManager;
 
         private Dictionary<int, Mapper> mapperDict;
         public Dictionary<int, Mapper> MapperDict
@@ -152,6 +153,7 @@ namespace DS4MapperTest
                 }
             };
             physicalMouseService.StatusChanged += (_, _) => PhysicalMouseStatusChanged?.Invoke(this, EventArgs.Empty);
+            hidHideVisibilityManager = new HidHideVisibilityManager(appGlobal);
 
             mapperDict = new Dictionary<int, Mapper>();
             deviceReadersMap = new Dictionary<InputDeviceBase, DeviceReaderBase>();
@@ -455,6 +457,7 @@ namespace DS4MapperTest
 
                 controllerList[ind] = device;
                 LogDebug($"Plugged in controller #{ind + 1} ({device.Serial})");
+                RefreshControllerVisibilityState();
 
                 ind++;
             }
@@ -634,8 +637,8 @@ namespace DS4MapperTest
                 tempProfilePath = deviceProfileListDict[device.DeviceType].ProfileListCol[0].ProfilePath;
             }
 
-            if (deviceMapperMap.TryGetValue(device, out Mapper testMapper))
-            {
+                if (deviceMapperMap.TryGetValue(device, out Mapper testMapper))
+                {
                 if (!string.IsNullOrEmpty(tempProfilePath))
                 {
                     testMapper.ProfileFile = tempProfilePath;
@@ -658,6 +661,7 @@ namespace DS4MapperTest
 
                 controllerList[ind] = device;
                 LogDebug($"Synced controller #{ind + 1} ({device.Serial})");
+                RefreshControllerVisibilityState();
             }
         }
 
@@ -719,6 +723,7 @@ namespace DS4MapperTest
                         }
                     }
                 });
+                RefreshControllerVisibilityState();
             }
         }
 
@@ -753,6 +758,8 @@ namespace DS4MapperTest
             {
                 mapper.UnplugViiperVirtualControllers();
             }
+
+            hidHideVisibilityManager.ClearSessionOverrides();
 
             Thread.Sleep(500);
 
@@ -800,6 +807,11 @@ namespace DS4MapperTest
         {
             PreServiceStop = null;
             ServiceStopped = null;
+        }
+
+        public void RefreshControllerVisibilityState()
+        {
+            hidHideVisibilityManager.Reconcile(controllerList.Where(device => device != null));
         }
 
         public void ShutDown()

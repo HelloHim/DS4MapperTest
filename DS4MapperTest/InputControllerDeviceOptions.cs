@@ -37,13 +37,42 @@ namespace DS4MapperTest
 
     public abstract class ControllerOptionsStore
     {
+        private const string HIDE_PHYSICAL_CONTROLLER_PROP_NAME = "HidePhysicalController";
+
         protected InputDeviceType deviceType;
         [JsonIgnore]
         public InputDeviceType DeviceType { get => deviceType; }
 
+        private bool hidePhysicalController;
+        public bool HidePhysicalController
+        {
+            get => hidePhysicalController;
+            set
+            {
+                if (hidePhysicalController == value) return;
+                hidePhysicalController = value;
+                HidePhysicalControllerChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler HidePhysicalControllerChanged;
+
         public ControllerOptionsStore(InputDeviceType deviceType)
         {
             this.deviceType = deviceType;
+        }
+
+        protected void PersistSharedSettings(JObject controllerJObj)
+        {
+            controllerJObj[HIDE_PHYSICAL_CONTROLLER_PROP_NAME] = hidePhysicalController;
+        }
+
+        protected void LoadSharedSettings(JObject controllerJObj)
+        {
+            if (controllerJObj.TryGetValue(HIDE_PHYSICAL_CONTROLLER_PROP_NAME,
+                out JToken hideToken) && hideToken.Type == JTokenType.Boolean)
+            {
+                hidePhysicalController = hideToken.Value<bool>();
+            }
         }
 
         public abstract void PersistSettings(JObject controllerJObj);
@@ -60,10 +89,12 @@ namespace DS4MapperTest
 
         public override void LoadSettings(JObject controllerJObj)
         {
+            LoadSharedSettings(controllerJObj);
         }
 
         public override void PersistSettings(JObject controllerJObj)
         {
+            PersistSharedSettings(controllerJObj);
         }
     }
 
@@ -76,10 +107,12 @@ namespace DS4MapperTest
 
         public override void LoadSettings(JObject controllerJObj)
         {
+            LoadSharedSettings(controllerJObj);
         }
 
         public override void PersistSettings(JObject controllerJObj)
         {
+            PersistSharedSettings(controllerJObj);
         }
     }
 
@@ -92,10 +125,12 @@ namespace DS4MapperTest
 
         public override void LoadSettings(JObject controllerJObj)
         {
+            LoadSharedSettings(controllerJObj);
         }
 
         public override void PersistSettings(JObject controllerJObj)
         {
+            PersistSharedSettings(controllerJObj);
         }
     }
 
@@ -108,10 +143,12 @@ namespace DS4MapperTest
 
         public override void LoadSettings(JObject controllerJObj)
         {
+            LoadSharedSettings(controllerJObj);
         }
 
         public override void PersistSettings(JObject controllerJObj)
         {
+            PersistSharedSettings(controllerJObj);
         }
     }
 
@@ -124,10 +161,12 @@ namespace DS4MapperTest
 
         public override void LoadSettings(JObject controllerJObj)
         {
+            LoadSharedSettings(controllerJObj);
         }
 
         public override void PersistSettings(JObject controllerJObj)
         {
+            PersistSharedSettings(controllerJObj);
         }
     }
 
@@ -178,6 +217,7 @@ namespace DS4MapperTest
 
         public override void PersistSettings(JObject controllerJObj)
         {
+            PersistSharedSettings(controllerJObj);
             if (controllerJObj.SelectToken(SETTINGS_PROP_NAME) == null ||
                 controllerJObj[SETTINGS_PROP_NAME].Type != JTokenType.Object)
             {
@@ -190,6 +230,7 @@ namespace DS4MapperTest
 
         public override void LoadSettings(JObject controllerJObj)
         {
+            LoadSharedSettings(controllerJObj);
             if (controllerJObj.TryGetValue(SETTINGS_PROP_NAME,
                 out JToken settingsToken) && settingsToken.Type == JTokenType.Object)
             {
@@ -234,6 +275,7 @@ namespace DS4MapperTest
 
         public override void PersistSettings(JObject controllerJObj)
         {
+            PersistSharedSettings(controllerJObj);
             if (controllerJObj.SelectToken(SETTINGS_PROP_NAME) == null ||
                 controllerJObj[SETTINGS_PROP_NAME].Type != JTokenType.Object)
             {
@@ -246,6 +288,7 @@ namespace DS4MapperTest
 
         public override void LoadSettings(JObject controllerJObj)
         {
+            LoadSharedSettings(controllerJObj);
             if (controllerJObj.TryGetValue(SETTINGS_PROP_NAME,
                 out JToken settingsToken) && settingsToken.Type == JTokenType.Object)
             {
@@ -264,10 +307,12 @@ namespace DS4MapperTest
 
         public override void LoadSettings(JObject controllerJObj)
         {
+            LoadSharedSettings(controllerJObj);
         }
 
         public override void PersistSettings(JObject controllerJObj)
         {
+            PersistSharedSettings(controllerJObj);
         }
     }
 }
