@@ -6,6 +6,7 @@
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:local="clr-namespace:DS4MapperTest.Views.StickActionPropControls"
              xmlns:local1="clr-namespace:DS4MapperTest.Views"
+             xmlns:shared="clr-namespace:DS4MapperTest.Views.Shared"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
@@ -15,6 +16,8 @@
     <DockPanel>
         <StackPanel DockPanel.Dock="Top">
             <local1:StickActionSelectControl x:Name="stickSelectControl" DockPanel.Dock="Top" />
+
+            <shared:CalibrationModeControl Margin="0,8,0,0"/>
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Name" />
@@ -48,21 +51,20 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <Label Content="Mouse Speed" />
-                <hc:NumericUpDown Minimum="0" Maximum="10000" Value="{Binding MouseSpeed}" DecimalPlaces="0"
-                                  Increment="500" Width="100" Margin="8,0,0,0">
+                <Label Content="Degrees per Second" ToolTip="Sets the camera rotation speed at full stick deflection. Angle calibration keeps the speed consistent across games and in-game sensitivities." />
+                <hc:NumericUpDown Minimum="0" Maximum="7200" Value="{Binding DegreesPerSecond}" DecimalPlaces="1"
+                                  Increment="10" Width="100" Margin="8,0,0,0">
                     <hc:NumericUpDown.Style>
                         <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding HighlightMouseSpeed}" Value="False">
+                                <DataTrigger Binding="{Binding HighlightDegreesPerSecond}" Value="False">
                                     <Setter Property="Opacity" Value="0.7" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </hc:NumericUpDown.Style>
                 </hc:NumericUpDown>
-
-                <TextBlock Text="{Binding MouseSpeedOutput, Mode=OneWay, StringFormat='{}{0} pps'}" Width="50" Margin="8,0,0,0" Foreground="{StaticResource DefaultBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="°/s" Margin="8,0,0,0" Foreground="{StaticResource DefaultBrush}" VerticalAlignment="Center" />
             </StackPanel>
 
             <Grid Margin="0,8,0,0">
@@ -77,7 +79,7 @@
 
                 <RadioButton Grid.Row="0" Grid.Column="0"
                              IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
-                             VerticalAlignment="Center" Content="Vertical Sensitivity">
+                             VerticalAlignment="Center" Content="Vertical Degrees per Second">
                     <RadioButton.Style>
                         <Style TargetType="RadioButton">
                             <Setter Property="Opacity" Value="1.0"/>
@@ -92,8 +94,8 @@
                         </Style>
                     </RadioButton.Style>
                 </RadioButton>
-                <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="10000" Value="{Binding VerticalSensitivity}" DecimalPlaces="0"
-                                  Increment="500" Width="100" Margin="8,0,0,0" IsEnabled="{Binding VerticalScaleIsAbsoluteMode}">
+                <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="7200" Value="{Binding VerticalDegreesPerSecond}" DecimalPlaces="1"
+                                  Increment="10" Width="100" Margin="8,0,0,0" IsEnabled="{Binding VerticalScaleIsAbsoluteMode}">
                     <hc:NumericUpDown.Style>
                         <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                             <Style.Triggers>

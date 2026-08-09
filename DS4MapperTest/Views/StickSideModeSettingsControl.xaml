@@ -395,6 +395,8 @@
 
         <DataTemplate DataType="{x:Type propvm:StickMousePropViewModel}">
             <StackPanel>
+                <shared:CalibrationModeControl Margin="0,0,0,6"/>
+
                 <Border Style="{StaticResource ModeRowBorder}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -407,10 +409,14 @@
                         <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                           Value="{Binding DeadZone, UpdateSourceTrigger=LostFocus}"/>
-                        <TextBlock Grid.Column="2" Text="Mouse Speed" Style="{StaticResource JsmccLabelText}"/>
-                        <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="10000" DecimalPlaces="0" Increment="500"
+                        <TextBlock Grid.Column="2" Text="Degrees per Second" Style="{StaticResource JsmccLabelText}"
+                                   ToolTip="Sets the camera rotation speed at full stick deflection. Angle calibration keeps the speed consistent across games and in-game sensitivities."/>
+                        <StackPanel Grid.Column="3" Orientation="Horizontal">
+                            <hc:NumericUpDown Minimum="0" Maximum="7200" DecimalPlaces="1" Increment="10"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding MouseSpeed, UpdateSourceTrigger=LostFocus}"/>
+                                          Value="{Binding DegreesPerSecond, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Text="°/s" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
@@ -427,7 +433,7 @@
 
                         <RadioButton Grid.Row="0" Grid.Column="0"
                                      IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
-                                     VerticalAlignment="Center" Content="Vertical Sensitivity"
+                                     VerticalAlignment="Center" Content="Vertical Degrees per Second"
                                      Foreground="{DynamicResource JsmccTextMidBrush}">
                             <RadioButton.Style>
                                 <Style TargetType="RadioButton">
@@ -440,9 +446,9 @@
                                 </Style>
                             </RadioButton.Style>
                         </RadioButton>
-                        <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="10000" DecimalPlaces="0" Increment="500"
+                        <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="7200" DecimalPlaces="1" Increment="10"
                                           Width="90" IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
-                                          Value="{Binding VerticalSensitivity, UpdateSourceTrigger=LostFocus}">
+                                          Value="{Binding VerticalDegreesPerSecond, UpdateSourceTrigger=LostFocus}">
                             <hc:NumericUpDown.Style>
                                 <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
                                     <Style.Triggers>

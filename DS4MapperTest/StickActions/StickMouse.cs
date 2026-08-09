@@ -31,7 +31,7 @@ namespace DS4MapperTest.StickActions
             public const string DIR_RIGHT = "DirRight";
             public const string DIAGONAL_RANGE = "DiagonalRange";
             public const string OUTPUT_CURVE = "OutputCurve";
-            public const string MOUSE_SPEED = "MouseSpeed";
+            public const string DEGREES_PER_SECOND = "DegreesPerSecond";
             public const string DELTA_SETTINGS = "DeltaSettings";
             public const string VERTICAL_SCALE = "VerticalScale";
         }
@@ -47,20 +47,16 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.DIR_RIGHT,
             PropertyKeyStrings.DIAGONAL_RANGE,
             PropertyKeyStrings.OUTPUT_CURVE,
-            PropertyKeyStrings.MOUSE_SPEED,
+            PropertyKeyStrings.DEGREES_PER_SECOND,
             PropertyKeyStrings.DELTA_SETTINGS,
             PropertyKeyStrings.VERTICAL_SCALE,
         };
 
-        private const int MOUSESPEEDFACTOR = 20;
-        private const double MOUSESTICKOFFSET = 0.0495;
-        public const int DefaultMouseSpeed = MouseMotionSettings.DefaultMouseSpeed;
-        public const int MaxMouseSpeed = MouseMotionSettings.MaxMouseSpeed;
+        public const double DefaultDegreesPerSecond = 360.0;
+        public const double MaxDegreesPerSecond = 7200.0;
         public const double DefaultVerticalScale = MouseMotionSettings.DefaultVerticalScale;
         public const double MaxVerticalScale = MouseMotionSettings.MaxVerticalScale;
         public const int DefaultDiagonalRange = 90;
-        //private const double MOUSE_VELOCITY_OFFSET = 0.12;
-        private const double MOUSE_VELOCITY_OFFSET = 0.013;
         public const string ACTION_TYPE_NAME = "StickMouseAction";
 
         private StickDeadZone deadMod;
@@ -72,6 +68,7 @@ namespace DS4MapperTest.StickActions
         private double xMotion;
         private double yMotion;
         private bool[] slotOn = new bool[4];
+        public bool LegacyMouseSpeedLoaded { get; set; }
 
         public enum DirSlot : int
         {
@@ -80,10 +77,13 @@ namespace DS4MapperTest.StickActions
             Left = 2,
             Right = 3,
         }
-        public int MouseSpeed
+        private double degreesPerSecond = DefaultDegreesPerSecond;
+        public double DegreesPerSecond
         {
-            get => motion.MouseSpeed;
-            set => motion.MouseSpeed = value;
+            get => degreesPerSecond;
+            set => degreesPerSecond = double.IsFinite(value)
+                ? Math.Clamp(value, 0.0, MaxDegreesPerSecond)
+                : DefaultDegreesPerSecond;
         }
 
         public double VerticalScale
@@ -140,6 +140,7 @@ namespace DS4MapperTest.StickActions
             this.stickDefinition = new StickDefinition(parentAction.stickDefinition);
             deadMod = new StickDeadZone(parentAction.deadMod);
             motion = new MouseMotionSettings(parentAction.motion);
+            degreesPerSecond = parentAction.degreesPerSecond;
             for (int i = 0; i < dirButtons.Length; i++)
             {
                 AxisDirButton srcBtn = parentAction.dirButtons[i];
@@ -381,21 +382,15 @@ namespace DS4MapperTest.StickActions
 
                 double timeDelta = mapper.CurrentLatency;
                 timeDelta = timeDelta - (mapper.remainderCutoff(timeDelta * 10000.0, 1.0) / 10000.0);
-                int mouseVelocity = motion.MouseSpeed * MOUSESPEEDFACTOR;
-                double mouseOffset = MOUSE_VELOCITY_OFFSET * mouseVelocity;
-                int verticalMouseVelocity = (int)Math.Round(mouseVelocity * motion.VerticalScale);
-                double verticalMouseOffset = MOUSE_VELOCITY_OFFSET * verticalMouseVelocity;
+                double countsPer360 = mapper.ActionProfile.CalibCounts;
+                double horizontalCountsPerSecond = countsPer360 > 0.0
+                    ? (degreesPerSecond / 360.0) * countsPer360
+                    : 0.0;
+                double verticalCountsPerSecond = horizontalCountsPerSecond *
+                    motion.VerticalScale;
 
-                double xSign = xNorm >= 0.0 ? 1.0 : -1.0;
-                double ySign = yNorm >= 0.0 ? 1.0 : -1.0;
-                double absXNorm = Math.Abs(outXNorm);
-                double absYNorm = Math.Abs(outYNorm);
-                double motionAngle = Math.Atan2(absYNorm, absXNorm);
-                double tempMouseOffsetX = Math.Abs(Math.Cos(motionAngle)) * mouseOffset;
-                double tempMouseOffsetY = Math.Abs(Math.Sin(motionAngle)) * verticalMouseOffset;
-
-                xMotion = ((mouseVelocity - tempMouseOffsetX) * timeDelta * absXNorm + (tempMouseOffsetX * timeDelta)) * xSign;
-                yMotion = ((verticalMouseVelocity - tempMouseOffsetY) * timeDelta * absYNorm + (tempMouseOffsetY * timeDelta)) * -ySign;
+                xMotion = horizontalCountsPerSecond * timeDelta * outXNorm;
+                yMotion = -verticalCountsPerSecond * timeDelta * outYNorm;
 
                 for (int i = 0; i < slotOn.Length; i++)
                 {
@@ -425,6 +420,10 @@ namespace DS4MapperTest.StickActions
             }
             else
             {
+                xMotion = 0.0;
+                yMotion = 0.0;
+                active = false;
+                activeEvent = false;
                 for (int i = 0; i < slotOn.Length; i++)
                 {
                     slotOn[i] = false;
@@ -597,8 +596,8 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.OUTPUT_CURVE:
                             motion.OutputCurve = tempMouseAction.motion.OutputCurve;
                             break;
-                        case PropertyKeyStrings.MOUSE_SPEED:
-                            motion.MouseSpeed = tempMouseAction.motion.MouseSpeed;
+                        case PropertyKeyStrings.DEGREES_PER_SECOND:
+                            degreesPerSecond = tempMouseAction.degreesPerSecond;
                             break;
                         case PropertyKeyStrings.DELTA_SETTINGS:
                             motion.DeltaSettings = new MouseMotionSettings.DeltaAccelSettings(tempMouseAction.motion.DeltaSettings);
@@ -662,8 +661,8 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.OUTPUT_CURVE:
                     motion.OutputCurve = tempMouseAction.motion.OutputCurve;
                     break;
-                case PropertyKeyStrings.MOUSE_SPEED:
-                    motion.MouseSpeed = tempMouseAction.motion.MouseSpeed;
+                case PropertyKeyStrings.DEGREES_PER_SECOND:
+                    degreesPerSecond = tempMouseAction.degreesPerSecond;
                     break;
                 case PropertyKeyStrings.DELTA_SETTINGS:
                     motion.DeltaSettings = new MouseMotionSettings.DeltaAccelSettings(tempMouseAction.motion.DeltaSettings);
