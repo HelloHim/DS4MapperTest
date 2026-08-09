@@ -814,6 +814,12 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
                 bool result = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
                 //Trace.WriteLine($"RESULT {result}");
             }
+            else if (outputControlType == OutputContType.SwitchPro2)
+            {
+                viiperNS2ProFeedback = TestVIIPERNS2ProFeedback;
+                bool result = LibVIIPER.SetNS2ProOutputCallback(deviceHandle, viiperNS2ProFeedback);
+                //Trace.WriteLine($"RESULT {result}");
+            }
         }
 
         public void TestVIIPER360Feedback(nuint handle, byte leftMotor, byte rightMotor)
@@ -828,6 +834,13 @@ namespace DS4MapperTest.InputDevices.SteamControllerTritonLibrary
         {
             device.currentLeftAmpRatio = rumbleLarge / 255.0;
             device.currentRightAmpRatio = rumbleSmall / 255.0;
+            device.rumbleDirty = true;
+        }
+
+        public void TestVIIPERNS2ProFeedback(nuint handle, NS2ProOutputState output)
+        {
+            device.currentLeftAmpRatio = ApproximateNS2ProRumbleRatio(output, true);
+            device.currentRightAmpRatio = ApproximateNS2ProRumbleRatio(output, false);
             device.rumbleDirty = true;
         }
 

@@ -438,6 +438,48 @@ namespace DS4MapperTest.SwitchProLibrary
             */
         }
 
+        public override void HookFeedback()
+        {
+            if (outputControlType == OutputContType.Xbox360)
+            {
+                viiper360Feedback = TestVIIPER360Feedback;
+                bool result = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
+            }
+            else if (outputControlType == OutputContType.DualSense ||
+                outputControlType == OutputContType.DualSenseEdge)
+            {
+                viiperDSFeedback = TestVIIPERDSFeedback;
+                bool result = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
+            }
+            else if (outputControlType == OutputContType.SwitchPro2)
+            {
+                viiperNS2ProFeedback = TestVIIPERNS2ProFeedback;
+                bool result = LibVIIPER.SetNS2ProOutputCallback(deviceHandle, viiperNS2ProFeedback);
+            }
+        }
+
+        public void TestVIIPER360Feedback(nuint handle, byte leftMotor, byte rightMotor)
+        {
+            device.currentLeftAmpRatio = leftMotor / 255.0;
+            device.currentRightAmpRatio = rightMotor / 255.0;
+            reader.WriteRumbleReport();
+        }
+
+        public void TestVIIPERDSFeedback(nuint handle, byte rumbleSmall, byte rumbleLarge,
+            byte ledRed, byte ledGreen, byte ledBlue, byte playerLeds)
+        {
+            device.currentLeftAmpRatio = rumbleLarge / 255.0;
+            device.currentRightAmpRatio = rumbleSmall / 255.0;
+            reader.WriteRumbleReport();
+        }
+
+        public void TestVIIPERNS2ProFeedback(nuint handle, NS2ProOutputState output)
+        {
+            device.currentLeftAmpRatio = ApproximateNS2ProRumbleRatio(output, true);
+            device.currentRightAmpRatio = ApproximateNS2ProRumbleRatio(output, false);
+            reader.WriteRumbleReport();
+        }
+
         public override bool IsButtonActive(JoypadActionCodes code)
         {
             bool result = false;
