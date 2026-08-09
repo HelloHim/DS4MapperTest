@@ -154,6 +154,24 @@
                            VerticalAlignment="Center"/>
             </Grid>
         </DataTemplate>
+
+        <DataTemplate x:Key="MouseRoutingBulkOptionTemplate">
+            <Grid MinWidth="210">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding DisplayName}"
+                           Foreground="{DynamicResource JsmccTextStrongBrush}"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding ScopeText}"
+                           Style="{StaticResource JsmccMutedText}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Background="{DynamicResource JsmccBg0Brush}">
@@ -356,7 +374,7 @@
                                        Closed="MouseRoutingPopup_Closed">
                                     <Border x:Name="mouseRoutingPopupHost"
                                             Style="{StaticResource JsmccPanelBorder}"
-                                            Width="560"
+                                            Width="600"
                                             MaxHeight="560"
                                             Margin="0,8,0,0">
                                         <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -390,6 +408,49 @@
                                                                 Margin="8,0,0,0"/>
                                                     </StackPanel>
                                                 </Grid>
+
+                                                <Border Style="{StaticResource JsmccCardBorder}"
+                                                        Padding="14"
+                                                        Margin="0,0,0,14">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Quick set"
+                                                                   Style="{StaticResource JsmccCardTitle}"/>
+                                                        <TextBlock Text="Pick one destination and stage it across every compatible route in one action."
+                                                                   Style="{StaticResource JsmccMutedText}"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,4,0,0"/>
+
+                                                        <Grid Margin="0,12,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="Destination"
+                                                                       Style="{StaticResource OtherSettingLabel}"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,12,0"/>
+                                                            <ComboBox Grid.Column="1"
+                                                                      MinWidth="260"
+                                                                      HorizontalAlignment="Stretch"
+                                                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                                                      ItemsSource="{Binding BulkApplyOptions}"
+                                                                      ItemTemplate="{StaticResource MouseRoutingBulkOptionTemplate}"
+                                                                      SelectedItem="{Binding SelectedBulkApplyOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        </Grid>
+
+                                                        <TextBlock Text="{Binding BulkApplyHelperText}"
+                                                                   Style="{StaticResource JsmccMutedText}"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,8,0,0"/>
+
+                                                        <Button Content="Apply to all"
+                                                                Click="ApplyMouseRoutingQuickSetButton_Click"
+                                                                Style="{StaticResource JsmccButtonStyle}"
+                                                                IsEnabled="{Binding HasSelectedBulkApplyOption}"
+                                                                HorizontalAlignment="Right"
+                                                                Margin="0,12,0,0"/>
+                                                    </StackPanel>
+                                                </Border>
 
                                                 <ItemsControl ItemsSource="{Binding RouteRows}">
                                                     <ItemsControl.ItemTemplate>
