@@ -419,7 +419,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 if (!_modelReady) return;
                 if (mapper.ActionProfile.CalibRwc == value) return;
                 mapper.ActionProfile.CalibRwc = value;
-                if (!_applyingPreset) TryMatchPreset();
                 RealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
@@ -438,7 +437,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 if (mapper.ActionProfile.CalibInGameSens == value) return;
                 mapper.ActionProfile.CalibInGameSens = value;
                 if (IsCountsMode) CalculateCountsFromRwc();
-                if (!_applyingPreset) TryMatchPreset();
                 InGameSensChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
@@ -466,42 +464,25 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             resetAccelerationDefaultsComm;
 
         private bool _applyingPreset = false;
-        private GameCalibPreset _selectedPreset = GameCalibPreset.Custom;
 
         public IReadOnlyList<GameCalibPreset> GamePresets => GameCalibPreset.All;
 
         public GameCalibPreset SelectedPreset
         {
-            get => _selectedPreset;
+            get => GameCalibPreset.FindByName(mapper.ActionProfile.CalibPresetName) ??
+                GameCalibPreset.Custom;
             set
             {
-                if (_selectedPreset == value) return;
-                _selectedPreset = value;
+                GameCalibPreset next = value ?? GameCalibPreset.Custom;
+                if (mapper.ActionProfile.CalibPresetName == next.Name) return;
+                mapper.ActionProfile.CalibPresetName = next.Name;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
-                if (value == null || value.IsCustom) return;
+                if (next.IsCustom) return;
                 _applyingPreset = true;
-                InGameSens = value.RWC * 360.0 / FullTurnCounts;
-                RealWorldCalibration = value.RWC;
+                InGameSens = next.RWC * 360.0 / FullTurnCounts;
+                RealWorldCalibration = next.RWC;
                 _applyingPreset = false;
             }
-        }
-
-        private void SetSelectedPresetCustom()
-        {
-            _selectedPreset = GameCalibPreset.Custom;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
-        }
-
-        private void TryMatchPreset()
-        {
-            double rwc = mapper.ActionProfile.CalibRwc;
-            GameCalibPreset match = GameCalibPreset.All.FirstOrDefault(
-                p => !p.IsCustom &&
-                     Math.Abs(p.RWC - rwc) < 1e-3);
-            GameCalibPreset next = match ?? GameCalibPreset.Custom;
-            if (_selectedPreset == next) return;
-            _selectedPreset = next;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
         }
 
         private void CalculateTestRWC()
@@ -1142,6 +1123,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             StabilityModeChanged += TouchpadMousePropViewModel_StabilityModeChanged;
             ActionPropertyChanged += SetProfileDirty;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
+            mapper.ActionProfile.CalibPresetNameChanged += ActionProfile_CalibPresetNameChanged;
 
             double savedSwipesPer360 = this.action.SwipesPer360;
             double savedVerticalScale = this.action.VerticalScale;
@@ -1176,13 +1158,13 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                             fullTurnCounts = savedCounts;
                             CalculateTestRWC();
                             _modelReady = true;
-                            TryMatchPreset();
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SwipesPer360)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivity)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
                             RaiseCalibModePropertyChanges();
                         }));
                 }));
@@ -1247,6 +1229,11 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             {
                 CalculateTestRWC();
             }
+        }
+
+        private void ActionProfile_CalibPresetNameChanged(object sender, EventArgs e)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
         }
 
         private void TouchpadMousePropViewModel_SmoothingMinCutoffChanged(object sender, EventArgs e)
