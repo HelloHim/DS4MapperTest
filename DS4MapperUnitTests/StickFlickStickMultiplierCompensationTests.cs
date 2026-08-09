@@ -1,4 +1,5 @@
 using System;
+using DS4MapperTest;
 using DS4MapperTest.Common;
 using DS4MapperTest.StickActions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -26,9 +27,16 @@ namespace DS4MapperUnitTests
                 action.Prepare(mapper, max, max);
                 if (action.active)
                 {
-                    double before = mapper.MouseX;
+                    double before = mapper.TryGetRouteMouseStateForTest(MouseOutputRoute.FlickStick,
+                        out Mapper.RouteMouseStateSnapshot previous)
+                        ? previous.X
+                        : 0.0;
                     action.Event(mapper);
-                    total += mapper.MouseX - before;
+                    if (mapper.TryGetRouteMouseStateForTest(MouseOutputRoute.FlickStick,
+                        out Mapper.RouteMouseStateSnapshot snapshot))
+                    {
+                        total += snapshot.X - before;
+                    }
                 }
             }
 

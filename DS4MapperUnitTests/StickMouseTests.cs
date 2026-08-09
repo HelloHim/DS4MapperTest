@@ -1,3 +1,4 @@
+using DS4MapperTest;
 using DS4MapperTest.StickActions;
 
 namespace DS4MapperUnitTests
@@ -5,6 +6,13 @@ namespace DS4MapperUnitTests
     [TestClass]
     public class StickMouseTests
     {
+        private static Mapper.RouteMouseStateSnapshot GetJoystickRouteState(TestMapper mapper)
+        {
+            Assert.IsTrue(mapper.TryGetRouteMouseStateForTest(MouseOutputRoute.JoystickMouse,
+                out Mapper.RouteMouseStateSnapshot snapshot));
+            return snapshot;
+        }
+
         [TestMethod]
         public void UsesRequestedDefaultMouseSpeed()
         {
@@ -56,8 +64,9 @@ namespace DS4MapperUnitTests
             action.Prepare(mapper, 30000, 15000);
             action.Event(mapper);
 
-            Assert.IsTrue(mapper.MouseX > 0.0);
-            Assert.AreEqual(0.0, mapper.MouseY, 1e-9);
+            Mapper.RouteMouseStateSnapshot snapshot = GetJoystickRouteState(mapper);
+            Assert.IsTrue(snapshot.X > 0.0);
+            Assert.AreEqual(0.0, snapshot.Y, 1e-9);
         }
 
         [TestMethod]
@@ -71,8 +80,9 @@ namespace DS4MapperUnitTests
             action.Prepare(mapper, 30000, 25000);
             action.Event(mapper);
 
-            Assert.IsTrue(mapper.MouseX > 0.0);
-            Assert.IsTrue(mapper.MouseY < 0.0);
+            Mapper.RouteMouseStateSnapshot snapshot = GetJoystickRouteState(mapper);
+            Assert.IsTrue(snapshot.X > 0.0);
+            Assert.IsTrue(snapshot.Y < 0.0);
         }
     }
 }

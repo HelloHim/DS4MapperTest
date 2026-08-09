@@ -382,8 +382,8 @@ namespace DS4MapperTest.StickActions
 
         public override void Event(Mapper mapper)
         {
-            mapper.MouseX = xMotion; mapper.MouseY = yMotion;
-            mapper.MouseSync = true;
+            mapper.SetRouteRelativeMouseMotion(MouseOutputRoute.JoystickMouse, xMotion, yMotion);
+            mapper.SetRouteRelativeMouseSync(MouseOutputRoute.JoystickMouse, true);
             active = xMotion != 0.0 || yMotion != 0.0;
             activeEvent = false;
         }

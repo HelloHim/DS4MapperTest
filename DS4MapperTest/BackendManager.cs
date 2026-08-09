@@ -67,6 +67,7 @@ namespace DS4MapperTest
 
         private VirtualKBMMapping eventInputMapping;// = new FakerInputMapping();
         public VirtualKBMMapping EventInputMapping => eventInputMapping;
+        private MouseOutputDispatcher mouseOutputDispatcher;
 
         // Phase-2 physical-mouse forwarding. Owned here (not by the WPF UI)
         // so it starts/stops with the backend service regardless of which
@@ -340,6 +341,9 @@ namespace DS4MapperTest
                 LogDebug($"VIIPER connection established");
             }
 
+            mouseOutputDispatcher = new MouseOutputDispatcher(appGlobal,
+                virtualEventHandler, eventInputMapping, serverHandle);
+
             Thread temper = new Thread(() =>
             {
                 //enumerator.FindControllers();
@@ -430,6 +434,7 @@ namespace DS4MapperTest
                 int tempInd = ind;
                 //testMapper.VIIPERDeviceHanle = deviceHandle;
                 testMapper.PassVIIPERConnection(serverHandle);
+                testMapper.PassMouseOutputDispatcher(mouseOutputDispatcher);
                 //testMapper.Start(vigemTestClient, virtualEventHandler, eventInputMapping);
                 testMapper.Start(virtualEventHandler, eventInputMapping);
                 testMapper.ProfileChanged += (object sender, string e) => {
@@ -630,6 +635,7 @@ namespace DS4MapperTest
 
                 //testMapper.Start(device, reader);
                 testMapper.PassVIIPERConnection(serverHandle);
+                testMapper.PassMouseOutputDispatcher(mouseOutputDispatcher);
                 //testMapper.Start(vigemTestClient, virtualEventHandler, eventInputMapping);
                 testMapper.Start(virtualEventHandler, eventInputMapping);
                 //testMapper.RequestOSD += TestMapper_RequestOSD;
@@ -753,6 +759,9 @@ namespace DS4MapperTest
 
             //vigemTestClient?.Dispose();
             //vigemTestClient = null;
+
+            mouseOutputDispatcher?.Dispose();
+            mouseOutputDispatcher = null;
 
             if (serverHandle != 0)
             {
@@ -938,6 +947,7 @@ namespace DS4MapperTest
 
             int tempInd = ind;
             mapper.PassVIIPERConnection(serverHandle);
+            mapper.PassMouseOutputDispatcher(mouseOutputDispatcher);
             //mapper.Start(vigemTestClient, virtualEventHandler, eventInputMapping);
             mapper.Start(virtualEventHandler, eventInputMapping);
             mapper.ProfileChanged += (object sender, string e) => {

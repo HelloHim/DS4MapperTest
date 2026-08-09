@@ -415,7 +415,7 @@ namespace DS4MapperTest.GyroActions
 
             if (!triggerActivated)
             {
-                mapper.MouseXRemainder = mapper.MouseYRemainder = 0.0;
+                mapper.ResetRouteMouseRemainder(MouseOutputRoute.Gyro);
                 mouseParams.smoothingFilterSettings.filterX.Filter(0.0, mapper.CurrentRate);
                 mouseParams.smoothingFilterSettings.filterY.Filter(0.0, mapper.CurrentRate);
 
@@ -751,8 +751,7 @@ namespace DS4MapperTest.GyroActions
                 if (distSqu <= (mouseParams.minThreshold * mouseParams.minThreshold))
                 {
                     outXMotion = 0.0; outYMotion = 0.0;
-                    mapper.MouseXRemainder = outXMotion;
-                    mapper.MouseYRemainder = outYMotion;
+                    mapper.ResetRouteMouseRemainder(MouseOutputRoute.Gyro);
                     mouseSync = false;
                 }
             }
@@ -763,14 +762,14 @@ namespace DS4MapperTest.GyroActions
                     mouseParams.smoothingFilterSettings.filterY,
                     ref outXMotion, ref outYMotion);
 
-                mapper.MouseX += outXMotion; mapper.MouseY += outYMotion;
-                mapper.MouseSync = mouseSync;
+                mapper.AddRouteRelativeMouseMotion(MouseOutputRoute.Gyro, outXMotion, outYMotion);
+                mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Gyro, mouseSync);
             }
             else
             {
                 // Allow mapper to handle event
-                mapper.MouseX += outXMotion; mapper.MouseY += outYMotion;
-                mapper.MouseSync = mouseSync;
+                mapper.AddRouteRelativeMouseMotion(MouseOutputRoute.Gyro, outXMotion, outYMotion);
+                mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Gyro, mouseSync);
             }
 
             if (xMotion != 0.0 || yMotion != 0.0)
@@ -813,7 +812,7 @@ namespace DS4MapperTest.GyroActions
 
         public override void BlankEvent(Mapper mapper)
         {
-            mapper.MouseXRemainder = mapper.MouseYRemainder = 0.0;
+            mapper.ResetRouteMouseRemainder(MouseOutputRoute.Gyro);
             active = false;
             activeEvent = false;
             toggleActiveState = false;
