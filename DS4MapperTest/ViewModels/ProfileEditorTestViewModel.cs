@@ -246,6 +246,12 @@ namespace DS4MapperTest.ViewModels
 
         public bool HasSteamPadRotation => SteamPadRotation != null;
 
+        private PhysicalControllerVisibilityViewModel physicalControllerVisibility;
+        public PhysicalControllerVisibilityViewModel PhysicalControllerVisibility =>
+            physicalControllerVisibility ??= PhysicalControllerVisibilityViewModel.Create(mapper);
+
+        public bool HasPhysicalControllerVisibility => PhysicalControllerVisibility != null;
+
         public bool UsesPlayStationTouchpadClickNames =>
             mapper?.DeviceType == InputDeviceType.DS4 ||
             mapper?.DeviceType == InputDeviceType.DualSense;
@@ -2553,6 +2559,7 @@ namespace DS4MapperTest.ViewModels
         public void UnregisterEvents()
         {
             steamPadRotation?.Dispose();
+            physicalControllerVisibility?.Dispose();
             tempProfile.DirtyChanged -= TempProfile_DirtyChanged;
             mapper.ProfileEditCommitted -= Mapper_ProfileEditCommitted;
         }
@@ -3495,6 +3502,61 @@ namespace DS4MapperTest.ViewModels
         {
             options.LeftTouchpadRotationChanged -= LeftTouchpadRotationChanged;
             options.RightTouchpadRotationChanged -= RightTouchpadRotationChanged;
+        }
+    }
+
+    public sealed class PhysicalControllerVisibilityViewModel : INotifyPropertyChanged, IDisposable
+    {
+        private readonly InputDeviceBase device;
+        private readonly ControllerOptionsStore options;
+        private readonly AppGlobalData appGlobal;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public bool IsAvailable => appGlobal?.hidHideInstalled == true;
+
+        public bool Enabled
+        {
+            get => options.HidePhysicalController;
+            set
+            {
+                if (options.HidePhysicalController == value) return;
+                options.HidePhysicalController = value;
+            }
+        }
+
+        public string Description => IsAvailable
+            ? "Temporarily hides this physical controller from other apps while the remapper is running. You may need to restart the game."
+            : "Install HidHide to hide this controller from other apps while the remapper is running.";
+
+        private PhysicalControllerVisibilityViewModel(InputDeviceBase device, AppGlobalData appGlobal)
+        {
+            this.device = device;
+            this.appGlobal = appGlobal;
+            options = device.DeviceOptions;
+            options.HidePhysicalControllerChanged += HidePhysicalControllerChanged;
+        }
+
+        public static PhysicalControllerVisibilityViewModel Create(Mapper mapper)
+        {
+            if (mapper?.BaseDevice?.DeviceOptions == null)
+            {
+                return null;
+            }
+
+            return new PhysicalControllerVisibilityViewModel(mapper.BaseDevice, mapper.AppGlobal);
+        }
+
+        private void HidePhysicalControllerChanged(object sender, EventArgs e)
+        {
+            AppGlobalDataSingleton.Instance.SaveControllerDeviceSettings(device, device.DeviceOptions);
+            (System.Windows.Application.Current as App)?.Manager?.RefreshControllerVisibilityState();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Enabled)));
+        }
+
+        public void Dispose()
+        {
+            options.HidePhysicalControllerChanged -= HidePhysicalControllerChanged;
         }
     }
 }
