@@ -166,7 +166,7 @@ namespace DS4MapperTest
 
             AppGlobal.appSettings.MouseOutputRouting = candidate;
             AppGlobal.SaveAppSettings();
-            runtime?.RefreshRouting(flushSharedFakerInput: false);
+            runtime?.RefreshRouting(flushSharedFakerInput: true);
             StateChanged?.Invoke(this, EventArgs.Empty);
         }
 
