@@ -14,16 +14,17 @@ namespace DS4MapperTest
         private int configVersion = AppGlobalData.CONFIG_VERSION;
         private string themeMode = ThemeService.DEFAULT_THEME_MODE;
 
-        // Phase-2 physical-mouse forwarding. Disabled by default; phase 3's
-        // device-picker UI will read/write these same two properties, so the
-        // stored shape shouldn't need to change - see
-        // DS4MapperTest.PhysicalMouse.PhysicalMouseService.
+        // Physical-mouse forwarding remains globally configured alongside the
+        // mouse-routing table. The selected device and enabled state live here;
+        // the forwarded output destination is controlled separately by
+        // UnifiedVirtualMouseDestination below.
         private bool physicalMouseForwardingEnabled = false;
         private string selectedPhysicalMouseId = string.Empty;
         private MouseOutputDestination gyroMouseDestination = MouseOutputDestination.FakerInputMouse;
         private MouseOutputDestination joystickMouseDestination = MouseOutputDestination.FakerInputMouse;
         private MouseOutputDestination flickStickMouseDestination = MouseOutputDestination.FakerInputMouse;
         private MouseOutputDestination trackpadMouseDestination = MouseOutputDestination.FakerInputMouse;
+        private MouseOutputDestination unifiedVirtualMouseDestination = MouseOutputDestination.FakerInputMouse;
         private MouseOutputDestination triggerMouseDestination = MouseOutputDestination.FakerInputMouse;
         private MouseOutputDestination otherMouseDestination = MouseOutputDestination.FakerInputMouse;
         private MouseOutputDestination absoluteMouseDestination = MouseOutputDestination.FakerInputMouse;
@@ -84,6 +85,13 @@ namespace DS4MapperTest
                 MouseOutputRoute.Trackpad, value, viiperAbsoluteMouseSupported: false);
         }
 
+        public MouseOutputDestination UnifiedVirtualMouseDestination
+        {
+            get => unifiedVirtualMouseDestination;
+            set => unifiedVirtualMouseDestination = MouseOutputRoutingPolicy.SanitizeConfiguredDestination(
+                MouseOutputRoute.UnifiedVirtualMouse, value, viiperAbsoluteMouseSupported: false);
+        }
+
         public MouseOutputDestination TriggerMouseDestination
         {
             get => triggerMouseDestination;
@@ -113,6 +121,7 @@ namespace DS4MapperTest
                 JoystickMouse = JoystickMouseDestination,
                 FlickStick = FlickStickMouseDestination,
                 Trackpad = TrackpadMouseDestination,
+                UnifiedVirtualMouse = UnifiedVirtualMouseDestination,
                 TriggerMouse = TriggerMouseDestination,
                 Other = OtherMouseDestination,
                 AbsoluteMouse = AbsoluteMouseDestination,
@@ -124,6 +133,7 @@ namespace DS4MapperTest
                 JoystickMouseDestination = table.JoystickMouse;
                 FlickStickMouseDestination = table.FlickStick;
                 TrackpadMouseDestination = table.Trackpad;
+                UnifiedVirtualMouseDestination = table.UnifiedVirtualMouse;
                 TriggerMouseDestination = table.TriggerMouse;
                 OtherMouseDestination = table.Other;
                 AbsoluteMouseDestination = table.AbsoluteMouse;
@@ -243,6 +253,12 @@ namespace DS4MapperTest
         {
             get => MouseOutputRoutingPolicy.SerializeDestination(settings.TrackpadMouseDestination);
             set => TryApplyDestination(value, destination => settings.TrackpadMouseDestination = destination);
+        }
+
+        public string UnifiedVirtualMouseDestination
+        {
+            get => MouseOutputRoutingPolicy.SerializeDestination(settings.UnifiedVirtualMouseDestination);
+            set => TryApplyDestination(value, destination => settings.UnifiedVirtualMouseDestination = destination);
         }
 
         public string TriggerMouseDestination

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DS4MapperTest.MapperUtil;
+using DS4MapperTest.PhysicalMouse;
 
 namespace DS4MapperTest
 {
@@ -594,7 +595,8 @@ namespace DS4MapperTest
         }
     }
 
-    public sealed class MouseOutputDispatcher : IMouseOutputRoutingRuntime, IDisposable
+    public sealed class MouseOutputDispatcher :
+        IMouseOutputRoutingRuntime, IPhysicalMouseOutputRouter, IDisposable
     {
         private sealed class ProducerRouteState
         {

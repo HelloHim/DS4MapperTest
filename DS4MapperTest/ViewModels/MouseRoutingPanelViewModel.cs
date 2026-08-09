@@ -181,6 +181,7 @@ namespace DS4MapperTest.ViewModels
             {
                 MouseOutputRoute.JoystickMouse => "Joystick Mouse",
                 MouseOutputRoute.FlickStick => "Flick Stick",
+                MouseOutputRoute.UnifiedVirtualMouse => "Unified Virtual Mouse",
                 MouseOutputRoute.TriggerMouse => "Trigger Mouse",
                 MouseOutputRoute.AbsoluteMouse => "Absolute Mouse",
                 _ => route.ToString(),
@@ -203,11 +204,23 @@ namespace DS4MapperTest.ViewModels
             MouseRoutingDestinationOptionViewModel.GetDestinationDisplayName(Destination);
         public string ScopeText => CompatibleRouteCount == 7
             ? "All routes"
-            : "6 compatible routes";
+            : "7 compatible routes";
     }
 
     public sealed class MouseRoutingPanelViewModel : INotifyPropertyChanged, IDisposable
     {
+        private static readonly MouseOutputRoute[] RouteDisplayOrder =
+        {
+            MouseOutputRoute.Gyro,
+            MouseOutputRoute.JoystickMouse,
+            MouseOutputRoute.FlickStick,
+            MouseOutputRoute.Trackpad,
+            MouseOutputRoute.UnifiedVirtualMouse,
+            MouseOutputRoute.TriggerMouse,
+            MouseOutputRoute.Other,
+            MouseOutputRoute.AbsoluteMouse,
+        };
+
         private readonly IMouseOutputRoutingService routingService;
         private readonly Action<Action> uiInvoker;
         private bool popupOpen;
@@ -224,9 +237,7 @@ namespace DS4MapperTest.ViewModels
                 throw new ArgumentNullException(nameof(routingService));
             this.uiInvoker = uiInvoker ?? (action => action());
             RouteRows = new ObservableCollection<MouseRoutingRouteRowViewModel>(
-                Enum.GetValues(typeof(MouseOutputRoute))
-                    .Cast<MouseOutputRoute>()
-                    .Select(CreateRouteRow));
+                RouteDisplayOrder.Select(CreateRouteRow));
             BulkApplyOptions = new ObservableCollection<MouseRoutingBulkApplyOptionViewModel>(
                 Enum.GetValues(typeof(MouseOutputDestination))
                     .Cast<MouseOutputDestination>()
@@ -307,9 +318,9 @@ namespace DS4MapperTest.ViewModels
         public bool HasSelectedBulkApplyOption => SelectedBulkApplyOption != null;
         public string BulkApplyHelperText => SelectedBulkApplyOption == null
             ? "Choose a destination to update every compatible staged route at once."
-            : SelectedBulkApplyOption.CompatibleRouteCount == 7
-                ? "Apply to all seven staged routes in one action."
-                : "Apply to six staged routes in one action. VIIPER does not work for Absolute Mouse.";
+            : SelectedBulkApplyOption.CompatibleRouteCount == RouteRows.Count
+                ? "Apply to all eight staged routes in one action."
+                : "Apply to seven staged routes in one action. VIIPER does not work for Absolute Mouse.";
 
         public void BeginEditSession()
         {
@@ -452,6 +463,7 @@ namespace DS4MapperTest.ViewModels
             {
                 MouseOutputRoute.JoystickMouse => "Joystick Mouse",
                 MouseOutputRoute.FlickStick => "Flick Stick",
+                MouseOutputRoute.UnifiedVirtualMouse => "Unified Virtual Mouse",
                 MouseOutputRoute.TriggerMouse => "Trigger Mouse",
                 MouseOutputRoute.AbsoluteMouse => "Absolute Mouse",
                 _ => route.ToString(),

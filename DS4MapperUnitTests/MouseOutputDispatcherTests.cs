@@ -150,6 +150,7 @@ namespace DS4MapperUnitTests
                 settings.JoystickMouseDestination = MouseOutputDestination.ViiperMouse2;
                 settings.FlickStickMouseDestination = MouseOutputDestination.ViiperMouse3;
                 settings.TrackpadMouseDestination = MouseOutputDestination.FakerInputMouse;
+                settings.UnifiedVirtualMouseDestination = MouseOutputDestination.SendInput;
                 settings.TriggerMouseDestination = MouseOutputDestination.SendInput;
                 settings.OtherMouseDestination = MouseOutputDestination.FakerInputMouse;
                 settings.AbsoluteMouseDestination = MouseOutputDestination.SendInput;
@@ -164,6 +165,7 @@ namespace DS4MapperUnitTests
             dispatcher.QueueRelative(producer, MouseOutputRoute.JoystickMouse, 22, -2);
             dispatcher.QueueRelative(producer, MouseOutputRoute.FlickStick, 33, -3);
             dispatcher.QueueRelative(producer, MouseOutputRoute.Trackpad, 44, -4);
+            dispatcher.QueueRelative(producer, MouseOutputRoute.UnifiedVirtualMouse, 77, -7);
             dispatcher.QueueRelative(producer, MouseOutputRoute.TriggerMouse, 55, -5);
             dispatcher.QueueRelative(producer, MouseOutputRoute.Other, 66, -6);
             dispatcher.QueueWheel(producer, MouseOutputRoute.Trackpad, 120, -120);
@@ -194,8 +196,8 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(VIIPERMouseButton.Left, fakerInput.Submissions[0].Buttons);
 
             Assert.AreEqual(1, sendInput.Submissions.Count);
-            Assert.AreEqual(55L, sendInput.Submissions[0].RelativeX);
-            Assert.AreEqual(-5L, sendInput.Submissions[0].RelativeY);
+            Assert.AreEqual(132L, sendInput.Submissions[0].RelativeX);
+            Assert.AreEqual(-12L, sendInput.Submissions[0].RelativeY);
             Assert.IsTrue(sendInput.Submissions[0].HasAbsolute);
             Assert.AreEqual(0.25, sendInput.Submissions[0].AbsoluteX, 1e-9);
             Assert.AreEqual(0.75, sendInput.Submissions[0].AbsoluteY, 1e-9);

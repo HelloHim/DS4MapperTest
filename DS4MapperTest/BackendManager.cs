@@ -298,7 +298,7 @@ namespace DS4MapperTest
             if (isRunning)
             {
                 physicalMouseService.Reconfigure(enabled, stableDeviceId,
-                    virtualEventHandler, eventInputMapping);
+                    mouseOutputDispatcher);
             }
             return true;
         }
@@ -312,11 +312,6 @@ namespace DS4MapperTest
 
             InitOutputKBMHandler();
             EnsureUsbipAvailable();
-
-            bool physicalMouseEnabled = appGlobal.appSettings?.PhysicalMouseForwardingEnabled ?? false;
-            string selectedPhysicalMouseId = appGlobal.appSettings?.SelectedPhysicalMouseId;
-            physicalMouseService.Start(physicalMouseEnabled, selectedPhysicalMouseId, virtualEventHandler, eventInputMapping);
-            LogDebug($"Physical mouse forwarding: {physicalMouseService.Status}");
 
             // Change thread affinity of bus object to not be tied
             // to GUI thread
@@ -349,6 +344,12 @@ namespace DS4MapperTest
                 virtualEventHandler, eventInputMapping, serverHandle);
             mouseOutputRoutingController.AttachRuntime(mouseOutputDispatcher,
                 isServiceRunning: false);
+
+            bool physicalMouseEnabled = appGlobal.appSettings?.PhysicalMouseForwardingEnabled ?? false;
+            string selectedPhysicalMouseId = appGlobal.appSettings?.SelectedPhysicalMouseId;
+            physicalMouseService.Start(physicalMouseEnabled, selectedPhysicalMouseId,
+                mouseOutputDispatcher);
+            LogDebug($"Physical mouse forwarding: {physicalMouseService.Status}");
 
             Thread temper = new Thread(() =>
             {
