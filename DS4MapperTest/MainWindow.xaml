@@ -885,6 +885,28 @@
                                     </StackPanel>
                                 </Border>
 
+                                <Border Style="{StaticResource JsmccCardBorder}"
+                                        Visibility="{Binding HasPhysicalControllerVisibility, Converter={StaticResource BoolToVis}}"
+                                        IsEnabled="{Binding PhysicalControllerVisibility.IsAvailable}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="Hide Physical Controller" Style="{StaticResource JsmccSectionTitle}"/>
+                                            <TextBlock Text="{Binding PhysicalControllerVisibility.Description}"
+                                                       Style="{StaticResource JsmccMutedText}"
+                                                       Margin="0,6,16,0"
+                                                       TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <CheckBox Grid.Column="1"
+                                                  Style="{StaticResource JsmccToggleStyle}"
+                                                  IsChecked="{Binding PhysicalControllerVisibility.Enabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+
                                 <Border Style="{StaticResource JsmccCardBorder}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
