@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:propvm="clr-namespace:DS4MapperTest.ViewModels.StickActionPropViewModels"
+             xmlns:shared="clr-namespace:DS4MapperTest.Views.Shared"
              xmlns:views="clr-namespace:DS4MapperTest.Views"
              mc:Ignorable="d"
              d:DesignHeight="720"
@@ -735,71 +736,7 @@
 
         <DataTemplate DataType="{x:Type propvm:StickFlickStickPropViewModel}">
             <StackPanel>
-                <Border Style="{StaticResource AngleCalibrationBorder}">
-                    <StackPanel>
-                        <TextBlock Text="Angle Calibration" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,6"/>
-                        <TextBlock Text="Counts is the mouse movement for a 360&#176; turn. RWC is Counts &#215; In-Game Sensitivity &#247; 360; Flick Stick uses RWC &#247; In-Game Sensitivity."
-                                   Style="{StaticResource JsmccMutedText}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,0,0,6"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                            <RadioButton Content="Counts" GroupName="FlickStickCalibMode"
-                                         Style="{StaticResource CalibModeToggleStyle}"
-                                         IsChecked="{Binding IsCountsMode, Mode=TwoWay}"/>
-                            <RadioButton Content="Real World Calibration" GroupName="FlickStickCalibMode"
-                                         Style="{StaticResource CalibModeToggleStyle}"
-                                         IsChecked="{Binding IsRwcMode, Mode=TwoWay}"
-                                         Margin="8,0,0,0"/>
-                        </StackPanel>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Game Calibration Preset" Style="{StaticResource JsmccLabelText}"/>
-                            <ComboBox Grid.Column="1"
-                                      ItemsSource="{Binding GamePresets}"
-                                      SelectedItem="{Binding SelectedPreset}"
-                                      DisplayMemberPath="Name"
-                                      Width="180"
-                                      HorizontalAlignment="Left"
-                                      Style="{StaticResource JsmccComboBoxStyle}"/>
-                        </Grid>
-
-                        <Grid Margin="0,6,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding MasterCalibrationLabel}" Style="{StaticResource JsmccLabelText}"/>
-                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9" DecimalPlaces="1" Increment="10"
-                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                              Visibility="{Binding IsCountsMode, Converter={StaticResource BoolToVis}}"
-                                              Value="{Binding MasterCalibrationValue, UpdateSourceTrigger=LostFocus}"/>
-                            <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9999" DecimalPlaces="4" Increment="0.0001"
-                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                              Visibility="{Binding IsRwcMode, Converter={StaticResource BoolToVis}}"
-                                              Value="{Binding MasterCalibrationValue, UpdateSourceTrigger=LostFocus}"/>
-                        </Grid>
-
-                        <Grid Margin="0,6,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="In-Game Sensitivity" Style="{StaticResource JsmccLabelText}"/>
-                            <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="10" DecimalPlaces="2" Increment="0.05"
-                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                              Value="{Binding InGameSens, UpdateSourceTrigger=LostFocus}"/>
-                        </Grid>
-
-                        <TextBlock Text="Calibration is shared across all gyro, trackpad, flick stick, and camera flick-turn bindings in this profile."
-                                   Style="{StaticResource JsmccMutedText}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                </Border>
+                <shared:CalibrationModeControl Margin="0,0,0,6"/>
 
                 <StackPanel Margin="0,6,0,6">
                     <TextBlock Text="Flick Stick" Style="{StaticResource JsmccSectionTitle}"/>

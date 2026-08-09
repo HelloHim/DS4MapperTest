@@ -52,7 +52,7 @@ namespace DS4MapperTest.ViewModels
             set { if (value) CalibMode = CalibMode.CountsMode; }
         }
 
-        public string MasterCalibrationLabel => IsCountsMode ? "Counts" : "Real World Calibration";
+        public string MasterCalibrationLabel => IsCountsMode ? "Counts" : "RWC";
 
         public double MasterCalibrationValue
         {

@@ -3,92 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:shared="clr-namespace:DS4MapperTest.Views.Shared"
              mc:Ignorable="d"
              d:DesignHeight="600"
              d:DesignWidth="860">
-    <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-
-        <Style x:Key="AngleCalibrationBorder" TargetType="Border" BasedOn="{StaticResource JsmccSettingRowBorder}">
-            <Setter Property="Background" Value="{DynamicResource JsmccBg1Brush}"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
-        <Style x:Key="AngleCalibrationLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
-            <Setter Property="Width" Value="170"/>
-        </Style>
-    </UserControl.Resources>
-
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
                   CanContentScroll="False">
         <StackPanel Margin="0,0,10,12">
-            <Border Style="{StaticResource AngleCalibrationBorder}">
-                <StackPanel>
-                    <TextBlock Text="Angle Calibration" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,6"/>
-                    <TextBlock Text="Counts is the mouse movement for a 360&#176; turn. RWC is Counts &#215; In-Game Sensitivity &#247; 360; Flick Stick uses RWC &#247; In-Game Sensitivity."
-                               Style="{StaticResource JsmccMutedText}"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,6"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                        <RadioButton Content="Counts" GroupName="GyroCalibMode"
-                                     Style="{StaticResource CalibModeToggleStyle}"
-                                     IsChecked="{Binding IsCountsMode, Mode=TwoWay}"/>
-                        <RadioButton Content="Real World Calibration" GroupName="GyroCalibMode"
-                                     Style="{StaticResource CalibModeToggleStyle}"
-                                     IsChecked="{Binding IsRwcMode, Mode=TwoWay}"
-                                     Margin="8,0,0,0"/>
-                    </StackPanel>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Game Calibration Preset" Style="{StaticResource AngleCalibrationLabel}"/>
-                        <ComboBox Grid.Column="1"
-                                  ItemsSource="{Binding GamePresets}"
-                                  SelectedItem="{Binding SelectedPreset}"
-                                  DisplayMemberPath="Name"
-                                  Width="180"
-                                  HorizontalAlignment="Left"
-                                  Style="{StaticResource JsmccComboBoxStyle}"/>
-                    </Grid>
-
-                    <Grid Margin="0,6,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="{Binding MasterCalibrationLabel}" Style="{StaticResource AngleCalibrationLabel}"/>
-                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9" DecimalPlaces="1" Increment="10"
-                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Visibility="{Binding IsCountsMode, Converter={StaticResource BoolToVis}}"
-                                          Value="{Binding MasterCalibrationValue, UpdateSourceTrigger=LostFocus}"/>
-                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9999" DecimalPlaces="4" Increment="0.0001"
-                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Visibility="{Binding IsRwcMode, Converter={StaticResource BoolToVis}}"
-                                          Value="{Binding MasterCalibrationValue, UpdateSourceTrigger=LostFocus}"/>
-                    </Grid>
-
-                    <Grid Margin="0,6,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="In-Game Sensitivity" Style="{StaticResource AngleCalibrationLabel}"/>
-                        <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="10" DecimalPlaces="2" Increment="0.05"
-                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding InGameSens, UpdateSourceTrigger=LostFocus}"/>
-                    </Grid>
-
-                    <TextBlock Text="Calibration is shared across all gyro, trackpad, flick stick, and camera flick-turn bindings in this profile."
-                               Style="{StaticResource JsmccMutedText}"
-                               TextWrapping="Wrap"
-                               Margin="0,8,0,0"/>
-                </StackPanel>
-            </Border>
+            <shared:CalibrationModeControl Margin="0,0,0,6"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
