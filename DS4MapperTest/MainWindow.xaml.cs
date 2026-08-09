@@ -602,6 +602,7 @@ namespace DS4MapperTest
             if (currentDeviceItem == null) return;
 
             suppressCombo = true;
+            ResyncCurrentDeviceProfileIndexToActiveProfile();
 
             // Only tear down and rebuild ItemsSource when the backing collection
             // actually changed (e.g. switching devices). Re-nulling and
@@ -621,6 +622,25 @@ namespace DS4MapperTest
 
             profileComboBox.SelectedIndex = currentDeviceItem.ProfileIndex;
             suppressCombo = false;
+        }
+
+        private void ResyncCurrentDeviceProfileIndexToActiveProfile()
+        {
+            if (currentDeviceItem == null || editorTestVM?.ProfileEnt == null) return;
+
+            string activePath = editorTestVM.ProfileEnt.ProfilePath;
+            var profileList = currentDeviceItem.DevProfileList;
+            int activeIndex = profileList
+                .Select((profile, index) => new { profile, index })
+                .Where(item => string.Equals(item.profile.ProfilePath, activePath, StringComparison.OrdinalIgnoreCase))
+                .Select(item => item.index)
+                .DefaultIfEmpty(-1)
+                .First();
+
+            if (activeIndex >= 0 && activeIndex != currentDeviceItem.ProfileIndex)
+            {
+                currentDeviceItem.ResyncProfileIndex(activeIndex, reloadProfile: false);
+            }
         }
 
         private void RefreshActionSetCombo()
@@ -1169,8 +1189,21 @@ namespace DS4MapperTest
             if (selectedListEntry == null || currentDeviceItem == null) return;
 
             var profileList = currentDeviceItem.DevProfileList;
-            int newIndex = profileList.IndexOf(selectedListEntry.Entity);
-            if (newIndex < 0 || newIndex == currentDeviceItem.ProfileIndex) return;
+            string selectedPath = selectedListEntry.Entity?.ProfilePath;
+            string activePath = editorTestVM?.ProfileEnt?.ProfilePath;
+            if (string.IsNullOrWhiteSpace(selectedPath) ||
+                string.Equals(selectedPath, activePath, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            int newIndex = profileList
+                .Select((profile, index) => new { profile, index })
+                .Where(item => string.Equals(item.profile.ProfilePath, selectedPath, StringComparison.OrdinalIgnoreCase))
+                .Select(item => item.index)
+                .DefaultIfEmpty(-1)
+                .First();
+            if (newIndex < 0) return;
 
             await SwitchProfileAsync(currentDeviceItem, newIndex);
         }
