@@ -1452,37 +1452,42 @@ namespace DS4MapperTest.ViewModels
         }
 
         // Button name shown per output controller type. DPad and stick axes read the
-        // same on both pads, so only the face/shoulder/special buttons need two labels.
-        private static readonly (JoypadActionCodes Code, string XboxLabel, string DualShock4Label, bool EdgeOnly)[] gamepadButtonDefs =
-            new (JoypadActionCodes, string, string, bool)[]
+        // same on all pads, so only the face/shoulder/special buttons need aliases.
+        private static readonly (JoypadActionCodes Code, string XboxLabel, string DualShock4Label,
+            string SwitchPro2Label, bool SpecialOutputOnly)[] gamepadButtonDefs =
+            new (JoypadActionCodes, string, string, string, bool)[]
             {
-                (JoypadActionCodes.X360_A, "A", "Cross", false),
-                (JoypadActionCodes.X360_B, "B", "Circle", false),
-                (JoypadActionCodes.X360_X, "X", "Square", false),
-                (JoypadActionCodes.X360_Y, "Y", "Triangle", false),
-                (JoypadActionCodes.X360_LB, "LB", "L1", false),
-                (JoypadActionCodes.X360_RB, "RB", "R1", false),
-                (JoypadActionCodes.X360_LT, "LT", "L2", false),
-                (JoypadActionCodes.X360_RT, "RT", "R2", false),
-                (JoypadActionCodes.X360_Guide, "Guide", "PS", false),
-                (JoypadActionCodes.X360_Back, "Back", "Share", false),
-                (JoypadActionCodes.X360_Start, "Start", "Options", false),
-                (JoypadActionCodes.X360_ThumbL, "LStick Click", "L3", false),
-                (JoypadActionCodes.X360_ThumbR, "RStick Click", "R3", false),
-                (JoypadActionCodes.BtnLGrip, "L4", "L4", true),
-                (JoypadActionCodes.BtnRGrip, "R4", "R4", true),
-                (JoypadActionCodes.BtnMode2, "Fn Left", "Fn Left", true),
-                (JoypadActionCodes.BtnMode3, "Fn Right", "Fn Right", true),
-                (JoypadActionCodes.X360_DPAD_UP, "DPad Up", "DPad Up", false),
-                (JoypadActionCodes.X360_DPAD_DOWN, "DPad Down", "DPad Down", false),
-                (JoypadActionCodes.X360_DPAD_LEFT, "DPad Left", "DPad Left", false),
-                (JoypadActionCodes.X360_DPAD_RIGHT, "DPad Right", "DPad Right", false),
+                (JoypadActionCodes.X360_A, "A", "Cross", "B", false),
+                (JoypadActionCodes.X360_B, "B", "Circle", "A", false),
+                (JoypadActionCodes.X360_X, "X", "Square", "Y", false),
+                (JoypadActionCodes.X360_Y, "Y", "Triangle", "X", false),
+                (JoypadActionCodes.X360_LB, "LB", "L1", "L", false),
+                (JoypadActionCodes.X360_RB, "RB", "R1", "R", false),
+                (JoypadActionCodes.X360_LT, "LT", "L2", "ZL", false),
+                (JoypadActionCodes.X360_RT, "RT", "R2", "ZR", false),
+                (JoypadActionCodes.X360_Guide, "Guide", "PS", "Home", false),
+                (JoypadActionCodes.X360_Back, "Back", "Share", "Minus", false),
+                (JoypadActionCodes.X360_Start, "Start", "Options", "Plus", false),
+                (JoypadActionCodes.BtnCapture, "Capture", "Capture", "Capture", true),
+                (JoypadActionCodes.X360_ThumbL, "LStick Click", "L3", "LStick Click", false),
+                (JoypadActionCodes.X360_ThumbR, "RStick Click", "R3", "RStick Click", false),
+                (JoypadActionCodes.BtnLGrip, "L4", "L4", "GL", true),
+                (JoypadActionCodes.BtnRGrip, "R4", "R4", "GR", true),
+                (JoypadActionCodes.BtnMode2, "Fn Left", "Fn Left", "C", true),
+                (JoypadActionCodes.BtnMode3, "Fn Right", "Fn Right", "Headset", true),
+                (JoypadActionCodes.X360_DPAD_UP, "DPad Up", "DPad Up", "DPad Up", false),
+                (JoypadActionCodes.X360_DPAD_DOWN, "DPad Down", "DPad Down", "DPad Down", false),
+                (JoypadActionCodes.X360_DPAD_LEFT, "DPad Left", "DPad Left", "DPad Left", false),
+                (JoypadActionCodes.X360_DPAD_RIGHT, "DPad Right", "DPad Right", "DPad Right", false),
             };
 
         private bool UsingDualShock4Output =>
             mapper.ActionProfile.OutputGamepadSettings.OutputGamepad == Mapper.OutputContType.DualShock4 ||
             mapper.ActionProfile.OutputGamepadSettings.OutputGamepad == Mapper.OutputContType.DualSense ||
             mapper.ActionProfile.OutputGamepadSettings.OutputGamepad == Mapper.OutputContType.DualSenseEdge;
+
+        private bool UsingSwitchPro2Output =>
+            mapper.ActionProfile.OutputGamepadSettings.OutputGamepad == Mapper.OutputContType.SwitchPro2;
 
         private bool UsingDualSenseEdgeOutput =>
             mapper.ActionProfile.OutputGamepadSettings.OutputGamepad == Mapper.OutputContType.DualSenseEdge;
@@ -1493,17 +1498,24 @@ namespace DS4MapperTest.ViewModels
 
             {
                 bool useDualShock4Labels = UsingDualShock4Output;
+                bool useSwitchPro2Labels = UsingSwitchPro2Output;
 
                 tempInd = 0;
                 gamepadComboItems.Add(new GamepadCodeItem("Unbound", JoypadActionCodes.Empty, tempInd++));
                 foreach (var def in gamepadButtonDefs)
                 {
-                    if (def.EdgeOnly && !UsingDualSenseEdgeOutput)
+                    if (def.SpecialOutputOnly &&
+                        !UsingDualSenseEdgeOutput &&
+                        !UsingSwitchPro2Output)
                     {
                         continue;
                     }
 
-                    string label = useDualShock4Labels ? def.DualShock4Label : def.XboxLabel;
+                    string label = useSwitchPro2Labels
+                        ? def.SwitchPro2Label
+                        : useDualShock4Labels
+                            ? def.DualShock4Label
+                            : def.XboxLabel;
                     gamepadComboItems.Add(new GamepadCodeItem(label, def.Code, tempInd++));
                 }
                 gamepadComboItems.Add(new GamepadCodeItem("PS Touchpad Click", JoypadActionCodes.CenterPadClick, tempInd++));

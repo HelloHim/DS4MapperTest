@@ -165,8 +165,7 @@ namespace DS4MapperTest
                 {
                     string exampleDevProfilesPath = Path.Combine(exedirpath, TEMPLATE_PROFILES_DIRNAME, devTemplateFolder);
                     string destDevProfilePath = Path.Combine(appdatapath, PROFILES_FOLDER_NAME, devTemplateFolder);
-                    if (Directory.Exists(destDevProfilePath) &&
-                        !Directory.EnumerateFileSystemEntries(destDevProfilePath).Any())
+                    if (Directory.Exists(destDevProfilePath))
                     {
                         if (!CopyBundledExampleProfiles(devTemplateFolder, destDevProfilePath))
                         {
@@ -178,7 +177,10 @@ namespace DS4MapperTest
                             foreach (string file in Directory.EnumerateFiles(exampleDevProfilesPath))
                             {
                                 string destFilePath = Path.Combine(destDevProfilePath, Path.GetFileName(file));
-                                File.Copy(file, destFilePath);
+                                if (!File.Exists(destFilePath))
+                                {
+                                    File.Copy(file, destFilePath);
+                                }
                             }
                         }
                     }
@@ -206,6 +208,11 @@ namespace DS4MapperTest
             {
                 string fileName = resourceName.Substring(resourcePrefix.Length);
                 string destFilePath = Path.Combine(destDevProfilePath, fileName);
+
+                if (File.Exists(destFilePath))
+                {
+                    continue;
+                }
 
                 using Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
                 if (resourceStream == null)

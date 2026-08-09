@@ -1146,6 +1146,11 @@ namespace DS4MapperTest.DualSense
                 viiperDSFeedback = TestVIIPERDSFeedback;
                 bool result = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
             }
+            else if (outputControlType == OutputContType.SwitchPro2)
+            {
+                viiperNS2ProFeedback = TestVIIPERNS2ProFeedback;
+                bool result = LibVIIPER.SetNS2ProOutputCallback(deviceHandle, viiperNS2ProFeedback);
+            }
         }
 
         public void TestVIIPER360Feedback(nuint handle, byte leftMotor, byte rightMotor)
@@ -1160,6 +1165,13 @@ namespace DS4MapperTest.DualSense
         {
             device.FeedbackStateRef.LeftHeavy = rumbleLarge;
             device.FeedbackStateRef.RightLight = rumbleSmall;
+            device.RumbleDirty = true;
+        }
+
+        public void TestVIIPERNS2ProFeedback(nuint handle, NS2ProOutputState output)
+        {
+            device.FeedbackStateRef.LeftHeavy = (byte)(ApproximateNS2ProRumbleRatio(output, true) * 255.0);
+            device.FeedbackStateRef.RightLight = (byte)(ApproximateNS2ProRumbleRatio(output, false) * 255.0);
             device.RumbleDirty = true;
         }
 
