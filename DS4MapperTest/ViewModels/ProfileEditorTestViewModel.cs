@@ -476,6 +476,7 @@ namespace DS4MapperTest.ViewModels
             new EnumChoiceSelection<Mapper.OutputContType>("Xbox 360", Mapper.OutputContType.Xbox360),
             new EnumChoiceSelection<Mapper.OutputContType>("DualShock 4", Mapper.OutputContType.DualShock4),
             new EnumChoiceSelection<Mapper.OutputContType>("DualSense Edge", Mapper.OutputContType.DualSenseEdge),
+            new EnumChoiceSelection<Mapper.OutputContType>("Switch Pro Controller 2", Mapper.OutputContType.SwitchPro2),
         };
         public List<EnumChoiceSelection<Mapper.OutputContType>> OutputControllerTypeOptions => outputControllerTypeChoices;
 
@@ -512,6 +513,9 @@ namespace DS4MapperTest.ViewModels
                     case Mapper.OutputContType.DualSenseEdge:
                         result = 2;
                         break;
+                    case Mapper.OutputContType.SwitchPro2:
+                        result = 3;
+                        break;
                     default:
                         break;
                 }
@@ -530,6 +534,9 @@ namespace DS4MapperTest.ViewModels
                         break;
                     case 2:
                         tempProfile.OutputGamepadSettings.OutputGamepad = Mapper.OutputContType.DualSenseEdge;
+                        break;
+                    case 3:
+                        tempProfile.OutputGamepadSettings.OutputGamepad = Mapper.OutputContType.SwitchPro2;
                         break;
                     default:
                         break;

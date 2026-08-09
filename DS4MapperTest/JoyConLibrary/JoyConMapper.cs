@@ -937,6 +937,14 @@ namespace DS4MapperTest.JoyConLibrary
 
                 HookSecondaryFeedback();
             }
+            else if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
+                outputControlType == OutputContType.SwitchPro2)
+            {
+                viiperNS2ProFeedback = TestVIIPERNS2ProFeedback;
+                bool result = LibVIIPER.SetNS2ProOutputCallback(deviceHandle, viiperNS2ProFeedback);
+
+                HookSecondaryFeedback();
+            }
         }
 
         public void TestVIIPER360Feedback(nuint handle, byte leftMotor, byte rightMotor)
@@ -968,6 +976,23 @@ namespace DS4MapperTest.JoyConLibrary
             {
                 secondJoyDevice.currentLeftAmpRatio = rumbleLarge / 255.0;
                 secondJoyDevice.currentRightAmpRatio = rumbleSmall / 255.0;
+                using (WriteLocker locker = new WriteLocker(secondJoyDevice.rumbleDataLock))
+                {
+                    secondJoyDevice.rumbleDirty = true;
+                }
+            }
+        }
+
+        public void TestVIIPERNS2ProFeedback(nuint handle, NS2ProOutputState output)
+        {
+            device.currentLeftAmpRatio = ApproximateNS2ProRumbleRatio(output, true);
+            device.currentRightAmpRatio = ApproximateNS2ProRumbleRatio(output, false);
+            device.rumbleDirty = true;
+
+            if (secondJoyDevice != null)
+            {
+                secondJoyDevice.currentLeftAmpRatio = device.currentLeftAmpRatio;
+                secondJoyDevice.currentRightAmpRatio = device.currentRightAmpRatio;
                 using (WriteLocker locker = new WriteLocker(secondJoyDevice.rumbleDataLock))
                 {
                     secondJoyDevice.rumbleDirty = true;

@@ -32,6 +32,12 @@ namespace DS4MapperTest.SwitchProLibrary
         private StickDefinition rsDefintion;
         private GyroSensDefinition gyroSensDefinition;
 
+        internal static short NormalizeStickYAxis(int value, StickDefinition.StickAxisData axisData)
+        {
+            int clampedValue = Math.Clamp(value, axisData.min, axisData.max);
+            return StickDefinition.AxisScale(clampedValue, true, axisData);
+        }
+
         public SwitchProMapper(SwitchProDevice device, SwitchProReader reader, AppGlobalData appGlobal)
         {
             this.device = device;
@@ -230,7 +236,9 @@ namespace DS4MapperTest.SwitchProLibrary
                 StickMapAction mapAction = currentLayer.stickActionDict["LS"];
                 //if ((currentMapperState.LX != previousMapperState.LX) || (currentMapperState.LY != previousMapperState.LY))
                 {
-                    mapAction.Prepare(this, currentMapperState.LX, currentMapperState.LY);
+                    int lx = Math.Clamp(currentMapperState.LX, lsDefintion.xAxis.min, lsDefintion.xAxis.max);
+                    int ly = NormalizeStickYAxis(currentMapperState.LY, lsDefintion.yAxis);
+                    mapAction.Prepare(this, lx, ly);
                 }
 
                 if (mapAction.active)
@@ -242,7 +250,9 @@ namespace DS4MapperTest.SwitchProLibrary
                 //Console.WriteLine(currentMapperState.RY);
                 //if ((currentMapperState.RX != previousMapperState.RX) || (currentMapperState.RY != previousMapperState.RY))
                 {
-                    mapAction.Prepare(this, currentMapperState.RX, currentMapperState.RY);
+                    int rx = Math.Clamp(currentMapperState.RX, rsDefintion.xAxis.min, rsDefintion.xAxis.max);
+                    int ry = NormalizeStickYAxis(currentMapperState.RY, rsDefintion.yAxis);
+                    mapAction.Prepare(this, rx, ry);
                 }
 
                 if (mapAction.active)
@@ -436,6 +446,48 @@ namespace DS4MapperTest.SwitchProLibrary
                 };
             }
             */
+        }
+
+        public override void HookFeedback()
+        {
+            if (outputControlType == OutputContType.Xbox360)
+            {
+                viiper360Feedback = TestVIIPER360Feedback;
+                bool result = LibVIIPER.SetXbox360RumbleCallback(deviceHandle, viiper360Feedback);
+            }
+            else if (outputControlType == OutputContType.DualSense ||
+                outputControlType == OutputContType.DualSenseEdge)
+            {
+                viiperDSFeedback = TestVIIPERDSFeedback;
+                bool result = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
+            }
+            else if (outputControlType == OutputContType.SwitchPro2)
+            {
+                viiperNS2ProFeedback = TestVIIPERNS2ProFeedback;
+                bool result = LibVIIPER.SetNS2ProOutputCallback(deviceHandle, viiperNS2ProFeedback);
+            }
+        }
+
+        public void TestVIIPER360Feedback(nuint handle, byte leftMotor, byte rightMotor)
+        {
+            device.currentLeftAmpRatio = leftMotor / 255.0;
+            device.currentRightAmpRatio = rightMotor / 255.0;
+            reader.WriteRumbleReport();
+        }
+
+        public void TestVIIPERDSFeedback(nuint handle, byte rumbleSmall, byte rumbleLarge,
+            byte ledRed, byte ledGreen, byte ledBlue, byte playerLeds)
+        {
+            device.currentLeftAmpRatio = rumbleLarge / 255.0;
+            device.currentRightAmpRatio = rumbleSmall / 255.0;
+            reader.WriteRumbleReport();
+        }
+
+        public void TestVIIPERNS2ProFeedback(nuint handle, NS2ProOutputState output)
+        {
+            device.currentLeftAmpRatio = ApproximateNS2ProRumbleRatio(output, true);
+            device.currentRightAmpRatio = ApproximateNS2ProRumbleRatio(output, false);
+            reader.WriteRumbleReport();
         }
 
         public override bool IsButtonActive(JoypadActionCodes code)

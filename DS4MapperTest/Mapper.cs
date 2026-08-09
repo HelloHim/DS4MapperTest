@@ -298,6 +298,7 @@ namespace DS4MapperTest
 
         protected Xbox360RumbleCallbackDelegate viiper360Feedback;
         protected DSOutputCallbackDelegate viiperDSFeedback;
+        protected NS2ProOutputCallbackDelegate viiperNS2ProFeedback;
         protected bool loggedFirstVirtualState;
         private readonly object viiperDeviceLock = new object();
 
@@ -386,6 +387,21 @@ namespace DS4MapperTest
                     outputControlType = OutputContType.DualSenseEdge;
                     logger.Info($"Created VIIPER DualSense Edge device. Handle={deviceHandle} Bus={viiperBusId}");
                 }
+                else if (desiredType == OutputContType.SwitchPro2)
+                {
+                    if (!LibVIIPER.CreateNS2ProDevice(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0, IntPtr.Zero) ||
+                        !IsPlausibleViiperDeviceHandle(deviceHandle))
+                    {
+                        logger.Error($"Failed to create VIIPER Switch 2 Pro device. Handle={deviceHandle} Bus={viiperBusId}");
+                        deviceHandle = 0;
+                        viiperBusId = 0;
+                        outputControlType = OutputContType.None;
+                        return false;
+                    }
+
+                    outputControlType = OutputContType.SwitchPro2;
+                    logger.Info($"Created VIIPER Switch 2 Pro device. Handle={deviceHandle} Bus={viiperBusId}");
+                }
             }
 
             return true;
@@ -404,7 +420,8 @@ namespace DS4MapperTest
             if (actionProfile.OutputGamepadSettings.ForceFeedbackEnabled &&
                 (outputControlType == OutputContType.Xbox360 ||
                 outputControlType == OutputContType.DualSense ||
-                outputControlType == OutputContType.DualSenseEdge))
+                outputControlType == OutputContType.DualSenseEdge ||
+                outputControlType == OutputContType.SwitchPro2))
             {
                 Thread.Sleep(100);
                 EstablishForceFeedback();
@@ -412,7 +429,8 @@ namespace DS4MapperTest
             }
             else if (outputControlType == OutputContType.Xbox360 ||
                 outputControlType == OutputContType.DualSense ||
-                outputControlType == OutputContType.DualSenseEdge)
+                outputControlType == OutputContType.DualSenseEdge ||
+                outputControlType == OutputContType.SwitchPro2)
             {
                 RemoveFeedback();
             }
@@ -440,6 +458,10 @@ namespace DS4MapperTest
             {
                 LibVIIPER.RemoveDualSenseDevice(deviceHandle);
             }
+            else if (outputControlType == OutputContType.SwitchPro2)
+            {
+                LibVIIPER.RemoveNS2ProDevice(deviceHandle);
+            }
 
             deviceHandle = 0;
             viiperBusId = 0;
@@ -454,6 +476,7 @@ namespace DS4MapperTest
             DualShock4,
             DualSense,
             DualSenseEdge,
+            SwitchPro2,
         }
 
         // Keep reference to current editing action set from GUI
@@ -1327,6 +1350,10 @@ namespace DS4MapperTest
                 {
                     LibVIIPER.SetDualSenseOutputCallback(deviceHandle, viiperDSFeedback);
                 }
+                else if (outputControlType == OutputContType.SwitchPro2)
+                {
+                    LibVIIPER.SetNS2ProOutputCallback(deviceHandle, viiperNS2ProFeedback);
+                }
             }
         }
 
@@ -1345,6 +1372,10 @@ namespace DS4MapperTest
                 outputControlType == OutputContType.DualSenseEdge)
             {
                 bool _ = LibVIIPER.SetDualSenseOutputCallback(deviceHandle, null);
+            }
+            else if (outputControlType == OutputContType.SwitchPro2)
+            {
+                bool _ = LibVIIPER.SetNS2ProOutputCallback(deviceHandle, null);
             }
         }
 
@@ -2546,9 +2577,14 @@ namespace DS4MapperTest
             }
         }
 
+        protected const ushort NS2PRO_STICK_MIN = 0x0000;
+        protected const ushort NS2PRO_STICK_CENTER = 0x0800;
+        protected const ushort NS2PRO_STICK_MAX = 0x0FFF;
+
         Xbox360DeviceState xboxState = new Xbox360DeviceState();
         DS4DeviceState ds4State = new DS4DeviceState();
         DSDeviceState dualSenseState = new DSDeviceState();
+        NS2ProDeviceState ns2ProState = new NS2ProDeviceState();
 
         protected void PopulateXbox()
         {
@@ -2763,6 +2799,97 @@ namespace DS4MapperTest
             }
 
             intermediateState.PacketCounter = intermediateState.PacketCounter + 1;
+        }
+
+        protected void PopulateSwitchPro2()
+        {
+            lock (viiperDeviceLock)
+            {
+                if (!IsPlausibleViiperDeviceHandle(deviceHandle))
+                {
+                    deviceHandle = 0;
+                    outputControlType = OutputContType.None;
+                    viiperBusId = 0;
+                    return;
+                }
+
+                unchecked
+                {
+                    uint tempButtons = 0;
+                    if (intermediateState.BtnSouth) tempButtons |= NS2ProButton.B;
+                    if (intermediateState.BtnEast) tempButtons |= NS2ProButton.A;
+                    if (intermediateState.BtnWest) tempButtons |= NS2ProButton.Y;
+                    if (intermediateState.BtnNorth) tempButtons |= NS2ProButton.X;
+                    if (intermediateState.BtnLShoulder) tempButtons |= NS2ProButton.L;
+                    if (intermediateState.BtnRShoulder) tempButtons |= NS2ProButton.R;
+                    if (intermediateState.LTrigger > 0) tempButtons |= NS2ProButton.ZL;
+                    if (intermediateState.RTrigger > 0) tempButtons |= NS2ProButton.ZR;
+                    if (intermediateState.BtnStart) tempButtons |= NS2ProButton.Plus;
+                    if (intermediateState.BtnSelect) tempButtons |= NS2ProButton.Minus;
+                    if (intermediateState.BtnThumbL) tempButtons |= NS2ProButton.LeftStick;
+                    if (intermediateState.BtnThumbR) tempButtons |= NS2ProButton.RightStick;
+                    if (intermediateState.DpadDown) tempButtons |= NS2ProButton.Down;
+                    if (intermediateState.DpadRight) tempButtons |= NS2ProButton.Right;
+                    if (intermediateState.DpadLeft) tempButtons |= NS2ProButton.Left;
+                    if (intermediateState.DpadUp) tempButtons |= NS2ProButton.Up;
+                    if (intermediateState.BtnMode) tempButtons |= NS2ProButton.Home;
+                    if (intermediateState.BtnCapture) tempButtons |= NS2ProButton.Capture;
+                    if (intermediateState.BtnLGrip) tempButtons |= NS2ProButton.GL;
+                    if (intermediateState.BtnRGrip) tempButtons |= NS2ProButton.GR;
+                    if (intermediateState.BtnMode2) tempButtons |= NS2ProButton.C;
+                    if (intermediateState.BtnMode3) tempButtons |= NS2ProButton.Headset;
+
+                    ns2ProState.Buttons = tempButtons;
+                }
+
+                ns2ProState.LX = ScaleSwitchPro2StickAxis(intermediateState.LX);
+                ns2ProState.LY = ScaleSwitchPro2StickAxis(-intermediateState.LY);
+                ns2ProState.RX = ScaleSwitchPro2StickAxis(intermediateState.RX);
+                ns2ProState.RY = ScaleSwitchPro2StickAxis(-intermediateState.RY);
+                ns2ProState.GyroX = intermediateState.GyroYaw;
+                ns2ProState.GyroY = intermediateState.GyroPitch;
+                ns2ProState.GyroZ = intermediateState.GyroRoll;
+                ns2ProState.AccelX = intermediateState.AccelX;
+                ns2ProState.AccelY = intermediateState.AccelY;
+                ns2ProState.AccelZ = intermediateState.AccelZ;
+
+                LibVIIPER.SetNS2ProDeviceState(deviceHandle, ns2ProState);
+                if (!loggedFirstVirtualState)
+                {
+                    logger.Info($"Submitted first Switch 2 Pro state. Handle={deviceHandle} Buttons=0x{ns2ProState.Buttons:X8}");
+                    loggedFirstVirtualState = true;
+                }
+            }
+        }
+
+        protected static ushort ScaleSwitchPro2StickAxis(double value)
+        {
+            value = Math.Clamp(value, -1.0, 1.0);
+            double scaled = NS2PRO_STICK_CENTER +
+                (value * (value >= 0.0
+                    ? (NS2PRO_STICK_MAX - NS2PRO_STICK_CENTER)
+                    : (NS2PRO_STICK_CENTER - NS2PRO_STICK_MIN)));
+            return (ushort)Math.Clamp((int)Math.Round(scaled), NS2PRO_STICK_MIN, NS2PRO_STICK_MAX);
+        }
+
+        protected static double ApproximateNS2ProRumbleRatio(NS2ProOutputState output, bool leftSide)
+        {
+            byte[] data = leftSide ? output.LeftRumble : output.RightRumble;
+            if (data == null || data.Length == 0)
+            {
+                return 0.0;
+            }
+
+            byte peak = 0;
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] > peak)
+                {
+                    peak = data[i];
+                }
+            }
+
+            return peak / 255.0;
         }
 
         private readonly GyroMotionGravity motionGravity = new GyroMotionGravity();
@@ -3023,6 +3150,10 @@ namespace DS4MapperTest
                     {
                         PopulateDualSense();
                     }
+                    else if (outputControlType == OutputContType.SwitchPro2)
+                    {
+                        PopulateSwitchPro2();
+                    }
                 }
 
                 intermediateState.Dirty = false;
@@ -3278,6 +3409,10 @@ namespace DS4MapperTest
                     intermediateState.BtnHome = pressed;
                     intermediateState.Dirty = true;
                     break;
+                case JoypadActionCodes.BtnCapture:
+                    intermediateState.BtnCapture = pressed;
+                    intermediateState.Dirty = true;
+                    break;
                 case JoypadActionCodes.BtnStart:
                     intermediateState.BtnStart = pressed;
                     intermediateState.Dirty = true;
@@ -3407,6 +3542,10 @@ namespace DS4MapperTest
                     break;
                 case JoypadActionCodes.BtnHome:
                     intermediateState.BtnHome = active;
+                    intermediateState.Dirty = true;
+                    break;
+                case JoypadActionCodes.BtnCapture:
+                    intermediateState.BtnCapture = active;
                     intermediateState.Dirty = true;
                     break;
                 case JoypadActionCodes.BtnStart:
