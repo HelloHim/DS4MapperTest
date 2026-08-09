@@ -32,6 +32,12 @@ namespace DS4MapperTest.SwitchProLibrary
         private StickDefinition rsDefintion;
         private GyroSensDefinition gyroSensDefinition;
 
+        internal static short NormalizeStickYAxis(int value, StickDefinition.StickAxisData axisData)
+        {
+            int clampedValue = Math.Clamp(value, axisData.min, axisData.max);
+            return StickDefinition.AxisScale(clampedValue, true, axisData);
+        }
+
         public SwitchProMapper(SwitchProDevice device, SwitchProReader reader, AppGlobalData appGlobal)
         {
             this.device = device;
@@ -230,7 +236,9 @@ namespace DS4MapperTest.SwitchProLibrary
                 StickMapAction mapAction = currentLayer.stickActionDict["LS"];
                 //if ((currentMapperState.LX != previousMapperState.LX) || (currentMapperState.LY != previousMapperState.LY))
                 {
-                    mapAction.Prepare(this, currentMapperState.LX, currentMapperState.LY);
+                    int lx = Math.Clamp(currentMapperState.LX, lsDefintion.xAxis.min, lsDefintion.xAxis.max);
+                    int ly = NormalizeStickYAxis(currentMapperState.LY, lsDefintion.yAxis);
+                    mapAction.Prepare(this, lx, ly);
                 }
 
                 if (mapAction.active)
@@ -242,7 +250,9 @@ namespace DS4MapperTest.SwitchProLibrary
                 //Console.WriteLine(currentMapperState.RY);
                 //if ((currentMapperState.RX != previousMapperState.RX) || (currentMapperState.RY != previousMapperState.RY))
                 {
-                    mapAction.Prepare(this, currentMapperState.RX, currentMapperState.RY);
+                    int rx = Math.Clamp(currentMapperState.RX, rsDefintion.xAxis.min, rsDefintion.xAxis.max);
+                    int ry = NormalizeStickYAxis(currentMapperState.RY, rsDefintion.yAxis);
+                    mapAction.Prepare(this, rx, ry);
                 }
 
                 if (mapAction.active)
