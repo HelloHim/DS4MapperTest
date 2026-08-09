@@ -61,6 +61,7 @@ namespace DS4MapperTest
                 JoystickMouse = routing.JoystickMouse,
                 FlickStick = routing.FlickStick,
                 Trackpad = routing.Trackpad,
+                UnifiedVirtualMouse = routing.UnifiedVirtualMouse,
                 TriggerMouse = routing.TriggerMouse,
                 Other = routing.Other,
                 AbsoluteMouse = routing.AbsoluteMouse,

@@ -1107,15 +1107,15 @@
                                                       HorizontalScrollBarVisibility="Disabled">
                                             <StackPanel Margin="0,4,0,0">
                                                 <TextBlock Text="Unified Virtual Mouse" Style="{StaticResource JsmccSectionTitle}"/>
-                                                <TextBlock Text="Route a selected physical mouse and controller mouse output through the same FakerInput virtual mouse."
+                                                <TextBlock Text="Capture a selected physical mouse and route it through the Unified Virtual Mouse destination from Mouse Routing."
                                                            Style="{StaticResource JsmccBodyText}" TextWrapping="Wrap" Margin="0,4,0,14"/>
                                                 <Border Style="{StaticResource JsmccCardBorder}">
                                     <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <StackPanel>
-                                                <TextBlock Text="Enable forwarding" Style="{StaticResource OtherSettingLabel}"/>
-                                                <TextBlock Text="Forward the selected mouse through FakerInput alongside controller mouse output."
+                                                <TextBlock Text="Forward physical mouse input" Style="{StaticResource OtherSettingLabel}"/>
+                                                <TextBlock Text="Forward the selected physical mouse through the Unified Virtual Mouse route. Choose FakerInput, SendInput, or a VIIPER mouse for that route in Mouse Routing."
                                                            Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,3,16,0"/>
                                             </StackPanel>
                                             <CheckBox x:Name="physicalMouseEnabledCheckBox" Grid.Column="1"

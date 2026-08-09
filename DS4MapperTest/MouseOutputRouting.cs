@@ -12,6 +12,7 @@ namespace DS4MapperTest
         TriggerMouse = 4,
         Other = 5,
         AbsoluteMouse = 6,
+        UnifiedVirtualMouse = 7,
     }
 
     public enum MouseOutputDestination
@@ -38,6 +39,7 @@ namespace DS4MapperTest
         public MouseOutputDestination TriggerMouse { get; set; } = MouseOutputDestination.FakerInputMouse;
         public MouseOutputDestination Other { get; set; } = MouseOutputDestination.FakerInputMouse;
         public MouseOutputDestination AbsoluteMouse { get; set; } = MouseOutputDestination.FakerInputMouse;
+        public MouseOutputDestination UnifiedVirtualMouse { get; set; } = MouseOutputDestination.FakerInputMouse;
 
         public MouseOutputDestination GetRouteDestination(MouseOutputRoute route)
         {
@@ -50,6 +52,7 @@ namespace DS4MapperTest
                 MouseOutputRoute.TriggerMouse => TriggerMouse,
                 MouseOutputRoute.Other => Other,
                 MouseOutputRoute.AbsoluteMouse => AbsoluteMouse,
+                MouseOutputRoute.UnifiedVirtualMouse => UnifiedVirtualMouse,
                 _ => MouseOutputDestination.FakerInputMouse,
             };
         }
@@ -78,6 +81,9 @@ namespace DS4MapperTest
                     break;
                 case MouseOutputRoute.AbsoluteMouse:
                     AbsoluteMouse = destination;
+                    break;
+                case MouseOutputRoute.UnifiedVirtualMouse:
+                    UnifiedVirtualMouse = destination;
                     break;
             }
         }
