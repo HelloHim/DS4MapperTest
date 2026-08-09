@@ -126,7 +126,7 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <Label Content="Dead Zone" />
+                <Label Content="Dead Zone" ToolTip="Used when Split Axes is off." />
                 <hc:NumericUpDown Minimum="0.0" Maximum="1.0" Value="{Binding DeadZone}" DecimalPlaces="2"
                                   Increment="0.05" Width="100" Margin="8,0,0,0">
                     <hc:NumericUpDown.Style>
@@ -135,11 +135,45 @@
                                 <DataTrigger Binding="{Binding HighlightDeadZone}" Value="False">
                                     <Setter Property="Opacity" Value="0.7" />
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding SeparateAxisDeadZones}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </hc:NumericUpDown.Style>
                 </hc:NumericUpDown>
+                <Label Content="Split Axes" Margin="16,0,0,0" VerticalAlignment="Center"/>
+                <CheckBox IsChecked="{Binding SeparateAxisDeadZones}" VerticalAlignment="Center" Margin="8,0,0,0">
+                    <CheckBox.Style>
+                        <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}"/>
+                    </CheckBox.Style>
+                </CheckBox>
             </StackPanel>
+
+            <Grid Margin="0,8,0,0" Visibility="{Binding SeparateAxisDeadZones, Converter={StaticResource boolVisConv}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Column="0" Content="Horizontal Dead Zone" />
+                <hc:NumericUpDown Grid.Column="1" Minimum="0.0" Maximum="1.0" Value="{Binding DeadZoneX}" DecimalPlaces="2"
+                                  Increment="0.05" Width="100" Margin="8,0,0,0">
+                    <hc:NumericUpDown.Style>
+                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}"/>
+                    </hc:NumericUpDown.Style>
+                </hc:NumericUpDown>
+                <Label Grid.Column="2" Content="Vertical Dead Zone" Margin="16,0,0,0" />
+                <hc:NumericUpDown Grid.Column="3" Minimum="0.0" Maximum="1.0" Value="{Binding DeadZoneY}" DecimalPlaces="2"
+                                  Increment="0.05" Width="100" Margin="8,0,0,0">
+                    <hc:NumericUpDown.Style>
+                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}"/>
+                    </hc:NumericUpDown.Style>
+                </hc:NumericUpDown>
+            </Grid>
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Diagonal Range" />

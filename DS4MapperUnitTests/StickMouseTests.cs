@@ -370,5 +370,27 @@ namespace DS4MapperUnitTests
             Assert.IsTrue(migratedJson.Contains(@"""DegreesPerSecond"": 360.0"));
             Assert.IsFalse(migratedJson.Contains(@"""MouseSpeed"""));
         }
+
+        [TestMethod]
+        public void SerializerPersistsSplitAxisDeadZones()
+        {
+            StickMouse action = new StickMouse();
+            action.DeadMod.SeparateAxisDeadZones = true;
+            action.DeadMod.DeadZoneX = 0.20;
+            action.DeadMod.DeadZoneY = 0.55;
+
+            StickMouseSerializer serializer = new StickMouseSerializer(null, action);
+            string json = JsonConvert.SerializeObject(serializer, Formatting.Indented);
+
+            Assert.IsTrue(json.Contains(@"""SeparateAxisDeadZones"": true"));
+            Assert.IsTrue(json.Contains(@"""DeadZoneX"": 0.2"));
+            Assert.IsTrue(json.Contains(@"""DeadZoneY"": 0.55"));
+
+            StickMouseSerializer loaded = JsonConvert.DeserializeObject<StickMouseSerializer>(json);
+            StickMouse loadedAction = (StickMouse)loaded.MapAction;
+            Assert.IsTrue(loadedAction.DeadMod.SeparateAxisDeadZones);
+            Assert.AreEqual(0.20, loadedAction.DeadMod.DeadZoneX, 1e-10);
+            Assert.AreEqual(0.55, loadedAction.DeadMod.DeadZoneY, 1e-10);
+        }
     }
 }

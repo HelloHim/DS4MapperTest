@@ -50,12 +50,66 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             get => action.DeadMod.DeadZone;
             set
             {
+                if (action.DeadMod.DeadZone == value) return;
                 action.DeadMod.DeadZone = Math.Clamp(value, 0.0, 1.0);
                 DeadZoneChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DeadZone)));
             }
         }
         public event EventHandler DeadZoneChanged;
+
+        public bool SeparateAxisDeadZones
+        {
+            get => action.DeadMod.SeparateAxisDeadZones;
+            set
+            {
+                if (action.DeadMod.SeparateAxisDeadZones == value) return;
+                if (value)
+                {
+                    action.DeadMod.DeadZoneX = action.DeadMod.DeadZone;
+                    action.DeadMod.DeadZoneY = action.DeadMod.DeadZone;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DeadZoneX)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DeadZoneY)));
+                }
+
+                action.DeadMod.SeparateAxisDeadZones = value;
+                SeparateAxisDeadZonesChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SeparateAxisDeadZones)));
+            }
+        }
+        public event EventHandler SeparateAxisDeadZonesChanged;
+
+        public double DeadZoneX
+        {
+            get => action.DeadMod.DeadZoneX;
+            set
+            {
+                double next = Math.Clamp(value, 0.0, 1.0);
+                if (action.DeadMod.DeadZoneX == next) return;
+                action.DeadMod.DeadZoneX = next;
+                DeadZoneXChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DeadZoneX)));
+            }
+        }
+        public event EventHandler DeadZoneXChanged;
+
+        public double DeadZoneY
+        {
+            get => action.DeadMod.DeadZoneY;
+            set
+            {
+                double next = Math.Clamp(value, 0.0, 1.0);
+                if (action.DeadMod.DeadZoneY == next) return;
+                action.DeadMod.DeadZoneY = next;
+                DeadZoneYChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DeadZoneY)));
+            }
+        }
+        public event EventHandler DeadZoneYChanged;
 
         public double DegreesPerSecond
         {
@@ -407,6 +461,9 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             NameChanged += StickMousePropViewModel_NameChanged;
             DeadZoneChanged += StickMousePropViewModel_DeadZoneChanged;
+            SeparateAxisDeadZonesChanged += StickMousePropViewModel_SeparateAxisDeadZonesChanged;
+            DeadZoneXChanged += StickMousePropViewModel_DeadZoneXChanged;
+            DeadZoneYChanged += StickMousePropViewModel_DeadZoneYChanged;
             DegreesPerSecondChanged += StickMousePropViewModel_DegreesPerSecondChanged;
             DegreesPerSecondChanged += StickMousePropViewModel_DegreesPerSecondChangedForVerticalDegrees;
             VerticalScaleChanged += StickMousePropViewModel_VerticalScaleChanged;
@@ -657,6 +714,26 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
 
         private void StickMousePropViewModel_DeadZoneChanged(object sender, EventArgs e)
+        {
+            MarkDeadZoneChanged();
+        }
+
+        private void StickMousePropViewModel_SeparateAxisDeadZonesChanged(object sender, EventArgs e)
+        {
+            MarkDeadZoneChanged();
+        }
+
+        private void StickMousePropViewModel_DeadZoneXChanged(object sender, EventArgs e)
+        {
+            MarkDeadZoneChanged();
+        }
+
+        private void StickMousePropViewModel_DeadZoneYChanged(object sender, EventArgs e)
+        {
+            MarkDeadZoneChanged();
+        }
+
+        private void MarkDeadZoneChanged()
         {
             if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DEAD_ZONE))
             {

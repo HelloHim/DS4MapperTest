@@ -8572,6 +8572,45 @@ namespace DS4MapperTest
             }
             public event EventHandler DeadZoneChanged;
 
+            public bool SeparateAxisDeadZones
+            {
+                get => stickMouseAction.DeadMod.SeparateAxisDeadZones;
+                set
+                {
+                    stickMouseAction.DeadMod.SeparateAxisDeadZones = value;
+                    SeparateAxisDeadZonesChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SeparateAxisDeadZonesChanged;
+            public bool ShouldSerializeSeparateAxisDeadZones() =>
+                stickMouseAction.DeadMod.SeparateAxisDeadZones;
+
+            public double DeadZoneX
+            {
+                get => stickMouseAction.DeadMod.DeadZoneX;
+                set
+                {
+                    stickMouseAction.DeadMod.DeadZoneX = Math.Clamp(value, 0.0, 1.0);
+                    DeadZoneXChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DeadZoneXChanged;
+            public bool ShouldSerializeDeadZoneX() =>
+                stickMouseAction.DeadMod.SeparateAxisDeadZones;
+
+            public double DeadZoneY
+            {
+                get => stickMouseAction.DeadMod.DeadZoneY;
+                set
+                {
+                    stickMouseAction.DeadMod.DeadZoneY = Math.Clamp(value, 0.0, 1.0);
+                    DeadZoneYChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler DeadZoneYChanged;
+            public bool ShouldSerializeDeadZoneY() =>
+                stickMouseAction.DeadMod.SeparateAxisDeadZones;
+
             public double MaxZone
             {
                 get => stickMouseAction.DeadMod.MaxZone;
@@ -8664,6 +8703,9 @@ namespace DS4MapperTest
             NameChanged += StickMouseSerializer_NameChanged;
             settings.DegreesPerSecondChanged += Settings_DegreesPerSecondChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
+            settings.SeparateAxisDeadZonesChanged += Settings_SeparateAxisDeadZonesChanged;
+            settings.DeadZoneXChanged += Settings_DeadZoneXChanged;
+            settings.DeadZoneYChanged += Settings_DeadZoneYChanged;
             settings.MaxZoneChanged += Settings_MaxZoneChanged;
             settings.DiagonalRangeChanged += Settings_DiagonalRangeChanged;
             settings.OutputCurveChanged += Settings_OutputCurveChanged;
@@ -8742,6 +8784,21 @@ namespace DS4MapperTest
         private void Settings_DeltaSettingsChanged(object sender, EventArgs e)
         {
             stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
+        }
+
+        private void Settings_SeparateAxisDeadZonesChanged(object sender, EventArgs e)
+        {
+            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_DeadZoneXChanged(object sender, EventArgs e)
+        {
+            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DEAD_ZONE);
+        }
+
+        private void Settings_DeadZoneYChanged(object sender, EventArgs e)
+        {
+            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.DEAD_ZONE);
         }
 
         private void Settings_OutputCurveChanged(object sender, EventArgs e)
