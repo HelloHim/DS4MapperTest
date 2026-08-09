@@ -4,29 +4,28 @@ using DS4MapperTest.MapperUtil;
 
 namespace DS4MapperTest.PhysicalMouse
 {
+    public interface IPhysicalMouseOutputRouter
+    {
+        MouseOutputProducerId RegisterProducer();
+        void UnregisterProducer(MouseOutputProducerId producerId);
+        void QueueRelative(MouseOutputProducerId producerId, MouseOutputRoute route, int x, int y);
+        void QueueWheel(MouseOutputProducerId producerId, MouseOutputRoute route, int vertical, int horizontal);
+        void SetButton(MouseOutputProducerId producerId, MouseOutputRoute route, int mouseCode, bool pressed);
+        void FlushProducer(MouseOutputProducerId producerId, bool flushSharedFakerInput);
+    }
+
     /// <summary>
-    /// Wires <see cref="RawMouseCaptureDevice"/>'s events to the shared
-    /// virtual mouse/keyboard output (<see cref="BackendManager.EventInputHandler"/>).
-    /// Runs entirely on the capture thread that raises those events - never
+    /// Wires <see cref="RawMouseCaptureDevice"/>'s events to the central
+    /// mouse-output dispatcher using the dedicated
+    /// <see cref="MouseOutputRoute.UnifiedVirtualMouse"/> route. Runs
+    /// entirely on the capture thread that raises those events - never
     /// touches the WPF dispatcher, cursor position, or any per-report
     /// sensitivity/acceleration/smoothing.
     ///
-    /// Movement passes straight through to <see cref="VirtualKBMBase.MoveRelativeMouse"/>.
-    /// FakerInputHandler's own accumulator (see FakerInputHandler.cs) already
-    /// safely combines it with any concurrent gyro/controller movement rather
-    /// than one source overwriting the other, so this class does nothing
-    /// extra to protect that.
-    ///
-    /// Buttons route through <see cref="Mapper.AcquireSharedMouseButton"/>/
-    /// <see cref="Mapper.ReleaseSharedMouseButton"/> - the same cross-source,
-    /// reference-counted ownership controller bindings already use - so a
-    /// controller hold and a physical-mouse press/release on the same button
-    /// can never desync each other.
-    ///
     /// Wheel deltas are converted from Raw Input's WHEEL_DELTA-scaled units
-    /// into the "notch count" currency PerformMouseWheelEvent expects (see
-    /// VirtualKBMMapping.WHEEL_TICK_BASE), carrying any fractional notch
-    /// remainder forward instead of rounding it away.
+    /// into the same 120-count "notch" currency the mouse dispatcher uses,
+    /// carrying any fractional notch remainder forward instead of rounding
+    /// it away.
     /// </summary>
     public sealed class PhysicalMouseForwarder : IDisposable
     {
@@ -34,8 +33,8 @@ namespace DS4MapperTest.PhysicalMouse
 
         private readonly RawMouseCaptureDevice capture;
 
-        private volatile VirtualKBMBase eventInputHandler;
-        private volatile VirtualKBMMapping eventInputMapping;
+        private volatile IPhysicalMouseOutputRouter outputRouter;
+        private MouseOutputProducerId? producerId;
 
         private readonly object heldButtonsLock = new object();
         private readonly HashSet<RawMouseButton> heldButtons = new HashSet<RawMouseButton>();
@@ -54,24 +53,37 @@ namespace DS4MapperTest.PhysicalMouse
         }
 
         /// <summary>
-        /// Points this forwarder at the live output handler/mapping. Must be
+        /// Points this forwarder at the live mouse-output router. Must be
         /// called before the capture device is started.
         /// </summary>
-        public void AttachOutput(VirtualKBMBase handler, VirtualKBMMapping mapping)
+        public void AttachOutput(IPhysicalMouseOutputRouter router)
         {
-            eventInputHandler = handler;
-            eventInputMapping = mapping;
+            DetachOutput();
+            if (router == null)
+            {
+                return;
+            }
+
+            outputRouter = router;
+            producerId = router.RegisterProducer();
         }
 
         /// <summary>
-        /// Releases any buttons this source still holds (using the still-live
-        /// handler) then detaches. Safe to call repeatedly.
+        /// Releases any buttons this source still holds, unregisters its
+        /// producer from the dispatcher, then detaches. Safe to call
+        /// repeatedly.
         /// </summary>
         public void DetachOutput()
         {
             HandleDeviceRemoved();
-            eventInputHandler = null;
-            eventInputMapping = null;
+            IPhysicalMouseOutputRouter router = outputRouter;
+            MouseOutputProducerId? currentProducerId = producerId;
+            outputRouter = null;
+            producerId = null;
+            if (router != null && currentProducerId.HasValue)
+            {
+                router.UnregisterProducer(currentProducerId.Value);
+            }
         }
 
         private void OnCaptureMouseMove(object sender, RawMouseMoveEventArgs e) => HandleMouseMove(e.DeltaX, e.DeltaY);
@@ -85,23 +97,24 @@ namespace DS4MapperTest.PhysicalMouse
 
         public void HandleMouseMove(int deltaX, int deltaY)
         {
-            VirtualKBMBase handler = eventInputHandler;
-            if (handler == null || (deltaX == 0 && deltaY == 0))
+            IPhysicalMouseOutputRouter router = outputRouter;
+            MouseOutputProducerId? currentProducerId = producerId;
+            if (router == null || !currentProducerId.HasValue ||
+                (deltaX == 0 && deltaY == 0))
             {
                 return;
             }
 
-            // Exact counts, no scaling. Promptly flushed rather than waiting
-            // for the next controller poll tick's own Sync() call.
-            handler.MoveRelativeMouse(deltaX, deltaY);
-            handler.Sync();
+            router.QueueRelative(currentProducerId.Value,
+                MouseOutputRoute.UnifiedVirtualMouse, deltaX, deltaY);
+            router.FlushProducer(currentProducerId.Value, flushSharedFakerInput: true);
         }
 
         public void HandleMouseButton(RawMouseButton button, bool isPressed)
         {
-            VirtualKBMBase handler = eventInputHandler;
-            VirtualKBMMapping mapping = eventInputMapping;
-            if (handler == null || mapping == null)
+            IPhysicalMouseOutputRouter router = outputRouter;
+            MouseOutputProducerId? currentProducerId = producerId;
+            if (router == null || !currentProducerId.HasValue)
             {
                 return;
             }
@@ -126,23 +139,16 @@ namespace DS4MapperTest.PhysicalMouse
                 return;
             }
 
-            if (isPressed)
-            {
-                Mapper.AcquireSharedMouseButton(handler, mapping, mouseCode);
-            }
-            else
-            {
-                Mapper.ReleaseSharedMouseButton(handler, mapping, mouseCode);
-            }
-
-            handler.Sync();
+            router.SetButton(currentProducerId.Value,
+                MouseOutputRoute.UnifiedVirtualMouse, mouseCode, isPressed);
+            router.FlushProducer(currentProducerId.Value, flushSharedFakerInput: true);
         }
 
         public void HandleMouseWheel(int delta, bool horizontal)
         {
-            VirtualKBMBase handler = eventInputHandler;
-            VirtualKBMMapping mapping = eventInputMapping;
-            if (handler == null || mapping == null || delta == 0)
+            IPhysicalMouseOutputRouter router = outputRouter;
+            MouseOutputProducerId? currentProducerId = producerId;
+            if (router == null || !currentProducerId.HasValue || delta == 0)
             {
                 return;
             }
@@ -171,11 +177,12 @@ namespace DS4MapperTest.PhysicalMouse
                 return;
             }
 
-            int scaled = notches * mapping.WHEEL_TICK_BASE;
-            handler.PerformMouseWheelEvent(
+            int scaled = notches * 120;
+            router.QueueWheel(currentProducerId.Value,
+                MouseOutputRoute.UnifiedVirtualMouse,
                 vertical: horizontal ? 0 : scaled,
                 horizontal: horizontal ? scaled : 0);
-            handler.Sync();
+            router.FlushProducer(currentProducerId.Value, flushSharedFakerInput: true);
         }
 
         public void HandleDeviceRemoved()
@@ -191,9 +198,9 @@ namespace DS4MapperTest.PhysicalMouse
                 heldButtons.Clear();
             }
 
-            VirtualKBMBase handler = eventInputHandler;
-            VirtualKBMMapping mapping = eventInputMapping;
-            if (handler == null || mapping == null)
+            IPhysicalMouseOutputRouter router = outputRouter;
+            MouseOutputProducerId? currentProducerId = producerId;
+            if (router == null || !currentProducerId.HasValue)
             {
                 return;
             }
@@ -203,11 +210,12 @@ namespace DS4MapperTest.PhysicalMouse
                 int mouseCode = ToMouseCode(button);
                 if (mouseCode != 0)
                 {
-                    Mapper.ReleaseSharedMouseButton(handler, mapping, mouseCode);
+                    router.SetButton(currentProducerId.Value,
+                        MouseOutputRoute.UnifiedVirtualMouse, mouseCode, false);
                 }
             }
 
-            handler.Sync();
+            router.FlushProducer(currentProducerId.Value, flushSharedFakerInput: true);
         }
 
         private static int ToMouseCode(RawMouseButton button)
