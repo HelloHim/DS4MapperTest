@@ -476,6 +476,18 @@ namespace DS4MapperTest.ViewModels
                 if (!_cameraTurnReady) return;
                 if (cameraTurnInGameSens == value) return;
                 cameraTurnInGameSens = value;
+                if (IsCountsMode)
+                {
+                    double counts = cameraTurnInGameSens > 0.0
+                        ? cameraTurnRWC * 360.0 / cameraTurnInGameSens
+                        : 0.0;
+                    if (cameraTurnCounts360 != counts)
+                    {
+                        cameraTurnCounts360 = counts;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnCounts360)));
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                    }
+                }
                 CameraTurnInGameSensChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnInGameSens)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));

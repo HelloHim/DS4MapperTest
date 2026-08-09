@@ -245,7 +245,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 if (!_modelReady) return;
                 if (action.mouseParams.inGameSens == value) return;
                 action.mouseParams.inGameSens = value;
-                if (IsCountsMode) CalculateRwcFromCounts();
+                if (IsCountsMode) CalculateCountsFromRwc();
                 if (!_applyingPreset) TryMatchPreset();
                 InGameSensChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
@@ -1918,6 +1918,18 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             if (action.mouseParams.realWorldCalibration == rwc) return;
             action.mouseParams.realWorldCalibration = rwc;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+        }
+
+        private void CalculateCountsFromRwc()
+        {
+            double counts = InGameSens > 0.0
+                ? action.mouseParams.realWorldCalibration * 360.0 / InGameSens
+                : 0.0;
+            if (fullTurnCounts == counts) return;
+            fullTurnCounts = counts;
+            CalculateTestRWC();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
         }
 
         private void SyncCalibFromGyroMouseToProfile()
