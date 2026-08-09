@@ -25,6 +25,43 @@ namespace DS4MapperTest
 {
     public abstract class Mapper
     {
+        internal readonly struct RouteMouseStateSnapshot
+        {
+            public RouteMouseStateSnapshot(double x, double y, bool sync, double xRemainder,
+                double yRemainder, int wheelX, int wheelY, bool wheelSync)
+            {
+                X = x;
+                Y = y;
+                Sync = sync;
+                XRemainder = xRemainder;
+                YRemainder = yRemainder;
+                WheelX = wheelX;
+                WheelY = wheelY;
+                WheelSync = wheelSync;
+            }
+
+            public double X { get; }
+            public double Y { get; }
+            public bool Sync { get; }
+            public double XRemainder { get; }
+            public double YRemainder { get; }
+            public int WheelX { get; }
+            public int WheelY { get; }
+            public bool WheelSync { get; }
+        }
+
+        private sealed class RelativeRouteMouseState
+        {
+            public double X;
+            public double Y;
+            public bool Sync;
+            public double XRemainder;
+            public double YRemainder;
+            public int WheelX;
+            public int WheelY;
+            public bool WheelSync;
+        }
+
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         protected const int X360_STICK_MAX = 32767;
         protected const int X360_STICK_MIN = -32768;
@@ -92,6 +129,12 @@ namespace DS4MapperTest
         {
             get => mouseWheelSync; set => mouseWheelSync = value;
         }
+
+        private readonly Dictionary<MouseOutputRoute, RelativeRouteMouseState> routeMouseStates =
+            new Dictionary<MouseOutputRoute, RelativeRouteMouseState>();
+
+        protected MouseOutputDispatcher mouseOutputDispatcher;
+        protected MouseOutputProducerId mouseOutputProducerId;
 
         // Used to ensure output gamepad events are sent only as
         // needed when dealing with multiple input controllers (JoyCon)
@@ -315,7 +358,7 @@ namespace DS4MapperTest
                 }
                 else if (desiredType == OutputContType.DualShock4)
                 {
-                    if (!LibVIIPER.CreateDS4Device(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0) ||
+                    if (!LibVIIPER.CreateDS4Device(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0, IntPtr.Zero) ||
                         !IsPlausibleViiperDeviceHandle(deviceHandle))
                     {
                         deviceHandle = 0;
@@ -329,7 +372,7 @@ namespace DS4MapperTest
                 }
                 else if (desiredType == OutputContType.DualSenseEdge)
                 {
-                    if (!LibVIIPER.CreateDualSenseEdgeDevice(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0) ||
+                    if (!LibVIIPER.CreateDualSenseEdgeDevice(viiperServerHandle, out deviceHandle, viiperBusId, true, 0, 0, IntPtr.Zero) ||
                         !IsPlausibleViiperDeviceHandle(deviceHandle))
                     {
                         Trace.WriteLine($"Fatal Error: Failed to create DualSense Edge virtual device. Handle={deviceHandle}");
@@ -467,8 +510,8 @@ namespace DS4MapperTest
         // reference counts, two bindings sharing LeftButton can desync the OS state.
         protected static Dictionary<int, int> mouseButtonReferenceCountDict = new Dictionary<int, int>();
         protected static HashSet<int> currentMouseButtons = new HashSet<int>();
-        protected static HashSet<int> activeMouseButtons = new HashSet<int>();
-        protected static HashSet<int> releasedMouseButtons = new HashSet<int>();
+        protected readonly HashSet<int> activeMouseButtons = new HashSet<int>();
+        protected readonly HashSet<int> releasedMouseButtons = new HashSet<int>();
 
         // mouseButtonReferenceCountDict is shared across every Mapper instance
         // (one per controller) *and*, since physical-mouse forwarding routes
@@ -1354,12 +1397,26 @@ namespace DS4MapperTest
 
             foreach (int mouseCode in removed)
             {
-                ReleaseSharedMouseButton(eventInputHandler, eventInputMapping, mouseCode);
+                if (mouseOutputDispatcher != null)
+                {
+                    mouseOutputDispatcher.SetButton(mouseOutputProducerId, MouseOutputRoute.Other, mouseCode, false);
+                }
+                else
+                {
+                    ReleaseSharedMouseButton(eventInputHandler, eventInputMapping, mouseCode);
+                }
             }
 
             foreach (int mouseCode in added)
             {
-                AcquireSharedMouseButton(eventInputHandler, eventInputMapping, mouseCode);
+                if (mouseOutputDispatcher != null)
+                {
+                    mouseOutputDispatcher.SetButton(mouseOutputProducerId, MouseOutputRoute.Other, mouseCode, true);
+                }
+                else
+                {
+                    AcquireSharedMouseButton(eventInputHandler, eventInputMapping, mouseCode);
+                }
             }
 
             releasedMouseButtons.Clear();
@@ -1619,6 +1676,136 @@ namespace DS4MapperTest
         public double remainderCutoff(double dividend, double divisor)
         {
             return dividend - (divisor * (int)(dividend / divisor));
+        }
+
+        private RelativeRouteMouseState GetRouteMouseState(MouseOutputRoute route)
+        {
+            if (!routeMouseStates.TryGetValue(route, out RelativeRouteMouseState state))
+            {
+                state = new RelativeRouteMouseState();
+                routeMouseStates[route] = state;
+            }
+
+            return state;
+        }
+
+        public void AddRouteRelativeMouseMotion(MouseOutputRoute route, double x, double y)
+        {
+            RelativeRouteMouseState state = GetRouteMouseState(route);
+            state.X += x;
+            state.Y += y;
+        }
+
+        public void SetRouteRelativeMouseMotion(MouseOutputRoute route, double x, double y)
+        {
+            RelativeRouteMouseState state = GetRouteMouseState(route);
+            state.X = x;
+            state.Y = y;
+        }
+
+        public void SetRouteRelativeMouseSync(MouseOutputRoute route, bool sync)
+        {
+            GetRouteMouseState(route).Sync = sync;
+        }
+
+        public void SetRouteMouseRemainder(MouseOutputRoute route, double x, double y)
+        {
+            RelativeRouteMouseState state = GetRouteMouseState(route);
+            state.XRemainder = x;
+            state.YRemainder = y;
+        }
+
+        public void AddRouteWheel(MouseOutputRoute route, int horizontal, int vertical)
+        {
+            RelativeRouteMouseState state = GetRouteMouseState(route);
+            state.WheelX += horizontal;
+            state.WheelY += vertical;
+            state.WheelSync = true;
+        }
+
+        public void SetRouteWheel(MouseOutputRoute route, int horizontal, int vertical)
+        {
+            RelativeRouteMouseState state = GetRouteMouseState(route);
+            state.WheelX = horizontal;
+            state.WheelY = vertical;
+            state.WheelSync = true;
+        }
+
+        private void FlushRelativeRoute(MouseOutputRoute route, RelativeRouteMouseState state)
+        {
+            if (state.X != 0.0 || state.Y != 0.0)
+            {
+                if ((state.X > 0.0 && state.XRemainder > 0.0) || (state.X < 0.0 && state.XRemainder < 0.0))
+                {
+                    state.X += state.XRemainder;
+                }
+                else
+                {
+                    state.XRemainder = 0.0;
+                }
+
+                if ((state.Y > 0.0 && state.YRemainder > 0.0) || (state.Y < 0.0 && state.YRemainder < 0.0))
+                {
+                    state.Y += state.YRemainder;
+                }
+                else
+                {
+                    state.YRemainder = 0.0;
+                }
+
+                double mouseXTemp = state.X - (remainderCutoff(state.X * 100.0, 1.0) / 100.0);
+                int mouseXInt = (int)mouseXTemp;
+                state.XRemainder = mouseXTemp - mouseXInt;
+
+                double mouseYTemp = state.Y - (remainderCutoff(state.Y * 100.0, 1.0) / 100.0);
+                int mouseYInt = (int)mouseYTemp;
+                state.YRemainder = mouseYTemp - mouseYInt;
+
+                if (mouseOutputDispatcher != null)
+                {
+                    mouseOutputDispatcher.QueueRelative(mouseOutputProducerId, route, mouseXInt, mouseYInt);
+                }
+                else
+                {
+                    eventInputHandler.MoveRelativeMouse(mouseXInt, mouseYInt);
+                }
+            }
+            else
+            {
+                state.XRemainder = 0.0;
+                state.YRemainder = 0.0;
+            }
+
+            state.X = 0.0;
+            state.Y = 0.0;
+            state.Sync = false;
+        }
+
+        public void ResetRouteMouseRemainder(MouseOutputRoute route)
+        {
+            RelativeRouteMouseState state = GetRouteMouseState(route);
+            state.XRemainder = 0.0;
+            state.YRemainder = 0.0;
+        }
+
+        internal bool TryGetRouteMouseStateForTest(MouseOutputRoute route,
+            out RouteMouseStateSnapshot snapshot)
+        {
+            if (routeMouseStates.TryGetValue(route, out RelativeRouteMouseState state))
+            {
+                snapshot = new RouteMouseStateSnapshot(state.X, state.Y, state.Sync,
+                    state.XRemainder, state.YRemainder, state.WheelX, state.WheelY,
+                    state.WheelSync);
+                return true;
+            }
+
+            snapshot = default;
+            return false;
+        }
+
+        internal void FlushQueuedMouseOutputForTest()
+        {
+            ProcessSyncEvents();
         }
 
         public virtual ref TouchEventFrame GetPreviousTouchEventFrame(TouchpadActionCodes padID)
@@ -2319,6 +2506,22 @@ namespace DS4MapperTest
             this.viiperServerHandle = serverHandle;
         }
 
+        public virtual void PassMouseOutputDispatcher(MouseOutputDispatcher dispatcher)
+        {
+            if (mouseOutputDispatcher != null &&
+                !mouseOutputProducerId.Equals(default(MouseOutputProducerId)))
+            {
+                mouseOutputDispatcher.UnregisterProducer(mouseOutputProducerId);
+            }
+
+            mouseOutputDispatcher = dispatcher;
+            mouseOutputProducerId = default;
+            if (mouseOutputDispatcher != null)
+            {
+                mouseOutputProducerId = mouseOutputDispatcher.RegisterProducer();
+            }
+        }
+
         public virtual void Start(VirtualKBMBase fakerInputHandler, VirtualKBMMapping eventInputMapping)
         {
             this.eventInputHandler = fakerInputHandler;
@@ -2716,24 +2919,51 @@ namespace DS4MapperTest
 
             if (mouseSync)
             {
-
-                if (mouseX != 0.0 || mouseY != 0.0)
-                {
-                    GenerateMouseMoveEvent();
-                }
-                else
-                {
-                    // Probably not needed here. Leave as a temporary precaution
-                    mouseXRemainder = mouseYRemainder = 0.0;
-
-                }
-
+                RelativeRouteMouseState otherState = GetRouteMouseState(MouseOutputRoute.Other);
+                otherState.X += mouseX;
+                otherState.Y += mouseY;
+                otherState.XRemainder = mouseXRemainder;
+                otherState.YRemainder = mouseYRemainder;
+                otherState.Sync = true;
+                FlushRelativeRoute(MouseOutputRoute.Other, otherState);
+                mouseX = mouseY = 0.0;
+                mouseXRemainder = mouseYRemainder = 0.0;
                 mouseSync = false;
             }
             else if (!mouseEventFired)
             {
-                // Probably not needed here. Leave as a temporary precaution
                 mouseXRemainder = mouseYRemainder = 0.0;
+            }
+
+            foreach ((MouseOutputRoute route, RelativeRouteMouseState state) in routeMouseStates)
+            {
+                if (route == MouseOutputRoute.Other)
+                {
+                    continue;
+                }
+
+                if (state.Sync)
+                {
+                    FlushRelativeRoute(route, state);
+                }
+
+                if (state.WheelSync)
+                {
+                    if (mouseOutputDispatcher != null)
+                    {
+                        mouseOutputDispatcher.QueueWheel(mouseOutputProducerId, route,
+                            state.WheelY * eventInputMapping.WHEEL_TICK_BASE,
+                            state.WheelX * eventInputMapping.WHEEL_TICK_BASE);
+                    }
+                    else
+                    {
+                        eventInputHandler.PerformMouseWheelEvent(state.WheelY * eventInputMapping.WHEEL_TICK_BASE,
+                            state.WheelX * eventInputMapping.WHEEL_TICK_BASE);
+                    }
+
+                    state.WheelX = state.WheelY = 0;
+                    state.WheelSync = false;
+                }
             }
 
             mouseEventFired = false;
@@ -2741,14 +2971,30 @@ namespace DS4MapperTest
             if (absMouseSync)
             {
                 double outX = absMouseX, outY = absMouseY;
-                eventInputHandler.MoveAbsoluteMouse(outX, outY);
+                if (mouseOutputDispatcher != null)
+                {
+                    mouseOutputDispatcher.QueueAbsolute(mouseOutputProducerId, outX, outY);
+                }
+                else
+                {
+                    eventInputHandler.MoveAbsoluteMouse(outX, outY);
+                }
                 absMouseSync = false;
             }
 
             if (mouseWheelSync)
             {
-                eventInputHandler.PerformMouseWheelEvent(vertical: mouseWheelY * eventInputMapping.WHEEL_TICK_BASE,
-                    horizontal: mouseWheelX * eventInputMapping.WHEEL_TICK_BASE);
+                if (mouseOutputDispatcher != null)
+                {
+                    mouseOutputDispatcher.QueueWheel(mouseOutputProducerId, MouseOutputRoute.Other,
+                        mouseWheelY * eventInputMapping.WHEEL_TICK_BASE,
+                        mouseWheelX * eventInputMapping.WHEEL_TICK_BASE);
+                }
+                else
+                {
+                    eventInputHandler.PerformMouseWheelEvent(vertical: mouseWheelY * eventInputMapping.WHEEL_TICK_BASE,
+                        horizontal: mouseWheelX * eventInputMapping.WHEEL_TICK_BASE);
+                }
                 mouseWheelX = mouseWheelY = 0;
                 mouseWheelSync = false;
             }
@@ -2756,6 +3002,7 @@ namespace DS4MapperTest
             SyncMouseButtons();
 
             SyncKeyboard();
+            mouseOutputDispatcher?.FlushProducer(mouseOutputProducerId, flushSharedFakerInput: false);
             eventInputHandler.Sync();
 
             if (gamepadSync && intermediateState.Dirty)
@@ -3402,6 +3649,15 @@ namespace DS4MapperTest
             // Relay changes to event systems
             SyncKeyboard();
             SyncMouseButtons();
+            if (mouseOutputDispatcher != null &&
+                !mouseOutputProducerId.Equals(default(MouseOutputProducerId)))
+            {
+                mouseOutputDispatcher.FlushProducer(mouseOutputProducerId,
+                    flushSharedFakerInput: false);
+                mouseOutputDispatcher.UnregisterProducer(mouseOutputProducerId);
+                mouseOutputProducerId = default;
+                mouseOutputDispatcher = null;
+            }
             if (finalSync)
             {
                 eventInputHandler.Sync();

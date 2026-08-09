@@ -63,6 +63,16 @@ namespace DS4MapperTest
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    struct DS4MetaState
+    {
+        public IntPtr SerialNumber;
+        public IntPtr Board;
+        public byte BatteryStatus;
+        public double TemperatureCelsius;
+        public double BatteryVoltage;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     struct DSDeviceState
     {
         public sbyte LX;
@@ -85,6 +95,28 @@ namespace DS4MapperTest
         public short AccelX;
         public short AccelY;
         public short AccelZ;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct DSMetaState
+    {
+        public IntPtr SerialNumber;
+        public IntPtr MACAddress;
+        public IntPtr Board;
+        public byte BatteryStatus;
+        public double TemperatureCelsius;
+        public double BatteryVoltage;
+        public IntPtr ShellColor;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct MouseDeviceState
+    {
+        public byte Buttons;
+        public short DX;
+        public short DY;
+        public short Wheel;
+        public short Pan;
     }
 
     [Flags]
@@ -157,6 +189,15 @@ namespace DS4MapperTest
         public static uint R4 = 0x00800000;
     }
 
+    public static class VIIPERMouseButton
+    {
+        public const byte Left = 0x01;
+        public const byte Right = 0x02;
+        public const byte Middle = 0x04;
+        public const byte Button4 = 0x08;
+        public const byte Button5 = 0x10;
+    }
+
     [SuppressUnmanagedCodeSecurity]
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void Xbox360RumbleCallbackDelegate(nuint handle, byte leftMotor, byte rightMotor);
@@ -205,7 +246,7 @@ namespace DS4MapperTest
 
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool CreateDS4Device(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct);
+        public static extern bool CreateDS4Device(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct, IntPtr meta);
 
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
@@ -217,11 +258,11 @@ namespace DS4MapperTest
 
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool CreateDualSenseDevice(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct);
+        public static extern bool CreateDualSenseDevice(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct, IntPtr meta);
 
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool CreateDualSenseEdgeDevice(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct);
+        public static extern bool CreateDualSenseEdgeDevice(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct, IntPtr meta);
 
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
@@ -234,6 +275,18 @@ namespace DS4MapperTest
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool SetDualSenseOutputCallback(nuint deviceHandle, DSOutputCallbackDelegate? callback);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool CreateMouseDevice(nuint serverHandle, out nuint outDeviceHandle, uint busID, [MarshalAs(UnmanagedType.I1)] bool autoAttachLocalhost, ushort idVendor, ushort idProduct);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool SetMouseDeviceState(nuint deviceHandle, MouseDeviceState state);
+
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool RemoveMouseDevice(nuint outDeviceHandle);
     }
 
     [SuppressUnmanagedCodeSecurity]

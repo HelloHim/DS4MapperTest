@@ -420,8 +420,8 @@ namespace DS4MapperTest.StickActions
         {
             if (tempMouseDeltaX != 0.0)
             {
-                mapper.MouseX += tempMouseDeltaX;
-                mapper.MouseSync = true;
+                mapper.AddRouteRelativeMouseMotion(MouseOutputRoute.FlickStick, tempMouseDeltaX, 0.0);
+                mapper.SetRouteRelativeMouseSync(MouseOutputRoute.FlickStick, true);
                 active = true;
             }
             else

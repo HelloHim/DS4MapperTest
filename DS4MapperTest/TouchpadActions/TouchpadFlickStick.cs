@@ -231,8 +231,8 @@ namespace DS4MapperTest.TouchpadActions
         {
             if (tempMouseDeltaX != 0.0)
             {
-                mapper.MouseX += tempMouseDeltaX;
-                mapper.MouseSync = true;
+                mapper.AddRouteRelativeMouseMotion(MouseOutputRoute.Trackpad, tempMouseDeltaX, 0.0);
+                mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
                 active = true;
             }
             else
