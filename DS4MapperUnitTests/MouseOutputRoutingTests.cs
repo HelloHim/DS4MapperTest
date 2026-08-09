@@ -32,6 +32,7 @@ namespace DS4MapperUnitTests
             MouseOutputRoute.JoystickMouse,
             MouseOutputRoute.FlickStick,
             MouseOutputRoute.Trackpad,
+            MouseOutputRoute.UnifiedVirtualMouse,
             MouseOutputRoute.TriggerMouse,
             MouseOutputRoute.Other,
             MouseOutputRoute.AbsoluteMouse,
@@ -81,6 +82,7 @@ namespace DS4MapperUnitTests
                 store.JoystickMouseDestination = MouseOutputDestination.ViiperMouse1;
                 store.FlickStickMouseDestination = MouseOutputDestination.ViiperMouse2;
                 store.TrackpadMouseDestination = MouseOutputDestination.ViiperMouse3;
+                store.UnifiedVirtualMouseDestination = MouseOutputDestination.ViiperMouse1;
                 store.TriggerMouseDestination = MouseOutputDestination.FakerInputMouse;
                 store.OtherMouseDestination = MouseOutputDestination.SendInput;
                 store.AbsoluteMouseDestination = MouseOutputDestination.SendInput;
@@ -94,6 +96,7 @@ namespace DS4MapperUnitTests
                 Assert.AreEqual(MouseOutputDestination.ViiperMouse1, loaded.JoystickMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.ViiperMouse2, loaded.FlickStickMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.ViiperMouse3, loaded.TrackpadMouseDestination);
+                Assert.AreEqual(MouseOutputDestination.ViiperMouse1, loaded.UnifiedVirtualMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.FakerInputMouse, loaded.TriggerMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.SendInput, loaded.OtherMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.SendInput, loaded.AbsoluteMouseDestination);
@@ -153,6 +156,7 @@ namespace DS4MapperUnitTests
                 Assert.AreEqual(MouseOutputDestination.ViiperMouse2, loaded.TrackpadMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.FakerInputMouse, loaded.JoystickMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.FakerInputMouse, loaded.FlickStickMouseDestination);
+                Assert.AreEqual(MouseOutputDestination.FakerInputMouse, loaded.UnifiedVirtualMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.FakerInputMouse, loaded.TriggerMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.FakerInputMouse, loaded.OtherMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.FakerInputMouse, loaded.AbsoluteMouseDestination);
@@ -355,6 +359,7 @@ namespace DS4MapperUnitTests
                 MouseOutputRoute.JoystickMouse,
                 MouseOutputRoute.FlickStick,
                 MouseOutputRoute.Trackpad,
+                MouseOutputRoute.UnifiedVirtualMouse,
                 MouseOutputRoute.TriggerMouse,
                 MouseOutputRoute.Other,
             };
@@ -453,6 +458,7 @@ namespace DS4MapperUnitTests
                     JoystickMouse = MouseOutputDestination.ViiperMouse2,
                     FlickStick = MouseOutputDestination.ViiperMouse3,
                     Trackpad = MouseOutputDestination.SendInput,
+                    UnifiedVirtualMouse = MouseOutputDestination.ViiperMouse2,
                     TriggerMouse = MouseOutputDestination.FakerInputMouse,
                     Other = MouseOutputDestination.SendInput,
                     AbsoluteMouse = MouseOutputDestination.SendInput,
@@ -470,6 +476,7 @@ namespace DS4MapperUnitTests
                 Assert.AreEqual(MouseOutputDestination.ViiperMouse2, appGlobal.appSettings.JoystickMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.ViiperMouse3, appGlobal.appSettings.FlickStickMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.SendInput, appGlobal.appSettings.TrackpadMouseDestination);
+                Assert.AreEqual(MouseOutputDestination.ViiperMouse2, appGlobal.appSettings.UnifiedVirtualMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.FakerInputMouse, appGlobal.appSettings.TriggerMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.SendInput, appGlobal.appSettings.OtherMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.SendInput, appGlobal.appSettings.AbsoluteMouseDestination);

@@ -98,6 +98,7 @@ namespace DS4MapperUnitTests
             MouseOutputRoute.JoystickMouse,
             MouseOutputRoute.FlickStick,
             MouseOutputRoute.Trackpad,
+            MouseOutputRoute.UnifiedVirtualMouse,
             MouseOutputRoute.TriggerMouse,
             MouseOutputRoute.Other,
         };
@@ -117,6 +118,7 @@ namespace DS4MapperUnitTests
                 JoystickMouse = MouseOutputDestination.ViiperMouse1,
                 FlickStick = MouseOutputDestination.ViiperMouse2,
                 Trackpad = MouseOutputDestination.ViiperMouse3,
+                UnifiedVirtualMouse = MouseOutputDestination.SendInput,
                 TriggerMouse = MouseOutputDestination.SendInput,
                 Other = MouseOutputDestination.FakerInputMouse,
                 AbsoluteMouse = MouseOutputDestination.SendInput,
@@ -161,7 +163,7 @@ namespace DS4MapperUnitTests
             FakeRoutingService service = new FakeRoutingService(CreateSnapshot());
             using MouseRoutingPanelViewModel viewModel = new MouseRoutingPanelViewModel(service);
 
-            Assert.AreEqual(7, viewModel.RouteRows.Count);
+            Assert.AreEqual(8, viewModel.RouteRows.Count);
 
             foreach (MouseOutputRoute route in RelativeRoutes)
             {
@@ -473,6 +475,7 @@ namespace DS4MapperUnitTests
                     ["JoystickMouseDestination"] = "FakerInputMouse",
                     ["FlickStickMouseDestination"] = "FakerInputMouse",
                     ["TrackpadMouseDestination"] = "FakerInputMouse",
+                    ["UnifiedVirtualMouseDestination"] = "FakerInputMouse",
                     ["TriggerMouseDestination"] = "FakerInputMouse",
                     ["OtherMouseDestination"] = "FakerInputMouse",
                     ["AbsoluteMouseDestination"] = "FakerInputMouse",
@@ -506,6 +509,7 @@ namespace DS4MapperUnitTests
                     JoystickMouse = MouseOutputDestination.ViiperMouse1,
                     FlickStick = MouseOutputDestination.ViiperMouse2,
                     Trackpad = MouseOutputDestination.ViiperMouse3,
+                    UnifiedVirtualMouse = MouseOutputDestination.ViiperMouse1,
                     TriggerMouse = MouseOutputDestination.FakerInputMouse,
                     Other = MouseOutputDestination.SendInput,
                     AbsoluteMouse = MouseOutputDestination.SendInput,
@@ -521,6 +525,7 @@ namespace DS4MapperUnitTests
                 Assert.AreEqual(MouseOutputDestination.ViiperMouse1, loaded.JoystickMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.ViiperMouse2, loaded.FlickStickMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.ViiperMouse3, loaded.TrackpadMouseDestination);
+                Assert.AreEqual(MouseOutputDestination.ViiperMouse1, loaded.UnifiedVirtualMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.SendInput, loaded.OtherMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.SendInput, loaded.AbsoluteMouseDestination);
                 Assert.AreEqual(1, runtime.RefreshCount);
