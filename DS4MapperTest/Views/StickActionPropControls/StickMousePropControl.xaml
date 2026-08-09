@@ -79,7 +79,7 @@
                     </RadioButton.Style>
                 </RadioButton>
                 <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0.0" Maximum="10.0" Value="{Binding VerticalScale}" DecimalPlaces="4"
-                                  Increment="0.1" Width="100" Margin="8,0,0,0" ValueFormat="0.0###" IsEnabled="{Binding VerticalScaleIsMultiplierMode}">
+                                  Increment="0.1" Width="100" Margin="8,0,0,0" HorizontalAlignment="Left" ValueFormat="0.0###" IsEnabled="{Binding VerticalScaleIsMultiplierMode}">
                     <hc:NumericUpDown.Style>
                         <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                             <Style.Triggers>
@@ -125,55 +125,62 @@
                 </StackPanel>
             </Grid>
 
-            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <Label Content="Dead Zone" ToolTip="Used when Split Axes is off." />
-                <hc:NumericUpDown Minimum="0.0" Maximum="1.0" Value="{Binding DeadZone}" DecimalPlaces="2"
-                                  Increment="0.05" Width="100" Margin="8,0,0,0">
-                    <hc:NumericUpDown.Style>
-                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HighlightDeadZone}" Value="False">
-                                    <Setter Property="Opacity" Value="0.7" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding SeparateAxisDeadZones}" Value="True">
-                                    <Setter Property="IsEnabled" Value="False"/>
-                                    <Setter Property="Opacity" Value="0.5"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </hc:NumericUpDown.Style>
-                </hc:NumericUpDown>
-                <Label Content="Split Axes" Margin="16,0,0,0" VerticalAlignment="Center"/>
-                <CheckBox IsChecked="{Binding SeparateAxisDeadZones}" VerticalAlignment="Center" Margin="8,0,0,0">
-                    <CheckBox.Style>
-                        <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}"/>
-                    </CheckBox.Style>
-                </CheckBox>
+            <StackPanel Orientation="Vertical" Margin="0,8,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Dead Zone" ToolTip="Used when Split Axes is off." />
+                    <hc:NumericUpDown Minimum="0.0" Maximum="1.0" Value="{Binding DeadZone}" DecimalPlaces="2"
+                                      Increment="0.05" Width="100" Margin="8,0,0,0">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightDeadZone}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SeparateAxisDeadZones}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                        <Setter Property="Opacity" Value="0.5"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Content="Split Axes" VerticalAlignment="Center"/>
+                    <CheckBox IsChecked="{Binding SeparateAxisDeadZones}" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <CheckBox.Style>
+                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}"/>
+                        </CheckBox.Style>
+                    </CheckBox>
+                </StackPanel>
+
+                <Grid Margin="0,8,0,0" Visibility="{Binding SeparateAxisDeadZones, Converter={StaticResource boolVisConv}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Content="Horizontal Dead Zone" />
+                    <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0.0" Maximum="1.0" Value="{Binding DeadZoneX}" DecimalPlaces="2"
+                                      Increment="0.05" Width="100" Margin="8,0,0,0">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}"/>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+                    <Label Grid.Row="1" Grid.Column="0" Content="Vertical Dead Zone" Margin="0,8,0,0" />
+                    <hc:NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="0.0" Maximum="1.0" Value="{Binding DeadZoneY}" DecimalPlaces="2"
+                                      Increment="0.05" Width="100" Margin="8,8,0,0">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}"/>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+                </Grid>
             </StackPanel>
-
-            <Grid Margin="0,8,0,0" Visibility="{Binding SeparateAxisDeadZones, Converter={StaticResource boolVisConv}}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <Label Grid.Column="0" Content="Horizontal Dead Zone" />
-                <hc:NumericUpDown Grid.Column="1" Minimum="0.0" Maximum="1.0" Value="{Binding DeadZoneX}" DecimalPlaces="2"
-                                  Increment="0.05" Width="100" Margin="8,0,0,0">
-                    <hc:NumericUpDown.Style>
-                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}"/>
-                    </hc:NumericUpDown.Style>
-                </hc:NumericUpDown>
-                <Label Grid.Column="2" Content="Vertical Dead Zone" Margin="16,0,0,0" />
-                <hc:NumericUpDown Grid.Column="3" Minimum="0.0" Maximum="1.0" Value="{Binding DeadZoneY}" DecimalPlaces="2"
-                                  Increment="0.05" Width="100" Margin="8,0,0,0">
-                    <hc:NumericUpDown.Style>
-                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}"/>
-                    </hc:NumericUpDown.Style>
-                </hc:NumericUpDown>
-            </Grid>
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Diagonal Range" />
@@ -225,9 +232,10 @@
                             </CheckBox>
                         </StackPanel>
 
-                        <TextBlock Text="Speeds up mouse output as the stick moves farther from centre."
-                                   TextWrapping="Wrap"
-                                   Margin="0,0,0,8"/>
+                        <Border Margin="0,8,0,0" Padding="0">
+                            <TextBlock Text="Speeds up mouse output as the stick moves farther from centre."
+                                       TextWrapping="Wrap"/>
+                        </Border>
 
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                             <Label Content="Multiplier" />
