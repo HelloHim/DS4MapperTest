@@ -65,6 +65,7 @@ namespace DS4MapperUnitTests
             private IReadOnlyList<MouseOutputRouteResolution> resolutions;
 
             public int RefreshCount { get; private set; }
+            public bool? LastFlushSharedFakerInput { get; private set; }
 
             public event EventHandler StateChanged
             {
@@ -81,6 +82,7 @@ namespace DS4MapperUnitTests
             public void RefreshRouting(bool flushSharedFakerInput)
             {
                 RefreshCount++;
+                LastFlushSharedFakerInput = flushSharedFakerInput;
             }
 
             public void SetSnapshot(MouseOutputRoutingAvailabilitySnapshot availability,
@@ -529,6 +531,7 @@ namespace DS4MapperUnitTests
                 Assert.AreEqual(MouseOutputDestination.SendInput, loaded.OtherMouseDestination);
                 Assert.AreEqual(MouseOutputDestination.SendInput, loaded.AbsoluteMouseDestination);
                 Assert.AreEqual(1, runtime.RefreshCount);
+                Assert.AreEqual(true, runtime.LastFlushSharedFakerInput);
             }
             finally
             {
