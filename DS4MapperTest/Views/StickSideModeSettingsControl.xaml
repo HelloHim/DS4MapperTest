@@ -395,22 +395,22 @@
 
         <DataTemplate DataType="{x:Type propvm:StickMousePropViewModel}">
             <StackPanel>
+                <shared:CalibrationModeControl Margin="0,0,0,6"/>
+
                 <Border Style="{StaticResource ModeRowBorder}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource JsmccLabelText}"/>
-                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                        <TextBlock Grid.Column="0" Text="Joystick Mouse Sensitivity" Style="{StaticResource JsmccLabelText}"
+                                   ToolTip="Sets the camera rotation speed at full stick deflection. Angle calibration keeps the speed consistent across games and in-game sensitivities."/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <hc:NumericUpDown Minimum="0" Maximum="7200" DecimalPlaces="1" Increment="10"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding DeadZone, UpdateSourceTrigger=LostFocus}"/>
-                        <TextBlock Grid.Column="2" Text="Mouse Speed" Style="{StaticResource JsmccLabelText}"/>
-                        <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="10000" DecimalPlaces="0" Increment="500"
-                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding MouseSpeed, UpdateSourceTrigger=LostFocus}"/>
+                                          Value="{Binding DegreesPerSecond, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Text="&#176;/s" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
@@ -426,35 +426,6 @@
                         </Grid.RowDefinitions>
 
                         <RadioButton Grid.Row="0" Grid.Column="0"
-                                     IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
-                                     VerticalAlignment="Center" Content="Vertical Sensitivity"
-                                     Foreground="{DynamicResource JsmccTextMidBrush}">
-                            <RadioButton.Style>
-                                <Style TargetType="RadioButton">
-                                    <Setter Property="Opacity" Value="1.0"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
-                                            <Setter Property="Opacity" Value="0.5"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </RadioButton.Style>
-                        </RadioButton>
-                        <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="10000" DecimalPlaces="0" Increment="500"
-                                          Width="90" IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
-                                          Value="{Binding VerticalSensitivity, UpdateSourceTrigger=LostFocus}">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
-                                            <Setter Property="Opacity" Value="0.5"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-
-                        <RadioButton Grid.Row="1" Grid.Column="0" Margin="0,6,0,0"
                                      IsChecked="{Binding VerticalScaleIsMultiplierMode, Mode=TwoWay}"
                                      VerticalAlignment="Center" Content="Vertical Scale"
                                      Foreground="{DynamicResource JsmccTextMidBrush}">
@@ -469,7 +440,7 @@
                                 </Style>
                             </RadioButton.Style>
                         </RadioButton>
-                        <hc:NumericUpDown Grid.Row="1" Grid.Column="1" Margin="0,6,0,0" Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.1"
+                        <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.1"
                                           Width="90" IsEnabled="{Binding VerticalScaleIsMultiplierMode}"
                                           ValueFormat="0.0###"
                                           Value="{Binding VerticalScale, UpdateSourceTrigger=LostFocus}">
@@ -483,6 +454,84 @@
                                 </Style>
                             </hc:NumericUpDown.Style>
                         </hc:NumericUpDown>
+
+                        <RadioButton Grid.Row="1" Grid.Column="0" Margin="0,6,0,0"
+                                     IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
+                                     VerticalAlignment="Center" Content="Vertical Sensitivity"
+                                     Foreground="{DynamicResource JsmccTextMidBrush}">
+                            <RadioButton.Style>
+                                <Style TargetType="RadioButton">
+                                    <Setter Property="Opacity" Value="1.0"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
+                        </RadioButton>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,6,0,0" Orientation="Horizontal">
+                            <hc:NumericUpDown Minimum="0" Maximum="7200" DecimalPlaces="1" Increment="10"
+                                              Width="90" IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
+                                              Value="{Binding VerticalDegreesPerSecond, UpdateSourceTrigger=LostFocus}">
+                                <hc:NumericUpDown.Style>
+                                    <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
+                                                <Setter Property="Opacity" Value="0.5"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </hc:NumericUpDown.Style>
+                            </hc:NumericUpDown>
+                            <TextBlock Text="&#176;/s" Style="{StaticResource JsmccMutedText}" Margin="6,6,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource JsmccLabelText}" ToolTip="Used when Split Axes is off."/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                                          Width="90" Value="{Binding DeadZone, UpdateSourceTrigger=LostFocus}">
+                            <hc:NumericUpDown.Style>
+                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SeparateAxisDeadZones}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </hc:NumericUpDown.Style>
+                        </hc:NumericUpDown>
+                        <TextBlock Grid.Column="2" Text="Split Axes" Style="{StaticResource JsmccLabelText}"/>
+                        <CheckBox Grid.Column="3" IsChecked="{Binding SeparateAxisDeadZones}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}" Visibility="{Binding SeparateAxisDeadZones, Converter={StaticResource BoolToVis}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Horizontal Dead Zone" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding DeadZoneX, UpdateSourceTrigger=LostFocus}"/>
+                        <TextBlock Grid.Column="2" Text="Vertical Dead Zone" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
+                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                          Value="{Binding DeadZoneY, UpdateSourceTrigger=LostFocus}"/>
                     </Grid>
                 </Border>
 
@@ -527,6 +576,11 @@
                         <CheckBox Grid.Column="1" IsChecked="{Binding DeltaEnabled}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
                     </Grid>
                 </Border>
+
+                <TextBlock Text="Speeds up mouse output as the stick moves farther from centre."
+                           Style="{StaticResource JsmccBodyText}"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,6"/>
 
                 <StackPanel Visibility="{Binding DeltaEnabled, Converter={StaticResource BoolToVis}}">
                     <Border Style="{StaticResource ModeRowBorder}">
@@ -1387,3 +1441,4 @@
         </Border>
     </StackPanel>
 </UserControl>
+

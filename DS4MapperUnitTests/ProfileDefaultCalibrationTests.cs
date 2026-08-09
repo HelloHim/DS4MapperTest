@@ -26,6 +26,13 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void DefaultCalibPresetName_IsValorant()
+        {
+            Profile profile = new Profile();
+            Assert.AreEqual(GameCalibPreset.Valorant.Name, profile.CalibPresetName);
+        }
+
+        [TestMethod]
         public void DefaultCalibration_IsInternallyConsistent()
         {
             // RWC = Counts x InGameSens / 360 (per the app's own calibration formula).
@@ -39,6 +46,22 @@ namespace DS4MapperUnitTests
         {
             Assert.IsFalse(GameCalibPreset.Valorant.IsCustom);
             CollectionAssert.Contains((System.Collections.ICollection)GameCalibPreset.All, GameCalibPreset.Valorant);
+        }
+
+        [TestMethod]
+        public void ValorantPreset_IsAfterUltrakillInPresetList()
+        {
+            int ultrakillIndex = -1;
+            int valorantIndex = -1;
+            for (int i = 0; i < GameCalibPreset.All.Count; i++)
+            {
+                if (GameCalibPreset.All[i].Name == "ULTRAKILL") ultrakillIndex = i;
+                if (ReferenceEquals(GameCalibPreset.All[i], GameCalibPreset.Valorant)) valorantIndex = i;
+            }
+
+            Assert.IsTrue(ultrakillIndex >= 0);
+            Assert.IsTrue(valorantIndex >= 0);
+            Assert.IsTrue(valorantIndex > ultrakillIndex);
         }
     }
 }
