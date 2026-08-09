@@ -432,8 +432,7 @@ namespace DS4MapperTest
                 testMapper.PassVIIPERConnection(serverHandle);
                 //testMapper.Start(vigemTestClient, virtualEventHandler, eventInputMapping);
                 testMapper.Start(virtualEventHandler, eventInputMapping);
-                testMapper.ProfileChanged += (object sender, string e) =>
-                {
+                testMapper.ProfileChanged += (object sender, string e) => {
                     appGlobal.activeProfiles[tempInd] = e;
                     appGlobal.SaveControllerDeviceSettings(device, device.DeviceOptions);
                 };
@@ -458,32 +457,19 @@ namespace DS4MapperTest
 
         private void InitOutputKBMHandler()
         {
-            if (!string.IsNullOrEmpty(_argParser.VirtualkbmHandler))
+            string configuredHandlerIdentifier =
+                DetermineConfiguredOutputHandlerIdentifier(_argParser, appGlobal);
+
+            switch (configuredHandlerIdentifier)
             {
-                switch (_argParser.VirtualkbmHandler)
-                {
-                    case "fakerinput":
-                        virtualEventHandler = new FakerInputHandler();
-                        virtualEventHandler.version = new Version(appGlobal.fakerInputVersion);
-                        break;
-                    case "sendinput":
-                    default:
-                        virtualEventHandler = new SendInputHandler();
-                        break;
-                }
-            }
-            else
-            {
-                if (appGlobal.fakerInputInstalled)
-                {
+                case FakerInputHandler.IDENTIFIER:
                     virtualEventHandler = new FakerInputHandler();
                     virtualEventHandler.version = new Version(appGlobal.fakerInputVersion);
-                }
-                else
-                {
-                    // Use fallback handler
+                    break;
+                case SendInputHandler.IDENTIFIER:
+                default:
                     virtualEventHandler = GetFallbackKBMHandler();
-                }
+                    break;
             }
 
             bool checkConnect = virtualEventHandler.Connect();
@@ -511,6 +497,26 @@ namespace DS4MapperTest
             ProfileSerializer.EventInputMapper = eventInputMapping;
 
             LogDebug($"KBM Event Handler: {virtualEventHandler.GetFullDisplayName()}");
+        }
+
+        internal static string DetermineConfiguredOutputHandlerIdentifier(
+            ArgumentParser argParser, AppGlobalData appGlobal)
+        {
+            if (!string.IsNullOrEmpty(argParser?.VirtualkbmHandler))
+            {
+                switch (argParser.VirtualkbmHandler)
+                {
+                    case "fakerinput":
+                        return FakerInputHandler.IDENTIFIER;
+                    case "sendinput":
+                    default:
+                        return SendInputHandler.IDENTIFIER;
+                }
+            }
+
+            return appGlobal.fakerInputInstalled
+                ? FakerInputHandler.IDENTIFIER
+                : SendInputHandler.IDENTIFIER;
         }
 
         private VirtualKBMBase GetFallbackKBMHandler()
@@ -628,7 +634,8 @@ namespace DS4MapperTest
                 testMapper.Start(virtualEventHandler, eventInputMapping);
                 //testMapper.RequestOSD += TestMapper_RequestOSD;
                 int tempInd = ind;
-                testMapper.ProfileChanged += (object sender, string e) => {
+                testMapper.ProfileChanged += (object sender, string e) =>
+                {
                     appGlobal.activeProfiles[tempInd] = e;
                     appGlobal.SaveControllerDeviceSettings(device, device.DeviceOptions);
                 };
