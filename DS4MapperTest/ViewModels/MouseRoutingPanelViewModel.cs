@@ -188,6 +188,24 @@ namespace DS4MapperTest.ViewModels
         }
     }
 
+    public sealed class MouseRoutingBulkApplyOptionViewModel
+    {
+        public MouseRoutingBulkApplyOptionViewModel(MouseOutputDestination destination,
+            int compatibleRouteCount)
+        {
+            Destination = destination;
+            CompatibleRouteCount = compatibleRouteCount;
+        }
+
+        public MouseOutputDestination Destination { get; }
+        public int CompatibleRouteCount { get; }
+        public string DisplayName =>
+            MouseRoutingDestinationOptionViewModel.GetDestinationDisplayName(Destination);
+        public string ScopeText => CompatibleRouteCount == 7
+            ? "All routes"
+            : "6 compatible routes";
+    }
+
     public sealed class MouseRoutingPanelViewModel : INotifyPropertyChanged, IDisposable
     {
         private readonly IMouseOutputRoutingService routingService;
@@ -196,6 +214,7 @@ namespace DS4MapperTest.ViewModels
         private bool hasStagedChanges;
         private bool applyingChanges;
         private string validationMessage = string.Empty;
+        private MouseRoutingBulkApplyOptionViewModel selectedBulkApplyOption;
         private bool disposed;
 
         public MouseRoutingPanelViewModel(IMouseOutputRoutingService routingService,
@@ -208,6 +227,11 @@ namespace DS4MapperTest.ViewModels
                 Enum.GetValues(typeof(MouseOutputRoute))
                     .Cast<MouseOutputRoute>()
                     .Select(CreateRouteRow));
+            BulkApplyOptions = new ObservableCollection<MouseRoutingBulkApplyOptionViewModel>(
+                Enum.GetValues(typeof(MouseOutputDestination))
+                    .Cast<MouseOutputDestination>()
+                    .Select(destination => new MouseRoutingBulkApplyOptionViewModel(destination,
+                        CountCompatibleRoutes(destination))));
 
             routingService.StateChanged += RoutingService_StateChanged;
             RefreshRuntimeState();
@@ -217,6 +241,7 @@ namespace DS4MapperTest.ViewModels
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ObservableCollection<MouseRoutingRouteRowViewModel> RouteRows { get; }
+        public ObservableCollection<MouseRoutingBulkApplyOptionViewModel> BulkApplyOptions { get; }
 
         public bool PopupOpen
         {
@@ -259,9 +284,37 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        public MouseRoutingBulkApplyOptionViewModel SelectedBulkApplyOption
+        {
+            get => selectedBulkApplyOption;
+            set
+            {
+                if (ReferenceEquals(selectedBulkApplyOption, value))
+                {
+                    return;
+                }
+
+                selectedBulkApplyOption = value;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(SelectedBulkApplyOption)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(HasSelectedBulkApplyOption)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(BulkApplyHelperText)));
+            }
+        }
+
+        public bool HasSelectedBulkApplyOption => SelectedBulkApplyOption != null;
+        public string BulkApplyHelperText => SelectedBulkApplyOption == null
+            ? "Choose a destination to update every compatible staged route at once."
+            : SelectedBulkApplyOption.CompatibleRouteCount == 7
+                ? "Apply to all seven staged routes in one action."
+                : "Apply to six staged routes in one action. VIIPER does not work for Absolute Mouse.";
+
         public void BeginEditSession()
         {
             LoadStagedSelectionsFromConfigured();
+            SelectedBulkApplyOption = null;
             ValidationMessage = string.Empty;
         }
 
@@ -300,7 +353,25 @@ namespace DS4MapperTest.ViewModels
         public void DiscardStagedChanges()
         {
             LoadStagedSelectionsFromConfigured();
+            SelectedBulkApplyOption = null;
             ValidationMessage = string.Empty;
+        }
+
+        public void ApplySelectedDestinationToCompatibleRoutes()
+        {
+            if (SelectedBulkApplyOption == null)
+            {
+                return;
+            }
+
+            MouseOutputDestination destination = SelectedBulkApplyOption.Destination;
+            foreach (MouseRoutingRouteRowViewModel row in RouteRows)
+            {
+                if (row.DestinationOptions.Any(option => option.Destination == destination))
+                {
+                    row.StagedDestination = destination;
+                }
+            }
         }
 
         public void RefreshRuntimeState()
@@ -368,6 +439,12 @@ namespace DS4MapperTest.ViewModels
 
         private void RoutingService_StateChanged(object sender, EventArgs e) =>
             uiInvoker(RefreshRuntimeState);
+
+        private int CountCompatibleRoutes(MouseOutputDestination destination)
+        {
+            return RouteRows.Count(row =>
+                row.DestinationOptions.Any(option => option.Destination == destination));
+        }
 
         private static string GetRouteDisplayName(MouseOutputRoute route)
         {

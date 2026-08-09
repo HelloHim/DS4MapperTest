@@ -233,6 +233,54 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void QuickSetAppliesSupportedDestinationToAllRoutes()
+        {
+            FakeRoutingService service = new FakeRoutingService(CreateSnapshot());
+            using MouseRoutingPanelViewModel viewModel = new MouseRoutingPanelViewModel(service);
+
+            viewModel.PopupOpen = true;
+            viewModel.SelectedBulkApplyOption = viewModel.BulkApplyOptions.Single(option =>
+                option.Destination == MouseOutputDestination.FakerInputMouse);
+
+            viewModel.ApplySelectedDestinationToCompatibleRoutes();
+
+            foreach (MouseRoutingRouteRowViewModel row in viewModel.RouteRows)
+            {
+                Assert.AreEqual(MouseOutputDestination.FakerInputMouse,
+                    row.StagedDestination, row.Route.ToString());
+            }
+
+            Assert.AreEqual(0, service.ApplyCount);
+            Assert.IsTrue(viewModel.HasStagedChanges);
+        }
+
+        [TestMethod]
+        public void QuickSetLeavesAbsoluteMouseUnchangedForViiperDestinations()
+        {
+            FakeRoutingService service = new FakeRoutingService(CreateSnapshot());
+            using MouseRoutingPanelViewModel viewModel = new MouseRoutingPanelViewModel(service);
+
+            viewModel.PopupOpen = true;
+            viewModel.SelectedBulkApplyOption = viewModel.BulkApplyOptions.Single(option =>
+                option.Destination == MouseOutputDestination.ViiperMouse2);
+
+            viewModel.ApplySelectedDestinationToCompatibleRoutes();
+
+            foreach (MouseOutputRoute route in RelativeRoutes)
+            {
+                Assert.AreEqual(MouseOutputDestination.ViiperMouse2,
+                    viewModel.RouteRows.Single(row => row.Route == route).StagedDestination,
+                    route.ToString());
+            }
+
+            Assert.AreEqual(MouseOutputDestination.SendInput,
+                viewModel.RouteRows.Single(row => row.Route == MouseOutputRoute.AbsoluteMouse)
+                    .StagedDestination);
+            Assert.AreEqual(0, service.ApplyCount);
+            Assert.IsTrue(viewModel.HasStagedChanges);
+        }
+
+        [TestMethod]
         public void ApplyCommitsAllValidStagedValuesAndPreservesUnchangedRoutes()
         {
             FakeRoutingService service = new FakeRoutingService(CreateSnapshot());
