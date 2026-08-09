@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DS4MapperTest.Views.StickActionPropControls.StickMousePropControl"
+<UserControl x:Class="DS4MapperTest.Views.StickActionPropControls.StickMousePropControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,6 +6,7 @@
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:local="clr-namespace:DS4MapperTest.Views.StickActionPropControls"
              xmlns:local1="clr-namespace:DS4MapperTest.Views"
+             xmlns:shared="clr-namespace:DS4MapperTest.Views.Shared"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
@@ -31,38 +32,23 @@
                 </TextBox>
             </StackPanel>
 
+            <shared:CalibrationModeControl Margin="0,8,0,0"/>
+
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <Label Content="Dead Zone" />
-                <hc:NumericUpDown Minimum="0.0" Maximum="1.0" Value="{Binding DeadZone}" DecimalPlaces="2"
-                                  Increment="0.05" Width="100" Margin="8,0,0,0">
+                <Label Content="Joystick Mouse Sensitivity" ToolTip="Sets the camera rotation speed at full stick deflection. Angle calibration keeps the speed consistent across games and in-game sensitivities." />
+                <hc:NumericUpDown Minimum="0" Maximum="7200" Value="{Binding DegreesPerSecond}" DecimalPlaces="1"
+                                  Increment="10" Width="100" Margin="8,0,0,0">
                     <hc:NumericUpDown.Style>
                         <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding HighlightDeadZone}" Value="False">
+                                <DataTrigger Binding="{Binding HighlightDegreesPerSecond}" Value="False">
                                     <Setter Property="Opacity" Value="0.7" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </hc:NumericUpDown.Style>
                 </hc:NumericUpDown>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <Label Content="Mouse Speed" />
-                <hc:NumericUpDown Minimum="0" Maximum="10000" Value="{Binding MouseSpeed}" DecimalPlaces="0"
-                                  Increment="500" Width="100" Margin="8,0,0,0">
-                    <hc:NumericUpDown.Style>
-                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HighlightMouseSpeed}" Value="False">
-                                    <Setter Property="Opacity" Value="0.7" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </hc:NumericUpDown.Style>
-                </hc:NumericUpDown>
-
-                <TextBlock Text="{Binding MouseSpeedOutput, Mode=OneWay, StringFormat='{}{0} pps'}" Width="50" Margin="8,0,0,0" Foreground="{StaticResource DefaultBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="&#176;/s" Margin="8,0,0,0" Foreground="{StaticResource DefaultBrush}" VerticalAlignment="Center" />
             </StackPanel>
 
             <Grid Margin="0,8,0,0">
@@ -76,36 +62,6 @@
                 </Grid.RowDefinitions>
 
                 <RadioButton Grid.Row="0" Grid.Column="0"
-                             IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
-                             VerticalAlignment="Center" Content="Vertical Sensitivity">
-                    <RadioButton.Style>
-                        <Style TargetType="RadioButton">
-                            <Setter Property="Opacity" Value="1.0"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
-                                    <Setter Property="Opacity" Value="0.5"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
-                                    <Setter Property="Opacity" Value="0.7" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </RadioButton.Style>
-                </RadioButton>
-                <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="10000" Value="{Binding VerticalSensitivity}" DecimalPlaces="0"
-                                  Increment="500" Width="100" Margin="8,0,0,0" IsEnabled="{Binding VerticalScaleIsAbsoluteMode}">
-                    <hc:NumericUpDown.Style>
-                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
-                                    <Setter Property="Opacity" Value="0.7" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </hc:NumericUpDown.Style>
-                </hc:NumericUpDown>
-
-                <RadioButton Grid.Row="1" Grid.Column="0" Margin="0,6,0,0"
                              IsChecked="{Binding VerticalScaleIsMultiplierMode, Mode=TwoWay}"
                              VerticalAlignment="Center" Content="Vertical Scale">
                     <RadioButton.Style>
@@ -122,8 +78,8 @@
                         </Style>
                     </RadioButton.Style>
                 </RadioButton>
-                <hc:NumericUpDown Grid.Row="1" Grid.Column="1" Margin="8,6,0,0" Minimum="0.0" Maximum="10.0" Value="{Binding VerticalScale}" DecimalPlaces="4"
-                                  Increment="0.1" Width="100" ValueFormat="0.0###" IsEnabled="{Binding VerticalScaleIsMultiplierMode}">
+                <hc:NumericUpDown Grid.Row="0" Grid.Column="1" Minimum="0.0" Maximum="10.0" Value="{Binding VerticalScale}" DecimalPlaces="4"
+                                  Increment="0.1" Width="100" Margin="8,0,0,0" ValueFormat="0.0###" IsEnabled="{Binding VerticalScaleIsMultiplierMode}">
                     <hc:NumericUpDown.Style>
                         <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                             <Style.Triggers>
@@ -134,7 +90,106 @@
                         </Style>
                     </hc:NumericUpDown.Style>
                 </hc:NumericUpDown>
+
+                <RadioButton Grid.Row="1" Grid.Column="0" Margin="0,6,0,0"
+                             IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
+                             VerticalAlignment="Center" Content="Vertical Sensitivity">
+                    <RadioButton.Style>
+                        <Style TargetType="RadioButton">
+                            <Setter Property="Opacity" Value="1.0"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
+                                    <Setter Property="Opacity" Value="0.7" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,6,0,0" Orientation="Horizontal">
+                    <hc:NumericUpDown Minimum="0" Maximum="7200" Value="{Binding VerticalDegreesPerSecond}" DecimalPlaces="1"
+                                      Increment="10" Width="100" IsEnabled="{Binding VerticalScaleIsAbsoluteMode}">
+                        <hc:NumericUpDown.Style>
+                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
+                                        <Setter Property="Opacity" Value="0.7" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </hc:NumericUpDown.Style>
+                    </hc:NumericUpDown>
+                    <TextBlock Text="&#176;/s" Margin="8,0,0,0" Foreground="{StaticResource DefaultBrush}" VerticalAlignment="Center" />
+                </StackPanel>
             </Grid>
+
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <Label Content="Dead Zone" ToolTip="Used when Split Axes is off." />
+                <hc:NumericUpDown Minimum="0.0" Maximum="1.0" Value="{Binding DeadZone}" DecimalPlaces="2"
+                                  Increment="0.05" Width="100" Margin="8,0,0,0">
+                    <hc:NumericUpDown.Style>
+                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HighlightDeadZone}" Value="False">
+                                    <Setter Property="Opacity" Value="0.7" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SeparateAxisDeadZones}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </hc:NumericUpDown.Style>
+                </hc:NumericUpDown>
+                <Label Content="Split Axes" Margin="16,0,0,0" VerticalAlignment="Center"/>
+                <CheckBox IsChecked="{Binding SeparateAxisDeadZones}" VerticalAlignment="Center" Margin="8,0,0,0">
+                    <CheckBox.Style>
+                        <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}"/>
+                    </CheckBox.Style>
+                </CheckBox>
+            </StackPanel>
+
+            <Grid Margin="0,8,0,0" Visibility="{Binding SeparateAxisDeadZones, Converter={StaticResource boolVisConv}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Column="0" Content="Horizontal Dead Zone" />
+                <hc:NumericUpDown Grid.Column="1" Minimum="0.0" Maximum="1.0" Value="{Binding DeadZoneX}" DecimalPlaces="2"
+                                  Increment="0.05" Width="100" Margin="8,0,0,0">
+                    <hc:NumericUpDown.Style>
+                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}"/>
+                    </hc:NumericUpDown.Style>
+                </hc:NumericUpDown>
+                <Label Grid.Column="2" Content="Vertical Dead Zone" Margin="16,0,0,0" />
+                <hc:NumericUpDown Grid.Column="3" Minimum="0.0" Maximum="1.0" Value="{Binding DeadZoneY}" DecimalPlaces="2"
+                                  Increment="0.05" Width="100" Margin="8,0,0,0">
+                    <hc:NumericUpDown.Style>
+                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}"/>
+                    </hc:NumericUpDown.Style>
+                </hc:NumericUpDown>
+            </Grid>
+
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <Label Content="Diagonal Range" />
+                <hc:NumericUpDown Minimum="0" Maximum="90" Value="{Binding DiagonalRange}" DecimalPlaces="0"
+                                  Increment="1" Width="100" Margin="8,0,0,0">
+                    <hc:NumericUpDown.Style>
+                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HighlightDiagonalRange}" Value="False">
+                                    <Setter Property="Opacity" Value="0.7" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </hc:NumericUpDown.Style>
+                </hc:NumericUpDown>
+            </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Label Content="Output Curve" />
@@ -169,6 +224,10 @@
                                 </CheckBox.Style>
                             </CheckBox>
                         </StackPanel>
+
+                        <TextBlock Text="Speeds up mouse output as the stick moves farther from centre."
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8"/>
 
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                             <Label Content="Multiplier" />
@@ -259,3 +318,4 @@
         </StackPanel>
     </DockPanel>
 </UserControl>
+
