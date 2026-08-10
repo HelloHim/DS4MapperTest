@@ -29,7 +29,7 @@ namespace DS4MapperTest.TouchpadActions
             public const string MAX_OUTPUT_ENABLED = "MaxOutputEnabled";
             public const string SQUARE_STICK_ENABLED = "SquareStickEnabled";
             public const string SQUARE_STICK_ROUNDNESS = "SquareStickRoundness";
-            public const string FORCED_CENTER = "ForcedCenter";
+            public const string FORCE_CENTER = "ForceCenter";
 
             public const string OUTER_RING_BUTTON = "OuterRingButton";
             public const string USE_OUTER_RING = "UseOuterRing";
@@ -58,7 +58,7 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.MAX_OUTPUT,
             PropertyKeyStrings.SQUARE_STICK_ENABLED,
             PropertyKeyStrings.SQUARE_STICK_ROUNDNESS,
-            PropertyKeyStrings.FORCED_CENTER,
+            PropertyKeyStrings.FORCE_CENTER,
 
             PropertyKeyStrings.OUTER_RING_BUTTON,
             PropertyKeyStrings.USE_OUTER_RING,
@@ -152,7 +152,7 @@ namespace DS4MapperTest.TouchpadActions
         private bool useParentSmoothingFilter;
 
         // TODO: Check on state transfer when switching Action Layer instances
-        private bool forcedCenter;
+        private bool forceCenter;
 
         private OutputActionData outputAction;
         public OutputActionData OutputAction
@@ -219,10 +219,10 @@ namespace DS4MapperTest.TouchpadActions
             set => squareStickRoundness = value;
         }
 
-        public bool ForcedCenter
+        public bool ForceCenter
         {
-            get => forcedCenter;
-            set => forcedCenter = value;
+            get => forceCenter;
+            set => forceCenter = value;
         }
 
         /* Possibly group values in a class */
@@ -315,7 +315,7 @@ namespace DS4MapperTest.TouchpadActions
             touchingActive = touchFrame.Touch;
             if (touchingActive)
             {
-                if (forcedCenter)
+                if (forceCenter)
                 {
                     wasCenterHit = wasCenterHit || (!wasCenterHit && !inSafeZone);
                     touchingActive = wasCenterHit;
@@ -520,14 +520,14 @@ namespace DS4MapperTest.TouchpadActions
                 TouchpadStickAction tempAction = checkAction as TouchpadStickAction;
                 // Check if going back to base action
                 if (parentAction != null && parentAction == tempAction &&
-                    forcedCenter && tempAction.forcedCenter)
+                    forceCenter && tempAction.forceCenter)
                 {
                     // Copy state variable to child on release
                     wasCenterHit = tempAction.wasCenterHit;
                 }
                 // Check if switching to an overridden action from base action
                 else if (parentAction == null && tempAction.parentAction == this &&
-                    forcedCenter && tempAction.forcedCenter)
+                    forceCenter && tempAction.forceCenter)
                 {
                     // Copy state variable from parent on parent release
                     tempAction.wasCenterHit = wasCenterHit;
@@ -617,8 +617,8 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.DEAD_ZONE_TYPE:
                             deadMod.DeadZoneType = tempStickAction.deadMod.DeadZoneType;
                             break;
-                        case PropertyKeyStrings.FORCED_CENTER:
-                            forcedCenter = tempStickAction.forcedCenter;
+                        case PropertyKeyStrings.FORCE_CENTER:
+                            forceCenter = tempStickAction.forceCenter;
                             break;
 
                         case PropertyKeyStrings.OUTER_RING_BUTTON:
@@ -722,8 +722,8 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.DEAD_ZONE_TYPE:
                     deadMod.DeadZoneType = tempStickAction.deadMod.DeadZoneType;
                     break;
-                case PropertyKeyStrings.FORCED_CENTER:
-                    forcedCenter = tempStickAction.forcedCenter;
+                case PropertyKeyStrings.FORCE_CENTER:
+                    forceCenter = tempStickAction.forceCenter;
                     break;
 
                 case PropertyKeyStrings.OUTER_RING_BUTTON:

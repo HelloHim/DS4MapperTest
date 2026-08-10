@@ -118,7 +118,7 @@ namespace DS4MapperTest.TouchpadActions
         /// </summary>
         public (int Minimum, int Maximum) GetEffectiveOppositeTapLengthRange() => tapLengthTiming.GetEffectiveRange();
 
-        public int BrakeDurationMs
+        public int ReleasePressDurationMs
         {
             get => OppositeTapLengthMaximumMs;
             set

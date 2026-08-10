@@ -622,20 +622,20 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler OppositeTapStartDelayMaximumMsChanged;
 
-        public int BrakeMinimumHoldMs
+        public int CounterMovementMinimumHoldMs
         {
             get => action.CounterMovementReleasePress.MinimumHoldMs;
             set
             {
                 if (action.CounterMovementReleasePress.MinimumHoldMs == value) return;
                 action.CounterMovementReleasePress.MinimumHoldMs = value;
-                BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterMovementMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler BrakeMinimumHoldMsChanged;
+        public event EventHandler CounterMovementMinimumHoldMsChanged;
 
-        public int BrakeArmingThresholdPercent
+        public int RequiredStickDeflectionThresholdPercent
         {
             get => (int)Math.Round(action.CounterMovementReleasePress.ArmingThreshold * 100.0);
             set
@@ -644,11 +644,11 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 double threshold = clamped / 100.0;
                 if (Math.Abs(action.CounterMovementReleasePress.ArmingThreshold - threshold) < double.Epsilon) return;
                 action.CounterMovementReleasePress.ArmingThreshold = threshold;
-                BrakeArmingThresholdPercentChanged?.Invoke(this, EventArgs.Empty);
+                RequiredStickDeflectionThresholdPercentChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler BrakeArmingThresholdPercentChanged;
+        public event EventHandler RequiredStickDeflectionThresholdPercentChanged;
 
         public bool HighlightCounterMovementReleasePressEnabled =>
             action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
@@ -676,10 +676,10 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
         public bool HighlightOppositeTapStartDelayMaximumMs =>
             action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
-        public bool HighlightBrakeMinimumHoldMs =>
-            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
-        public bool HighlightBrakeArmingThreshold =>
-            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+        public bool HighlightCounterMovementMinimumHoldMs =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS);
+        public bool HighlightRequiredStickDeflectionThreshold =>
+            action.ParentAction == null || action.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD);
 
         public string ActionUpBtnDisplayBind => action.DirButtons[(int)StickAnalogEmulationAction.DirSlot.Up]?.DescribeActions(mapper);
         public event EventHandler ActionUpBtnDisplayBindChanged;
@@ -770,8 +770,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             OppositeTapStartDelayVariancePercentChanged += StickAnalogEmulationPropViewModel_OppositeTapStartDelayVariancePercentChanged;
             OppositeTapStartDelayMinimumMsChanged += StickAnalogEmulationPropViewModel_OppositeTapStartDelayMinimumMsChanged;
             OppositeTapStartDelayMaximumMsChanged += StickAnalogEmulationPropViewModel_OppositeTapStartDelayMaximumMsChanged;
-            BrakeMinimumHoldMsChanged += StickAnalogEmulationPropViewModel_BrakeMinimumHoldMsChanged;
-            BrakeArmingThresholdPercentChanged += StickAnalogEmulationPropViewModel_BrakeArmingThresholdPercentChanged;
+            CounterMovementMinimumHoldMsChanged += StickAnalogEmulationPropViewModel_CounterMovementMinimumHoldMsChanged;
+            RequiredStickDeflectionThresholdPercentChanged += StickAnalogEmulationPropViewModel_RequiredStickDeflectionThresholdPercentChanged;
         }
 
         private void StickAnalogEmulationPropViewModel_CounterMovementReleasePressEnabledChanged(object sender, EventArgs e)
@@ -846,16 +846,16 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
         }
 
-        private void StickAnalogEmulationPropViewModel_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
+        private void StickAnalogEmulationPropViewModel_CounterMovementMinimumHoldMsChanged(object sender, EventArgs e)
         {
-            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
-            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS);
         }
 
-        private void StickAnalogEmulationPropViewModel_BrakeArmingThresholdPercentChanged(object sender, EventArgs e)
+        private void StickAnalogEmulationPropViewModel_RequiredStickDeflectionThresholdPercentChanged(object sender, EventArgs e)
         {
-            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
-            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            action.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD);
+            action.RaiseNotifyPropertyChange(mapper, StickAnalogEmulationAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD);
         }
 
         private void StickAnalogEmulationPropViewModel_NameChanged(object sender, EventArgs e)

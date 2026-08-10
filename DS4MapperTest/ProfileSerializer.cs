@@ -54,7 +54,7 @@ namespace DS4MapperTest
             get => settings.rainbowSecondsCycle;
             set => settings.rainbowSecondsCycle = Math.Clamp(value, 0, 100);
         }
-        public bool ShouldSerializeRainbowCycles()
+        public bool ShouldSerializeRainbowSecondsCycle()
         {
             return settings.Mode == LightbarMode.Rainbow;
         }

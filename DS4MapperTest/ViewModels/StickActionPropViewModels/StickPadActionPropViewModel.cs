@@ -313,8 +313,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
         // This VM is only used while Stick Mode is DPad, and Counter Movement Release Press
         // is available for every D-Pad sub-mode.
-        public bool ShowReleaseBrakeSection => true;
-        public event EventHandler ShowReleaseBrakeSectionChanged;
+        public bool ShowCounterMovementReleasePressSection => true;
+        public event EventHandler ShowCounterMovementReleasePressSectionChanged;
 
         public bool CounterMovementReleasePressEnabled
         {
@@ -659,20 +659,20 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler OppositeTapStartDelayMaximumMsChanged;
 
-        public int BrakeMinimumHoldMs
+        public int CounterMovementMinimumHoldMs
         {
             get => action.CounterMovementReleasePress.MinimumHoldMs;
             set
             {
                 if (action.CounterMovementReleasePress.MinimumHoldMs == value) return;
                 action.CounterMovementReleasePress.MinimumHoldMs = value;
-                BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterMovementMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler BrakeMinimumHoldMsChanged;
+        public event EventHandler CounterMovementMinimumHoldMsChanged;
 
-        public int BrakeArmingThresholdPercent
+        public int RequiredStickDeflectionThresholdPercent
         {
             get => (int)Math.Round(action.CounterMovementReleasePress.ArmingThreshold * 100.0);
             set
@@ -681,11 +681,11 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 double threshold = clamped / 100.0;
                 if (Math.Abs(action.CounterMovementReleasePress.ArmingThreshold - threshold) < double.Epsilon) return;
                 action.CounterMovementReleasePress.ArmingThreshold = threshold;
-                BrakeArmingThresholdPercentChanged?.Invoke(this, EventArgs.Empty);
+                RequiredStickDeflectionThresholdPercentChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler BrakeArmingThresholdPercentChanged;
+        public event EventHandler RequiredStickDeflectionThresholdPercentChanged;
 
         public bool HighlightCounterMovementReleasePressEnabled
         {
@@ -776,19 +776,19 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler HighlightOppositeTapStartDelayMaximumMsChanged;
 
-        public bool HighlightBrakeMinimumHoldMs
+        public bool HighlightCounterMovementMinimumHoldMs
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS);
         }
-        public event EventHandler HighlightBrakeMinimumHoldMsChanged;
+        public event EventHandler HighlightCounterMovementMinimumHoldMsChanged;
 
-        public bool HighlightBrakeArmingThreshold
+        public bool HighlightRequiredStickDeflectionThreshold
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+                action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD);
         }
-        public event EventHandler HighlightBrakeArmingThresholdChanged;
+        public event EventHandler HighlightRequiredStickDeflectionThresholdChanged;
 
         public event EventHandler ActionPropertyChanged;
         public event EventHandler<StickMapAction> ActionChanged;
@@ -849,8 +849,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             OppositeTapStartDelayVariancePercentChanged += StickPadActionPropViewModel_OppositeTapStartDelayVariancePercentChanged;
             OppositeTapStartDelayMinimumMsChanged += StickPadActionPropViewModel_OppositeTapStartDelayMinimumMsChanged;
             OppositeTapStartDelayMaximumMsChanged += StickPadActionPropViewModel_OppositeTapStartDelayMaximumMsChanged;
-            BrakeMinimumHoldMsChanged += StickPadActionPropViewModel_BrakeMinimumHoldMsChanged;
-            BrakeArmingThresholdPercentChanged += StickPadActionPropViewModel_BrakeArmingThresholdPercentChanged;
+            CounterMovementMinimumHoldMsChanged += StickPadActionPropViewModel_CounterMovementMinimumHoldMsChanged;
+            RequiredStickDeflectionThresholdPercentChanged += StickPadActionPropViewModel_RequiredStickDeflectionThresholdPercentChanged;
         }
 
         private void StickPadActionPropViewModel_CounterMovementReleasePressEnabledChanged(object sender, EventArgs e)
@@ -944,26 +944,26 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             HighlightOppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void StickPadActionPropViewModel_BrakeMinimumHoldMsChanged(object sender, EventArgs e)
+        private void StickPadActionPropViewModel_CounterMovementMinimumHoldMsChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS))
+            if (!action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS))
             {
-                action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
+                action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS);
             }
 
-            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.BRAKE_MIN_HOLD_MS);
-            HighlightBrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS);
+            HighlightCounterMovementMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void StickPadActionPropViewModel_BrakeArmingThresholdPercentChanged(object sender, EventArgs e)
+        private void StickPadActionPropViewModel_RequiredStickDeflectionThresholdPercentChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD))
+            if (!action.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD))
             {
-                action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+                action.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD);
             }
 
-            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
-            HighlightBrakeArmingThresholdChanged?.Invoke(this, EventArgs.Empty);
+            action.RaiseNotifyPropertyChange(mapper, StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD);
+            HighlightRequiredStickDeflectionThresholdChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickPadActionPropViewModel_ActionPresetChoiceChanged(object sender, EventArgs e)

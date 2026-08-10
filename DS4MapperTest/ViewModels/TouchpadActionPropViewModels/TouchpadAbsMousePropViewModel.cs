@@ -72,12 +72,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public string AntiRelease
         {
-            get => action.AntiRadius.ToString("N2");
+            get => action.AntiRelease.ToString("N2");
             set
             {
                 if (double.TryParse(value, out double temp))
                 {
-                    action.AntiRadius = Math.Clamp(temp, 0.0, 1.0);
+                    action.AntiRelease = Math.Clamp(temp, 0.0, 1.0);
                     AntiReleaseChanged?.Invoke(this, EventArgs.Empty);
                     ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 }
@@ -199,7 +199,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         public bool HighlightAntiRelease
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadAbsAction.PropertyKeyStrings.ANTI_RADIUS);
+                action.ChangedProperties.Contains(TouchpadAbsAction.PropertyKeyStrings.ANTI_RELEASE);
         }
         public event EventHandler HighlightAntiReleaseChanged;
 
@@ -285,12 +285,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         private void TouchpadAbsMousePropViewModel_AntiReleaseChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(TouchpadAbsAction.PropertyKeyStrings.ANTI_RADIUS))
+            if (!action.ChangedProperties.Contains(TouchpadAbsAction.PropertyKeyStrings.ANTI_RELEASE))
             {
-                action.ChangedProperties.Add(TouchpadAbsAction.PropertyKeyStrings.ANTI_RADIUS);
+                action.ChangedProperties.Add(TouchpadAbsAction.PropertyKeyStrings.ANTI_RELEASE);
             }
 
-            action.RaiseNotifyPropertyChange(mapper, TouchpadAbsAction.PropertyKeyStrings.ANTI_RADIUS);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadAbsAction.PropertyKeyStrings.ANTI_RELEASE);
 
             HighlightAntiReleaseChanged?.Invoke(this, EventArgs.Empty);
         }

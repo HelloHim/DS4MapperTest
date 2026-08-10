@@ -85,7 +85,7 @@ namespace DS4MapperUnitTests
                 ""DiagonalRange"": 45,
                 ""BrakeEnabled"": {brakeEnabled.ToString().ToLowerInvariant()},
                 ""BrakeDurationMs"": {durationMs},
-                ""BrakeMinimumHoldMs"": {minHoldMs}
+                ""CounterMovementMinimumHoldMs"": {minHoldMs}
               }}
             }}
           ]
@@ -178,7 +178,7 @@ namespace DS4MapperUnitTests
 
             TouchpadActionPadPropViewModel vm = new TouchpadActionPadPropViewModel(mapper, padAction);
 
-            Assert.IsTrue(vm.ShowReleaseBrakeSection);
+            Assert.IsTrue(vm.ShowCounterMovementReleasePressSection);
         }
 
         [TestMethod]
@@ -367,7 +367,7 @@ namespace DS4MapperUnitTests
             var (_, padAction) = LoadMapper(minHoldMs: 123, durationMs: 77);
 
             Assert.IsTrue(padAction.CounterMovementReleasePress.Enabled);
-            Assert.AreEqual(77, padAction.CounterMovementReleasePress.BrakeDurationMs);
+            Assert.AreEqual(77, padAction.CounterMovementReleasePress.ReleasePressDurationMs);
             Assert.AreEqual(123, padAction.CounterMovementReleasePress.MinimumHoldMs);
 
             string json = JsonConvert.SerializeObject(new TouchpadActionPadSerializer(null, padAction));
@@ -375,17 +375,17 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(true, parsed["Settings"]?["CounterMovementReleasePressEnabled"]?.Value<bool>());
             Assert.AreEqual(77, parsed["Settings"]?["OppositeTapLengthMinimumMs"]?.Value<int>());
             Assert.AreEqual(77, parsed["Settings"]?["OppositeTapLengthMaximumMs"]?.Value<int>());
-            Assert.AreEqual(123, parsed["Settings"]?["BrakeMinimumHoldMs"]?.Value<int>());
+            Assert.AreEqual(123, parsed["Settings"]?["CounterMovementMinimumHoldMs"]?.Value<int>());
 
             TouchpadActionPad parent = new TouchpadActionPad();
             parent.CounterMovementReleasePress.Enabled = true;
-            parent.CounterMovementReleasePress.BrakeDurationMs = 90;
+            parent.CounterMovementReleasePress.ReleasePressDurationMs = 90;
             parent.CounterMovementReleasePress.MinimumHoldMs = 150;
             parent.TouchDefinition = padAction.TouchDefinition;
             TouchpadActionPad child = new TouchpadActionPad();
             child.SoftCopyFromParent(parent);
             Assert.IsTrue(child.CounterMovementReleasePress.Enabled);
-            Assert.AreEqual(90, child.CounterMovementReleasePress.BrakeDurationMs);
+            Assert.AreEqual(90, child.CounterMovementReleasePress.ReleasePressDurationMs);
             Assert.AreEqual(150, child.CounterMovementReleasePress.MinimumHoldMs);
         }
     }

@@ -16,7 +16,7 @@ namespace DS4MapperTest.TouchpadActions
             public const string NAME = "Name";
             public const string DEAD_ZONE = "DeadZone";
             public const string MAX_ZONE = "MaxZone";
-            public const string ANTI_RADIUS = "AntiRadius";
+            public const string ANTI_RELEASE = "AntiRelease";
             public const string SNAP_TO_CENTER_RELEASE = "SnapToCenterRelease";
 
             public const string OUTER_RING_BUTTON = "OuterRingButton";
@@ -37,7 +37,7 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.NAME,
             PropertyKeyStrings.DEAD_ZONE,
             PropertyKeyStrings.MAX_ZONE,
-            PropertyKeyStrings.ANTI_RADIUS,
+            PropertyKeyStrings.ANTI_RELEASE,
             PropertyKeyStrings.SNAP_TO_CENTER_RELEASE,
             PropertyKeyStrings.OUTER_RING_BUTTON,
             PropertyKeyStrings.USE_OUTER_RING,
@@ -112,12 +112,12 @@ namespace DS4MapperTest.TouchpadActions
         private double yMotion;
         private double fuzzXNorm;
         private double fuzzYNorm;
-        private double antiRadius = 0.0;
+        private double antiRelease = 0.0;
 
-        public double AntiRadius
+        public double AntiRelease
         {
-            get => antiRadius;
-            set => antiRadius = value;
+            get => antiRelease;
+            set => antiRelease = value;
         }
 
         private bool snapToCenterRelease = true;
@@ -159,7 +159,7 @@ namespace DS4MapperTest.TouchpadActions
             };
             absRange.Init();
             outerRing = true;
-            antiRadius = 0.0;
+            antiRelease = 0.0;
         }
 
         public override void Prepare(Mapper mapper, ref TouchEventFrame touchFrame, bool alterState = true)
@@ -233,7 +233,7 @@ namespace DS4MapperTest.TouchpadActions
 
                 double outXRatio = usedXNorm, outYRatio = usedYNorm;
                 //double antiDead = 0.2;
-                double antiDead = antiRadius;
+                double antiDead = antiRelease;
 
                 // Find Release zone
                 if (inSafeZone && antiDead != 0.0)
@@ -392,8 +392,8 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.MAX_ZONE:
                             deadMod.MaxZone = tempAbsAction.deadMod.MaxZone;
                             break;
-                        case PropertyKeyStrings.ANTI_RADIUS:
-                            antiRadius = tempAbsAction.antiRadius;
+                        case PropertyKeyStrings.ANTI_RELEASE:
+                            antiRelease = tempAbsAction.antiRelease;
                             break;
                         case PropertyKeyStrings.OUTER_RING_BUTTON:
                             ringButton = tempAbsAction.ringButton != null ?
@@ -465,8 +465,8 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.MAX_ZONE:
                     deadMod.MaxZone = tempAbsAction.deadMod.MaxZone;
                     break;
-                case PropertyKeyStrings.ANTI_RADIUS:
-                    antiRadius = tempAbsAction.antiRadius;
+                case PropertyKeyStrings.ANTI_RELEASE:
+                    antiRelease = tempAbsAction.antiRelease;
                     break;
                 case PropertyKeyStrings.OUTER_RING_BUTTON:
                     ringButton = tempAbsAction.ringButton != null ?

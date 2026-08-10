@@ -162,11 +162,11 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                         double newSwipes = Math.Clamp(action.MinAccelXSens, 0.0, 100.0);
                         if (action.SwipesPer360 != newSwipes)
                         {
-                            double verticalRws = VerticalRws;
+                            double verticalSp360 = VerticalSp360;
                             action.SwipesPer360 = newSwipes;
                             action.VerticalScale = Math.Abs(newSwipes) < 1e-10
-                                ? verticalRws
-                                : Math.Clamp(verticalRws / newSwipes, 0.0, 10.0);
+                                ? verticalSp360
+                                : Math.Clamp(verticalSp360 / newSwipes, 0.0, 10.0);
                             MarkAccelerationProperty(
                                 TouchpadMouse.PropertyKeyStrings.SWIPES_PER_360);
                             MarkAccelerationProperty(
@@ -176,7 +176,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                             PropertyChanged?.Invoke(this,
                                 new PropertyChangedEventArgs(nameof(VerticalScale)));
                             PropertyChanged?.Invoke(this,
-                                new PropertyChangedEventArgs(nameof(VerticalRws)));
+                                new PropertyChangedEventArgs(nameof(VerticalSp360)));
                             PropertyChanged?.Invoke(this,
                                 new PropertyChangedEventArgs(nameof(LegacySensitivity)));
                             HighlightSwipesPer360Changed?.Invoke(this, EventArgs.Empty);
@@ -231,7 +231,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                             PropertyChanged?.Invoke(this,
                                 new PropertyChangedEventArgs(nameof(VerticalScale)));
                             PropertyChanged?.Invoke(this,
-                                new PropertyChangedEventArgs(nameof(VerticalRws)));
+                                new PropertyChangedEventArgs(nameof(VerticalSp360)));
                             HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
                         }
                     }
@@ -520,13 +520,13 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 double swipesPer360 = Math.Clamp(value, 0.0, 100.0);
                 if (action.SwipesPer360 == swipesPer360) return;
 
-                double verticalRws = VerticalRws;
+                double verticalSp360 = VerticalSp360;
                 action.SwipesPer360 = swipesPer360;
                 if (VerticalScaleIsAbsoluteMode)
                 {
                     action.VerticalScale = Math.Abs(swipesPer360) < 1e-10
-                        ? verticalRws
-                        : Math.Clamp(verticalRws / swipesPer360, 0.0, 10.0);
+                        ? verticalSp360
+                        : Math.Clamp(verticalSp360 / swipesPer360, 0.0, 10.0);
                     VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
                     PropertyChanged?.Invoke(this,
                         new PropertyChangedEventArgs(nameof(VerticalScale)));
@@ -534,7 +534,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 SwipesPer360Changed?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SwipesPer360)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalRws)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSp360)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivity)));
             }
         }
@@ -595,7 +595,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler VerticalScaleChanged;
 
-        public double VerticalRws
+        public double VerticalSp360
         {
             get => Math.Round(action.SwipesPer360 * action.VerticalScale, 4);
             set
@@ -1070,7 +1070,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                     this.action.SwipesPer360 = TouchpadMouse.DEFAULT_SWIPES_PER_360;
                     this.action.VerticalScale = TouchpadMouse.DEFAULT_VERTICAL_SCALE;
                     this.action.MinAccelXSens = Math.Clamp(this.action.SwipesPer360, 0.0, 100.0);
-                    this.action.MinAccelYSens = VerticalRws;
+                    this.action.MinAccelYSens = VerticalSp360;
                     this.action.MaxAccelXSens = TouchpadMouse.DEFAULT_MAX_ACCEL_SENS;
                     this.action.MaxAccelYSens = TouchpadMouse.DEFAULT_MAX_ACCEL_SENS;
                     foreach (string key in new[]
@@ -1103,7 +1103,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 RaiseAccelerationPropertyChanges();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SwipesPer360)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalRws)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSp360)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LegacySensitivity)));
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             });
@@ -1393,7 +1393,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             PropertyChanged?.Invoke(this,
                 new PropertyChangedEventArgs(nameof(VerticalScale)));
             PropertyChanged?.Invoke(this,
-                new PropertyChangedEventArgs(nameof(VerticalRws)));
+                new PropertyChangedEventArgs(nameof(VerticalSp360)));
 
             if (!_syncingAccelSens)
             {
@@ -1550,7 +1550,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         private void SyncTrackpadMinimumYFromBase()
         {
-            double minY = Math.Clamp(VerticalRws, 0.0, 100.0);
+            double minY = Math.Clamp(VerticalSp360, 0.0, 100.0);
             if (action.MinAccelYSens == minY) return;
 
             action.MinAccelYSens = minY;

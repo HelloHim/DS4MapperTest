@@ -185,7 +185,7 @@ Increment="1" ToolTip="+ = Clockwise. - = Counter-clockwise" Width="100" Margin=
                 <Label Content="&#xB0;" Margin="2,0,0,0" BorderBrush="{x:Null}" />
             </StackPanel>
 
-            <StackPanel Orientation="Vertical" Margin="0,12,0,0" Visibility="{Binding ShowReleaseBrakeSection, FallbackValue='Visible', Converter={StaticResource boolVisConv}}">
+            <StackPanel Orientation="Vertical" Margin="0,12,0,0" Visibility="{Binding ShowCounterMovementReleasePressSection, FallbackValue='Visible', Converter={StaticResource boolVisConv}}">
                 <Label Content="Counter Movement Release Press" FontWeight="Bold" />
                 <TextBlock Text="When a digital stick direction is released, the mapper can generate a short press of the opposite direction. This can reduce residual movement caused by the physical stick returning towards its centre."
                            TextWrapping="Wrap" MaxWidth="500" HorizontalAlignment="Left" Opacity="0.8" Margin="0,0,0,4" />
@@ -229,12 +229,12 @@ Increment="1" Width="100" Margin="8,0,0,0">
                 <StackPanel Margin="0,8,0,0">
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Minimum Hold Time" />
-                        <hc:NumericUpDown Minimum="0" Maximum="300" Value="{Binding BrakeMinimumHoldMs}" DecimalPlaces="0"
+                        <hc:NumericUpDown Minimum="0" Maximum="300" Value="{Binding CounterMovementMinimumHoldMs}" DecimalPlaces="0"
 Increment="1" Width="100" Margin="8,0,0,0">
                             <hc:NumericUpDown.Style>
                                 <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightBrakeMinimumHoldMs}" Value="False">
+                                        <DataTrigger Binding="{Binding HighlightCounterMovementMinimumHoldMs}" Value="False">
                                             <Setter Property="Opacity" Value="0.7" />
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -250,12 +250,12 @@ Increment="1" Width="100" Margin="8,0,0,0">
                 <StackPanel Margin="0,8,0,0">
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Required Stick Deflection" />
-                        <hc:NumericUpDown Minimum="0" Maximum="100" Value="{Binding BrakeArmingThresholdPercent}" DecimalPlaces="0"
+                        <hc:NumericUpDown Minimum="0" Maximum="100" Value="{Binding RequiredStickDeflectionThresholdPercent}" DecimalPlaces="0"
 Increment="1" Width="100" Margin="8,0,0,0">
                             <hc:NumericUpDown.Style>
                                 <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightBrakeArmingThreshold}" Value="False">
+                                        <DataTrigger Binding="{Binding HighlightRequiredStickDeflectionThreshold}" Value="False">
                                             <Setter Property="Opacity" Value="0.7" />
                                         </DataTrigger>
                                     </Style.Triggers>

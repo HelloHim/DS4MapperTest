@@ -294,7 +294,7 @@
                                         <TextBlock Grid.Column="0" Text="Minimum Hold Time" Style="{StaticResource JsmccLabelText}"/>
                                         <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="300" DecimalPlaces="0" Increment="1"
                                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                          Value="{Binding BrakeMinimumHoldMs, UpdateSourceTrigger=LostFocus}"/>
+                                                          Value="{Binding CounterMovementMinimumHoldMs, UpdateSourceTrigger=LostFocus}"/>
                                         <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                                     </Grid>
                                     <TextBlock Text="Controls how long a digital direction must stay active before Counter Movement Release Press is eligible."
@@ -315,7 +315,7 @@
                                         <TextBlock Grid.Column="0" Text="Required Stick Deflection" Style="{StaticResource JsmccLabelText}"/>
                                         <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="0" Increment="1"
                                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                          Value="{Binding BrakeArmingThresholdPercent, UpdateSourceTrigger=LostFocus}"/>
+                                                          Value="{Binding RequiredStickDeflectionThresholdPercent, UpdateSourceTrigger=LostFocus}"/>
                                         <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                                     </Grid>
                                     <TextBlock Text="Controls how far the stick must move before Counter Movement Release Press is armed. Set to 0% to arm whenever a digital direction activates."

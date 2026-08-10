@@ -99,7 +99,7 @@
                         <Label Content="Vertical Sp360" Margin="4,0,0,0" />
                         <hc:NumericUpDown Minimum="0.0" Maximum="100.0"
                                           DecimalPlaces="4" Increment="0.001"
-                                          Value="{Binding VerticalRws, FallbackValue='1.0'}"
+                                          Value="{Binding VerticalSp360, FallbackValue='1.0'}"
                                           IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
                                           Width="100" Margin="8,0,0,0">
                             <hc:NumericUpDown.Style>
