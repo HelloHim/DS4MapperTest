@@ -16,10 +16,13 @@
     <Border Style="{StaticResource AngleCalibrationBorder}" Margin="0,8,0,0">
         <StackPanel>
             <TextBlock Text="Angle Calibration" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,6"/>
-            <TextBlock Text="Counts is the mouse movement for a 360&#176; turn. RWC is Counts &#215; In-Game Sensitivity &#247; 360; Flick Stick uses RWC &#247; In-Game Sensitivity."
-                       Style="{StaticResource JsmccMutedText}"
+            <TextBlock Style="{StaticResource JsmccMutedText}"
                        TextWrapping="Wrap"
-                       Margin="0,0,0,6"/>
+                       Margin="0,0,0,6">
+                <Run Text="Counts is the mouse movement for a 360&#176; turn. RWC combines Counts and In-Game Sensitivity into a single calibration value."/>
+                <LineBreak/>
+                <Run Text="Counts = RWC &#215; 360 &#247; In-Game Sensitivity | RWC = Counts &#215; In-Game Sensitivity &#247; 360"/>
+            </TextBlock>
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                 <RadioButton Content="Counts" GroupName="CalibrationMode"
                              Style="{StaticResource CalibModeToggleStyle}"
@@ -72,7 +75,7 @@
                                   Value="{Binding InGameSens, UpdateSourceTrigger=LostFocus}"/>
             </Grid>
 
-            <TextBlock Text="Calibration is shared across all gyro, trackpad, flick stick, and camera flick-turn bindings in this profile."
+            <TextBlock Text="Calibration is shared across Gyro Mouse, Trackpad Mouse, Joystick Mouse, Flick Stick, and Flick Turn Binds, in this profile."
                        Style="{StaticResource JsmccMutedText}"
                        TextWrapping="Wrap"
                        Margin="0,8,0,0"/>
