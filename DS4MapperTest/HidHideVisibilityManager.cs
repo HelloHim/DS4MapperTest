@@ -54,40 +54,48 @@ namespace DS4MapperTest
                     return;
                 }
 
-                HashSet<string> desiredHiddenDevices =
-                    ResolveDesiredHiddenDevices(devices ?? Enumerable.Empty<InputDeviceBase>());
-                HashSet<string> currentHiddenDevices = GetHiddenDevices();
-
-                if (desiredHiddenDevices.Count > 0)
+                try
                 {
-                    EnsureAppRegistered();
-                    EnsureCloakEnabled();
-                }
+                    HashSet<string> desiredHiddenDevices =
+                        ResolveDesiredHiddenDevices(devices ?? Enumerable.Empty<InputDeviceBase>());
+                    HashSet<string> currentHiddenDevices = GetHiddenDevices();
 
-                foreach (string deviceInstancePath in desiredHiddenDevices)
-                {
-                    if (currentHiddenDevices.Contains(deviceInstancePath))
+                    if (desiredHiddenDevices.Count > 0)
                     {
-                        continue;
+                        EnsureAppRegistered();
+                        EnsureCloakEnabled();
                     }
 
-                    RunCli($"--dev-hide \"{EscapeCliArg(deviceInstancePath)}\"");
-                    sessionHiddenDevices.Add(deviceInstancePath);
-                    logger.Info($"HidHide hidden device '{deviceInstancePath}'");
-                }
+                    foreach (string deviceInstancePath in desiredHiddenDevices)
+                    {
+                        if (currentHiddenDevices.Contains(deviceInstancePath))
+                        {
+                            continue;
+                        }
 
-                string[] stalePaths = sessionHiddenDevices.Except(desiredHiddenDevices,
-                    StringComparer.OrdinalIgnoreCase).ToArray();
-                foreach (string stalePath in stalePaths)
-                {
-                    RunCli($"--dev-unhide \"{EscapeCliArg(stalePath)}\"");
-                    sessionHiddenDevices.Remove(stalePath);
-                    logger.Info($"HidHide restored device '{stalePath}'");
-                }
+                        RunCli($"--dev-hide \"{EscapeCliArg(deviceInstancePath)}\"");
+                        sessionHiddenDevices.Add(deviceInstancePath);
+                        logger.Info($"HidHide hidden device '{deviceInstancePath}'");
+                    }
 
-                if (desiredHiddenDevices.Count == 0)
+                    string[] stalePaths = sessionHiddenDevices.Except(desiredHiddenDevices,
+                        StringComparer.OrdinalIgnoreCase).ToArray();
+                    foreach (string stalePath in stalePaths)
+                    {
+                        RunCli($"--dev-unhide \"{EscapeCliArg(stalePath)}\"");
+                        sessionHiddenDevices.Remove(stalePath);
+                        logger.Info($"HidHide restored device '{stalePath}'");
+                    }
+
+                    if (desiredHiddenDevices.Count == 0)
+                    {
+                        RestoreSessionOverrides();
+                    }
+                }
+                catch (InvalidOperationException ex)
                 {
-                    RestoreSessionOverrides();
+                    logger.Warn(ex, "HidHide reconcile failed; controller visibility left unchanged. " +
+                        "HidHideCLI usually requires DS4MapperTest to run as Administrator.");
                 }
             }
         }
@@ -104,7 +112,15 @@ namespace DS4MapperTest
                     return;
                 }
 
-                RestoreSessionOverrides();
+                try
+                {
+                    RestoreSessionOverrides();
+                }
+                catch (InvalidOperationException ex)
+                {
+                    logger.Warn(ex, "HidHide session cleanup failed; some devices or the app " +
+                        "registration may remain hidden/registered until HidHideCLI is run elevated.");
+                }
             }
         }
 
