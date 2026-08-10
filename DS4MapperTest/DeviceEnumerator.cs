@@ -233,9 +233,6 @@ namespace DS4MapperTest
                 return !foundDevicePaths.Contains(hidDevice.DevicePath);
             });
 
-            // Attempt to filter out virtual devices
-            newHidDevs = newHidDevs.Where(IsRealDev);
-
             foreach (HidDevice hidDev in newHidDevs)
             {
                 //if (foundDevicePaths.Contains(hidDev.DevicePath))
@@ -243,8 +240,13 @@ namespace DS4MapperTest
                 //    continue;
                 //}
 
+                // Check the cheap VID/PID dictionary lookup before the virtual-device check:
+                // IsRealDev walks the device tree via several SetupDi calls per device, and on
+                // a fresh scan newHidDevs is every HID device on the machine (keyboards, mice,
+                // sensors, etc.), not just controllers. Only pay that cost for devices that
+                // already look like a known controller.
                 if (vidPidMetaDict.TryGetValue($"VID_{hidDev.Attributes.VendorId}&PID_{hidDev.Attributes.ProductId}",
-                    out VidPidMeta value))
+                    out VidPidMeta value) && IsRealDev(hidDev))
                 {
                     if (!hidDev.IsOpen)
                     {
