@@ -55,8 +55,8 @@ namespace DS4MapperTest.StickActions
             public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "OppositeTapStartDelayMaximumMs";
             // Unchanged from the pre-rename "Digital Release Brake" feature: neither the
             // concept nor its serialised name changed, only the feature it belongs to.
-            public const string BRAKE_MIN_HOLD_MS = "BrakeMinimumHoldMs";
-            public const string BRAKE_ARMING_THRESHOLD = "BrakeArmingThreshold";
+            public const string COUNTER_MOVEMENT_MIN_HOLD_MS = "CounterMovementMinimumHoldMs";
+            public const string REQUIRED_STICK_DEFLECTION_THRESHOLD = "RequiredStickDeflectionThreshold";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -93,8 +93,8 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT,
             PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS,
             PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS,
-            PropertyKeyStrings.BRAKE_MIN_HOLD_MS,
-            PropertyKeyStrings.BRAKE_ARMING_THRESHOLD,
+            PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS,
+            PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD,
         };
         public HashSet<string> FullPropertySet => fullPropertySet;
 
@@ -667,10 +667,10 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
                     counterMovementReleasePress.OppositeTapStartDelayMaximumMs = tempAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
                     break;
-                case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
+                case PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS:
                     counterMovementReleasePress.MinimumHoldMs = tempAction.counterMovementReleasePress.MinimumHoldMs;
                     break;
-                case PropertyKeyStrings.BRAKE_ARMING_THRESHOLD:
+                case PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD:
                     counterMovementReleasePress.ArmingThreshold = tempAction.counterMovementReleasePress.ArmingThreshold;
                     break;
                 default:

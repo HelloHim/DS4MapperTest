@@ -291,12 +291,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public bool ForceCenter
         {
-            get => action.ForcedCenter;
+            get => action.ForceCenter;
             set
             {
-                if (action.ForcedCenter == value) return;
+                if (action.ForceCenter == value) return;
 
-                action.ForcedCenter = value;
+                action.ForceCenter = value;
                 ForceCenterChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -519,7 +519,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         public bool HighlightForceCenter
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadStickAction.PropertyKeyStrings.FORCED_CENTER);
+                action.ChangedProperties.Contains(TouchpadStickAction.PropertyKeyStrings.FORCE_CENTER);
         }
         public event EventHandler HighlightForceCenterChanged;
 
@@ -736,12 +736,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         private void TouchpadStickActionPropViewModel_ForceCenterChanged(object sender, EventArgs e)
         {
-            if (!this.action.ChangedProperties.Contains(TouchpadStickAction.PropertyKeyStrings.FORCED_CENTER))
+            if (!this.action.ChangedProperties.Contains(TouchpadStickAction.PropertyKeyStrings.FORCE_CENTER))
             {
-                this.action.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.FORCED_CENTER);
+                this.action.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.FORCE_CENTER);
             }
 
-            action.RaiseNotifyPropertyChange(mapper, TouchpadStickAction.PropertyKeyStrings.FORCED_CENTER);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadStickAction.PropertyKeyStrings.FORCE_CENTER);
             HighlightForceCenterChanged?.Invoke(this, EventArgs.Empty);
         }
 

@@ -70,12 +70,12 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
         public string AntiRelease
         {
-            get => action.AntiRadius.ToString("N2");
+            get => action.AntiRelease.ToString("N2");
             set
             {
                 if (double.TryParse(value, out double temp))
                 {
-                    action.AntiRadius = Math.Clamp(temp, 0.0, 1.0);
+                    action.AntiRelease = Math.Clamp(temp, 0.0, 1.0);
                     AntiReleaseChanged?.Invoke(this, EventArgs.Empty);
                     ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 }
@@ -175,7 +175,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         public bool HighlightAntiRelease
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickAbsMouse.PropertyKeyStrings.ANTI_RADIUS);
+                action.ChangedProperties.Contains(StickAbsMouse.PropertyKeyStrings.ANTI_RELEASE);
         }
         public event EventHandler HighlightAntiReleaseChanged;
 
@@ -266,12 +266,12 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
         private void StickAbsMousePropViewModel_AntiReleaseChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(StickAbsMouse.PropertyKeyStrings.ANTI_RADIUS))
+            if (!action.ChangedProperties.Contains(StickAbsMouse.PropertyKeyStrings.ANTI_RELEASE))
             {
-                action.ChangedProperties.Add(StickAbsMouse.PropertyKeyStrings.ANTI_RADIUS);
+                action.ChangedProperties.Add(StickAbsMouse.PropertyKeyStrings.ANTI_RELEASE);
             }
 
-            action.RaiseNotifyPropertyChange(mapper, StickAbsMouse.PropertyKeyStrings.ANTI_RADIUS);
+            action.RaiseNotifyPropertyChange(mapper, StickAbsMouse.PropertyKeyStrings.ANTI_RELEASE);
 
             HighlightAntiReleaseChanged?.Invoke(this, EventArgs.Empty);
         }

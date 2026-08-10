@@ -38,8 +38,7 @@ namespace DS4MapperUnitTests
       ""red"": 0,
       ""green"": 0,
       ""blue"": 255
-    },
-    ""RainbowSecondsCycle"": 5
+    }
   },
   ""ActionSets"": [
     {
@@ -687,8 +686,7 @@ namespace DS4MapperUnitTests
       ""red"": 0,
       ""green"": 0,
       ""blue"": 255
-    },
-    ""RainbowSecondsCycle"": 5
+    }
   },
   ""ActionSets"": [
     {

@@ -55,7 +55,7 @@ namespace DS4MapperTest.TouchpadActions
             public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "OppositeTapStartDelayMinimumMs";
             public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "OppositeTapStartDelayMaximumMs";
             public const string COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED = "CounterMovementDeadZoneReleaseEnabled";
-            public const string BRAKE_MIN_HOLD_MS = "BrakeMinimumHoldMs";
+            public const string COUNTER_MOVEMENT_MIN_HOLD_MS = "CounterMovementMinimumHoldMs";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -96,7 +96,7 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS,
             PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS,
             PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED,
-            PropertyKeyStrings.BRAKE_MIN_HOLD_MS,
+            PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS,
         };
 
         public enum DPadMode : uint
@@ -1314,7 +1314,7 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED:
                             counterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled = tempPadAction.counterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled;
                             break;
-                        case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
+                        case PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS:
                             counterMovementReleasePress.MinimumHoldMs = tempPadAction.counterMovementReleasePress.MinimumHoldMs;
                             break;
                         default:
@@ -1501,7 +1501,7 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED:
                     counterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled = tempPadAction.counterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled;
                     break;
-                case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
+                case PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS:
                     counterMovementReleasePress.MinimumHoldMs = tempPadAction.counterMovementReleasePress.MinimumHoldMs;
                     break;
                 default:

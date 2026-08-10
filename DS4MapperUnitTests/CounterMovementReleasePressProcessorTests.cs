@@ -135,7 +135,7 @@ namespace DS4MapperUnitTests
         {
             string thresholdLine = brakeArmingThreshold.HasValue
                 ? $@",
-                ""BrakeArmingThreshold"": {brakeArmingThreshold.Value.ToString("0.##", CultureInfo.InvariantCulture)}"
+                ""RequiredStickDeflectionThreshold"": {brakeArmingThreshold.Value.ToString("0.##", CultureInfo.InvariantCulture)}"
                 : string.Empty;
 
             return @"{
@@ -174,7 +174,7 @@ namespace DS4MapperUnitTests
                 ""DiagonalRange"": 45,
                 ""BrakeEnabled"": true,
                 ""BrakeDurationMs"": 40,
-                ""BrakeMinimumHoldMs"": 80__BRAKE_ARMING_THRESHOLD__
+                ""CounterMovementMinimumHoldMs"": 80__REQUIRED_STICK_DEFLECTION_THRESHOLD__
               }
             }
           ]
@@ -192,7 +192,7 @@ namespace DS4MapperUnitTests
     }
   ]
 }"
-                .Replace("__BRAKE_ARMING_THRESHOLD__", thresholdLine)
+                .Replace("__REQUIRED_STICK_DEFLECTION_THRESHOLD__", thresholdLine)
                 .Replace(@"""PadMode"": ""EightWay""", $@"""PadMode"": ""{padMode}""");
         }
 
@@ -273,7 +273,7 @@ namespace DS4MapperUnitTests
 
             StickPadActionPropViewModel vm = new StickPadActionPropViewModel(mapper, padAction);
 
-            Assert.IsTrue(vm.ShowReleaseBrakeSection, $"Release brake controls must be visible in {padMode} mode.");
+            Assert.IsTrue(vm.ShowCounterMovementReleasePressSection, $"Counter Movement Release Press controls must be visible in {padMode} mode.");
         }
 
         [TestMethod]
@@ -865,15 +865,15 @@ namespace DS4MapperUnitTests
             var (_, loadedAction) = LoadMapper(brakeArmingThreshold: 0.25);
             Assert.AreEqual(0.25, loadedAction.CounterMovementReleasePress.ArmingThreshold);
             Assert.IsTrue(loadedAction.ChangedProperties.Contains(
-                StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD));
+                StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD));
 
             StickPadAction actionToSave = new StickPadAction();
             actionToSave.Id = 7;
             actionToSave.CounterMovementReleasePress.ArmingThreshold = 0.35;
-            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD);
             string json = JsonConvert.SerializeObject(new StickPadActionSerializer(null, actionToSave));
             JObject parsed = JObject.Parse(json);
-            Assert.AreEqual(0.35, parsed["Settings"]?["BrakeArmingThreshold"]?.Value<double>());
+            Assert.AreEqual(0.35, parsed["Settings"]?["RequiredStickDeflectionThreshold"]?.Value<double>());
 
             StickPadAction parent = new StickPadAction();
             parent.CounterMovementReleasePress.ArmingThreshold = 0.25;
@@ -882,13 +882,13 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(0.25, child.CounterMovementReleasePress.ArmingThreshold);
 
             parent.CounterMovementReleasePress.ArmingThreshold = 0.45;
-            parent.RaiseNotifyPropertyChange(null, StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            parent.RaiseNotifyPropertyChange(null, StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD);
             Assert.AreEqual(0.45, child.CounterMovementReleasePress.ArmingThreshold);
 
             child.CounterMovementReleasePress.ArmingThreshold = 0.20;
-            child.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            child.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD);
             parent.CounterMovementReleasePress.ArmingThreshold = 0.60;
-            parent.RaiseNotifyPropertyChange(null, StickPadAction.PropertyKeyStrings.BRAKE_ARMING_THRESHOLD);
+            parent.RaiseNotifyPropertyChange(null, StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD);
             Assert.AreEqual(0.20, child.CounterMovementReleasePress.ArmingThreshold);
 
             child.CounterMovementReleasePress.ArmingThreshold = CounterMovementReleasePressProcessor.DEFAULT_ARMING_THRESHOLD;

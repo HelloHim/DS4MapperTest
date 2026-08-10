@@ -116,8 +116,8 @@ namespace DS4MapperUnitTests
                 ""OppositeTapStartDelayMode"": ""MinimumAndMaximum"",
                 ""OppositeTapStartDelayMinimumMs"": {startDelayMin},
                 ""OppositeTapStartDelayMaximumMs"": {startDelayMax},
-                ""BrakeMinimumHoldMs"": {minimumHoldMs},
-                ""BrakeArmingThreshold"": {armingThreshold.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}
+                ""CounterMovementMinimumHoldMs"": {minimumHoldMs},
+                ""RequiredStickDeflectionThreshold"": {armingThreshold.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}
               }}
             }}
           ]
@@ -569,8 +569,8 @@ namespace DS4MapperUnitTests
                 ""DiagonalRange"": 45,
                 ""BrakeEnabled"": {enabled.ToString().ToLowerInvariant()},
                 ""BrakeDurationMs"": {brakeDurationMs},
-                ""BrakeMinimumHoldMs"": {minimumHoldMs},
-                ""BrakeArmingThreshold"": {armingThreshold.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}
+                ""CounterMovementMinimumHoldMs"": {minimumHoldMs},
+                ""RequiredStickDeflectionThreshold"": {armingThreshold.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}
               }}
             }}
           ]
