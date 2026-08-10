@@ -477,13 +477,11 @@ namespace DS4MapperTest
         [OnDeserializing]
         internal void OnDeserializingMethod(StreamingContext context)
         {
-            Trace.WriteLine("IN ProfileSerializer.OnDeserializingMethod");
         }
 
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            Trace.WriteLine("IN ProfileSerializer.OnDeserializedMethod");
         }
     }
 
@@ -583,7 +581,6 @@ namespace DS4MapperTest
         [JsonConstructor]
         public ActionSetSerializer()
         {
-            Console.WriteLine("FUCKERY");
         }
 
         public ActionSetSerializer(Profile tempProfile, ActionSet tempActionSet)
@@ -612,7 +609,6 @@ namespace DS4MapperTest
         [OnDeserializing]
         internal void OnDeserializingMethod(StreamingContext context)
         {
-            Trace.WriteLine("IN ActionSetSerializer.OnDeserializingMethod");
             currentSet = tempActionSet;
             topActionLayer = null;
         }
@@ -620,7 +616,6 @@ namespace DS4MapperTest
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            Trace.WriteLine("IN ActionSetSerializer.OnDeserializedMethod");
             currentSet = null;
             topActionLayer = null;
         }
@@ -683,7 +678,6 @@ namespace DS4MapperTest
         [JsonConstructor]
         public ActionLayerSerializer()
         {
-            Trace.WriteLine("LKJDFLKJDLKJ");
         }
 
         public ActionLayerSerializer(ActionSet tempActionSet, ActionLayer layer)
@@ -727,7 +721,6 @@ namespace DS4MapperTest
         [OnDeserializing]
         internal void OnDeserializingMethod(StreamingContext context)
         {
-            Trace.WriteLine("IN ActionLayerSerializer.OnDeserializingMethod");
             parentActionSet = ActionSetSerializer.CurrentSet;
             currentActionIndex = 0;
         }
@@ -735,7 +728,6 @@ namespace DS4MapperTest
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            Trace.WriteLine("IN ActionLayerSerializer.OnDeserializedMethod");
             parentActionSet = null;
             if (ActionSetSerializer.TopActionLayer == null)
             {

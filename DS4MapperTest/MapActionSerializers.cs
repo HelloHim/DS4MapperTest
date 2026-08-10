@@ -87,14 +87,12 @@ namespace DS4MapperTest
         [OnDeserializing]
         internal void OnDeserializingMethod(StreamingContext context)
         {
-            Trace.WriteLine("IN MapActionSerializer.OnDeserializingMethod");
             ActionLayerSerializer.CurrentActionIndex++;
         }
 
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
-            Trace.WriteLine("IN MapActionSerializer.OnDeserializedMethod");
         }
     }
 
@@ -214,14 +212,12 @@ namespace DS4MapperTest
         [OnDeserializing]
         internal void OnButtonActionDeserializingMethod(StreamingContext context)
         {
-            Trace.WriteLine("IN ButtonActionSerializer.OnDeserializingMethod");
             ActionLayerSerializer.CurrentActionIndex++;
         }
 
         [OnDeserialized]
         internal void OnButtionActionDeserializedMethod(StreamingContext context)
         {
-            Trace.WriteLine("IN ButtonActionSerializer.OnDeserializedMethod");
         }
     }
 
@@ -12404,7 +12400,6 @@ namespace DS4MapperTest
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             JObject j = JObject.Load(reader);
-            Trace.WriteLine("HUP RIDE");
             MapActionSerializer current = existingValue as MapActionSerializer;
 
             string actionOutput = j["ActionMode"]?.ToString();
