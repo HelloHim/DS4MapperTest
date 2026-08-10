@@ -323,7 +323,7 @@
                 <Border Style="{StaticResource JsmccCardBorder}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                            <TextBlock Text="Multiplier Compensation" Style="{StaticResource JsmccCardTitle}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Multiplier Compensation" Style="{StaticResource JsmccLabelText}" FontWeight="Bold" VerticalAlignment="Center"/>
                             <CheckBox Style="{StaticResource JsmccToggleStyle}"
                                       IsChecked="{Binding MultiplierCompensation}"
                                       VerticalAlignment="Center"
