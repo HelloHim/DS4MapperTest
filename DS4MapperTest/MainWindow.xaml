@@ -716,7 +716,7 @@
                                     <TabItem Header="Noise &amp; Steadying">
                                         <views:GyroNoiseSteadyingControl/>
                                     </TabItem>
-                                    <TabItem Header="Gyro Invert">
+                                    <TabItem Header="Invert Gyro Activation">
                                         <views:GyroInvertControl/>
                                     </TabItem>
                                     <TabItem Header="Extra">
