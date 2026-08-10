@@ -1288,7 +1288,23 @@ namespace DS4MapperTest
                 return;
             }
 
+            if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                MessageBox.Show("Profile name contains invalid characters.", "Rename",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             ProfileEntity ent = selectedListEntry.Entity;
+            string newPath = Path.Combine(Path.GetDirectoryName(ent.ProfilePath), newName + ".json");
+            bool pathChanging = !string.Equals(ent.ProfilePath, newPath, StringComparison.OrdinalIgnoreCase);
+
+            if (pathChanging && File.Exists(newPath))
+            {
+                MessageBox.Show("A profile with this name already exists.", "Rename",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             try
             {
@@ -1303,10 +1319,19 @@ namespace DS4MapperTest
                     JObject.Parse(root.ToString()).WriteTo(jwriter);
                 }
 
+                // The displayed name and the file it lives in must always match,
+                // otherwise the profile shown as "Foo" keeps living in a file
+                // still called "Bar.json" on disk. Move the file to match the
+                // new name rather than only updating the JSON content.
+                if (pathChanging)
+                {
+                    File.Move(ent.ProfilePath, newPath);
+                    ent.UpdatePath(newPath);
+                }
+
                 ent.Name = newName;
 
-                if (editorTestVM != null &&
-                    string.Equals(ent.ProfilePath, editorTestVM.ProfileEnt?.ProfilePath, StringComparison.OrdinalIgnoreCase))
+                if (editorTestVM != null && ent == editorTestVM.ProfileEnt)
                 {
                     editorTestVM.SetProfileNameWithoutDirty(newName);
                 }
