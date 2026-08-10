@@ -20,6 +20,7 @@ using Newtonsoft.Json.Linq;
 using HidLibrary;
 using DS4MapperTest.Views;
 using DS4MapperTest.ViewModels;
+using DS4MapperTest.Behaviors;
 using NLog;
 using DS4MapperTest.PhysicalMouse;
 
@@ -530,6 +531,18 @@ namespace DS4MapperTest
 
         private void HandleCurrentDeviceRemoved()
         {
+            if (profilesOverlay.Visibility == Visibility.Visible)
+            {
+                // A profile dialog (e.g. the folder browse picker) may be open
+                // and modal on this thread right now. Close it before tearing
+                // down the overlay so a disconnect mid-workflow can't leave a
+                // dangling picker pointed at a profile folder for a controller
+                // that is no longer connected.
+                Util.CloseOwnedDialogs(new WindowInteropHelper(this).Handle);
+                HideNewProfilePanel();
+                profilesOverlay.Visibility = Visibility.Collapsed;
+            }
+
             InlineBindingEditorService.CloseAny();
             ExitRenameSetMode();
             ExitRenameLayerMode();
@@ -990,6 +1003,20 @@ namespace DS4MapperTest
             selectedProfilePanel.Visibility = Visibility.Collapsed;
         }
 
+        private void ProfileListBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            // The ListBox's own ScrollViewer lives inside its default control
+            // template, so the app-wide implicit ScrollViewer style (which
+            // wires up ScrollViewerBehavior.BubbleWheelToParent) isn't
+            // guaranteed to reach it. Attach it directly so scrolling the
+            // profile list at its top/bottom edge hands off to the outer
+            // manage-profiles scroll viewer instead of just stopping dead.
+            if (ScrollViewerBehavior.FindVisualChild<ScrollViewer>(profileListBox) is ScrollViewer innerScrollViewer)
+            {
+                ScrollViewerBehavior.SetBubbleWheelToParent(innerScrollViewer, true);
+            }
+        }
+
         private void ProfileListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             selectedListEntry = profileListBox.SelectedItem as ProfileListEntry;
@@ -1001,14 +1028,22 @@ namespace DS4MapperTest
 
             profileRenameBox.Text = selectedListEntry.Name;
             selectedProfilePanel.Visibility = Visibility.Visible;
+
+            // Jump the whole manage-profiles panel to the bottom once a
+            // profile is picked, so Load This Profile/Delete are visible
+            // immediately instead of requiring a manual scroll to find them.
+            // Deferred to Loaded priority so layout has already accounted
+            // for selectedProfilePanel becoming visible before we scroll.
+            Dispatcher.BeginInvoke(new Action(() => profilesOverlayScrollViewer.ScrollToBottom()),
+                DispatcherPriority.Loaded);
         }
 
-        private async Task SwitchProfileAsync(DeviceListItem item, int newIndex)
+        private async Task<bool> SwitchProfileAsync(DeviceListItem item, int newIndex)
         {
             if (!await ConfirmDiscardProfileChangesAsync())
             {
                 RefreshProfileCombo();
-                return;
+                return false;
             }
 
             IsEnabled = false;
@@ -1017,6 +1052,7 @@ namespace DS4MapperTest
             LoadProfileForDevice(item);
             suppressCombo = false;
             IsEnabled = true;
+            return true;
         }
 
         private void ManageProfilesBtn_Click(object sender, RoutedEventArgs e)
@@ -1098,29 +1134,14 @@ namespace DS4MapperTest
         {
             if (overlayNewProfileVM == null) return;
 
-            SaveFileDialog fileDialog = new SaveFileDialog
+            OpenFolderDialog folderDialog = new OpenFolderDialog
             {
-                InitialDirectory = overlayNewProfileVM.Mapper.AppGlobal.GetDeviceProfileFolderLocation(overlayNewProfileVM.Mapper.DeviceType),
-                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*"
+                InitialDirectory = overlayNewProfileVM.ProfileFolder
             };
 
-            if (fileDialog.ShowDialog() != true) return;
+            if (folderDialog.ShowDialog() != true) return;
 
-            string tempFile = fileDialog.FileName;
-            string destDir = Path.GetDirectoryName(tempFile);
-            if (!string.Equals(fileDialog.InitialDirectory, destDir, StringComparison.OrdinalIgnoreCase))
-            {
-                overlayNewProfileVM.ProfilePath = tempFile;
-                overlayNewProfileVM.ValidateForm();
-                return;
-            }
-
-            if (!tempFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-            {
-                tempFile += ".json";
-            }
-
-            overlayNewProfileVM.ProfilePath = tempFile;
+            overlayNewProfileVM.ProfileFolder = folderDialog.FolderName;
             overlayNewProfileVM.ClearOldErrors();
         }
 
@@ -1248,7 +1269,11 @@ namespace DS4MapperTest
                 .First();
             if (newIndex < 0) return;
 
-            await SwitchProfileAsync(currentDeviceItem, newIndex);
+            if (await SwitchProfileAsync(currentDeviceItem, newIndex))
+            {
+                HideNewProfilePanel();
+                profilesOverlay.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void RenameProfileBtn_Click(object sender, RoutedEventArgs e)
