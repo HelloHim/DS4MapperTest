@@ -26,9 +26,11 @@ namespace DS4MapperUnitTests
             public List<MouseOutputBackendSubmission> Submissions { get; } =
                 new List<MouseOutputBackendSubmission>();
             public int DisposeCount { get; private set; }
+            public int TrySubmitCallCount { get; private set; }
 
             public bool TrySubmit(MouseOutputBackendSubmission submission)
             {
+                TrySubmitCallCount++;
                 if (ThrowOnSubmit)
                 {
                     throw new InvalidOperationException("backend failure");
@@ -201,6 +203,62 @@ namespace DS4MapperUnitTests
             Assert.IsTrue(sendInput.Submissions[0].HasAbsolute);
             Assert.AreEqual(0.25, sendInput.Submissions[0].AbsoluteX, 1e-9);
             Assert.AreEqual(0.75, sendInput.Submissions[0].AbsoluteY, 1e-9);
+        }
+
+        // Regression coverage for the reported "gyro sensitivity doubles unless every
+        // other virtual mouse is disabled" bug: a VIIPER destination that no route is
+        // configured to use must never be touched at all - not a movement report, not
+        // even a zero-delta heartbeat - so it never exists as a live system mouse device
+        // that an external tool (e.g. a mouse acceleration utility) could pick up.
+        [TestMethod]
+        public void UnreferencedViiperDestinationNeverReceivesAnySubmission()
+        {
+            AppGlobalData appGlobal = CreateAppGlobal(settings =>
+            {
+                settings.GyroMouseDestination = MouseOutputDestination.FakerInputMouse;
+            });
+            IMouseOutputBackend[] backends = CreateBackends(out _, out RecordingBackend fakerInput,
+                out RecordingBackend viiper1, out RecordingBackend viiper2, out RecordingBackend viiper3);
+            MouseOutputDispatcher dispatcher = new MouseOutputDispatcher(appGlobal, backends);
+            MouseOutputProducerId producer = dispatcher.RegisterProducer();
+
+            for (int i = 0; i < 5; i++)
+            {
+                dispatcher.QueueRelative(producer, MouseOutputRoute.Gyro, 10, -3);
+                dispatcher.FlushProducer(producer, flushSharedFakerInput: false);
+            }
+
+            Assert.AreEqual(5, fakerInput.Submissions.Count);
+            Assert.AreEqual(0, viiper1.TrySubmitCallCount);
+            Assert.AreEqual(0, viiper2.TrySubmitCallCount);
+            Assert.AreEqual(0, viiper3.TrySubmitCallCount);
+        }
+
+        [TestMethod]
+        public void ViiperDestinationStopsReceivingSubmissionsOnceRouteMovedAway()
+        {
+            AppGlobalData appGlobal = CreateAppGlobal(settings =>
+            {
+                settings.GyroMouseDestination = MouseOutputDestination.ViiperMouse1;
+            });
+            IMouseOutputBackend[] backends = CreateBackends(out _, out _,
+                out RecordingBackend viiper1, out _, out _);
+            MouseOutputDispatcher dispatcher = new MouseOutputDispatcher(appGlobal, backends);
+            MouseOutputProducerId producer = dispatcher.RegisterProducer();
+
+            dispatcher.QueueRelative(producer, MouseOutputRoute.Gyro, 10, -3);
+            dispatcher.FlushProducer(producer, flushSharedFakerInput: false);
+            Assert.AreEqual(1, viiper1.Submissions.Count);
+            int callCountWhileActive = viiper1.TrySubmitCallCount;
+
+            appGlobal.appSettings.GyroMouseDestination = MouseOutputDestination.FakerInputMouse;
+            for (int i = 0; i < 5; i++)
+            {
+                dispatcher.QueueRelative(producer, MouseOutputRoute.Gyro, 10, -3);
+                dispatcher.FlushProducer(producer, flushSharedFakerInput: false);
+            }
+
+            Assert.AreEqual(callCountWhileActive, viiper1.TrySubmitCallCount);
         }
 
         [TestMethod]
@@ -434,6 +492,12 @@ namespace DS4MapperUnitTests
             FakeViiperMouseApi nativeApi = new FakeViiperMouseApi();
             MouseOutputViiperManager manager = new MouseOutputViiperManager(nativeApi);
             manager.Initialise((nuint)1234);
+            manager.SyncDevices(new[]
+            {
+                MouseOutputDestination.ViiperMouse1,
+                MouseOutputDestination.ViiperMouse2,
+                MouseOutputDestination.ViiperMouse3,
+            });
 
             Dictionary<MouseOutputDestination, MouseOutputBackendIdentity> identities =
                 manager.CreateBackends().ToDictionary(backend => backend.Destination,
@@ -446,6 +510,44 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(3, identities.Values.Select(identity => identity.Handle).Distinct().Count());
             Assert.AreEqual(3, identities.Values.Select(identity => identity.BusId).Distinct().Count());
             Assert.IsTrue(identities.Values.All(identity => !identity.SupportsAbsolute));
+        }
+
+        [TestMethod]
+        public void ViiperManagerInitialiseDoesNotCreateAnyDeviceUntilNeeded()
+        {
+            FakeViiperMouseApi nativeApi = new FakeViiperMouseApi();
+            MouseOutputViiperManager manager = new MouseOutputViiperManager(nativeApi);
+            manager.Initialise((nuint)1234);
+
+            Assert.AreEqual(0, nativeApi.CreatedDevices.Count);
+
+            manager.SyncDevices(new[] { MouseOutputDestination.ViiperMouse2 });
+
+            Assert.AreEqual(1, nativeApi.CreatedDevices.Count);
+            Assert.AreEqual(0x1012, nativeApi.CreatedDevices[0].ProductId);
+            Assert.IsTrue(manager.GetDevice(MouseOutputDestination.ViiperMouse2).IsAvailable);
+            Assert.IsFalse(manager.GetDevice(MouseOutputDestination.ViiperMouse1).IsAvailable);
+            Assert.IsFalse(manager.GetDevice(MouseOutputDestination.ViiperMouse3).IsAvailable);
+        }
+
+        [TestMethod]
+        public void ViiperManagerSyncDevicesTearsDownNoLongerNeededDevice()
+        {
+            FakeViiperMouseApi nativeApi = new FakeViiperMouseApi();
+            MouseOutputViiperManager manager = new MouseOutputViiperManager(nativeApi);
+            manager.Initialise((nuint)1234);
+            manager.SyncDevices(new[] { MouseOutputDestination.ViiperMouse1 });
+            nuint firstHandle = manager.GetDevice(MouseOutputDestination.ViiperMouse1).Handle;
+
+            manager.SyncDevices(Array.Empty<MouseOutputDestination>());
+
+            Assert.IsFalse(manager.GetDevice(MouseOutputDestination.ViiperMouse1).IsAvailable);
+            CollectionAssert.Contains(nativeApi.RemovedHandles, firstHandle);
+
+            manager.SyncDevices(new[] { MouseOutputDestination.ViiperMouse1 });
+
+            Assert.IsTrue(manager.GetDevice(MouseOutputDestination.ViiperMouse1).IsAvailable);
+            Assert.AreNotEqual(firstHandle, manager.GetDevice(MouseOutputDestination.ViiperMouse1).Handle);
         }
 
         [TestMethod]
@@ -475,13 +577,20 @@ namespace DS4MapperUnitTests
             FakeViiperMouseApi nativeApi = new FakeViiperMouseApi();
             MouseOutputViiperManager manager = new MouseOutputViiperManager(nativeApi);
             manager.Initialise((nuint)77);
+            MouseOutputDestination[] allViiper =
+            {
+                MouseOutputDestination.ViiperMouse1,
+                MouseOutputDestination.ViiperMouse2,
+                MouseOutputDestination.ViiperMouse3,
+            };
+            manager.SyncDevices(allViiper);
             MouseOutputViiperMouseDevice device = manager.GetDevice(MouseOutputDestination.ViiperMouse1);
             nativeApi.FailingHandles.Add(device.Handle);
 
             Assert.IsFalse(device.TrySubmitState(0, 1, 0, 0, 0));
             Assert.IsFalse(device.IsAvailable);
 
-            manager.RefreshAvailability();
+            manager.SyncDevices(allViiper);
 
             Assert.IsTrue(device.IsAvailable);
             Assert.AreEqual(4, nativeApi.CreatedDevices.Count);
@@ -512,6 +621,12 @@ namespace DS4MapperUnitTests
             FakeViiperMouseApi nativeApi = new FakeViiperMouseApi();
             MouseOutputViiperManager manager = new MouseOutputViiperManager(nativeApi);
             manager.Initialise((nuint)99);
+            manager.SyncDevices(new[]
+            {
+                MouseOutputDestination.ViiperMouse1,
+                MouseOutputDestination.ViiperMouse2,
+                MouseOutputDestination.ViiperMouse3,
+            });
 
             manager.Dispose();
 
