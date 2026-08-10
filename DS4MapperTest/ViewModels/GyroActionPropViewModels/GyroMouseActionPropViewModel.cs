@@ -971,7 +971,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
         private List<EnumChoiceSelection<GyroInvertAxisChoice>> gyroInvertAxisItems = new()
         {
-            new("X and Y", GyroInvertAxisChoice.XAndY),
+            new("Both", GyroInvertAxisChoice.XAndY),
             new("X Only", GyroInvertAxisChoice.XOnly),
             new("Y Only", GyroInvertAxisChoice.YOnly),
         };
