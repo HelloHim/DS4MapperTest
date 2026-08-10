@@ -304,7 +304,7 @@ namespace DS4MapperTest.Behaviors
             return VisualTreeHelper.GetParent(current);
         }
 
-        private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        internal static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
         {
             if (parent == null)
             {
