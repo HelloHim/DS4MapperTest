@@ -486,6 +486,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 {
                     CalculateRwcFromCounts();
                     SyncCalibToProfile();
+                    UpdatePresetFromCurrentRwc();
                 }
             }
         }
@@ -498,9 +499,11 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 if (!modelReady) return;
                 if (mapper.ActionProfile.CalibRwc == value) return;
                 mapper.ActionProfile.CalibRwc = value;
+                if (IsRwcMode) CalculateCountsFromRwc();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
                 SyncCalibToProfile();
+                UpdatePresetFromCurrentRwc();
             }
         }
 
@@ -512,9 +515,13 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 if (!modelReady) return;
                 if (mapper.ActionProfile.CalibInGameSens == value) return;
                 mapper.ActionProfile.CalibInGameSens = value;
-                if (IsCountsMode) CalculateCountsFromRwc();
+                // Whichever of RWC/Counts is NOT the mode's master is derived and must be
+                // recomputed here; the master itself never moves just because sensitivity did.
+                if (IsCountsMode) CalculateRwcFromCounts();
+                else CalculateCountsFromRwc();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                 SyncCalibToProfile();
+                UpdatePresetFromCurrentRwc();
             }
         }
 
@@ -531,11 +538,20 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 selectedPreset = next;
                 mapper.ActionProfile.CalibPresetName = next.Name;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
-                if (next.IsCustom || FullTurnCounts <= 0.0) return;
+                if (next.IsCustom) return;
                 applyingPreset = true;
-                mapper.ActionProfile.CalibInGameSens = next.RWC * 360.0 / FullTurnCounts;
-                mapper.ActionProfile.CalibRwc = next.RWC;
-                SyncCalibToProfile();
+                if (IsCountsMode)
+                {
+                    // Counts is this mode's fixed master: keep it as-is and let sensitivity
+                    // move to whatever value reproduces the preset's RWC at that Counts.
+                    if (FullTurnCounts > 0.0) InGameSens = next.RWC * 360.0 / FullTurnCounts;
+                }
+                else
+                {
+                    // RWC is this mode's fixed master: move it directly to the preset's value
+                    // and leave sensitivity exactly as the user had it.
+                    RealWorldCalibration = next.RWC;
+                }
                 applyingPreset = false;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
@@ -712,6 +728,19 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             fullTurnCounts = counts;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+        }
+
+        // Whenever RWC's authoritative value settles (direct edit, derived from Counts, or
+        // derived from a sensitivity change), check whether it now matches a known game
+        // preset within tolerance and reflect that in the preset dropdown; falls back to
+        // Custom when it doesn't. Skipped while a preset is actively being applied, since
+        // that flow already knows exactly which preset it is setting.
+        private void UpdatePresetFromCurrentRwc()
+        {
+            if (applyingPreset) return;
+            string matchedName = (GameCalibPreset.MatchByRwc(mapper.ActionProfile.CalibRwc) ??
+                GameCalibPreset.Custom).Name;
+            mapper.ActionProfile.CalibPresetName = matchedName;
         }
 
         private void SyncCalibToProfile()
