@@ -839,6 +839,10 @@ namespace DS4MapperUnitTests
         public void InvalidDtDuringPulse_StillExpiresByWallClock()
         {
             var (mapper, padAction) = LoadMapper();
+            // LoadMapper's fixture carries a legacy BrakeDurationMs field, which migrates the
+            // action to Fixed mode; Minimum/Maximum are only consulted outside Fixed mode, so
+            // the mode must be switched explicitly for the 10ms window below to take effect.
+            padAction.CounterMovementReleasePress.OppositeTapLengthMode = OppositeTapLengthMode.MinimumAndMaximum;
             padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs = 10;
             padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs = 10;
 

@@ -26,16 +26,19 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void SteamControllerPlayStationDefaults_DoNotBindTouchpadInputs()
+        public void SteamControllerPlayStationDefaults_DoNotBindTouchpadAnalogInputs()
         {
+            // LeftPadClick/RightPadClick are intentionally bound (to the virtual PS Touchpad
+            // Click action, see the "bind default touch clicks" feature); only the analog
+            // touch inputs are expected to stay unbound.
             AssertProfileOmitsInputs(
                 Path.Combine(RepoRoot, "template_profiles", "SteamController",
                     "Default - DS4.json"),
-                "LeftTouchpad", "RightTouchpad", "LeftPadClick", "RightPadClick");
+                "LeftTouchpad", "RightTouchpad");
             AssertProfileOmitsInputs(
                 Path.Combine(RepoRoot, "template_profiles", "SteamController",
                     "Default - DualSense Edge.json"),
-                "LeftTouchpad", "RightTouchpad", "LeftPadClick", "RightPadClick");
+                "LeftTouchpad", "RightTouchpad");
         }
 
         [TestMethod]

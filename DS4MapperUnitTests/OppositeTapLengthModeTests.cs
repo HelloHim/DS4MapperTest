@@ -101,7 +101,7 @@ namespace DS4MapperUnitTests
         // --- Wait Variance Percentage mode ---------------------------------------------
 
         [TestMethod]
-        [DataRow(84, 7, 78, 90)]
+        [DataRow(84, 7, 78, 89)]
         [DataRow(100, 0, 100, 100)]
         [DataRow(100, 10, 90, 110)]
         public void ComputePercentageRange_MatchesExpectedFloorBoundaries(int fixedMs, int percent, int expectedMin, int expectedMax)
@@ -138,7 +138,7 @@ namespace DS4MapperUnitTests
 
             var (minimum, maximum) = processor.GetEffectiveOppositeTapLengthRange();
             Assert.AreEqual(78, minimum);
-            Assert.AreEqual(90, maximum);
+            Assert.AreEqual(89, maximum);
         }
 
         [TestMethod]
@@ -342,7 +342,7 @@ namespace DS4MapperUnitTests
             processor.OppositeTapLengthMode = OppositeTapLengthMode.MinimumAndMaximum;
 
             Assert.AreEqual(78, processor.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(90, processor.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(89, processor.OppositeTapLengthMaximumMs);
         }
     }
 }
