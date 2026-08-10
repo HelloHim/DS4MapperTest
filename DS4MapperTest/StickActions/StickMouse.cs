@@ -453,20 +453,32 @@ namespace DS4MapperTest.StickActions
                     slotOn[i] = false;
                 }
 
-                if (outYNorm > double.Epsilon)
+                // Direction binds fire off the raw, dead zone-adjusted stick position (with
+                // diagonal range applied the same way it shapes the D-Pad-style modes), not
+                // off outXNorm/outYNorm: those have already been through the output curve,
+                // delta acceleration and mouse-speed scaling, so a stick held steady past the
+                // dead zone can settle back toward zero output there even though the stick
+                // itself never returned to centre. double.Epsilon (~5E-324) is also not a
+                // meaningful "outside the dead zone" tolerance; xNorm/yNorm are already exact
+                // zero within the dead zone (StickDeadZone.CalcOutValues), so any genuinely
+                // non-zero result here already means past it.
+                double dirXNorm = xNorm, dirYNorm = yNorm;
+                ApplyDiagonalRange(ref dirXNorm, ref dirYNorm);
+
+                if (dirYNorm > 0.0)
                 {
                     slotOn[(int)DirSlot.Up] = true;
                 }
-                else if (outYNorm < -double.Epsilon)
+                else if (dirYNorm < 0.0)
                 {
                     slotOn[(int)DirSlot.Down] = true;
                 }
 
-                if (outXNorm > double.Epsilon)
+                if (dirXNorm > 0.0)
                 {
                     slotOn[(int)DirSlot.Right] = true;
                 }
-                else if (outXNorm < -double.Epsilon)
+                else if (dirXNorm < 0.0)
                 {
                     slotOn[(int)DirSlot.Left] = true;
                 }
