@@ -1,4 +1,6 @@
 using DS4MapperTest;
+using DS4MapperTest.ButtonActions;
+using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
 using Newtonsoft.Json;
 
@@ -146,6 +148,87 @@ namespace DS4MapperUnitTests
             Mapper.RouteMouseStateSnapshot snapshot = GetJoystickRouteState(mapper);
             Assert.IsTrue(snapshot.X > 0.0);
             Assert.IsTrue(snapshot.Y < 0.0);
+        }
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            TestMapper.KeyReferenceCountDict.Clear();
+        }
+
+        private static AxisDirButton MakeKeyBind(VirtualKeys key) =>
+            new AxisDirButton(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)key, (int)key));
+
+        [TestMethod]
+        public void DirectionBind_OnlyFiresPastDeadZone()
+        {
+            TestMapper mapper = new TestMapper();
+            StickMouse action = new StickMouse(mapper.KnownStickDefinitions["Stick"]);
+            action.DeadMod.DeadZone = 0.5;
+            action.DiagonalRange = 90;
+            action.DirButtons[(int)StickMouse.DirSlot.Up] = MakeKeyBind(VirtualKeys.W);
+            action.DirButtons[(int)StickMouse.DirSlot.Down] = MakeKeyBind(VirtualKeys.S);
+
+            // Small deflection, inside the 50% dead zone: neither bind should fire.
+            action.Prepare(mapper, 0, 5000);
+            action.Event(mapper);
+            mapper.SyncKeyboard();
+            Assert.IsFalse(TestMapper.KeyReferenceCountDict.ContainsKey((uint)VirtualKeys.W),
+                "A deflection inside the dead zone must not fire a direction bind.");
+            Assert.IsFalse(TestMapper.KeyReferenceCountDict.ContainsKey((uint)VirtualKeys.S));
+
+            // Full deflection, well past the dead zone: exactly one of Up/Down must fire.
+            action.Prepare(mapper, 0, 30000);
+            action.Event(mapper);
+            mapper.SyncKeyboard();
+            bool wDown = TestMapper.KeyReferenceCountDict.ContainsKey((uint)VirtualKeys.W);
+            bool sDown = TestMapper.KeyReferenceCountDict.ContainsKey((uint)VirtualKeys.S);
+            Assert.IsTrue(wDown ^ sDown, "Exactly one of Up/Down should fire once past the dead zone.");
+        }
+
+        [TestMethod]
+        public void DirectionBind_HeldPastDeadZoneStaysActiveWithoutFurtherTravel()
+        {
+            // Delta-based mouse acceleration settles output back toward zero for a stick
+            // held at a fixed position; the direction bind must not follow it back off.
+            TestMapper mapper = new TestMapper();
+            StickMouse action = new StickMouse(mapper.KnownStickDefinitions["Stick"]);
+            action.DeadMod.DeadZone = 0.1;
+            action.DirButtons[(int)StickMouse.DirSlot.Right] = MakeKeyBind(VirtualKeys.D);
+
+            for (int i = 0; i < 10; i++)
+            {
+                mapper.SetCurrentLatencyForTest(0.008);
+                action.Prepare(mapper, 30000, 0);
+                action.Event(mapper);
+                mapper.SyncKeyboard();
+            }
+
+            Assert.IsTrue(TestMapper.KeyReferenceCountDict.ContainsKey((uint)VirtualKeys.D),
+                "A stick held steady past the dead zone must keep the direction bind active.");
+        }
+
+        [TestMethod]
+        public void DirectionBind_RespectsDiagonalRange()
+        {
+            TestMapper mapper = new TestMapper();
+            StickMouse action = new StickMouse(mapper.KnownStickDefinitions["Stick"]);
+            action.DeadMod.DeadZone = 0.0;
+            action.DiagonalRange = 0;
+            action.DirButtons[(int)StickMouse.DirSlot.Right] = MakeKeyBind(VirtualKeys.D);
+            action.DirButtons[(int)StickMouse.DirSlot.Up] = MakeKeyBind(VirtualKeys.W);
+            action.DirButtons[(int)StickMouse.DirSlot.Down] = MakeKeyBind(VirtualKeys.S);
+
+            // Same axis values as ZeroDiagonalRangeSuppressesMinorAxisOutput, which already
+            // proves this suppresses the Y-axis mouse output; the direction bind must follow
+            // the same dead-zone-adjusted, diagonal range-shaped signal.
+            action.Prepare(mapper, 30000, 15000);
+            action.Event(mapper);
+            mapper.SyncKeyboard();
+
+            Assert.IsTrue(TestMapper.KeyReferenceCountDict.ContainsKey((uint)VirtualKeys.D));
+            Assert.IsFalse(TestMapper.KeyReferenceCountDict.ContainsKey((uint)VirtualKeys.W));
+            Assert.IsFalse(TestMapper.KeyReferenceCountDict.ContainsKey((uint)VirtualKeys.S));
         }
 
         [TestMethod]
