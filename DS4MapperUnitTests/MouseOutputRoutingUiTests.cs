@@ -449,6 +449,56 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void UncreatedViiperMouseShowsAsAvailableWhenDriverIsPresent()
+        {
+            MouseOutputRoutingTable configuredRouting = CreateConfiguredRouting();
+            FakeRoutingService service = new FakeRoutingService(CreateSnapshot(
+                configuredRouting,
+                new MouseOutputRoutingAvailabilitySnapshot(
+                    sendInputAvailable: true,
+                    fakerInputMouseAvailable: true,
+                    viiperMouse1Available: true,
+                    viiperMouse2Available: false,
+                    viiperMouse3Available: false,
+                    viiperDriverAvailable: true)));
+            using MouseRoutingPanelViewModel viewModel = new MouseRoutingPanelViewModel(service);
+
+            MouseRoutingRouteRowViewModel row =
+                viewModel.RouteRows.Single(item => item.Route == MouseOutputRoute.Gyro);
+
+            MouseRoutingDestinationOptionViewModel uncreatedMouse = row.DestinationOptions.Single(
+                item => item.Destination == MouseOutputDestination.ViiperMouse2);
+            Assert.IsTrue(uncreatedMouse.Available);
+            Assert.AreEqual("Available", uncreatedMouse.AvailabilityText);
+            Assert.AreEqual("VIIPER Mouse 2", uncreatedMouse.DisplayName);
+        }
+
+        [TestMethod]
+        public void ViiperMouseShowsAsUnavailableWhenDriverIsMissing()
+        {
+            MouseOutputRoutingTable configuredRouting = CreateConfiguredRouting();
+            FakeRoutingService service = new FakeRoutingService(CreateSnapshot(
+                configuredRouting,
+                new MouseOutputRoutingAvailabilitySnapshot(
+                    sendInputAvailable: true,
+                    fakerInputMouseAvailable: true,
+                    viiperMouse1Available: false,
+                    viiperMouse2Available: false,
+                    viiperMouse3Available: false,
+                    viiperDriverAvailable: false)));
+            using MouseRoutingPanelViewModel viewModel = new MouseRoutingPanelViewModel(service);
+
+            MouseRoutingRouteRowViewModel row =
+                viewModel.RouteRows.Single(item => item.Route == MouseOutputRoute.Gyro);
+
+            MouseRoutingDestinationOptionViewModel unavailableMouse = row.DestinationOptions.Single(
+                item => item.Destination == MouseOutputDestination.ViiperMouse2);
+            Assert.IsFalse(unavailableMouse.Available);
+            Assert.AreEqual("Unavailable", unavailableMouse.AvailabilityText);
+            Assert.AreEqual("VIIPER Mouse 2 (unavailable)", unavailableMouse.DisplayName);
+        }
+
+        [TestMethod]
         public void DisposingPanelViewModelUnsubscribesFromRoutingService()
         {
             FakeRoutingService service = new FakeRoutingService(CreateSnapshot());

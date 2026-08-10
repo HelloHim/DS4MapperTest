@@ -530,6 +530,15 @@ namespace DS4MapperTest
         private readonly Dictionary<MouseOutputDestination, MouseOutputViiperMouseDevice> devices;
         private nuint serverHandle;
 
+        /// <summary>
+        /// Whether the VIIPER server connection needed to create mouse
+        /// devices is present, independent of whether any individual
+        /// device has actually been created yet. A route can still be
+        /// pointed at a VIIPER mouse whenever this is true; the device
+        /// itself is only created lazily once that route is applied.
+        /// </summary>
+        public bool IsServerAvailable => serverHandle != 0;
+
         public MouseOutputViiperManager()
             : this(new LibViiperMouseApi())
         {
@@ -1005,6 +1014,7 @@ namespace DS4MapperTest
                 viiperMouse1Available: IsDestinationAvailable(MouseOutputDestination.ViiperMouse1),
                 viiperMouse2Available: IsDestinationAvailable(MouseOutputDestination.ViiperMouse2),
                 viiperMouse3Available: IsDestinationAvailable(MouseOutputDestination.ViiperMouse3),
+                viiperDriverAvailable: viiperManager?.IsServerAvailable ?? false,
                 viiperAbsoluteMouseSupported: false);
         }
 

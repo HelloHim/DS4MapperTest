@@ -169,7 +169,7 @@ namespace DS4MapperTest.ViewModels
 
             foreach (MouseRoutingDestinationOptionViewModel option in DestinationOptions)
             {
-                option.Available = availability.IsDestinationAvailable(option.Destination);
+                option.Available = availability.IsDestinationUsable(option.Destination);
             }
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StatusText)));

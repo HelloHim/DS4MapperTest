@@ -97,6 +97,7 @@ namespace DS4MapperTest
             bool viiperMouse1Available = false,
             bool viiperMouse2Available = false,
             bool viiperMouse3Available = false,
+            bool viiperDriverAvailable = false,
             bool viiperAbsoluteMouseSupported = false)
         {
             SendInputAvailable = sendInputAvailable;
@@ -104,6 +105,7 @@ namespace DS4MapperTest
             ViiperMouse1Available = viiperMouse1Available;
             ViiperMouse2Available = viiperMouse2Available;
             ViiperMouse3Available = viiperMouse3Available;
+            ViiperDriverAvailable = viiperDriverAvailable;
             ViiperAbsoluteMouseSupported = viiperAbsoluteMouseSupported;
         }
 
@@ -112,6 +114,7 @@ namespace DS4MapperTest
         public bool ViiperMouse1Available { get; }
         public bool ViiperMouse2Available { get; }
         public bool ViiperMouse3Available { get; }
+        public bool ViiperDriverAvailable { get; }
         public bool ViiperAbsoluteMouseSupported { get; }
 
         public bool IsDestinationAvailable(MouseOutputDestination destination)
@@ -123,6 +126,30 @@ namespace DS4MapperTest
                 MouseOutputDestination.ViiperMouse1 => ViiperMouse1Available,
                 MouseOutputDestination.ViiperMouse2 => ViiperMouse2Available,
                 MouseOutputDestination.ViiperMouse3 => ViiperMouse3Available,
+                _ => false,
+            };
+        }
+
+        /// <summary>
+        /// Whether a destination can be selected and used, as distinct from
+        /// <see cref="IsDestinationAvailable"/>. A VIIPER mouse is usable as
+        /// soon as its driver dependency is present, even before it has
+        /// actually been created - creation only happens once a route is
+        /// applied to it. Non-VIIPER destinations have no such lazy
+        /// creation step, so usability matches availability for them.
+        /// </summary>
+        public bool IsDestinationUsable(MouseOutputDestination destination)
+        {
+            if (IsDestinationAvailable(destination))
+            {
+                return true;
+            }
+
+            return destination switch
+            {
+                MouseOutputDestination.ViiperMouse1 => ViiperDriverAvailable,
+                MouseOutputDestination.ViiperMouse2 => ViiperDriverAvailable,
+                MouseOutputDestination.ViiperMouse3 => ViiperDriverAvailable,
                 _ => false,
             };
         }
