@@ -223,10 +223,13 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 if (!_modelReady) return;
                 if (action.mouseParams.realWorldCalibration == value) return;
                 action.mouseParams.realWorldCalibration = value;
+                if (IsRwcMode) CalculateCountsFromRwc();
                 RealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                SyncCalibFromGyroMouseToProfile();
+                UpdatePresetFromCurrentRwc();
             }
         }
         public event EventHandler RealWorldCalibrationChanged;
@@ -244,10 +247,15 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 if (!_modelReady) return;
                 if (action.mouseParams.inGameSens == value) return;
                 action.mouseParams.inGameSens = value;
-                if (IsCountsMode) CalculateCountsFromRwc();
+                // Whichever of RWC/Counts is NOT the mode's master is derived and must be
+                // recomputed here; the master itself never moves just because sensitivity did.
+                if (IsCountsMode) CalculateRwcFromCounts();
+                else CalculateCountsFromRwc();
                 InGameSensChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                SyncCalibFromGyroMouseToProfile();
+                UpdatePresetFromCurrentRwc();
             }
         }
         public event EventHandler InGameSensChanged;
@@ -1399,8 +1407,18 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
                 if (next.IsCustom) return;
                 _applyingPreset = true;
-                InGameSens = next.RWC * 360.0 / FullTurnCounts;
-                RealWorldCalibration = next.RWC;
+                if (IsCountsMode)
+                {
+                    // Counts is this mode's fixed master: keep it as-is and let sensitivity
+                    // move to whatever value reproduces the preset's RWC at that Counts.
+                    if (FullTurnCounts > 0.0) InGameSens = next.RWC * 360.0 / FullTurnCounts;
+                }
+                else
+                {
+                    // RWC is this mode's fixed master: move it directly to the preset's value
+                    // and leave sensitivity exactly as the user had it.
+                    RealWorldCalibration = next.RWC;
+                }
                 _applyingPreset = false;
             }
         }
@@ -1472,6 +1490,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 if (!IsCountsMode) return;
                 CalculateRwcFromCounts();
                 SyncCalibFromGyroMouseToProfile();
+                UpdatePresetFromCurrentRwc();
             }
         }
         //public event EventHandler FullTurnCountsChanged;
@@ -1955,6 +1974,19 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                             }
                         }
             });
+        }
+
+        // Whenever RWC's authoritative value settles (direct edit, derived from Counts, or
+        // derived from a sensitivity change), check whether it now matches a known game
+        // preset within tolerance and reflect that in the preset dropdown; falls back to
+        // Custom when it doesn't. Skipped while a preset is actively being applied, since
+        // that flow already knows exactly which preset it is setting.
+        private void UpdatePresetFromCurrentRwc()
+        {
+            if (_applyingPreset) return;
+            string matchedName = (GameCalibPreset.MatchByRwc(mapper.ActionProfile.CalibRwc) ??
+                GameCalibPreset.Custom).Name;
+            mapper.ActionProfile.CalibPresetName = matchedName;
         }
 
         private void RaiseCalibModePropertyChanges()

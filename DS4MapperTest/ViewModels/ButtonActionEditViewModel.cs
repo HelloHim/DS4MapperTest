@@ -361,9 +361,20 @@ namespace DS4MapperTest.ViewModels
             {
                 if (cameraTurnCounts360 == value) return;
                 cameraTurnCounts360 = value;
+                // Counts is only ever the fixed master while in Counts mode; RWC is what's
+                // derived from it. In RWC mode this setter only runs as the result of RWC
+                // itself changing (see CalculateCameraTurnCountsFromRwc), so recomputing RWC
+                // back from the very Counts value that was just derived from it would be a
+                // no-op at best and fights the mode's actual master otherwise.
+                if (IsCountsMode) CalculateCameraTurnRwcFromCounts();
                 CameraTurnCounts360Changed?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnCounts360)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                if (IsCountsMode)
+                {
+                    SyncCalibFromCameraTurnToProfile();
+                    UpdateCameraTurnPresetFromCurrentRwc();
+                }
             }
         }
         public event EventHandler CameraTurnCounts360Changed;
@@ -376,9 +387,17 @@ namespace DS4MapperTest.ViewModels
             {
                 if (cameraTurnRWC == value) return;
                 cameraTurnRWC = value;
+                // RWC is only ever the fixed master while in RWC mode; Counts is what's
+                // derived from it. See the matching note in CameraTurnCounts360.
+                if (IsRwcMode) CalculateCameraTurnCountsFromRwc();
                 CameraTurnRWCChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnRWC)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                if (IsRwcMode)
+                {
+                    SyncCalibFromCameraTurnToProfile();
+                    UpdateCameraTurnPresetFromCurrentRwc();
+                }
             }
         }
         public event EventHandler CameraTurnRWCChanged;
@@ -401,9 +420,18 @@ namespace DS4MapperTest.ViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
                 if (next.IsCustom || !_cameraTurnReady) return;
                 _applyingCameraTurnPreset = true;
-                double preservedCounts = CameraTurnCounts360;
-                CameraTurnInGameSens = next.RWC * 360.0 / preservedCounts;
-                CameraTurnRWC = next.RWC;
+                if (IsCountsMode)
+                {
+                    // Counts is this mode's fixed master: keep it as-is and let sensitivity
+                    // move to whatever value reproduces the preset's RWC at that Counts.
+                    if (CameraTurnCounts360 > 0.0) CameraTurnInGameSens = next.RWC * 360.0 / CameraTurnCounts360;
+                }
+                else
+                {
+                    // RWC is this mode's fixed master: move it directly to the preset's value
+                    // and leave sensitivity exactly as the user had it.
+                    CameraTurnRWC = next.RWC;
+                }
                 _applyingCameraTurnPreset = false;
             }
         }
@@ -454,21 +482,15 @@ namespace DS4MapperTest.ViewModels
                 if (!_cameraTurnReady) return;
                 if (cameraTurnInGameSens == value) return;
                 cameraTurnInGameSens = value;
-                if (IsCountsMode)
-                {
-                    double counts = cameraTurnInGameSens > 0.0
-                        ? cameraTurnRWC * 360.0 / cameraTurnInGameSens
-                        : 0.0;
-                    if (cameraTurnCounts360 != counts)
-                    {
-                        cameraTurnCounts360 = counts;
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnCounts360)));
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-                    }
-                }
+                // Whichever of RWC/Counts is NOT the mode's master is derived and must be
+                // recomputed here; the master itself never moves just because sensitivity did.
+                if (IsCountsMode) CalculateCameraTurnRwcFromCounts();
+                else CalculateCameraTurnCountsFromRwc();
                 CameraTurnInGameSensChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnInGameSens)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                SyncCalibFromCameraTurnToProfile();
+                UpdateCameraTurnPresetFromCurrentRwc();
             }
         }
         public event EventHandler CameraTurnInGameSensChanged;
@@ -1796,6 +1818,48 @@ namespace DS4MapperTest.ViewModels
             CameraTurnCalculatedRWC = cameraTurnCounts360 > 0.0
                 ? cameraTurnInGameSens / (360.0 / cameraTurnCounts360)
                 : 0.0;
+        }
+
+        // These two mirror CalculateRwcFromCounts/CalculateCountsFromRwc in the gyro mouse,
+        // stick mouse, trackpad mouse and flick stick ViewModels: whichever of RWC/Counts is
+        // not the current mode's master gets recomputed here, via the backing field directly
+        // rather than the public setter, so this never re-enters CameraTurnRWCChanged/
+        // CameraTurnCounts360Changed for a value that is only a side effect of another change.
+        private void CalculateCameraTurnRwcFromCounts()
+        {
+            double rwc = cameraTurnCounts360 * cameraTurnInGameSens / 360.0;
+            if (cameraTurnRWC == rwc) return;
+            cameraTurnRWC = rwc;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnRWC)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+        }
+
+        private void CalculateCameraTurnCountsFromRwc()
+        {
+            double counts = cameraTurnInGameSens > 0.0
+                ? cameraTurnRWC * 360.0 / cameraTurnInGameSens
+                : 0.0;
+            if (cameraTurnCounts360 == counts) return;
+            cameraTurnCounts360 = counts;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnCounts360)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+            // The currently-selected output slot's live cameraTurnCounts360 needs the same
+            // release-before-update handling this gets when the user edits Counts directly,
+            // regardless of which field's edit is what derived this new Counts value.
+            CameraTurnCounts360Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        // Whenever RWC's authoritative value settles (direct edit, derived from Counts, or
+        // derived from a sensitivity change), check whether it now matches a known game
+        // preset within tolerance and reflect that in the preset dropdown; falls back to
+        // Custom when it doesn't. Skipped while a preset is actively being applied, since
+        // that flow already knows exactly which preset it is setting.
+        private void UpdateCameraTurnPresetFromCurrentRwc()
+        {
+            if (_applyingCameraTurnPreset) return;
+            string matchedName = (GameCalibPreset.MatchByRwc(mapper.ActionProfile.CalibRwc) ??
+                GameCalibPreset.Custom).Name;
+            mapper.ActionProfile.CalibPresetName = matchedName;
         }
 
         private void SyncCalibFromCameraTurnToProfile()
