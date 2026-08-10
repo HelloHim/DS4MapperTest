@@ -267,16 +267,26 @@ namespace DS4MapperTest.TouchpadActions
             if (touchActive)
             {
                 uint rawMask = ToMask(rawCurrentDir);
+                bool freshTouch = !controllingTouchActive;
                 TransferPulseToRealInput(rawMask);
 
-                uint releasedComponents = controllingTouchActive ? activeComponents & ~rawMask : 0;
-                if (rawMask == 0 && !triggerOnDeadZoneReleaseEnabled)
+                // A pulse only ever starts from an actual lift (below); the finger sliding
+                // between zones, or passing through the dead zone, while still touching must
+                // never be treated as a release. If a genuinely new touch begins (rather than
+                // the finger merely moving within one continuous touch) and a pulse from a
+                // prior lift is still outstanding and does not match this touch's own
+                // direction (TransferPulseToRealInput above already absorbed the matching
+                // case), that stale pulse is abandoned rather than left to linger into
+                // unrelated new input.
+                if (freshTouch && (pulseOwnedComponents != 0 || pendingOppositeComponents != 0))
                 {
-                    releasedComponents = 0;
+                    explicitReleaseComponents |= pulseOwnedComponents;
+                    pulseOwnedComponents = 0;
+                    pendingOppositeComponents = 0;
+                    releasePressStartTimestamp = 0;
                 }
 
                 controllingTouchActive = true;
-                TryStartPulse(releasedComponents);
                 AccumulateHold(rawMask, dt);
                 activeComponents = rawMask;
                 Advance(dt);
