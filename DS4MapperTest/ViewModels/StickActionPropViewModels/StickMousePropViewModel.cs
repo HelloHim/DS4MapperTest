@@ -194,6 +194,148 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler DiagonalRangeChanged;
 
+        public bool MultiplierCompensation
+        {
+            get => action.MultiplierCompensation;
+            set
+            {
+                if (action.MultiplierCompensation == value) return;
+                action.MultiplierCompensation = value;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(MultiplierCompensation)));
+                MultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler MultiplierCompensationChanged;
+
+        public double AccelerationMultiplier
+        {
+            get => action.AccelerationMultiplier;
+            set
+            {
+                double accelerationMultiplier = Math.Clamp(value, 0.01, 100.0);
+                if (action.AccelerationMultiplier == accelerationMultiplier) return;
+                double verticalAccelerationScale = VerticalAccelerationScale;
+                action.AccelerationMultiplier = accelerationMultiplier;
+                if (VerticalAccelerationIsScaleMode)
+                {
+                    action.VerticalAccelerationMultiplier = Math.Clamp(
+                        accelerationMultiplier * verticalAccelerationScale, 0.01, 100.0);
+                    VerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                    PropertyChanged?.Invoke(this,
+                        new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
+                    PropertyChanged?.Invoke(this,
+                        new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                }
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(AccelerationMultiplier)));
+                AccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
+            }
+        }
+        public event EventHandler AccelerationMultiplierChanged;
+
+        public bool VerticalAccelerationIsScaleMode
+        {
+            get => action.VerticalAccelerationScaleMode;
+            set
+            {
+                if (!value || action.VerticalAccelerationScaleMode) return;
+                action.VerticalAccelerationScaleMode = value;
+                VerticalAccelerationScaleModeChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationIsScaleMode)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationIsAbsoluteMode)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
+            }
+        }
+
+        public bool VerticalAccelerationIsAbsoluteMode
+        {
+            get => !action.VerticalAccelerationScaleMode;
+            set
+            {
+                if (!value || !action.VerticalAccelerationScaleMode) return;
+                action.VerticalAccelerationScaleMode = !value;
+                VerticalAccelerationScaleModeChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationIsScaleMode)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationIsAbsoluteMode)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
+            }
+        }
+        public event EventHandler VerticalAccelerationScaleModeChanged;
+
+        public double VerticalAccelerationMultiplier
+        {
+            get => action.VerticalAccelerationMultiplier;
+            set
+            {
+                double verticalAccelerationMultiplier = Math.Clamp(value, 0.01, 100.0);
+                if (action.VerticalAccelerationMultiplier == verticalAccelerationMultiplier) return;
+                action.VerticalAccelerationMultiplier = verticalAccelerationMultiplier;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
+                VerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler VerticalAccelerationMultiplierChanged;
+
+        public double VerticalAccelerationScale
+        {
+            get
+            {
+                double horizontalMultiplier = action.AccelerationMultiplier;
+                if (Math.Abs(horizontalMultiplier) < 1e-10)
+                {
+                    return action.VerticalAccelerationMultiplier;
+                }
+
+                return Math.Round(action.VerticalAccelerationMultiplier /
+                    horizontalMultiplier, 4);
+            }
+            set
+            {
+                double horizontalMultiplier = action.AccelerationMultiplier;
+                double verticalMultiplier = Math.Abs(horizontalMultiplier) < 1e-10 ?
+                    value : horizontalMultiplier * value;
+                verticalMultiplier = Math.Clamp(verticalMultiplier, 0.01, 100.0);
+                if (action.VerticalAccelerationMultiplier == verticalMultiplier) return;
+                action.VerticalAccelerationMultiplier = verticalMultiplier;
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
+                PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
+                VerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public double VerticalAccelerationEffectiveMultiplier
+        {
+            get => Math.Round(Math.Clamp(action.VerticalAccelerationMultiplier, 0.01, 100.0), 4);
+        }
+
         private readonly List<EnumChoiceSelection<StickOutCurve.Curve>> outputCurveChoiceItems =
             new List<EnumChoiceSelection<StickOutCurve.Curve>>()
             {
@@ -431,6 +573,22 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.DELTA_SETTINGS);
         public event EventHandler HighlightDeltaChanged;
 
+        public bool HighlightMultiplierCompensation => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+        public event EventHandler HighlightMultiplierCompensationChanged;
+
+        public bool HighlightAccelerationMultiplier => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+        public event EventHandler HighlightAccelerationMultiplierChanged;
+
+        public bool HighlightVerticalAccelerationMultiplier => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER);
+        public event EventHandler HighlightVerticalAccelerationMultiplierChanged;
+
+        public bool HighlightVerticalAccelerationScaleMode => action.ParentAction == null ||
+            action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE);
+        public event EventHandler HighlightVerticalAccelerationScaleModeChanged;
+
         public List<StickMouseDirectionBindItem> CardinalDirectionItems => cardinalDirectionItems;
 
         public event EventHandler ActionPropertyChanged;
@@ -468,6 +626,10 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             DegreesPerSecondChanged += StickMousePropViewModel_DegreesPerSecondChangedForVerticalDegrees;
             VerticalScaleChanged += StickMousePropViewModel_VerticalScaleChanged;
             DiagonalRangeChanged += StickMousePropViewModel_DiagonalRangeChanged;
+            MultiplierCompensationChanged += StickMousePropViewModel_MultiplierCompensationChanged;
+            AccelerationMultiplierChanged += StickMousePropViewModel_AccelerationMultiplierChanged;
+            VerticalAccelerationMultiplierChanged += StickMousePropViewModel_VerticalAccelerationMultiplierChanged;
+            VerticalAccelerationScaleModeChanged += StickMousePropViewModel_VerticalAccelerationScaleModeChanged;
             OutputCurveChoiceChanged += StickMousePropViewModel_OutputCurveChoiceChanged;
             DeltaEnabledChanged += StickMousePropViewModel_DeltaEnabledChanged;
             DeltaMultiplierChanged += StickMousePropViewModel_DeltaMultiplierChanged;
@@ -658,6 +820,50 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.DIAGONAL_RANGE);
             HighlightDiagonalRangeChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickMousePropViewModel_MultiplierCompensationChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION))
+            {
+                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+            HighlightMultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickMousePropViewModel_AccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER))
+            {
+                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+            HighlightAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickMousePropViewModel_VerticalAccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER))
+            {
+                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER);
+            HighlightVerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickMousePropViewModel_VerticalAccelerationScaleModeChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE))
+            {
+                action.ChangedProperties.Add(StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE);
+            HighlightVerticalAccelerationScaleModeChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickMousePropViewModel_DeltaMinFactorChanged(object sender, EventArgs e)

@@ -8668,6 +8668,65 @@ namespace DS4MapperTest
             }
             public event EventHandler VerticalScaleChanged;
 
+            public bool MultiplierCompensation
+            {
+                get => stickMouseAction.MultiplierCompensation;
+                set
+                {
+                    stickMouseAction.MultiplierCompensation = value;
+                    MultiplierCompensationChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler MultiplierCompensationChanged;
+
+            public bool ShouldSerializeMultiplierCompensation() =>
+                stickMouseAction.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+
+            public double AccelerationMultiplier
+            {
+                get => stickMouseAction.AccelerationMultiplier;
+                set
+                {
+                    stickMouseAction.AccelerationMultiplier = Math.Clamp(value, 0.01, 100.0);
+                    AccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler AccelerationMultiplierChanged;
+
+            public bool ShouldSerializeAccelerationMultiplier() =>
+                stickMouseAction.MultiplierCompensation ||
+                stickMouseAction.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+
+            public double VerticalAccelerationMultiplier
+            {
+                get => stickMouseAction.VerticalAccelerationMultiplier;
+                set
+                {
+                    stickMouseAction.VerticalAccelerationMultiplier = Math.Clamp(value, 0.01, 100.0);
+                    VerticalAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalAccelerationMultiplierChanged;
+
+            public bool ShouldSerializeVerticalAccelerationMultiplier() =>
+                stickMouseAction.MultiplierCompensation ||
+                stickMouseAction.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER);
+
+            public bool VerticalAccelerationScaleMode
+            {
+                get => stickMouseAction.VerticalAccelerationScaleMode;
+                set
+                {
+                    stickMouseAction.VerticalAccelerationScaleMode = value;
+                    VerticalAccelerationScaleModeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalAccelerationScaleModeChanged;
+
+            public bool ShouldSerializeVerticalAccelerationScaleMode() =>
+                stickMouseAction.MultiplierCompensation ||
+                stickMouseAction.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE);
+
             public StickMouseSettings(StickMouse mouseAction)
             {
                 stickMouseAction = mouseAction;
@@ -8711,6 +8770,10 @@ namespace DS4MapperTest
             settings.OutputCurveChanged += Settings_OutputCurveChanged;
             settings.DeltaSettingsChanged += Settings_DeltaSettingsChanged;
             settings.VerticalScaleChanged += Settings_VerticalScaleChanged;
+            settings.MultiplierCompensationChanged += Settings_MultiplierCompensationChanged;
+            settings.AccelerationMultiplierChanged += Settings_AccelerationMultiplierChanged;
+            settings.VerticalAccelerationMultiplierChanged += Settings_VerticalAccelerationMultiplierChanged;
+            settings.VerticalAccelerationScaleModeChanged += Settings_VerticalAccelerationScaleModeChanged;
         }
 
         public StickMouseSerializer(ActionLayer tempLayer, MapAction action) :
@@ -8834,6 +8897,26 @@ namespace DS4MapperTest
         private void Settings_VerticalScaleChanged(object sender, EventArgs e)
         {
             stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.VERTICAL_SCALE);
+        }
+
+        private void Settings_MultiplierCompensationChanged(object sender, EventArgs e)
+        {
+            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.MULTIPLIER_COMPENSATION);
+        }
+
+        private void Settings_AccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+        }
+
+        private void Settings_VerticalAccelerationMultiplierChanged(object sender, EventArgs e)
+        {
+            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER);
+        }
+
+        private void Settings_VerticalAccelerationScaleModeChanged(object sender, EventArgs e)
+        {
+            stickMouseAction.ChangedProperties.Add(StickMouse.PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE);
         }
 
         private static void FlagBtnChangedDirection(int index, StickMouse action)
