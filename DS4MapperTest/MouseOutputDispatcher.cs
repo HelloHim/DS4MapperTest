@@ -548,27 +548,43 @@ namespace DS4MapperTest
             };
         }
 
+        /// <summary>
+        /// Stores the server handle only. Deliberately does not create any
+        /// VIIPER mouse devices up front - devices are only attached to the
+        /// system once a route is actually configured to use them (see
+        /// <see cref="SyncDevices"/>). Creating all three unconditionally
+        /// used to leave unused virtual mice permanently attached to
+        /// Windows, which third-party raw-input tools (e.g. mouse
+        /// acceleration utilities) could pick up even though this app never
+        /// routed any movement to them.
+        /// </summary>
         public void Initialise(nuint serverHandle)
         {
             this.serverHandle = serverHandle;
-            foreach (MouseOutputViiperMouseDevice device in devices.Values)
-            {
-                device.TryCreate(serverHandle);
-            }
         }
 
-        public void RefreshAvailability()
+        /// <summary>
+        /// Creates VIIPER devices for destinations referenced by the current
+        /// routing configuration (recreating any that previously failed),
+        /// and removes/detaches devices for destinations no longer
+        /// referenced by any route so they stop existing as system mouse
+        /// devices entirely.
+        /// </summary>
+        public void SyncDevices(IReadOnlyCollection<MouseOutputDestination> neededDestinations)
         {
-            if (serverHandle == 0)
+            foreach ((MouseOutputDestination destination, MouseOutputViiperMouseDevice device) in devices)
             {
-                return;
-            }
-
-            foreach (MouseOutputViiperMouseDevice device in devices.Values)
-            {
-                if (!device.IsAvailable)
+                bool needed = neededDestinations != null && neededDestinations.Contains(destination);
+                if (needed)
                 {
-                    device.TryCreate(serverHandle);
+                    if (serverHandle != 0 && !device.IsAvailable)
+                    {
+                        device.TryCreate(serverHandle);
+                    }
+                }
+                else if (device.IsAvailable)
+                {
+                    device.Dispose();
                 }
             }
         }
@@ -834,13 +850,100 @@ namespace DS4MapperTest
             StateChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        private static readonly MouseOutputDestination[] ViiperDestinations =
+        {
+            MouseOutputDestination.ViiperMouse1,
+            MouseOutputDestination.ViiperMouse2,
+            MouseOutputDestination.ViiperMouse3,
+        };
+
+        private static bool IsViiperDestination(MouseOutputDestination destination) =>
+            destination == MouseOutputDestination.ViiperMouse1 ||
+            destination == MouseOutputDestination.ViiperMouse2 ||
+            destination == MouseOutputDestination.ViiperMouse3;
+
+        /// <summary>
+        /// VIIPER destinations that must exist and keep being flushed right
+        /// now: ones some route is literally configured to use (so the
+        /// device is ready the instant it's selected, and so it stays
+        /// available as a fallback target), ones a producer route is
+        /// currently resolved onto (covers fallback landing there even
+        /// though no route is configured for it), and ones that still have
+        /// unflushed state - most importantly a held button that needs one
+        /// more report to release - even after routing has already moved
+        /// away from them. Anything outside this set is never created,
+        /// never receives any report (not even a zero-delta heartbeat), and
+        /// is torn down if previously created - so a mouse that isn't
+        /// selected anywhere, and isn't mid-release, never exists as a live
+        /// system device that an external tool (e.g. a mouse acceleration
+        /// utility) could pick up.
+        /// </summary>
+        private HashSet<MouseOutputDestination> ComputeNeededViiperDestinations()
+        {
+            HashSet<MouseOutputDestination> needed = new HashSet<MouseOutputDestination>();
+            MouseOutputRoutingTable routing = appGlobal.appSettings.MouseOutputRouting;
+            foreach (MouseOutputRoute route in Enum.GetValues(typeof(MouseOutputRoute)))
+            {
+                MouseOutputDestination destination = routing.GetRouteDestination(route);
+                if (IsViiperDestination(destination))
+                {
+                    needed.Add(destination);
+                }
+            }
+
+            foreach (ProducerState producer in producers.Values)
+            {
+                foreach (ProducerRouteState routeState in producer.Routes.Values)
+                {
+                    if (routeState.ActiveDestination.HasValue &&
+                        IsViiperDestination(routeState.ActiveDestination.Value))
+                    {
+                        needed.Add(routeState.ActiveDestination.Value);
+                    }
+                }
+            }
+
+            foreach (MouseOutputDestination destination in ViiperDestinations)
+            {
+                DestinationState state = destinationStates[destination];
+                if (state.CurrentButtons != 0 || state.PendingRelativeX != 0 ||
+                    state.PendingRelativeY != 0 || state.PendingWheel != 0 ||
+                    state.PendingPan != 0 || state.HasAbsolute)
+                {
+                    needed.Add(destination);
+                }
+            }
+
+            return needed;
+        }
+
         private void FlushAllDestinations(bool flushSharedFakerInput)
         {
             FlushDestination(MouseOutputDestination.SendInput, flushSharedFakerInput);
             FlushDestination(MouseOutputDestination.FakerInputMouse, flushSharedFakerInput);
-            FlushDestination(MouseOutputDestination.ViiperMouse1, flushSharedFakerInput);
-            FlushDestination(MouseOutputDestination.ViiperMouse2, flushSharedFakerInput);
-            FlushDestination(MouseOutputDestination.ViiperMouse3, flushSharedFakerInput);
+
+            HashSet<MouseOutputDestination> neededViiper = ComputeNeededViiperDestinations();
+            foreach (MouseOutputDestination destination in ViiperDestinations)
+            {
+                if (neededViiper.Contains(destination))
+                {
+                    FlushDestination(destination, flushSharedFakerInput);
+                }
+                else
+                {
+                    ClearDestinationState(destinationStates[destination]);
+                }
+            }
+        }
+
+        private static void ClearDestinationState(DestinationState state)
+        {
+            state.CurrentButtons = 0;
+            state.PendingRelativeX = 0;
+            state.PendingRelativeY = 0;
+            state.PendingWheel = 0;
+            state.PendingPan = 0;
+            state.HasAbsolute = false;
         }
 
         private void FlushDestination(MouseOutputDestination destination, bool flushSharedFakerInput)
@@ -895,7 +998,7 @@ namespace DS4MapperTest
 
         private MouseOutputRoutingAvailabilitySnapshot CreateAvailabilitySnapshot()
         {
-            viiperManager?.RefreshAvailability();
+            viiperManager?.SyncDevices(ComputeNeededViiperDestinations());
             return new MouseOutputRoutingAvailabilitySnapshot(
                 sendInputAvailable: IsDestinationAvailable(MouseOutputDestination.SendInput),
                 fakerInputMouseAvailable: IsDestinationAvailable(MouseOutputDestination.FakerInputMouse),
