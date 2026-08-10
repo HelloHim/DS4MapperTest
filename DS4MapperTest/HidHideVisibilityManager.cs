@@ -54,10 +54,24 @@ namespace DS4MapperTest
                     return;
                 }
 
+                IEnumerable<InputDeviceBase> deviceEnumerable = devices ?? Enumerable.Empty<InputDeviceBase>();
+                bool anyWantsHiding = deviceEnumerable.Any(device =>
+                    device?.Synced == true &&
+                    device.DeviceOptions?.HidePhysicalController == true);
+
+                if (!anyWantsHiding && sessionHiddenDevices.Count == 0)
+                {
+                    // Nothing wants to be hidden and nothing is hidden from an earlier
+                    // call this session, so there is nothing to reconcile. Skip out before
+                    // spawning HidHideCLI.exe (each call below shells out to it), since this
+                    // runs once per controller on every startup/hotplug.
+                    return;
+                }
+
                 try
                 {
                     HashSet<string> desiredHiddenDevices =
-                        ResolveDesiredHiddenDevices(devices ?? Enumerable.Empty<InputDeviceBase>());
+                        ResolveDesiredHiddenDevices(deviceEnumerable);
                     HashSet<string> currentHiddenDevices = GetHiddenDevices();
 
                     if (desiredHiddenDevices.Count > 0)
