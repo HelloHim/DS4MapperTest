@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 namespace DS4MapperUnitTests
 {
     [TestClass]
-    public class TouchpadReleaseBrakeTests : BindingHelperBase
+    public class TouchpadCounterMovementReleasePressTests : BindingHelperBase
     {
         private const short FULL = 32767;
         private const short DIAG = 23170;
@@ -50,8 +50,8 @@ namespace DS4MapperUnitTests
         private string BuildProfileJson(bool brakeEnabled = true, int minHoldMs = 80, int durationMs = 40)
         {
             return $@"{{
-  ""Name"": ""TouchpadReleaseBrakeTest"",
-  ""Description"": ""TouchpadReleaseBrakeTest"",
+  ""Name"": ""TouchpadCounterMovementReleasePressTest"",
+  ""Description"": ""TouchpadCounterMovementReleasePressTest"",
   ""Creator"": ""test"",
   ""CreationDate"": ""2026-07-21T00:00:00+0000"",
   ""ActionSets"": [
@@ -172,7 +172,7 @@ namespace DS4MapperUnitTests
         private static bool KeyDown(uint vk) => TestMapper.KeyReferenceCountDict.ContainsKey(vk);
 
         [TestMethod]
-        public void TouchpadReleaseBrakeSettings_AreVisibleForDPadZones()
+        public void TouchpadCounterMovementReleasePressSettings_AreVisibleForDPadZones()
         {
             var (mapper, padAction) = LoadMapper();
 
@@ -190,7 +190,7 @@ namespace DS4MapperUnitTests
             Assert.IsTrue(KeyDown(VK_D));
 
             Lift(mapper);
-            Assert.AreEqual(TouchpadReleaseBrake.BrakeState.Braking, padAction.ReleaseBrake.State);
+            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.Braking, padAction.CounterMovementReleasePress.State);
             Assert.IsFalse(KeyDown(VK_D));
             Assert.IsTrue(KeyDown(VK_A));
 
@@ -218,7 +218,7 @@ namespace DS4MapperUnitTests
             HoldRight(mapper, 10);
             Lift(mapper);
 
-            Assert.AreEqual(TouchpadReleaseBrake.BrakeState.Braking, padAction.ReleaseBrake.State);
+            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.Braking, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_A));
         }
 
@@ -230,7 +230,7 @@ namespace DS4MapperUnitTests
             HoldUpRight(mapper, 20);
             Lift(mapper);
 
-            Assert.AreEqual(TouchpadReleaseBrake.BrakeState.Braking, padAction.ReleaseBrake.State);
+            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.Braking, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_S));
             Assert.IsTrue(KeyDown(VK_A));
 
@@ -283,7 +283,7 @@ namespace DS4MapperUnitTests
         public void NeutralEntryClearsEligibleDirection()
         {
             var (mapper, padAction) = LoadMapper(minHoldMs: 80);
-            padAction.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled = false;
+            padAction.CounterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled = false;
 
             HoldRight(mapper, 20);
             Touch(mapper, 0, 0, true);
@@ -296,7 +296,7 @@ namespace DS4MapperUnitTests
         public void DeadZoneReleaseEnabled_FiresOnCentreWithoutLifting()
         {
             var (mapper, padAction) = LoadMapper(minHoldMs: 80, durationMs: 40);
-            padAction.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled = true;
+            padAction.CounterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled = true;
 
             HoldRight(mapper, 20);
             Touch(mapper, 0, 0, true);
@@ -308,7 +308,7 @@ namespace DS4MapperUnitTests
         public void DeadZoneReleaseEnabled_StillIgnoresZoneToZoneSliding()
         {
             var (mapper, padAction) = LoadMapper();
-            padAction.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled = true;
+            padAction.CounterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled = true;
 
             HoldRight(mapper, 20);
             HoldUpRight(mapper, 2);
@@ -366,9 +366,9 @@ namespace DS4MapperUnitTests
         {
             var (_, padAction) = LoadMapper(minHoldMs: 123, durationMs: 77);
 
-            Assert.IsTrue(padAction.ReleaseBrake.Enabled);
-            Assert.AreEqual(77, padAction.ReleaseBrake.BrakeDurationMs);
-            Assert.AreEqual(123, padAction.ReleaseBrake.MinimumHoldMs);
+            Assert.IsTrue(padAction.CounterMovementReleasePress.Enabled);
+            Assert.AreEqual(77, padAction.CounterMovementReleasePress.BrakeDurationMs);
+            Assert.AreEqual(123, padAction.CounterMovementReleasePress.MinimumHoldMs);
 
             string json = JsonConvert.SerializeObject(new TouchpadActionPadSerializer(null, padAction));
             JObject parsed = JObject.Parse(json);
@@ -378,15 +378,15 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(123, parsed["Settings"]?["BrakeMinimumHoldMs"]?.Value<int>());
 
             TouchpadActionPad parent = new TouchpadActionPad();
-            parent.ReleaseBrake.Enabled = true;
-            parent.ReleaseBrake.BrakeDurationMs = 90;
-            parent.ReleaseBrake.MinimumHoldMs = 150;
+            parent.CounterMovementReleasePress.Enabled = true;
+            parent.CounterMovementReleasePress.BrakeDurationMs = 90;
+            parent.CounterMovementReleasePress.MinimumHoldMs = 150;
             parent.TouchDefinition = padAction.TouchDefinition;
             TouchpadActionPad child = new TouchpadActionPad();
             child.SoftCopyFromParent(parent);
-            Assert.IsTrue(child.ReleaseBrake.Enabled);
-            Assert.AreEqual(90, child.ReleaseBrake.BrakeDurationMs);
-            Assert.AreEqual(150, child.ReleaseBrake.MinimumHoldMs);
+            Assert.IsTrue(child.CounterMovementReleasePress.Enabled);
+            Assert.AreEqual(90, child.CounterMovementReleasePress.BrakeDurationMs);
+            Assert.AreEqual(150, child.CounterMovementReleasePress.MinimumHoldMs);
         }
     }
 }

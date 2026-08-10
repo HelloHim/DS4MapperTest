@@ -6,9 +6,9 @@ using System.Diagnostics;
 
 namespace DS4MapperTest.TouchpadActions
 {
-    public sealed class TouchpadReleaseBrake
+    public sealed class TouchpadCounterMovementReleasePress
     {
-        public enum BrakeState
+        public enum PressState
         {
             Idle,
             Tracking,
@@ -20,11 +20,11 @@ namespace DS4MapperTest.TouchpadActions
 
         private readonly IRandomRangeProvider randomProvider;
 
-        public TouchpadReleaseBrake() : this(RandomRangeProvider.Instance)
+        public TouchpadCounterMovementReleasePress() : this(RandomRangeProvider.Instance)
         {
         }
 
-        public TouchpadReleaseBrake(IRandomRangeProvider randomProvider)
+        public TouchpadCounterMovementReleasePress(IRandomRangeProvider randomProvider)
         {
             this.randomProvider = randomProvider ?? RandomRangeProvider.Instance;
         }
@@ -199,7 +199,7 @@ namespace DS4MapperTest.TouchpadActions
             set => minimumHoldMs = DigitalReleaseBrakePulse.ClampMinimumHoldMs(value);
         }
 
-        private BrakeState state = BrakeState.Idle;
+        private PressState state = PressState.Idle;
         private bool controllingTouchActive;
         private uint activeComponents;
         private uint pulseOwnedComponents;
@@ -212,7 +212,7 @@ namespace DS4MapperTest.TouchpadActions
         private double releasePressElapsedSeconds;
         private long releasePressStartTimestamp;
 
-        public BrakeState State => state;
+        public PressState State => state;
         public bool HasActivePulse => pulseOwnedComponents != 0 || pendingOppositeComponents != 0;
 
         public bool MatchesCs2Values => tapLengthTiming.MatchesCs2Values;
@@ -254,7 +254,7 @@ namespace DS4MapperTest.TouchpadActions
         {
             if (!enabled)
             {
-                if (state != BrakeState.Idle || pulseOwnedComponents != 0)
+                if (state != PressState.Idle || pulseOwnedComponents != 0)
                 {
                     ForceReleaseAndReset();
                 }
@@ -299,7 +299,7 @@ namespace DS4MapperTest.TouchpadActions
                 activeComponents = rawMask;
                 Advance(dt);
                 state = pulseOwnedComponents != 0 || pendingOppositeComponents != 0 ?
-                    BrakeState.Braking : BrakeState.Tracking;
+                    PressState.Braking : PressState.Tracking;
                 return rawCurrentDir;
             }
 
@@ -317,11 +317,11 @@ namespace DS4MapperTest.TouchpadActions
 
             if (pulseOwnedComponents != 0 || pendingOppositeComponents != 0)
             {
-                state = BrakeState.Braking;
+                state = PressState.Braking;
             }
-            else if (state != BrakeState.Braking)
+            else if (state != PressState.Braking)
             {
-                state = BrakeState.Idle;
+                state = PressState.Idle;
             }
 
             return TouchpadActionPad.DpadDirections.Centered;
@@ -396,11 +396,11 @@ namespace DS4MapperTest.TouchpadActions
 
             if (pulseOwnedComponents != 0 || pendingOppositeComponents != 0)
             {
-                state = BrakeState.Braking;
+                state = PressState.Braking;
             }
             else
             {
-                state = controllingTouchActive ? BrakeState.Tracking : BrakeState.Idle;
+                state = controllingTouchActive ? PressState.Tracking : PressState.Idle;
             }
         }
 
@@ -518,7 +518,7 @@ namespace DS4MapperTest.TouchpadActions
             }
             else
             {
-                state = BrakeState.Braking;
+                state = PressState.Braking;
             }
         }
 
@@ -528,13 +528,13 @@ namespace DS4MapperTest.TouchpadActions
             {
                 pendingOppositeComponents = 0;
                 releasePressStartTimestamp = 0;
-                state = controllingTouchActive ? BrakeState.Tracking : BrakeState.Idle;
+                state = controllingTouchActive ? PressState.Tracking : PressState.Idle;
                 return;
             }
 
             pulseOwnedComponents = pendingOppositeComponents;
             pendingOppositeComponents = 0;
-            state = BrakeState.Braking;
+            state = PressState.Braking;
         }
 
         private void EndOppositeTap()
@@ -542,7 +542,7 @@ namespace DS4MapperTest.TouchpadActions
             explicitReleaseComponents |= pulseOwnedComponents;
             pulseOwnedComponents = 0;
             releasePressStartTimestamp = 0;
-            state = controllingTouchActive ? BrakeState.Tracking : BrakeState.Idle;
+            state = controllingTouchActive ? PressState.Tracking : PressState.Idle;
         }
 
         private void TransferPulseToRealInput(uint rawMask)
@@ -569,7 +569,7 @@ namespace DS4MapperTest.TouchpadActions
             actualOppositeHoldMs = 0;
             releasePressElapsedSeconds = 0.0;
             releasePressStartTimestamp = 0;
-            state = BrakeState.Idle;
+            state = PressState.Idle;
         }
 
         private double GetReleasePressElapsedMs()
