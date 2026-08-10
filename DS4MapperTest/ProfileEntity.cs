@@ -42,5 +42,13 @@ namespace DS4MapperTest
             this.name = name;
             this.inputDeviceType = inputDeviceType;
         }
+
+        // Lets a rename move the backing file (see MainWindow.RenameProfileBtn_Click)
+        // while every existing reference to this entity keeps working, rather than
+        // needing to replace it in every list that holds it.
+        public void UpdatePath(string path)
+        {
+            profilePath = path;
+        }
     }
 }
