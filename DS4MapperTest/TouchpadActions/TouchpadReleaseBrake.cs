@@ -270,20 +270,28 @@ namespace DS4MapperTest.TouchpadActions
                 bool freshTouch = !controllingTouchActive;
                 TransferPulseToRealInput(rawMask);
 
-                // A pulse only ever starts from an actual lift (below); the finger sliding
-                // between zones, or passing through the dead zone, while still touching must
-                // never be treated as a release. If a genuinely new touch begins (rather than
-                // the finger merely moving within one continuous touch) and a pulse from a
-                // prior lift is still outstanding and does not match this touch's own
-                // direction (TransferPulseToRealInput above already absorbed the matching
-                // case), that stale pulse is abandoned rather than left to linger into
-                // unrelated new input.
+                // A pulse only ever starts from an actual lift (below), or, when Deadzone
+                // Release Press is enabled, from crossing back into the dead zone without
+                // lifting - never from sliding between two non-centre zones. If a genuinely
+                // new touch begins (rather than the finger merely moving within one continuous
+                // touch) and a pulse from a prior lift is still outstanding and does not match
+                // this touch's own direction (TransferPulseToRealInput above already absorbed
+                // the matching case), that stale pulse is abandoned rather than left to linger
+                // into unrelated new input.
                 if (freshTouch && (pulseOwnedComponents != 0 || pendingOppositeComponents != 0))
                 {
                     explicitReleaseComponents |= pulseOwnedComponents;
                     pulseOwnedComponents = 0;
                     pendingOppositeComponents = 0;
                     releasePressStartTimestamp = 0;
+                }
+
+                // Deadzone Release Press: treat crossing back to centre while still touching
+                // the same as a lift, using whatever zone was active immediately beforehand.
+                // Must run before AccumulateHold/activeComponents below overwrite that state.
+                if (!freshTouch && rawMask == 0 && triggerOnDeadZoneReleaseEnabled)
+                {
+                    TryStartPulse(activeComponents);
                 }
 
                 controllingTouchActive = true;

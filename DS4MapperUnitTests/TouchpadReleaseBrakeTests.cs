@@ -282,13 +282,40 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void NeutralEntryClearsEligibleDirection()
         {
-            var (mapper, _) = LoadMapper(minHoldMs: 80);
+            var (mapper, padAction) = LoadMapper(minHoldMs: 80);
+            padAction.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled = false;
 
             HoldRight(mapper, 20);
             Touch(mapper, 0, 0, true);
             Lift(mapper);
 
             Assert.IsFalse(KeyDown(VK_A));
+        }
+
+        [TestMethod]
+        public void DeadZoneReleaseEnabled_FiresOnCentreWithoutLifting()
+        {
+            var (mapper, padAction) = LoadMapper(minHoldMs: 80, durationMs: 40);
+            padAction.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled = true;
+
+            HoldRight(mapper, 20);
+            Touch(mapper, 0, 0, true);
+
+            Assert.IsTrue(KeyDown(VK_A));
+        }
+
+        [TestMethod]
+        public void DeadZoneReleaseEnabled_StillIgnoresZoneToZoneSliding()
+        {
+            var (mapper, padAction) = LoadMapper();
+            padAction.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled = true;
+
+            HoldRight(mapper, 20);
+            HoldUpRight(mapper, 2);
+            HoldUp(mapper, 2);
+
+            Assert.IsFalse(KeyDown(VK_A));
+            Assert.IsFalse(KeyDown(VK_S));
         }
 
         [TestMethod]
