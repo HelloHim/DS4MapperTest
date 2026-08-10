@@ -131,19 +131,19 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public bool CounterMovementReleasePressEnabled
         {
-            get => action.ReleaseBrake.Enabled;
+            get => action.CounterMovementReleasePress.Enabled;
             set
             {
-                if (action.ReleaseBrake.Enabled == value) return;
-                action.ReleaseBrake.Enabled = value;
+                if (action.CounterMovementReleasePress.Enabled == value) return;
+                action.CounterMovementReleasePress.Enabled = value;
 
                 if (value)
                 {
                     // Enabling always lands on Wait Variance Percentage mode and the CS2
                     // preset, so turning this on never surfaces stale/legacy tap-length
                     // values or a stale mode as an unexpected "Custom".
-                    action.ReleaseBrake.OppositeTapLengthMode = DS4MapperTest.StickActions.OppositeTapLengthMode.WaitVariancePercentage;
-                    action.ReleaseBrake.ApplyCs2Preset();
+                    action.CounterMovementReleasePress.OppositeTapLengthMode = DS4MapperTest.StickActions.OppositeTapLengthMode.WaitVariancePercentage;
+                    action.CounterMovementReleasePress.ApplyCs2Preset();
                     OppositeTapLengthModeChanged?.Invoke(this, EventArgs.Empty);
                     OppositeTapLengthModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
                     ShowFixedModeFieldsChanged?.Invoke(this, EventArgs.Empty);
@@ -173,11 +173,11 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public OppositeTapLengthMode OppositeTapLengthMode
         {
-            get => action.ReleaseBrake.OppositeTapLengthMode;
+            get => action.CounterMovementReleasePress.OppositeTapLengthMode;
             set
             {
-                if (action.ReleaseBrake.OppositeTapLengthMode == value) return;
-                action.ReleaseBrake.OppositeTapLengthMode = value;
+                if (action.CounterMovementReleasePress.OppositeTapLengthMode == value) return;
+                action.CounterMovementReleasePress.OppositeTapLengthMode = value;
                 OppositeTapLengthModeChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapLengthModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
                 ShowFixedModeFieldsChanged?.Invoke(this, EventArgs.Empty);
@@ -194,7 +194,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         {
             get
             {
-                switch (action.ReleaseBrake.OppositeTapLengthMode)
+                switch (action.CounterMovementReleasePress.OppositeTapLengthMode)
                 {
                     case DS4MapperTest.StickActions.OppositeTapLengthMode.Fixed:
                         return "Uses the same total duration for every qualifying release.";
@@ -208,15 +208,15 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         public event EventHandler OppositeTapLengthModeDescriptionChanged;
 
         public bool ShowFixedModeFields =>
-            action.ReleaseBrake.OppositeTapLengthMode == DS4MapperTest.StickActions.OppositeTapLengthMode.Fixed;
+            action.CounterMovementReleasePress.OppositeTapLengthMode == DS4MapperTest.StickActions.OppositeTapLengthMode.Fixed;
         public event EventHandler ShowFixedModeFieldsChanged;
 
         public bool ShowWaitVariancePercentageModeFields =>
-            action.ReleaseBrake.OppositeTapLengthMode == DS4MapperTest.StickActions.OppositeTapLengthMode.WaitVariancePercentage;
+            action.CounterMovementReleasePress.OppositeTapLengthMode == DS4MapperTest.StickActions.OppositeTapLengthMode.WaitVariancePercentage;
         public event EventHandler ShowWaitVariancePercentageModeFieldsChanged;
 
         public bool ShowMinimumAndMaximumModeFields =>
-            action.ReleaseBrake.OppositeTapLengthMode == DS4MapperTest.StickActions.OppositeTapLengthMode.MinimumAndMaximum;
+            action.CounterMovementReleasePress.OppositeTapLengthMode == DS4MapperTest.StickActions.OppositeTapLengthMode.MinimumAndMaximum;
         public event EventHandler ShowMinimumAndMaximumModeFieldsChanged;
 
         private List<EnumChoiceSelection<CounterMovementTapLengthPreset>> tapLengthPresetItems =
@@ -229,18 +229,18 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public CounterMovementTapLengthPreset TapLengthPreset
         {
-            get => action.ReleaseBrake.EffectiveTapLengthPreset;
+            get => action.CounterMovementReleasePress.EffectiveTapLengthPreset;
             set
             {
-                if (action.ReleaseBrake.EffectiveTapLengthPreset == value) return;
+                if (action.CounterMovementReleasePress.EffectiveTapLengthPreset == value) return;
 
                 if (value == CounterMovementTapLengthPreset.CS2)
                 {
-                    action.ReleaseBrake.ApplyCs2Preset();
+                    action.CounterMovementReleasePress.ApplyCs2Preset();
                 }
                 else
                 {
-                    action.ReleaseBrake.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                    action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
                 }
 
                 TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
@@ -255,12 +255,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public int OppositeTapLengthMs
         {
-            get => action.ReleaseBrake.OppositeTapLengthMs;
+            get => action.CounterMovementReleasePress.OppositeTapLengthMs;
             set
             {
-                if (action.ReleaseBrake.OppositeTapLengthMs == value) return;
-                action.ReleaseBrake.ApplyFixedAndPercentage(value, action.ReleaseBrake.OppositeTapLengthVariancePercent);
-                action.ReleaseBrake.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                if (action.CounterMovementReleasePress.OppositeTapLengthMs == value) return;
+                action.CounterMovementReleasePress.ApplyFixedAndPercentage(value, action.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+                action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
                 OppositeTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
@@ -273,12 +273,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public int OppositeTapLengthVariancePercent
         {
-            get => action.ReleaseBrake.OppositeTapLengthVariancePercent;
+            get => action.CounterMovementReleasePress.OppositeTapLengthVariancePercent;
             set
             {
-                if (action.ReleaseBrake.OppositeTapLengthVariancePercent == value) return;
-                action.ReleaseBrake.ApplyFixedAndPercentage(action.ReleaseBrake.OppositeTapLengthMs, value);
-                action.ReleaseBrake.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                if (action.CounterMovementReleasePress.OppositeTapLengthVariancePercent == value) return;
+                action.CounterMovementReleasePress.ApplyFixedAndPercentage(action.CounterMovementReleasePress.OppositeTapLengthMs, value);
+                action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
                 OppositeTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
@@ -291,12 +291,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public int OppositeTapLengthMinimumMs
         {
-            get => action.ReleaseBrake.OppositeTapLengthMinimumMs;
+            get => action.CounterMovementReleasePress.OppositeTapLengthMinimumMs;
             set
             {
-                if (action.ReleaseBrake.OppositeTapLengthMinimumMs == value) return;
-                action.ReleaseBrake.ApplyMinimumAndMaximum(value, action.ReleaseBrake.OppositeTapLengthMaximumMs);
-                action.ReleaseBrake.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                if (action.CounterMovementReleasePress.OppositeTapLengthMinimumMs == value) return;
+                action.CounterMovementReleasePress.ApplyMinimumAndMaximum(value, action.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
+                action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
                 OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
@@ -310,12 +310,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public int OppositeTapLengthMaximumMs
         {
-            get => action.ReleaseBrake.OppositeTapLengthMaximumMs;
+            get => action.CounterMovementReleasePress.OppositeTapLengthMaximumMs;
             set
             {
-                if (action.ReleaseBrake.OppositeTapLengthMaximumMs == value) return;
-                action.ReleaseBrake.ApplyMinimumAndMaximum(action.ReleaseBrake.OppositeTapLengthMinimumMs, value);
-                action.ReleaseBrake.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                if (action.CounterMovementReleasePress.OppositeTapLengthMaximumMs == value) return;
+                action.CounterMovementReleasePress.ApplyMinimumAndMaximum(action.CounterMovementReleasePress.OppositeTapLengthMinimumMs, value);
+                action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
                 OppositeTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
@@ -338,11 +338,11 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public OppositeTapStartDelayMode OppositeTapStartDelayMode
         {
-            get => action.ReleaseBrake.OppositeTapStartDelayMode;
+            get => action.CounterMovementReleasePress.OppositeTapStartDelayMode;
             set
             {
-                if (action.ReleaseBrake.OppositeTapStartDelayMode == value) return;
-                action.ReleaseBrake.OppositeTapStartDelayMode = value;
+                if (action.CounterMovementReleasePress.OppositeTapStartDelayMode == value) return;
+                action.CounterMovementReleasePress.OppositeTapStartDelayMode = value;
                 OppositeTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
                 ShowStartDelayFixedModeFieldsChanged?.Invoke(this, EventArgs.Empty);
@@ -357,7 +357,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         {
             get
             {
-                switch (action.ReleaseBrake.OppositeTapStartDelayMode)
+                switch (action.CounterMovementReleasePress.OppositeTapStartDelayMode)
                 {
                     case OppositeTapStartDelayMode.Fixed:
                         return "Uses the same neutral delay before every generated opposite press.";
@@ -371,25 +371,25 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         public event EventHandler OppositeTapStartDelayModeDescriptionChanged;
 
         public bool ShowStartDelayFixedModeFields =>
-            action.ReleaseBrake.OppositeTapStartDelayMode == OppositeTapStartDelayMode.Fixed;
+            action.CounterMovementReleasePress.OppositeTapStartDelayMode == OppositeTapStartDelayMode.Fixed;
         public event EventHandler ShowStartDelayFixedModeFieldsChanged;
 
         public bool ShowStartDelayWaitVariancePercentageModeFields =>
-            action.ReleaseBrake.OppositeTapStartDelayMode == OppositeTapStartDelayMode.WaitVariancePercentage;
+            action.CounterMovementReleasePress.OppositeTapStartDelayMode == OppositeTapStartDelayMode.WaitVariancePercentage;
         public event EventHandler ShowStartDelayWaitVariancePercentageModeFieldsChanged;
 
         public bool ShowStartDelayMinimumAndMaximumModeFields =>
-            action.ReleaseBrake.OppositeTapStartDelayMode == OppositeTapStartDelayMode.MinimumAndMaximum;
+            action.CounterMovementReleasePress.OppositeTapStartDelayMode == OppositeTapStartDelayMode.MinimumAndMaximum;
         public event EventHandler ShowStartDelayMinimumAndMaximumModeFieldsChanged;
 
         public int OppositeTapStartDelayMs
         {
-            get => action.ReleaseBrake.OppositeTapStartDelayMs;
+            get => action.CounterMovementReleasePress.OppositeTapStartDelayMs;
             set
             {
-                if (action.ReleaseBrake.OppositeTapStartDelayMs == value) return;
-                action.ReleaseBrake.ApplyStartDelayFixedAndPercentage(value, action.ReleaseBrake.OppositeTapStartDelayVariancePercent);
-                action.ReleaseBrake.NormalizeRanges();
+                if (action.CounterMovementReleasePress.OppositeTapStartDelayMs == value) return;
+                action.CounterMovementReleasePress.ApplyStartDelayFixedAndPercentage(value, action.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent);
+                action.CounterMovementReleasePress.NormalizeRanges();
                 OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
@@ -401,12 +401,12 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public int OppositeTapStartDelayVariancePercent
         {
-            get => action.ReleaseBrake.OppositeTapStartDelayVariancePercent;
+            get => action.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent;
             set
             {
-                if (action.ReleaseBrake.OppositeTapStartDelayVariancePercent == value) return;
-                action.ReleaseBrake.ApplyStartDelayFixedAndPercentage(action.ReleaseBrake.OppositeTapStartDelayMs, value);
-                action.ReleaseBrake.NormalizeRanges();
+                if (action.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent == value) return;
+                action.CounterMovementReleasePress.ApplyStartDelayFixedAndPercentage(action.CounterMovementReleasePress.OppositeTapStartDelayMs, value);
+                action.CounterMovementReleasePress.NormalizeRanges();
                 OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
@@ -418,11 +418,11 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public int OppositeTapStartDelayMinimumMs
         {
-            get => action.ReleaseBrake.OppositeTapStartDelayMinimumMs;
+            get => action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs;
             set
             {
-                if (action.ReleaseBrake.OppositeTapStartDelayMinimumMs == value) return;
-                action.ReleaseBrake.ApplyStartDelayMinimumAndMaximum(value, action.ReleaseBrake.OppositeTapStartDelayMaximumMs);
+                if (action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs == value) return;
+                action.CounterMovementReleasePress.ApplyStartDelayMinimumAndMaximum(value, action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
                 OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
@@ -434,11 +434,11 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public int OppositeTapStartDelayMaximumMs
         {
-            get => action.ReleaseBrake.OppositeTapStartDelayMaximumMs;
+            get => action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs;
             set
             {
-                if (action.ReleaseBrake.OppositeTapStartDelayMaximumMs == value) return;
-                action.ReleaseBrake.ApplyStartDelayMinimumAndMaximum(action.ReleaseBrake.OppositeTapStartDelayMinimumMs, value);
+                if (action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs == value) return;
+                action.CounterMovementReleasePress.ApplyStartDelayMinimumAndMaximum(action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs, value);
                 OppositeTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 OppositeTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
@@ -450,11 +450,11 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public bool CounterMovementDeadZoneReleaseEnabled
         {
-            get => action.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled;
+            get => action.CounterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled;
             set
             {
-                if (action.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled == value) return;
-                action.ReleaseBrake.TriggerOnDeadZoneReleaseEnabled = value;
+                if (action.CounterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled == value) return;
+                action.CounterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled = value;
                 CounterMovementDeadZoneReleaseEnabledChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -463,11 +463,11 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         public int BrakeMinimumHoldMs
         {
-            get => action.ReleaseBrake.MinimumHoldMs;
+            get => action.CounterMovementReleasePress.MinimumHoldMs;
             set
             {
-                if (action.ReleaseBrake.MinimumHoldMs == value) return;
-                action.ReleaseBrake.MinimumHoldMs = value;
+                if (action.CounterMovementReleasePress.MinimumHoldMs == value) return;
+                action.CounterMovementReleasePress.MinimumHoldMs = value;
                 BrakeMinimumHoldMsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }

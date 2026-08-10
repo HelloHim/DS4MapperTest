@@ -6,7 +6,7 @@ namespace DS4MapperUnitTests
     // Covers the three Opposite Tap Length timing modes (Fixed, Wait Variance Percentage,
     // Minimum and Maximum): defaults, the percentage/best-fit maths in OppositeTapLengthTiming,
     // CS2 preset behaviour, mode switching and the mode-aware effective range used at runtime.
-    // CounterMovementReleasePressProcessor (stick D-Pad/Analog Emulation) and TouchpadReleaseBrake
+    // CounterMovementReleasePressProcessor (stick D-Pad/Analog Emulation) and TouchpadCounterMovementReleasePress
     // (touchpad) both compose the same OppositeTapLengthTiming, so both are exercised here to
     // confirm neither duplicated nor diverged from the shared implementation.
     [TestClass]
@@ -29,9 +29,9 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void NewTouchpadReleaseBrake_DefaultsToWaitVariancePercentageWithCs2Values()
+        public void NewTouchpadCounterMovementReleasePress_DefaultsToWaitVariancePercentageWithCs2Values()
         {
-            TouchpadReleaseBrake brake = new TouchpadReleaseBrake();
+            TouchpadCounterMovementReleasePress brake = new TouchpadCounterMovementReleasePress();
 
             Assert.IsFalse(brake.Enabled);
             Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, brake.OppositeTapLengthMode);

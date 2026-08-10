@@ -230,8 +230,8 @@ namespace DS4MapperTest.TouchpadActions
 
         private Stopwatch delayStopWatch = new Stopwatch();
 
-        private TouchpadReleaseBrake releaseBrake = new TouchpadReleaseBrake();
-        public TouchpadReleaseBrake ReleaseBrake => releaseBrake;
+        private TouchpadCounterMovementReleasePress counterMovementReleasePress = new TouchpadCounterMovementReleasePress();
+        public TouchpadCounterMovementReleasePress CounterMovementReleasePress => counterMovementReleasePress;
 
         public TouchpadActionPad()
         {
@@ -327,7 +327,7 @@ namespace DS4MapperTest.TouchpadActions
                 }
             }
 
-            currentDir = releaseBrake.Prepare(touchFrame, currentDir);
+            currentDir = counterMovementReleasePress.Prepare(touchFrame, currentDir);
 
             active = true;
             activeEvent = true;
@@ -338,7 +338,7 @@ namespace DS4MapperTest.TouchpadActions
 
         public override void Event(Mapper mapper)
         {
-            releaseBrake.FlushPendingReleases(mapper, usedFuncList);
+            counterMovementReleasePress.FlushPendingReleases(mapper, usedFuncList);
 
             int previousDirNum = (int)previousDir;
             //Console.WriteLine("DIRS: Previous: {0} Current: {1}", previousDir, currentDir);
@@ -885,14 +885,14 @@ namespace DS4MapperTest.TouchpadActions
             prevXNorm = xNorm; prevYNorm = yNorm;
             previousDir = currentDir;
 
-            releaseBrake.EmitPulse(mapper, usedFuncList);
+            counterMovementReleasePress.EmitPulse(mapper, usedFuncList);
 
             //bool ringBtnActive = usedRingButton != null && usedRingButton.active;
             //active = currentDir != DpadDirections.Centered || ringBtnActive ||
             //    tmpActiveBtns.Count > 0;
             active = currentDir != DpadDirections.Centered ||
                 tmpActiveBtns.Count > 0 ||
-                releaseBrake.HasActivePulse;
+                counterMovementReleasePress.HasActivePulse;
             activeEvent = false;
         }
 
@@ -920,7 +920,7 @@ namespace DS4MapperTest.TouchpadActions
                 previousDir = currentDir;
             }
 
-            releaseBrake.Cleanup(mapper, usedFuncList);
+            counterMovementReleasePress.Cleanup(mapper, usedFuncList);
 
             inputStatus = false;
             if (delayStopWatch.IsRunning)
@@ -976,7 +976,7 @@ namespace DS4MapperTest.TouchpadActions
                 previousDir = currentDir;
             }
 
-            releaseBrake.Cleanup(mapper, usedFuncList);
+            counterMovementReleasePress.Cleanup(mapper, usedFuncList);
 
             if (!useParentDelay && delayStopWatch.IsRunning)
             {
@@ -1276,46 +1276,46 @@ namespace DS4MapperTest.TouchpadActions
 
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED:
-                            releaseBrake.Enabled = tempPadAction.releaseBrake.Enabled;
+                            counterMovementReleasePress.Enabled = tempPadAction.counterMovementReleasePress.Enabled;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET:
-                            releaseBrake.TapLengthPreset = tempPadAction.releaseBrake.TapLengthPreset;
+                            counterMovementReleasePress.TapLengthPreset = tempPadAction.counterMovementReleasePress.TapLengthPreset;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE:
-                            releaseBrake.OppositeTapLengthMode = tempPadAction.releaseBrake.OppositeTapLengthMode;
+                            counterMovementReleasePress.OppositeTapLengthMode = tempPadAction.counterMovementReleasePress.OppositeTapLengthMode;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS:
-                            releaseBrake.OppositeTapLengthMs = tempPadAction.releaseBrake.OppositeTapLengthMs;
+                            counterMovementReleasePress.OppositeTapLengthMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT:
-                            releaseBrake.OppositeTapLengthVariancePercent = tempPadAction.releaseBrake.OppositeTapLengthVariancePercent;
+                            counterMovementReleasePress.OppositeTapLengthVariancePercent = tempPadAction.counterMovementReleasePress.OppositeTapLengthVariancePercent;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS:
-                            releaseBrake.OppositeTapLengthMinimumMs = tempPadAction.releaseBrake.OppositeTapLengthMinimumMs;
+                            counterMovementReleasePress.OppositeTapLengthMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
-                            releaseBrake.OppositeTapLengthMaximumMs = tempPadAction.releaseBrake.OppositeTapLengthMaximumMs;
+                            counterMovementReleasePress.OppositeTapLengthMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE:
-                            releaseBrake.OppositeTapStartDelayMode = tempPadAction.releaseBrake.OppositeTapStartDelayMode;
+                            counterMovementReleasePress.OppositeTapStartDelayMode = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMode;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS:
-                            releaseBrake.OppositeTapStartDelayMs = tempPadAction.releaseBrake.OppositeTapStartDelayMs;
+                            counterMovementReleasePress.OppositeTapStartDelayMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT:
-                            releaseBrake.OppositeTapStartDelayVariancePercent = tempPadAction.releaseBrake.OppositeTapStartDelayVariancePercent;
+                            counterMovementReleasePress.OppositeTapStartDelayVariancePercent = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayVariancePercent;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
-                            releaseBrake.OppositeTapStartDelayMinimumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMinimumMs;
+                            counterMovementReleasePress.OppositeTapStartDelayMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMinimumMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
-                            releaseBrake.OppositeTapStartDelayMaximumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMaximumMs;
+                            counterMovementReleasePress.OppositeTapStartDelayMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED:
-                            releaseBrake.TriggerOnDeadZoneReleaseEnabled = tempPadAction.releaseBrake.TriggerOnDeadZoneReleaseEnabled;
+                            counterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled = tempPadAction.counterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled;
                             break;
                         case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
-                            releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
+                            counterMovementReleasePress.MinimumHoldMs = tempPadAction.counterMovementReleasePress.MinimumHoldMs;
                             break;
                         default:
                             break;
@@ -1472,37 +1472,37 @@ namespace DS4MapperTest.TouchpadActions
 
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED:
-                    releaseBrake.Enabled = tempPadAction.releaseBrake.Enabled;
+                    counterMovementReleasePress.Enabled = tempPadAction.counterMovementReleasePress.Enabled;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET:
-                    releaseBrake.TapLengthPreset = tempPadAction.releaseBrake.TapLengthPreset;
+                    counterMovementReleasePress.TapLengthPreset = tempPadAction.counterMovementReleasePress.TapLengthPreset;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS:
-                    releaseBrake.OppositeTapLengthMinimumMs = tempPadAction.releaseBrake.OppositeTapLengthMinimumMs;
+                    counterMovementReleasePress.OppositeTapLengthMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
-                    releaseBrake.OppositeTapLengthMaximumMs = tempPadAction.releaseBrake.OppositeTapLengthMaximumMs;
+                    counterMovementReleasePress.OppositeTapLengthMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE:
-                    releaseBrake.OppositeTapStartDelayMode = tempPadAction.releaseBrake.OppositeTapStartDelayMode;
+                    counterMovementReleasePress.OppositeTapStartDelayMode = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMode;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS:
-                    releaseBrake.OppositeTapStartDelayMs = tempPadAction.releaseBrake.OppositeTapStartDelayMs;
+                    counterMovementReleasePress.OppositeTapStartDelayMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMs;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT:
-                    releaseBrake.OppositeTapStartDelayVariancePercent = tempPadAction.releaseBrake.OppositeTapStartDelayVariancePercent;
+                    counterMovementReleasePress.OppositeTapStartDelayVariancePercent = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayVariancePercent;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
-                    releaseBrake.OppositeTapStartDelayMinimumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMinimumMs;
+                    counterMovementReleasePress.OppositeTapStartDelayMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMinimumMs;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
-                    releaseBrake.OppositeTapStartDelayMaximumMs = tempPadAction.releaseBrake.OppositeTapStartDelayMaximumMs;
+                    counterMovementReleasePress.OppositeTapStartDelayMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_DEADZONE_RELEASE_ENABLED:
-                    releaseBrake.TriggerOnDeadZoneReleaseEnabled = tempPadAction.releaseBrake.TriggerOnDeadZoneReleaseEnabled;
+                    counterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled = tempPadAction.counterMovementReleasePress.TriggerOnDeadZoneReleaseEnabled;
                     break;
                 case PropertyKeyStrings.BRAKE_MIN_HOLD_MS:
-                    releaseBrake.MinimumHoldMs = tempPadAction.releaseBrake.MinimumHoldMs;
+                    counterMovementReleasePress.MinimumHoldMs = tempPadAction.counterMovementReleasePress.MinimumHoldMs;
                     break;
                 default:
                     break;

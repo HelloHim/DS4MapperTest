@@ -6,9 +6,10 @@ namespace DS4MapperTest.StickActions
     /// <summary>
     /// Shared, mode-aware storage and computation for Counter Movement Release Press'
     /// Opposite Tap Start Delay. Used by both CounterMovementReleasePressProcessor (stick
-    /// D-Pad modes and Analog Emulation) and TouchpadReleaseBrake (touchpad D-Pad modes), so
-    /// the percentage math and best-fit conversion search exist in exactly one place rather
-    /// than being duplicated across the two otherwise-independent state machines. Mirrors
+    /// D-Pad modes and Analog Emulation) and TouchpadCounterMovementReleasePress (touchpad
+    /// D-Pad modes), so the percentage math and best-fit conversion search exist in exactly
+    /// one place rather than being duplicated across the two otherwise-independent state
+    /// machines. Mirrors
     /// OppositeTapLengthTiming's shape, but the start delay's own bounds start at 0 (a delay
     /// of zero is the common case) rather than the tap length's 10ms floor, and new actions
     /// default to Minimum/Maximum mode at 0/0ms - the setting's only representation before

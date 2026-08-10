@@ -6,12 +6,12 @@ namespace DS4MapperTest.StickActions
     /// <summary>
     /// Shared, mode-aware storage and computation for Counter Movement Release Press'
     /// Opposite Tap Length. Used by both CounterMovementReleasePressProcessor (stick D-Pad
-    /// modes and Analog Emulation) and TouchpadReleaseBrake (touchpad D-Pad modes), so the
-    /// percentage math, best-fit conversion search and CS2 constants exist in exactly one
-    /// place rather than being duplicated across the two otherwise-independent state
-    /// machines. Deliberately excludes the tap-length preset and the start-delay fields:
-    /// those remain owned by each caller, since their surrounding preset/NormalizeRanges
-    /// semantics differ slightly between the two.
+    /// modes and Analog Emulation) and TouchpadCounterMovementReleasePress (touchpad D-Pad
+    /// modes), so the percentage math, best-fit conversion search and CS2 constants exist
+    /// in exactly one place rather than being duplicated across the two otherwise-independent
+    /// state machines. Deliberately excludes the tap-length preset and the start-delay
+    /// fields: those remain owned by each caller, since their surrounding preset/
+    /// NormalizeRanges semantics differ slightly between the two.
     /// </summary>
     public sealed class OppositeTapLengthTiming
     {

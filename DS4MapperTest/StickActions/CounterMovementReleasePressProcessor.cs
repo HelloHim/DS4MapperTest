@@ -150,9 +150,10 @@ namespace DS4MapperTest.StickActions
 
         // All tap-length representation storage and computation (mode, Fixed, Percent,
         // Minimum, Maximum, the percentage/best-fit maths and the CS2 constants) lives in
-        // this one shared object so it exists in exactly one place; TouchpadReleaseBrake
-        // composes the same type rather than duplicating any of it. See its class doc for
-        // why synchronisation is never done inside a raw property setter.
+        // this one shared object so it exists in exactly one place;
+        // TouchpadCounterMovementReleasePress composes the same type rather than duplicating
+        // any of it. See its class doc for why synchronisation is never done inside a raw
+        // property setter.
         private readonly OppositeTapLengthTiming tapLengthTiming = new OppositeTapLengthTiming();
 
         public OppositeTapLengthMode OppositeTapLengthMode
@@ -214,8 +215,8 @@ namespace DS4MapperTest.StickActions
 
         // All start-delay representation storage and computation (mode, Fixed, Percent,
         // Minimum, Maximum, the percentage/best-fit maths) lives in this one shared object,
-        // mirroring tapLengthTiming above; TouchpadReleaseBrake composes the same type rather
-        // than duplicating any of it.
+        // mirroring tapLengthTiming above; TouchpadCounterMovementReleasePress composes the
+        // same type rather than duplicating any of it.
         private readonly OppositeTapStartDelayTiming startDelayTiming = new OppositeTapStartDelayTiming();
 
         public OppositeTapStartDelayMode OppositeTapStartDelayMode
