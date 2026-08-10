@@ -323,8 +323,8 @@
 
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
                             <WrapPanel Grid.Column="0"
@@ -511,35 +511,37 @@
                                        Orientation="Horizontal"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center">
-                                <Border x:Name="unsavedStatusPill"
-                                        Visibility="{Binding IsProfileDirty, Converter={StaticResource BoolToVis}}"
-                                        Margin="0,4,12,4"
-                                        Style="{StaticResource SaveStatusPillWarningStyle}">
-                                    <TextBlock Text="Unsaved changes"
-                                               Style="{StaticResource SaveStatusPillTextWarningStyle}"/>
-                                </Border>
+                                <StackPanel Orientation="Horizontal">
+                                    <Border x:Name="unsavedStatusPill"
+                                            Visibility="{Binding IsProfileDirty, Converter={StaticResource BoolToVis}}"
+                                            Margin="0,4,12,4"
+                                            Style="{StaticResource SaveStatusPillWarningStyle}">
+                                        <TextBlock Text="Unsaved changes"
+                                                   Style="{StaticResource SaveStatusPillTextWarningStyle}"/>
+                                    </Border>
 
-                                <Border x:Name="saveStatusPill"
-                                        Visibility="Collapsed"
-                                        Margin="0,4,12,4"
-                                        Style="{StaticResource SaveStatusPillSuccessStyle}">
-                                    <TextBlock x:Name="saveStatusPillText"
-                                               Text="Saved &#x2713;"
-                                               Style="{StaticResource SaveStatusPillTextSuccessStyle}"/>
-                                </Border>
+                                    <Border x:Name="saveStatusPill"
+                                            Visibility="Collapsed"
+                                            Margin="0,4,12,4"
+                                            Style="{StaticResource SaveStatusPillSuccessStyle}">
+                                        <TextBlock x:Name="saveStatusPillText"
+                                                   Text="Saved &#x2713;"
+                                                   Style="{StaticResource SaveStatusPillTextSuccessStyle}"/>
+                                    </Border>
 
-                                <Button x:Name="discardProfileChangesButton"
-                                        Content="Discard Changes"
-                                        Click="DiscardProfileChangesButton_Click"
-                                        IsEnabled="{Binding IsProfileDirty, TargetNullValue=False, FallbackValue=False}"
-                                        Margin="0,4,12,4"
-                                        Style="{StaticResource JsmccDangerButtonStyle}"/>
+                                    <Button x:Name="discardProfileChangesButton"
+                                            Content="Discard Changes"
+                                            Click="DiscardProfileChangesButton_Click"
+                                            IsEnabled="{Binding IsProfileDirty, TargetNullValue=False, FallbackValue=False}"
+                                            Margin="0,4,12,4"
+                                            Style="{StaticResource JsmccDangerButtonStyle}"/>
 
-                                <Button x:Name="saveProfileButton"
-                                        Content="Save Profile"
-                                        Click="SaveProfileButton_Click"
-                                        Margin="0,4,0,4"
-                                        Style="{StaticResource JsmccAccentButtonStyle}"/>
+                                    <Button x:Name="saveProfileButton"
+                                            Content="Save Profile"
+                                            Click="SaveProfileButton_Click"
+                                            Margin="0,4,0,4"
+                                            Style="{StaticResource JsmccAccentButtonStyle}"/>
+                                </StackPanel>
                             </WrapPanel>
                         </Grid>
                     </Grid>
