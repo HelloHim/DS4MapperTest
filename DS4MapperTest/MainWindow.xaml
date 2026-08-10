@@ -325,7 +325,6 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
                             <WrapPanel Grid.Column="0"
@@ -508,8 +507,9 @@
                                 </Popup>
                             </WrapPanel>
 
-                            <WrapPanel Grid.Column="2"
+                            <WrapPanel Grid.Column="1"
                                        Orientation="Horizontal"
+                                       HorizontalAlignment="Right"
                                        VerticalAlignment="Center">
                                 <Border x:Name="unsavedStatusPill"
                                         Visibility="{Binding IsProfileDirty, Converter={StaticResource BoolToVis}}"
