@@ -202,13 +202,15 @@ namespace DS4MapperTest
             newKnownDevices.Clear();
             removedKnownDevices.Clear();
 
-            IEnumerable<HidDevice> hidDevs = HidDevices.Enumerate();
+            // Materialize once. HidDevice construction opens/closes a handle and reads
+            // attributes per device, so re-enumerating the lazy sequence below would
+            // redo that native work for every device a second time.
+            List<HidDevice> hidDevs = HidDevices.Enumerate().ToList();
             foreach(HidDevice hidDev in hidDevs)
             {
                 currentDevicePaths.Add(hidDev.DevicePath);
             }
 
-            IEnumerable<string> addedHidDevices = currentDevicePaths.Except(previousDevicePaths);
             IEnumerable<string> removedHidDevices = previousDevicePaths.Except(currentDevicePaths);
 
             foreach (string devicePath in removedHidDevices)
@@ -222,16 +224,19 @@ namespace DS4MapperTest
                 }
             }
 
-            // Filter out devices already scanned in previous sessions
-            hidDevs = hidDevs.Where((hidDevice) =>
+            // Filter out devices already scanned in previous sessions. These devices were
+            // just enumerated above, so presence in currentDevicePaths already proves they're
+            // connected; checking hidDevice.IsConnected here would re-run a full system-wide
+            // HID scan per device (O(n^2) over every HID device on the machine).
+            IEnumerable<HidDevice> newHidDevs = hidDevs.Where((hidDevice) =>
             {
-                return !foundDevicePaths.Contains(hidDevice.DevicePath) && hidDevice.IsConnected;
+                return !foundDevicePaths.Contains(hidDevice.DevicePath);
             });
 
             // Attempt to filter out virtual devices
-            hidDevs = hidDevs.Where(IsRealDev);
+            newHidDevs = newHidDevs.Where(IsRealDev);
 
-            foreach (HidDevice hidDev in hidDevs)
+            foreach (HidDevice hidDev in newHidDevs)
             {
                 //if (foundDevicePaths.Contains(hidDev.DevicePath))
                 //{
