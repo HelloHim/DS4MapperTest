@@ -104,7 +104,8 @@ namespace DS4MapperTest.ViewModels
         }
 
         public bool IsPadMode => settingsViewModel is StickPadActionPropViewModel ||
-            settingsViewModel is StickAnalogEmulationPropViewModel;
+            settingsViewModel is StickAnalogEmulationPropViewModel ||
+            settingsViewModel is StickMousePropViewModel;
 
         public bool IsFlickStickMode => settingsViewModel is StickFlickStickPropViewModel;
 

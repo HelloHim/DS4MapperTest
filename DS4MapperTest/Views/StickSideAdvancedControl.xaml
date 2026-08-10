@@ -6,6 +6,7 @@
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:propvm="clr-namespace:DS4MapperTest.ViewModels.StickActionPropViewModels"
              xmlns:converters="clr-namespace:DS4MapperTest.Converters"
+             xmlns:views="clr-namespace:DS4MapperTest.Views"
              mc:Ignorable="d"
              d:DesignHeight="420"
              d:DesignWidth="860">
@@ -354,6 +355,128 @@
 
         <DataTemplate DataType="{x:Type propvm:StickAnalogEmulationPropViewModel}">
             <ContentControl Content="{Binding}" ContentTemplate="{StaticResource CounterMovementReleasePressSection}"/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type propvm:StickMousePropViewModel}">
+            <StackPanel>
+                <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,0,0,6">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                            <TextBlock Text="Multiplier Compensation" Style="{StaticResource JsmccLabelText}" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <CheckBox Style="{StaticResource JsmccToggleStyle}" IsChecked="{Binding MultiplierCompensation}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock Text="Divides your output by this amount to compensate for a third-party acceleration or multiplier tool. Enter the exact multiplier that tool applies to your mouse input."
+                                   Style="{StaticResource JsmccMutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,4"/>
+
+                        <StackPanel IsEnabled="{Binding MultiplierCompensation}">
+                            <Border Style="{StaticResource ModeRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Horizontal Multiplier" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                                      Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding AccelerationMultiplier}"/>
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource ModeRowBorder}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Opacity" Value="1.0"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding VerticalAccelerationIsAbsoluteMode}" Value="False">
+                                                        <Setter Property="Opacity" Value="0.5"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <RadioButton GroupName="VerticalAccelerationMode"
+                                                     IsChecked="{Binding VerticalAccelerationIsAbsoluteMode, Mode=TwoWay}"
+                                                     VerticalAlignment="Center" Width="190" Content="Vertical Multiplier"
+                                                     Foreground="{DynamicResource JsmccTextMidBrush}"/>
+                                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                                          Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                          IsEnabled="{Binding VerticalAccelerationIsAbsoluteMode}"
+                                                          Value="{Binding VerticalAccelerationMultiplier}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Opacity" Value="1.0"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding VerticalAccelerationIsScaleMode}" Value="False">
+                                                        <Setter Property="Opacity" Value="0.5"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <RadioButton GroupName="VerticalAccelerationMode"
+                                                     IsChecked="{Binding VerticalAccelerationIsScaleMode, Mode=TwoWay}"
+                                                     VerticalAlignment="Center" Width="190" Content="Vertical Scale"
+                                                     Foreground="{DynamicResource JsmccTextMidBrush}"/>
+                                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                                          Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                          IsEnabled="{Binding VerticalAccelerationIsScaleMode}"
+                                                          Value="{Binding VerticalAccelerationScale}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource JsmccSettingRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                            <TextBlock Text="Directional Binds"
+                                       Style="{StaticResource JsmccLabelText}"/>
+                            <TextBlock Text="Quick bind"
+                                       Style="{StaticResource JsmccMutedText}"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding CardinalDirectionItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource ModeRowBorder}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           Style="{StaticResource JsmccLabelText}"/>
+                                                <TextBlock Text="{Binding Subtitle}"
+                                                           Style="{StaticResource JsmccMutedText}"
+                                                           Margin="0,3,0,0"/>
+                                            </StackPanel>
+                                            <views:ActionOutputListControl Grid.Column="1"
+                                                                           Grid.ColumnSpan="2"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            </StackPanel>
         </DataTemplate>
     </UserControl.Resources>
 

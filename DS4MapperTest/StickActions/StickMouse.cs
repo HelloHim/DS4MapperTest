@@ -34,6 +34,10 @@ namespace DS4MapperTest.StickActions
             public const string DEGREES_PER_SECOND = "DegreesPerSecond";
             public const string DELTA_SETTINGS = "DeltaSettings";
             public const string VERTICAL_SCALE = "VerticalScale";
+            public const string MULTIPLIER_COMPENSATION = "MultiplierCompensation";
+            public const string ACCELERATION_MULTIPLIER = "AccelerationMultiplier";
+            public const string VERTICAL_ACCELERATION_MULTIPLIER = "VerticalAccelerationMultiplier";
+            public const string VERTICAL_ACCELERATION_SCALE_MODE = "VerticalAccelerationScaleMode";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -50,6 +54,10 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.DEGREES_PER_SECOND,
             PropertyKeyStrings.DELTA_SETTINGS,
             PropertyKeyStrings.VERTICAL_SCALE,
+            PropertyKeyStrings.MULTIPLIER_COMPENSATION,
+            PropertyKeyStrings.ACCELERATION_MULTIPLIER,
+            PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER,
+            PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE,
         };
 
         public const double DefaultDegreesPerSecond = 360.0;
@@ -57,6 +65,12 @@ namespace DS4MapperTest.StickActions
         public const double DefaultVerticalScale = MouseMotionSettings.DefaultVerticalScale;
         public const double MaxVerticalScale = MouseMotionSettings.MaxVerticalScale;
         public const int DefaultDiagonalRange = 90;
+        public const bool DefaultMultiplierCompensation = false;
+        public const double DefaultAccelerationMultiplier = 1.0;
+        public const double DefaultVerticalAccelerationMultiplier = 1.0;
+        public const bool DefaultVerticalAccelerationScaleMode = true;
+        public const double MinAccelerationMultiplier = 0.01;
+        public const double MaxAccelerationMultiplier = 100.0;
         public const string ACTION_TYPE_NAME = "StickMouseAction";
 
         private StickDeadZone deadMod;
@@ -97,6 +111,34 @@ namespace DS4MapperTest.StickActions
         {
             get => diagonalRange;
             set => diagonalRange = Math.Clamp(value, 0, 90);
+        }
+
+        private bool multiplierCompensation = DefaultMultiplierCompensation;
+        public bool MultiplierCompensation
+        {
+            get => multiplierCompensation;
+            set => multiplierCompensation = value;
+        }
+
+        private double accelerationMultiplier = DefaultAccelerationMultiplier;
+        public double AccelerationMultiplier
+        {
+            get => accelerationMultiplier;
+            set => accelerationMultiplier = Math.Clamp(value, MinAccelerationMultiplier, MaxAccelerationMultiplier);
+        }
+
+        private double verticalAccelerationMultiplier = DefaultVerticalAccelerationMultiplier;
+        public double VerticalAccelerationMultiplier
+        {
+            get => verticalAccelerationMultiplier;
+            set => verticalAccelerationMultiplier = Math.Clamp(value, MinAccelerationMultiplier, MaxAccelerationMultiplier);
+        }
+
+        private bool verticalAccelerationScaleMode = DefaultVerticalAccelerationScaleMode;
+        public bool VerticalAccelerationScaleMode
+        {
+            get => verticalAccelerationScaleMode;
+            set => verticalAccelerationScaleMode = value;
         }
 
         public StickDeadZone DeadMod { get => deadMod; }
@@ -141,6 +183,10 @@ namespace DS4MapperTest.StickActions
             deadMod = new StickDeadZone(parentAction.deadMod);
             motion = new MouseMotionSettings(parentAction.motion);
             degreesPerSecond = parentAction.degreesPerSecond;
+            multiplierCompensation = parentAction.multiplierCompensation;
+            accelerationMultiplier = parentAction.accelerationMultiplier;
+            verticalAccelerationMultiplier = parentAction.verticalAccelerationMultiplier;
+            verticalAccelerationScaleMode = parentAction.verticalAccelerationScaleMode;
             for (int i = 0; i < dirButtons.Length; i++)
             {
                 AxisDirButton srcBtn = parentAction.dirButtons[i];
@@ -392,6 +438,16 @@ namespace DS4MapperTest.StickActions
                 xMotion = horizontalCountsPerSecond * timeDelta * outXNorm;
                 yMotion = -verticalCountsPerSecond * timeDelta * outYNorm;
 
+                if (multiplierCompensation)
+                {
+                    double accelMultiplier = Math.Clamp(accelerationMultiplier,
+                        MinAccelerationMultiplier, MaxAccelerationMultiplier);
+                    double verticalAccelMultiplier = Math.Clamp(verticalAccelerationMultiplier,
+                        MinAccelerationMultiplier, MaxAccelerationMultiplier);
+                    xMotion /= accelMultiplier;
+                    yMotion /= verticalAccelMultiplier;
+                }
+
                 for (int i = 0; i < slotOn.Length; i++)
                 {
                     slotOn[i] = false;
@@ -605,6 +661,18 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.VERTICAL_SCALE:
                             motion.VerticalScale = tempMouseAction.motion.VerticalScale;
                             break;
+                        case PropertyKeyStrings.MULTIPLIER_COMPENSATION:
+                            multiplierCompensation = tempMouseAction.multiplierCompensation;
+                            break;
+                        case PropertyKeyStrings.ACCELERATION_MULTIPLIER:
+                            accelerationMultiplier = tempMouseAction.accelerationMultiplier;
+                            break;
+                        case PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER:
+                            verticalAccelerationMultiplier = tempMouseAction.verticalAccelerationMultiplier;
+                            break;
+                        case PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE:
+                            verticalAccelerationScaleMode = tempMouseAction.verticalAccelerationScaleMode;
+                            break;
                         default:
                             break;
                     }
@@ -669,6 +737,18 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.VERTICAL_SCALE:
                     motion.VerticalScale = tempMouseAction.motion.VerticalScale;
+                    break;
+                case PropertyKeyStrings.MULTIPLIER_COMPENSATION:
+                    multiplierCompensation = tempMouseAction.multiplierCompensation;
+                    break;
+                case PropertyKeyStrings.ACCELERATION_MULTIPLIER:
+                    accelerationMultiplier = tempMouseAction.accelerationMultiplier;
+                    break;
+                case PropertyKeyStrings.VERTICAL_ACCELERATION_MULTIPLIER:
+                    verticalAccelerationMultiplier = tempMouseAction.verticalAccelerationMultiplier;
+                    break;
+                case PropertyKeyStrings.VERTICAL_ACCELERATION_SCALE_MODE:
+                    verticalAccelerationScaleMode = tempMouseAction.verticalAccelerationScaleMode;
                     break;
                 default:
                     break;
