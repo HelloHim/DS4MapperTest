@@ -222,30 +222,46 @@ namespace DS4MapperTest.Behaviors
             }
 
             bool scrollingDown = e.Delta < 0;
-            bool canScrollFurther = scrollingDown
-                ? scrollViewer.VerticalOffset < scrollViewer.ScrollableHeight
-                : scrollViewer.VerticalOffset > 0;
-
-            if (canScrollFurther)
+            if (CanScroll(scrollViewer, scrollingDown))
             {
                 // This ScrollViewer still has room to move, let its normal
                 // (bubbling) MouseWheel handling scroll it.
                 return;
             }
 
-            // Nothing left to scroll here - forward the wheel input up to the
-            // next scrollable ancestor instead of letting it dead-end.
+            // Nothing left to scroll here. Walk up through any further
+            // nested ScrollViewers (eg. a settings panel with its own
+            // ScrollViewer embedded inside another scrollable panel) and
+            // hand the wheel input to the first ancestor that still has
+            // room, by re-raising it directly on that ancestor so its own
+            // default MouseWheel handling scrolls it at the normal
+            // multi-line wheel speed. A single bubbling event raised on
+            // just the immediate parent only works for one level - the
+            // very next ScrollViewer up the chain swallows the event
+            // unconditionally even when it has nothing left to scroll
+            // either, so anything nested three or more ScrollViewers deep
+            // would dead-end before reaching the outermost page scroller.
             e.Handled = true;
-
-            if (VisualTreeHelper.GetParent(scrollViewer) is UIElement parent)
+            for (DependencyObject current = GetParent(scrollViewer); current != null; current = GetParent(current))
             {
+                if (current is not ScrollViewer ancestor || !CanScroll(ancestor, scrollingDown))
+                {
+                    continue;
+                }
+
                 var forwarded = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
                 {
                     RoutedEvent = UIElement.MouseWheelEvent
                 };
-                parent.RaiseEvent(forwarded);
+                ancestor.RaiseEvent(forwarded);
+                return;
             }
         }
+
+        private static bool CanScroll(ScrollViewer scrollViewer, bool scrollingDown) =>
+            scrollingDown
+                ? scrollViewer.VerticalOffset < scrollViewer.ScrollableHeight
+                : scrollViewer.VerticalOffset > 0;
 
         private static ScrollViewer FindScrollViewer(DependencyObject start)
         {
