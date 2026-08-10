@@ -1190,12 +1190,13 @@
                        MouseLeftButtonDown="ProfilesOverlayBackdrop_MouseDown"/>
 
             <Border MaxWidth="540"
-                    MaxHeight="660"
+                    MaxHeight="820"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Margin="20"
-                    Style="{StaticResource JsmccPanelBorder}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    Style="{StaticResource JsmccPanelBorder}"
+                    Effect="{x:Null}">
+                <ScrollViewer x:Name="profilesOverlayScrollViewer" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <DockPanel LastChildFill="True" Margin="0,0,0,16">
                             <Button Content="X"
@@ -1238,6 +1239,20 @@
                                            Margin="0,3,0,12"/>
 
                                 <StackPanel Margin="0,0,0,10">
+                                    <TextBlock Text="Profile Name"
+                                               Style="{StaticResource JsmccLabelText}"
+                                               Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                             Validation.ErrorTemplate="{x:Null}"
+                                             Style="{StaticResource JsmccTextBoxStyle}"/>
+                                    <TextBlock Text="{Binding ProfileNameErrors}"
+                                               Foreground="{DynamicResource JsmccDangerTextBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0"
+                                               Visibility="{Binding HasProfileNameError, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,0,10">
                                     <TextBlock Text="Profile Path"
                                                Style="{StaticResource JsmccLabelText}"
                                                Margin="0,0,0,4"/>
@@ -1247,7 +1262,8 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBox Grid.Column="0"
-                                                 Text="{Binding ProfilePath, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                                 Text="{Binding ProfileFolder, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                                 Validation.ErrorTemplate="{x:Null}"
                                                  Style="{StaticResource JsmccTextBoxStyle}"/>
                                         <Button Grid.Column="1"
                                                 Content="Browse"
@@ -1255,11 +1271,11 @@
                                                 Style="{StaticResource JsmccButtonStyle}"
                                                 Margin="8,0,0,0"/>
                                     </Grid>
-                                    <TextBlock Text="{Binding ProfilePathErrors}"
+                                    <TextBlock Text="{Binding ProfileFolderErrors}"
                                                Foreground="{DynamicResource JsmccDangerTextBrush}"
                                                TextWrapping="Wrap"
                                                Margin="0,4,0,0"
-                                               Visibility="{Binding HasProfilePathError, Converter={StaticResource BoolToVis}}"/>
+                                               Visibility="{Binding HasProfileFolderError, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
 
                                 <StackPanel Margin="0,0,0,10">
@@ -1292,6 +1308,7 @@
                                  BorderBrush="{DynamicResource JsmccBorderBrush}"
                                  Foreground="{DynamicResource JsmccTextStrongBrush}"
                                  SelectionChanged="ProfileListBox_SelectionChanged"
+                                 Loaded="ProfileListBox_Loaded"
                                  Padding="0">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem">
@@ -1330,8 +1347,6 @@
 
                         <Border x:Name="selectedProfilePanel"
                                 Visibility="Collapsed"
-                                BorderThickness="1,0,0,0"
-                                BorderBrush="{DynamicResource JsmccBorderBrush}"
                                 Margin="0,14,0,0"
                                 Padding="0,14,0,0">
                             <StackPanel>
@@ -1347,14 +1362,14 @@
                                             Style="{StaticResource JsmccButtonStyle}"/>
                                 </StackPanel>
 
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Content="Load This Profile"
-                                            Click="LoadProfileFromListBtn_Click"
-                                            Style="{StaticResource JsmccPrimaryButtonStyle}"
-                                            Margin="0,0,10,0"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Content="Delete"
                                             Click="DeleteProfileBtn_Click"
-                                            Style="{StaticResource JsmccDangerButtonStyle}"/>
+                                            Style="{StaticResource JsmccDangerButtonStyle}"
+                                            Margin="0,0,10,0"/>
+                                    <Button Content="Load This Profile"
+                                            Click="LoadProfileFromListBtn_Click"
+                                            Style="{StaticResource JsmccPrimaryButtonStyle}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>

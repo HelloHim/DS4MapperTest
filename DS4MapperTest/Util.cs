@@ -718,5 +718,38 @@ namespace DS4MapperTest
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern bool EnumDisplayDevicesW(string lpDevice, uint iDevNum, ref DISPLAY_DEVICE lpDisplayDevice, uint dwFlags);
+
+        private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+        private const uint GW_OWNER = 4;
+        private const uint WM_CLOSE = 0x0010;
+
+        [DllImport("user32.dll")]
+        private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
+        [DllImport("user32.dll")]
+        private static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        // Closes any top-level window (e.g. an open SaveFileDialog/OpenFolderDialog)
+        // owned by ownerHandle. Used to get rid of a native file/folder picker left
+        // open when the controller it belongs to is unplugged mid-workflow, so a
+        // disconnect can't leave a dangling modal dialog pointed at a stale device.
+        public static void CloseOwnedDialogs(IntPtr ownerHandle)
+        {
+            if (ownerHandle == IntPtr.Zero) return;
+
+            EnumWindows((hWnd, lParam) =>
+            {
+                if (GetWindow(hWnd, GW_OWNER) == ownerHandle)
+                {
+                    PostMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                }
+
+                return true;
+            }, IntPtr.Zero);
+        }
     }
 }
