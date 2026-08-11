@@ -29,6 +29,7 @@ namespace DS4MapperTest.TouchpadActions
             public const string SNAP_ANGLE = "SnapAngle";
             public const string SNAP_STRENGTH = "SnapStrength";
             public const string SWEEP_SENSITIVITY = "SweepSensitivity";
+            public const string FRONT_ANGLE_DEADZONE = "FrontAngleDeadzone";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -48,6 +49,7 @@ namespace DS4MapperTest.TouchpadActions
             PropertyKeyStrings.SNAP_ANGLE,
             PropertyKeyStrings.SNAP_STRENGTH,
             PropertyKeyStrings.SWEEP_SENSITIVITY,
+            PropertyKeyStrings.FRONT_ANGLE_DEADZONE,
         };
 
         public class FlickStickMappingData
@@ -204,6 +206,18 @@ namespace DS4MapperTest.TouchpadActions
         {
             get => sweepSensitivity;
             set => sweepSensitivity = Math.Clamp(value, 0.0, 6.0);
+        }
+
+        // Matches JoyShockMapper's FLICK_DEADZONE_ANGLE. Pushing a stick
+        // perfectly forward is unrealistic, so a small unwanted flick-turn
+        // happens whenever the user meant to hold forward and start
+        // sweeping. Any initial flick within this many degrees of forward
+        // is zeroed out; the sweep that follows is unaffected.
+        private double frontAngleDeadzone = 7.0;
+        public double FrontAngleDeadzone
+        {
+            get => frontAngleDeadzone;
+            set => frontAngleDeadzone = Math.Clamp(value, 0.0, 180.0);
         }
 
         private FlickStickSubMode subMode = FlickStickSubMode.Standard;
@@ -382,6 +396,9 @@ namespace DS4MapperTest.TouchpadActions
                         case PropertyKeyStrings.SWEEP_SENSITIVITY:
                             sweepSensitivity = tempFlickAction.sweepSensitivity;
                             break;
+                        case PropertyKeyStrings.FRONT_ANGLE_DEADZONE:
+                            frontAngleDeadzone = tempFlickAction.frontAngleDeadzone;
+                            break;
                         default:
                             break;
                     }
@@ -456,6 +473,9 @@ namespace DS4MapperTest.TouchpadActions
                 case PropertyKeyStrings.SWEEP_SENSITIVITY:
                     sweepSensitivity = tempFlickAction.sweepSensitivity;
                     break;
+                case PropertyKeyStrings.FRONT_ANGLE_DEADZONE:
+                    frontAngleDeadzone = tempFlickAction.frontAngleDeadzone;
+                    break;
                 default:
                     break;
             }
@@ -513,6 +533,13 @@ namespace DS4MapperTest.TouchpadActions
                         flickData.flickSize = FlickSnapping.Apply(
                             Math.Atan2((axisXVal - axisXMid), (axisYVal - axisYMid)),
                             snapAngle, snapStrength);
+                        // Cancel the initial flick when it lands close enough to
+                        // forward. The sweep tracked afterwards still starts from
+                        // the stick's real angle, not the zeroed flick.
+                        if (Math.Abs(flickData.flickSize) * 180.0 / Math.PI < frontAngleDeadzone)
+                        {
+                            flickData.flickSize = 0.0;
+                        }
                         flickData.flickTimeActual = flickTime * Math.Pow(Math.Abs(flickData.flickSize) / Math.PI, flickTimeExponent);
                         flickData.ResetRotationSmoothing();
                         //flickData.flickFilter.Filter(0.0, mapper.CurrentLatency);

@@ -62,11 +62,13 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="190"/>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Flick Time (ms)" Style="{StaticResource JsmccLabelText}"/>
+                                <TextBlock Grid.Column="0" Text="Flick Time" Style="{StaticResource JsmccLabelText}"/>
                                 <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="1000" DecimalPlaces="0" Increment="10"
                                                   Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                   Value="{Binding FlickTime, UpdateSourceTrigger=LostFocus}"/>
+                                <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
 
@@ -119,6 +121,28 @@
                                                       Value="{Binding SnapStrength, UpdateSourceTrigger=LostFocus}"/>
                                 </Grid>
                                 <TextBlock Text="Snaps each new flick to the nearest of a fixed set of directions. Strength 1 snaps fully, 0 leaves the flick untouched, and values between bias towards the nearest direction. Sweeping a held touch is never snapped."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                Visibility="{Binding ShowFlickSettings, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Front Angle Deadzone" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="180" DecimalPlaces="0" Increment="1"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding FrontAngleDeadzone, UpdateSourceTrigger=LostFocus}"/>
+                                    <TextBlock Grid.Column="2" Text="&#176;" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="Cancels the initial flick-turn when it lands within this many degrees of forward, so you can push the stick up and start sweeping without an unwanted camera turn first. Does not affect the sweep itself."
                                            Style="{StaticResource JsmccMutedText}"
                                            TextWrapping="Wrap"
                                            Margin="0,4,0,0"/>
