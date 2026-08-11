@@ -315,6 +315,32 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler RotateSmoothOverrideChanged;
 
+        public double SweepSensitivity
+        {
+            get => action.SweepSensitivity;
+            set
+            {
+                if (action.SweepSensitivity == value) return;
+                action.SweepSensitivity = value;
+                SweepSensitivityChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler SweepSensitivityChanged;
+
+        public double FrontAngleDeadzone
+        {
+            get => action.FrontAngleDeadzone;
+            set
+            {
+                if (action.FrontAngleDeadzone == value) return;
+                action.FrontAngleDeadzone = value;
+                FrontAngleDeadzoneChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler FrontAngleDeadzoneChanged;
+
         public int SelectedSnapAngleIndex
         {
             get => (int)action.SnapAngle;
@@ -423,6 +449,20 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler HighlightRotateSmoothOverrideChanged;
 
+        public bool HighlightSweepSensitivity
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
+        }
+        public event EventHandler HighlightSweepSensitivityChanged;
+
+        public bool HighlightFrontAngleDeadzone
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE);
+        }
+        public event EventHandler HighlightFrontAngleDeadzoneChanged;
+
         public override event EventHandler ActionPropertyChanged;
 
         public TouchpadFlickStickPropViewModel(Mapper mapper, TouchpadMapAction action)
@@ -469,6 +509,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             MultiplierCompensationChanged += TouchpadFlickStickPropViewModel_MultiplierCompensationChanged;
             AccelerationMultiplierChanged += TouchpadFlickStickPropViewModel_AccelerationMultiplierChanged;
             RotateSmoothOverrideChanged += TouchpadFlickStickPropViewModel_RotateSmoothOverrideChanged;
+            SweepSensitivityChanged += TouchpadFlickStickPropViewModel_SweepSensitivityChanged;
+            FrontAngleDeadzoneChanged += TouchpadFlickStickPropViewModel_FrontAngleDeadzoneChanged;
             SnapAngleChanged += TouchpadFlickStickPropViewModel_SnapAngleChanged;
             SnapStrengthChanged += TouchpadFlickStickPropViewModel_SnapStrengthChanged;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
@@ -752,6 +794,28 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
             HighlightRotateSmoothOverrideChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadFlickStickPropViewModel_SweepSensitivityChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY))
+            {
+                action.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
+            HighlightSweepSensitivityChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadFlickStickPropViewModel_FrontAngleDeadzoneChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE))
+            {
+                action.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE);
+            HighlightFrontAngleDeadzoneChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadFlickStickPropViewModel_SubModeChanged(object sender, EventArgs e)

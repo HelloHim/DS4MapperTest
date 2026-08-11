@@ -38,6 +38,8 @@ namespace DS4MapperTest.StickActions
             public const string SUB_MODE = "SubMode";
             public const string SNAP_ANGLE = "SnapAngle";
             public const string SNAP_STRENGTH = "SnapStrength";
+            public const string SWEEP_SENSITIVITY = "SweepSensitivity";
+            public const string FRONT_ANGLE_DEADZONE = "FrontAngleDeadzone";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -56,6 +58,8 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.SUB_MODE,
             PropertyKeyStrings.SNAP_ANGLE,
             PropertyKeyStrings.SNAP_STRENGTH,
+            PropertyKeyStrings.SWEEP_SENSITIVITY,
+            PropertyKeyStrings.FRONT_ANGLE_DEADZONE,
         };
 
         public class FlickStickMappingData
@@ -135,7 +139,7 @@ namespace DS4MapperTest.StickActions
             get => realWorldCalibration; set => realWorldCalibration = value;
         }
 
-        private double flickThreshold = 0.9;
+        private double flickThreshold = 0.7;
         public double FlickThreshold
         {
             get => flickThreshold; set => flickThreshold = value;
@@ -201,6 +205,29 @@ namespace DS4MapperTest.StickActions
         {
             get => rotateSmoothOverride;
             set => rotateSmoothOverride = Math.Clamp(value, -1.0, 1.0);
+        }
+
+        // Matches Steam Input's Flick Stick Sweep Sensitivity. A dimensionless
+        // multiplier applied only to the continuous sweep rotation, not the
+        // initial flick-turn. 1.0 is a natural 1:1 angular ratio; 0 disables
+        // sweep rotation entirely.
+        private double sweepSensitivity = 1.0;
+        public double SweepSensitivity
+        {
+            get => sweepSensitivity;
+            set => sweepSensitivity = Math.Clamp(value, 0.0, 6.0);
+        }
+
+        // Matches JoyShockMapper's FLICK_DEADZONE_ANGLE. Pushing a stick
+        // perfectly forward is unrealistic, so a small unwanted flick-turn
+        // happens whenever the user meant to hold forward and start
+        // sweeping. Any initial flick within this many degrees of forward
+        // is zeroed out; the sweep that follows is unaffected.
+        private double frontAngleDeadzone = 7.0;
+        public double FrontAngleDeadzone
+        {
+            get => frontAngleDeadzone;
+            set => frontAngleDeadzone = Math.Clamp(value, 0.0, 180.0);
         }
 
         private FlickStickSubMode subMode = FlickStickSubMode.Standard;
@@ -340,6 +367,13 @@ namespace DS4MapperTest.StickActions
                         flickData.flickSize = FlickSnapping.Apply(
                             Math.Atan2((axisXVal - axisXMid), (axisYVal - axisYMid)),
                             snapAngle, snapStrength);
+                        // Cancel the initial flick when it lands close enough to
+                        // forward. The sweep tracked afterwards still starts from
+                        // the stick's real angle, not the zeroed flick.
+                        if (Math.Abs(flickData.flickSize) * 180.0 / Math.PI < frontAngleDeadzone)
+                        {
+                            flickData.flickSize = 0.0;
+                        }
                         flickData.flickTimeActual = flickTime * Math.Pow(Math.Abs(flickData.flickSize) / Math.PI, flickTimeExponent);
                         flickData.ResetRotationSmoothing();
                         //flickData.flickFilter.Filter(0.0, mapper.CurrentLatency);
@@ -372,7 +406,7 @@ namespace DS4MapperTest.StickActions
                         double outputScale = realWorldCalibration / inGameSens;
                         if (outputScale != 0.0)
                         {
-                            double rotationOutput = angleChange * sweepDampen * outputScale;
+                            double rotationOutput = angleChange * sweepSensitivity * sweepDampen * outputScale;
                             int maxSmoothingSamples = mapper.CurrentLatency > 0.0
                                 ? Math.Clamp((int)Math.Ceiling(0.064 / mapper.CurrentLatency), 1,
                                     FlickStickMappingData.FLICK_SMOOTH_SAMPLE_COUNT)
@@ -525,6 +559,12 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.SNAP_STRENGTH:
                             snapStrength = tempFlickAction.snapStrength;
                             break;
+                        case PropertyKeyStrings.SWEEP_SENSITIVITY:
+                            sweepSensitivity = tempFlickAction.sweepSensitivity;
+                            break;
+                        case PropertyKeyStrings.FRONT_ANGLE_DEADZONE:
+                            frontAngleDeadzone = tempFlickAction.frontAngleDeadzone;
+                            break;
                         default:
                             break;
                     }
@@ -595,6 +635,12 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.SNAP_STRENGTH:
                     snapStrength = tempFlickAction.snapStrength;
+                    break;
+                case PropertyKeyStrings.SWEEP_SENSITIVITY:
+                    sweepSensitivity = tempFlickAction.sweepSensitivity;
+                    break;
+                case PropertyKeyStrings.FRONT_ANGLE_DEADZONE:
+                    frontAngleDeadzone = tempFlickAction.frontAngleDeadzone;
                     break;
                 default:
                     break;

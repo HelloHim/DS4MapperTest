@@ -100,6 +100,8 @@ namespace DS4MapperTest.ViewModels
                 settingsViewModel = value;
                 OnPropertyChanged(nameof(SettingsViewModel));
                 OnPropertyChanged(nameof(CurrentModeDescription));
+                OnPropertyChanged(nameof(IsFlickStickMode));
+                OnPropertyChanged(nameof(CurrentModeDisplayName));
             }
         }
 
@@ -118,6 +120,12 @@ namespace DS4MapperTest.ViewModels
                 _ => "This stick does not produce any output.",
             };
 
+        public bool IsFlickStickMode => settingsViewModel is StickFlickStickPropViewModel;
+
+        public string CurrentModeDisplayName =>
+            (sharedModeItems.FirstOrDefault(item => item.Index == selectedModeIndex)
+                ?? sharedModeItems[0]).DisplayName;
+
         public int SelectedModeIndex
         {
             get => selectedModeIndex;
@@ -126,6 +134,7 @@ namespace DS4MapperTest.ViewModels
                 if (selectedModeIndex == value) return;
                 selectedModeIndex = value;
                 OnPropertyChanged(nameof(SelectedModeIndex));
+                OnPropertyChanged(nameof(CurrentModeDisplayName));
 
                 if (suppressModeChange) return;
                 SwitchMode(value);
