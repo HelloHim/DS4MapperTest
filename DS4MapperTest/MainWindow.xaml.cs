@@ -51,7 +51,6 @@ namespace DS4MapperTest
         private bool isSavingProfile;
         private bool isTogglingService;
         private DispatcherTimer gyroCalibrationStatusTimer;
-        private bool isClosingAfterDirtyPrompt;
         private bool isDirtyClosePromptActive;
         private DispatcherTimer saveStatusHideTimer;
         private DispatcherTimer deleteActiveProfileWarningHideTimer;
@@ -1743,9 +1742,8 @@ namespace DS4MapperTest
             }));
         }
 
-        private async void Window_Closing(object sender, CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (isClosingAfterDirtyPrompt) return;
             if (isDirtyClosePromptActive)
             {
                 e.Cancel = true;
@@ -1754,23 +1752,56 @@ namespace DS4MapperTest
 
             if (editorTestVM?.IsProfileDirty != true) return;
 
-            e.Cancel = true;
+            // Resolve e.Cancel synchronously, in this same dispatch, rather than
+            // cancelling and calling Close() again afterwards. A second Close() call
+            // (whether direct or queued via the dispatcher) depends on WPF/dispatcher
+            // reentrancy behaviour that proved unreliable after repeated cancelled
+            // close attempts on the same window. Since the dialog and the save below
+            // are both synchronous, there is nothing to await here.
             isDirtyClosePromptActive = true;
-
-            bool canClose;
             try
             {
-                canClose = await ConfirmDiscardProfileChangesAsync();
+                DirtySwitchDecision decision = ShowDirtySwitchDialog();
+                switch (decision)
+                {
+                    case DirtySwitchDecision.Discard:
+                        e.Cancel = false;
+                        break;
+                    case DirtySwitchDecision.Save:
+                        e.Cancel = !SaveCurrentProfileForClose();
+                        break;
+                    default:
+                        e.Cancel = true;
+                        break;
+                }
             }
             finally
             {
                 isDirtyClosePromptActive = false;
             }
+        }
 
-            if (!canClose) return;
+        private bool SaveCurrentProfileForClose()
+        {
+            if (editorTestVM == null) return false;
 
-            isClosingAfterDirtyPrompt = true;
-            Close();
+            ProfileEditorTestViewModel activeVM = editorTestVM;
+            try
+            {
+                activeVM.TestSave(activeVM.ProfileEnt, activeVM.DeviceMapper.ActionProfile);
+                activeVM.MarkProfileClean();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                saveProfileLogger.Error(ex, "Failed to save profile while closing");
+                MessageBox.Show(
+                    $"Failed to save the current profile:\n{ex.Message}",
+                    "Save Profile",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return false;
+            }
         }
 
         private void Window_Closed(object sender, EventArgs e)
