@@ -326,10 +326,10 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
                 if (value)
                 {
-                    // Enabling always lands on Time Variance (Range) mode and the CS2
+                    // Enabling always lands on Time Variance (%) mode and the CS2
                     // preset, so turning this on never surfaces stale/legacy tap-length
                     // values or a stale mode as an unexpected "Custom".
-                    action.CounterMovementReleasePress.OppositeTapLengthMode = DS4MapperTest.StickActions.OppositeTapLengthMode.MinimumAndMaximum;
+                    action.CounterMovementReleasePress.OppositeTapLengthMode = DS4MapperTest.StickActions.OppositeTapLengthMode.WaitVariancePercentage;
                     action.CounterMovementReleasePress.ApplyCs2Preset();
                     OppositeTapLengthModeChanged?.Invoke(this, EventArgs.Empty);
                     OppositeTapLengthModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
