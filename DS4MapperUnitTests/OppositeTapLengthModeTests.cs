@@ -31,15 +31,15 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void NewTouchpadCounterMovementReleasePress_DefaultsToWaitVariancePercentageWithCs2Values()
         {
-            TouchpadCounterMovementReleasePress brake = new TouchpadCounterMovementReleasePress();
+            TouchpadCounterMovementReleasePress releasePress = new TouchpadCounterMovementReleasePress();
 
-            Assert.IsFalse(brake.Enabled);
-            Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, brake.OppositeTapLengthMode);
-            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.EffectiveTapLengthPreset);
-            Assert.AreEqual(84, brake.OppositeTapLengthMs);
-            Assert.AreEqual(7, brake.OppositeTapLengthVariancePercent);
-            Assert.AreEqual(78, brake.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(90, brake.OppositeTapLengthMaximumMs);
+            Assert.IsFalse(releasePress.Enabled);
+            Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, releasePress.OppositeTapLengthMode);
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, releasePress.EffectiveTapLengthPreset);
+            Assert.AreEqual(84, releasePress.OppositeTapLengthMs);
+            Assert.AreEqual(7, releasePress.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(78, releasePress.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, releasePress.OppositeTapLengthMaximumMs);
         }
 
         [TestMethod]

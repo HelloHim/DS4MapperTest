@@ -18,7 +18,7 @@ namespace DS4MapperTest.StickActions
     public sealed class OppositeTapStartDelayTiming
     {
         public const int MIN_START_DELAY_MS = 0;
-        public const int MAX_START_DELAY_MS = DigitalReleaseBrakePulse.MAX_BRAKE_DURATION_MS;
+        public const int MAX_START_DELAY_MS = DigitalReleasePressPulse.MAX_RELEASE_PRESS_DURATION_MS;
 
         public const int MIN_START_DELAY_VARIANCE_PERCENT = 0;
         public const int MAX_START_DELAY_VARIANCE_PERCENT = 100;

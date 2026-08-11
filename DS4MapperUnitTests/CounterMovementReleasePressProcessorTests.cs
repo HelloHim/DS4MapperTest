@@ -64,83 +64,83 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void OppositeTapLengthMs_ClampsToOneHundredFiftyMilliseconds()
         {
-            CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
+            CounterMovementReleasePressProcessor releasePress = new CounterMovementReleasePressProcessor();
 
-            brake.OppositeTapLengthMinimumMs = 900;
-            brake.OppositeTapLengthMaximumMs = 900;
+            releasePress.OppositeTapLengthMinimumMs = 900;
+            releasePress.OppositeTapLengthMaximumMs = 900;
 
-            Assert.AreEqual(150, brake.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(150, brake.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(150, releasePress.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(150, releasePress.OppositeTapLengthMaximumMs);
         }
 
         [TestMethod]
         public void ArmingThreshold_DefaultIsZero()
         {
-            CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
+            CounterMovementReleasePressProcessor releasePress = new CounterMovementReleasePressProcessor();
 
-            Assert.AreEqual(0.0, brake.ArmingThreshold);
+            Assert.AreEqual(0.0, releasePress.ArmingThreshold);
         }
 
         [TestMethod]
         public void OppositeTapLengthMs_DefaultsToCs2Values()
         {
-            CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
+            CounterMovementReleasePressProcessor releasePress = new CounterMovementReleasePressProcessor();
 
-            Assert.AreEqual(78, brake.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(90, brake.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(78, releasePress.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(90, releasePress.OppositeTapLengthMaximumMs);
         }
 
         [TestMethod]
         public void OppositeTapStartDelayMs_DefaultsMatchSpec()
         {
-            CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
+            CounterMovementReleasePressProcessor releasePress = new CounterMovementReleasePressProcessor();
 
-            Assert.AreEqual(0, brake.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(0, brake.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(0, releasePress.OppositeTapStartDelayMinimumMs);
+            Assert.AreEqual(0, releasePress.OppositeTapStartDelayMaximumMs);
         }
 
         [TestMethod]
         public void TapLengthPreset_DefaultIsCs2()
         {
-            CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
+            CounterMovementReleasePressProcessor releasePress = new CounterMovementReleasePressProcessor();
 
-            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.TapLengthPreset);
-            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.EffectiveTapLengthPreset);
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, releasePress.TapLengthPreset);
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, releasePress.EffectiveTapLengthPreset);
         }
 
         [TestMethod]
         public void EffectiveTapLengthPreset_IsBidirectional()
         {
-            CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
-            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.EffectiveTapLengthPreset);
+            CounterMovementReleasePressProcessor releasePress = new CounterMovementReleasePressProcessor();
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, releasePress.EffectiveTapLengthPreset);
 
-            brake.OppositeTapLengthMinimumMs = 60;
-            Assert.AreEqual(CounterMovementTapLengthPreset.Custom, brake.EffectiveTapLengthPreset,
+            releasePress.OppositeTapLengthMinimumMs = 60;
+            Assert.AreEqual(CounterMovementTapLengthPreset.Custom, releasePress.EffectiveTapLengthPreset,
                 "Editing away from the CS2 values must switch the displayed preset to Custom.");
 
-            brake.OppositeTapLengthMinimumMs = 78;
-            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, brake.EffectiveTapLengthPreset,
+            releasePress.OppositeTapLengthMinimumMs = 78;
+            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, releasePress.EffectiveTapLengthPreset,
                 "Editing back to exactly the CS2 values must switch the displayed preset back to CS2.");
         }
 
         [TestMethod]
         public void MinimumHoldMs_DefaultIsZero()
         {
-            CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
+            CounterMovementReleasePressProcessor releasePress = new CounterMovementReleasePressProcessor();
 
-            Assert.AreEqual(0, brake.MinimumHoldMs);
+            Assert.AreEqual(0, releasePress.MinimumHoldMs);
         }
 
-        private string BuildProfileJson(string padMode = "EightWay", double? brakeArmingThreshold = null)
+        private string BuildProfileJson(string padMode = "EightWay", double? requiredStickDeflectionThreshold = null)
         {
-            string thresholdLine = brakeArmingThreshold.HasValue
+            string thresholdLine = requiredStickDeflectionThreshold.HasValue
                 ? $@",
-                ""RequiredStickDeflectionThreshold"": {brakeArmingThreshold.Value.ToString("0.##", CultureInfo.InvariantCulture)}"
+                ""RequiredStickDeflectionThreshold"": {requiredStickDeflectionThreshold.Value.ToString("0.##", CultureInfo.InvariantCulture)}"
                 : string.Empty;
 
             return @"{
-  ""Name"": ""ReleaseBrakeTest"",
-  ""Description"": ""ReleaseBrakeTest"",
+  ""Name"": ""ReleasePressTest"",
+  ""Description"": ""ReleasePressTest"",
   ""Creator"": ""test"",
   ""CreationDate"": ""2026-07-20T00:00:00+0000"",
   ""ActionSets"": [
@@ -197,7 +197,7 @@ namespace DS4MapperUnitTests
         }
 
         private (TestMapper mapper, StickPadAction padAction) LoadMapper(string padMode = "EightWay",
-            double? brakeArmingThreshold = null)
+            double? requiredStickDeflectionThreshold = null)
         {
             eventInputMapping = new SendInputMapping();
             ProfileSerializer.EventInputMapper = eventInputMapping;
@@ -209,7 +209,7 @@ namespace DS4MapperUnitTests
             tempProfile.ActionSets.Clear();
 
             ProfileSerializer profileSerializer = new ProfileSerializer(tempProfile);
-            JsonConvert.PopulateObject(BuildProfileJson(padMode, brakeArmingThreshold), profileSerializer);
+            JsonConvert.PopulateObject(BuildProfileJson(padMode, requiredStickDeflectionThreshold), profileSerializer);
             profileSerializer.PopulateProfile();
             tempProfile.ResetAliases();
 
@@ -267,7 +267,7 @@ namespace DS4MapperUnitTests
         [DataRow("EightWay")]
         [DataRow("FourWayCardinal")]
         [DataRow("FourWayDiagonal")]
-        public void ReleaseBrakeSettings_AreVisibleForEveryDPadMode(string padMode)
+        public void CounterMovementReleasePressSettings_AreVisibleForEveryDPadMode(string padMode)
         {
             var (mapper, padAction) = LoadMapper(padMode);
 
@@ -319,7 +319,7 @@ namespace DS4MapperUnitTests
             Report(mapper, 0, 0);
 
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State,
-                $"Expected Braking in {padMode} mode.");
+                $"Expected opposite tap active in {padMode} mode.");
             Assert.IsFalse(KeyDown(VK_W), $"Original Up key must be released in {padMode} mode.");
             Assert.IsTrue(KeyDown(VK_S), $"Opposite Down key must be pressed in {padMode} mode.");
         }
@@ -339,7 +339,7 @@ namespace DS4MapperUnitTests
             Report(mapper, 0, 0);
 
             Assert.AreNotEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
-            Assert.IsFalse(KeyDown(VK_S), "A below-threshold movement must not arm and brake on release.");
+            Assert.IsFalse(KeyDown(VK_S), "A below-threshold movement must not arm and release press on release.");
         }
 
         [TestMethod]
@@ -396,20 +396,20 @@ namespace DS4MapperUnitTests
 
             Report(mapper, 0, 0);
 
-            Assert.IsFalse(KeyDown(VK_S), "The brake must still wait for MinimumHoldMs after arming.");
+            Assert.IsFalse(KeyDown(VK_S), "The release press must still wait for MinimumHoldMs after arming.");
         }
 
         [TestMethod]
         public void ChangingArmingThreshold_DoesNotChangeTapLengthRange()
         {
-            CounterMovementReleasePressProcessor brake = new CounterMovementReleasePressProcessor();
-            brake.OppositeTapLengthMinimumMs = 60;
-            brake.OppositeTapLengthMaximumMs = 123;
+            CounterMovementReleasePressProcessor releasePress = new CounterMovementReleasePressProcessor();
+            releasePress.OppositeTapLengthMinimumMs = 60;
+            releasePress.OppositeTapLengthMaximumMs = 123;
 
-            brake.ArmingThreshold = 0.25;
+            releasePress.ArmingThreshold = 0.25;
 
-            Assert.AreEqual(60, brake.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(123, brake.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(60, releasePress.OppositeTapLengthMinimumMs);
+            Assert.AreEqual(123, releasePress.OppositeTapLengthMaximumMs);
         }
 
         [TestMethod]
@@ -442,7 +442,7 @@ namespace DS4MapperUnitTests
             Report(mapper, 0, 0);
 
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State,
-                $"Expected Braking in {padMode} mode.");
+                $"Expected opposite tap active in {padMode} mode.");
             Assert.IsTrue(KeyDown(VK_S), $"Opposite of Up must be Down (S) in {padMode} mode.");
             Assert.IsTrue(KeyDown(VK_A), $"Opposite of Right must be Left (A) in {padMode} mode.");
         }
@@ -464,17 +464,17 @@ namespace DS4MapperUnitTests
             Report(mapper, 0, 0);
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
             Assert.IsFalse(KeyDown(VK_W), "Original direction must be released immediately.");
-            Assert.IsTrue(KeyDown(VK_S), "Opposite direction (S) must be pressed by the brake.");
+            Assert.IsTrue(KeyDown(VK_S), "Opposite direction (S) must be pressed by the release press.");
 
             // Stick stays at rest (spring already settled in this synthetic trace); pulse
-            // must still expire after BrakeDurationMs and S must be released while W stays
+            // must still expire after legacy BrakeDurationMs and S must be released while W stays
             // suppressed until neutral.
             for (int i = 0; i < 10 && padAction.CounterMovementReleasePress.State != CounterMovementReleasePressProcessor.CounterMovementReleasePressState.Suppressed; i++)
             {
                 Report(mapper, 0, 0);
             }
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.Suppressed, padAction.CounterMovementReleasePress.State);
-            Assert.IsFalse(KeyDown(VK_S), "Brake pulse must release S after BrakeDurationMs.");
+            Assert.IsFalse(KeyDown(VK_S), "Release press pulse must release S after legacy BrakeDurationMs.");
             Assert.IsFalse(KeyDown(VK_W), "Old direction must remain suppressed until neutral.");
         }
 
@@ -566,7 +566,7 @@ namespace DS4MapperUnitTests
                 Report(mapper, 0, 0);
 
                 Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State,
-                    $"Expected Braking for ({c.lx},{c.ly})");
+                    $"Expected opposite tap active for ({c.lx},{c.ly})");
                 Assert.IsTrue(KeyDown(c.oppKey1), $"Missing opposite key for ({c.lx},{c.ly})");
                 if (c.oppKey2 != 0)
                 {
@@ -630,7 +630,7 @@ namespace DS4MapperUnitTests
                 Report(mapper, x, y);
 
                 Assert.AreNotEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State,
-                    $"Rim arc must not trigger a brake at step {step}");
+                    $"Rim arc must not trigger a release press at step {step}");
             }
         }
 
@@ -658,20 +658,20 @@ namespace DS4MapperUnitTests
             Report(mapper, 0, 0);
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
 
-            int brakingObservations = 1;
+            int releasePressObservations = 1;
             for (int i = 0; i < 40; i++)
             {
                 Report(mapper, 0, 0);
                 if (padAction.CounterMovementReleasePress.State == CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive)
                 {
-                    brakingObservations++;
+                    releasePressObservations++;
                 }
             }
 
-            // Only the single contiguous Braking run from the one release should ever occur;
-            // once Suppressed/Idle is reached it must not re-enter Braking without a fresh push.
+            // Only the single contiguous OppositeTapActive run from the one release should ever occur;
+            // once Suppressed/Idle is reached it must not re-enter OppositeTapActive without a fresh push.
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.Idle, padAction.CounterMovementReleasePress.State);
-            Assert.IsTrue(brakingObservations < 40, "Brake re-armed and fired more than once for a single release.");
+            Assert.IsTrue(releasePressObservations < 40, "Release press re-armed and fired more than once for a single release.");
         }
 
         [TestMethod]
@@ -691,7 +691,7 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void RepeekOriginalDirection_CancelsBrakeAndRestoresCleanly()
+        public void RepeekOriginalDirection_CancelsReleasePressAndRestoresCleanly()
         {
             var (mapper, padAction) = LoadMapper();
             Neutral(mapper);
@@ -707,11 +707,11 @@ namespace DS4MapperUnitTests
             }
 
             Assert.IsTrue(KeyDown(VK_D), "Renewed D push must be restored.");
-            Assert.IsFalse(KeyDown(VK_A), "Cancelled brake pulse must not leave A stuck.");
+            Assert.IsFalse(KeyDown(VK_A), "Cancelled release press pulse must not leave A stuck.");
         }
 
         [TestMethod]
-        public void ReverseIntoBrakeDirection_TransfersOwnershipWithoutGap()
+        public void ReverseIntoReleasePressDirection_TransfersOwnershipWithoutGap()
         {
             var (mapper, padAction) = LoadMapper();
             Neutral(mapper);
@@ -720,7 +720,7 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_A));
 
-            // Deliberately push A (left) — the same key the brake is already holding.
+            // Deliberately push A (left) — the same key the release press is already holding.
             for (int i = 0; i < 6; i++)
             {
                 Report(mapper, -FULL, 0);
@@ -729,7 +729,7 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void ShortCardinalTap_DoesNotBrake()
+        public void ShortCardinalTap_DoesNotReleasePress()
         {
             var (mapper, padAction) = LoadMapper();
             Neutral(mapper);
@@ -738,11 +738,11 @@ namespace DS4MapperUnitTests
             HoldRight(mapper, 4);
             Report(mapper, 0, 0);
 
-            Assert.IsFalse(KeyDown(VK_A), "Short tap under MinimumHoldMs must not brake.");
+            Assert.IsFalse(KeyDown(VK_A), "Short tap under MinimumHoldMs must not release press.");
         }
 
         [TestMethod]
-        public void MixedDurationDiagonal_OnlyEligibleComponentBrakes()
+        public void MixedDurationDiagonal_OnlyEligibleComponentReleasePresses()
         {
             var (mapper, padAction) = LoadMapper();
             Neutral(mapper);
@@ -765,7 +765,7 @@ namespace DS4MapperUnitTests
             HoldUp(mapper, 20);
 
             // A hitched/duplicate report with zero dt, same physical position, must be
-            // ignored, not crash, and not brake.
+            // ignored, not crash, and not release press.
             Report(mapper, 0, FULL, 0.0);
             Assert.AreNotEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
 
@@ -792,7 +792,7 @@ namespace DS4MapperUnitTests
             for (int i = 0; i < 5; i++) Report(mapper, 0, 0);
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.Idle, padAction.CounterMovementReleasePress.State);
 
-            // Now a genuine push-and-release cycle must brake normally.
+            // Now a genuine push-and-release cycle must release press normally.
             HoldUp(mapper, 20);
             Report(mapper, 0, 0);
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
@@ -811,7 +811,7 @@ namespace DS4MapperUnitTests
             padAction.CounterMovementReleasePress.Enabled = false;
             Report(mapper, 0, 0);
 
-            Assert.IsFalse(KeyDown(VK_S), "Disabling mid-pulse must release the brake-owned key.");
+            Assert.IsFalse(KeyDown(VK_S), "Disabling mid-pulse must release the release-press-owned key.");
             Assert.IsFalse(KeyDown(VK_W), "No key should be left stuck.");
         }
 
@@ -856,13 +856,13 @@ namespace DS4MapperUnitTests
             Report(mapper, 0, 0, 0.0);
 
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.Suppressed, padAction.CounterMovementReleasePress.State);
-            Assert.IsFalse(KeyDown(VK_S), "Invalid report dt must not keep the brake-owned key held indefinitely.");
+            Assert.IsFalse(KeyDown(VK_S), "Invalid report dt must not keep the release-press-owned key held indefinitely.");
         }
 
         [TestMethod]
         public void ArmingThreshold_ProfileSaveLoadInheritanceAndReset()
         {
-            var (_, loadedAction) = LoadMapper(brakeArmingThreshold: 0.25);
+            var (_, loadedAction) = LoadMapper(requiredStickDeflectionThreshold: 0.25);
             Assert.AreEqual(0.25, loadedAction.CounterMovementReleasePress.ArmingThreshold);
             Assert.IsTrue(loadedAction.ChangedProperties.Contains(
                 StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD));
@@ -932,23 +932,23 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void ArrowKeyMode_ReverseIntoBrakeDirection_ReleasesTheOwnedArrow()
+        public void ArrowKeyMode_ReverseIntoReleasePressDirection_ReleasesTheOwnedArrow()
         {
             var (mapper, padAction) = LoadMapper();
             padAction.CounterMovementReleasePress.UseArrowKeysForCounterMovementPresses = true;
             Neutral(mapper);
 
-            // Push Up and release: the brake owns the Down arrow.
+            // Push Up and release: the release press owns the Down arrow.
             HoldUp(mapper, 20);
             Report(mapper, 0, 0);
             Assert.IsTrue(KeyDown(VK_DOWN));
 
-            // Reverse into the brake's own direction while it is still pulsing. With the
-            // normal (movement bind) output the brake silently hands the key over to the
+            // Reverse into the release press's own direction while it is still pulsing. With the
+            // normal (movement bind) output the release press silently hands the key over to the
             // masked normal path; with arrow output the normal path presses S instead, so
-            // the arrow the brake owns has to be released rather than just disowned.
+            // the arrow the release press owns has to be released rather than just disowned.
             for (int i = 0; i < 40; i++) Report(mapper, 0, -FULL);
-            Assert.IsTrue(KeyDown(VK_S), "Reversing into the brake direction must press the normal Down bind.");
+            Assert.IsTrue(KeyDown(VK_S), "Reversing into the release press direction must press the normal Down bind.");
             Assert.IsFalse(KeyDown(VK_DOWN), "The handed-off arrow must not stay held once the normal bind takes over.");
 
             for (int i = 0; i < 40; i++) Report(mapper, 0, 0);

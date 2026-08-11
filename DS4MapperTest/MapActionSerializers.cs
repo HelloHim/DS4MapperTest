@@ -1,4 +1,4 @@
-﻿using DS4MapperTest.ActionUtil;
+using DS4MapperTest.ActionUtil;
 using DS4MapperTest.ButtonActions;
 using DS4MapperTest.Common;
 using DS4MapperTest.GyroActions;
@@ -2451,7 +2451,7 @@ namespace DS4MapperTest
 
             if (settings.LegacyBrakeDurationMs.HasValue)
             {
-                int legacyDuration = DigitalReleaseBrakePulse.ClampBrakeDurationMs(settings.LegacyBrakeDurationMs.Value);
+                int legacyDuration = DigitalReleasePressPulse.ClampReleasePressDurationMs(settings.LegacyBrakeDurationMs.Value);
 
                 if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS))
                 {
@@ -4636,11 +4636,11 @@ namespace DS4MapperTest
                 set
                 {
                     touchStickAction.ForceCenter = value;
-                    ForcedCenterChanged?.Invoke(this, EventArgs.Empty);
+                    ForceCenterChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler ForcedCenterChanged;
-            public bool ShouldSerializeForcedCenter()
+            public event EventHandler ForceCenterChanged;
+            public bool ShouldSerializeForceCenter()
             {
                 return touchStickAction.ChangedProperties.Contains(TouchpadStickAction.PropertyKeyStrings.FORCE_CENTER);
             }
@@ -4810,7 +4810,7 @@ namespace DS4MapperTest
             settings.SquareStickEnabledChanged += Settings_SquareStickEnabledChanged;
             settings.SquareStickRoundnessChanged += Settings_SquareStickRoundnessChanged;
             settings.DeadZoneTypeChanged += Settings_DeadZoneTypeChanged;
-            settings.ForcedCenterChanged += Settings_ForcedCenterChanged;
+            settings.ForceCenterChanged += Settings_ForceCenterChanged;
 
             settings.UseOuterRingChanged += Settings_UseOuterRingChanged;
             settings.UseAsOuterRingChanged += Settings_UseAsOuterRingChanged;
@@ -4862,7 +4862,7 @@ namespace DS4MapperTest
             touchStickAction.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.SMOOTHING_ENABLED);
         }
 
-        private void Settings_ForcedCenterChanged(object sender, EventArgs e)
+        private void Settings_ForceCenterChanged(object sender, EventArgs e)
         {
             touchStickAction.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.FORCE_CENTER);
         }
@@ -5051,10 +5051,10 @@ namespace DS4MapperTest
                 set
                 {
                     touchAbsAct.AntiRelease = Math.Clamp(value, 0.0, 1.0);
-                    AntiRadiusChanged?.Invoke(this, EventArgs.Empty);
+                    AntiReleaseChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler AntiRadiusChanged;
+            public event EventHandler AntiReleaseChanged;
 
             [JsonProperty("UseOuterRing")]
             public bool UseOuterRing
@@ -5201,7 +5201,7 @@ namespace DS4MapperTest
             RingBindingChanged += TouchpadAbsActionSerializer_RingBindingChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
             settings.MaxZoneChanged += Settings_MaxZoneChanged;
-            settings.AntiRadiusChanged += Settings_AntiReleaseChanged;
+            settings.AntiReleaseChanged += Settings_AntiReleaseChanged;
             settings.UseAsOuterRingChanged += Settings_UseAsOuterRingChanged;
             settings.UseOuterRingChanged += Settings_UseOuterRingChanged;
             settings.OuterRingDeadZoneChanged += Settings_OuterRingDeadZoneChanged;
@@ -7563,7 +7563,7 @@ namespace DS4MapperTest
 
             if (settings.LegacyBrakeDurationMs.HasValue)
             {
-                int legacyDuration = DigitalReleaseBrakePulse.ClampBrakeDurationMs(settings.LegacyBrakeDurationMs.Value);
+                int legacyDuration = DigitalReleasePressPulse.ClampReleasePressDurationMs(settings.LegacyBrakeDurationMs.Value);
 
                 if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS))
                 {
@@ -8463,7 +8463,7 @@ namespace DS4MapperTest
 
             if (settings.LegacyBrakeDurationMs.HasValue)
             {
-                int legacyDuration = DigitalReleaseBrakePulse.ClampBrakeDurationMs(settings.LegacyBrakeDurationMs.Value);
+                int legacyDuration = DigitalReleasePressPulse.ClampReleasePressDurationMs(settings.LegacyBrakeDurationMs.Value);
 
                 if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS))
                 {

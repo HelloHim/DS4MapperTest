@@ -535,7 +535,7 @@ namespace DS4MapperUnitTests
 
         // --- Section 13/26: legacy profile migration -------------------------------
 
-        private string BuildLegacyProfileJson(bool enabled, int brakeDurationMs, int minimumHoldMs, double armingThreshold)
+        private string BuildLegacyProfileJson(bool enabled, int releasePressDurationMs, int minimumHoldMs, double armingThreshold)
         {
             return $@"{{
   ""Name"": ""LegacyTest"",
@@ -568,7 +568,7 @@ namespace DS4MapperUnitTests
                 ""DeadZone"": 0.3,
                 ""DiagonalRange"": 45,
                 ""BrakeEnabled"": {enabled.ToString().ToLowerInvariant()},
-                ""BrakeDurationMs"": {brakeDurationMs},
+                ""BrakeDurationMs"": {releasePressDurationMs},
                 ""CounterMovementMinimumHoldMs"": {minimumHoldMs},
                 ""RequiredStickDeflectionThreshold"": {armingThreshold.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}
               }}
@@ -590,7 +590,7 @@ namespace DS4MapperUnitTests
 }}";
         }
 
-        private (TestMapper mapper, StickPadAction padAction) LoadLegacyMapper(bool enabled, int brakeDurationMs,
+        private (TestMapper mapper, StickPadAction padAction) LoadLegacyMapper(bool enabled, int releasePressDurationMs,
             int minimumHoldMs = 80, double armingThreshold = 0.15)
         {
             eventInputMapping = new SendInputMapping();
@@ -603,7 +603,7 @@ namespace DS4MapperUnitTests
             tempProfile.ActionSets.Clear();
 
             ProfileSerializer profileSerializer = new ProfileSerializer(tempProfile);
-            JsonConvert.PopulateObject(BuildLegacyProfileJson(enabled, brakeDurationMs, minimumHoldMs, armingThreshold), profileSerializer);
+            JsonConvert.PopulateObject(BuildLegacyProfileJson(enabled, releasePressDurationMs, minimumHoldMs, armingThreshold), profileSerializer);
             profileSerializer.PopulateProfile();
             tempProfile.ResetAliases();
 
@@ -621,14 +621,14 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void LegacyProfile_EnabledValueIsPreserved()
         {
-            var (_, padAction) = LoadLegacyMapper(enabled: true, brakeDurationMs: 90);
+            var (_, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 90);
             Assert.IsTrue(padAction.CounterMovementReleasePress.Enabled);
         }
 
         [TestMethod]
-        public void LegacyProfile_BrakeDurationBecomesMinimumAndMaximum()
+        public void LegacyProfile_ReleasePressDurationBecomesMinimumAndMaximum()
         {
-            var (_, padAction) = LoadLegacyMapper(enabled: true, brakeDurationMs: 90);
+            var (_, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 90);
             Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
             Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
         }
@@ -636,7 +636,7 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void LegacyProfile_StartDelayDefaultsToZeroZero_PreservingImmediateStart()
         {
-            var (_, padAction) = LoadLegacyMapper(enabled: true, brakeDurationMs: 90);
+            var (_, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 90);
             Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs,
                 "Migrated profiles must use 0ms, not the 0-20ms new-action default, to preserve old behaviour exactly.");
             Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
@@ -645,28 +645,28 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void LegacyProfile_PresetBecomesCustom()
         {
-            var (_, padAction) = LoadLegacyMapper(enabled: true, brakeDurationMs: 90);
+            var (_, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 90);
             Assert.AreEqual(CounterMovementTapLengthPreset.Custom, padAction.CounterMovementReleasePress.TapLengthPreset);
         }
 
         [TestMethod]
         public void LegacyProfile_MinimumHoldTimeIsPreserved()
         {
-            var (_, padAction) = LoadLegacyMapper(enabled: true, brakeDurationMs: 90, minimumHoldMs: 55);
+            var (_, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 90, minimumHoldMs: 55);
             Assert.AreEqual(55, padAction.CounterMovementReleasePress.MinimumHoldMs);
         }
 
         [TestMethod]
         public void LegacyProfile_ArmingThresholdIsPreserved()
         {
-            var (_, padAction) = LoadLegacyMapper(enabled: true, brakeDurationMs: 90, armingThreshold: 0.42);
+            var (_, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 90, armingThreshold: 0.42);
             Assert.AreEqual(0.42, padAction.CounterMovementReleasePress.ArmingThreshold);
         }
 
         [TestMethod]
         public void LegacyProfile_ProducesImmediateStartBehaviourEndToEnd()
         {
-            var (mapper, padAction) = LoadLegacyMapper(enabled: true, brakeDurationMs: 40, minimumHoldMs: 0, armingThreshold: 0.0);
+            var (mapper, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 40, minimumHoldMs: 0, armingThreshold: 0.0);
 
             Neutral(mapper);
             HoldUp(mapper, 20);
@@ -679,7 +679,7 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void MissingNewFields_LoadSafelyWithProcessorDefaults()
         {
-            // A profile with only PadMode/DeadZone (no brake-related fields at all, legacy or
+            // A profile with only PadMode/DeadZone (no release-press-related fields at all, legacy or
             // new) must not crash and must leave the processor at its constructed defaults.
             string json = @"{
   ""Name"": ""NoFieldsTest"",
@@ -861,7 +861,7 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void LegacyProfile_MigratesToFixedModeWithZeroPercent()
         {
-            var (_, padAction) = LoadLegacyMapper(enabled: true, brakeDurationMs: 90);
+            var (_, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 90);
 
             Assert.AreEqual(OppositeTapLengthMode.Fixed, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
             Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMs);
@@ -873,7 +873,7 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void NewProfile_WithNoCounterMovementFieldsAtAll_KeepsConstructedDefaults()
         {
-            // Reuses the "no brake-related fields at all" JSON from
+            // Reuses the "no release-press-related fields at all" JSON from
             // MissingNewFields_LoadSafelyWithProcessorDefaults to confirm the mode default is
             // also left untouched for a genuinely brand new profile.
             string json = @"{

@@ -3,11 +3,11 @@ using System.Diagnostics;
 
 namespace DS4MapperTest.ActionUtil
 {
-    public sealed class DigitalReleaseBrakePulse
+    public sealed class DigitalReleasePressPulse
     {
-        public const int DEFAULT_BRAKE_DURATION_MS = 100;
-        public const int MIN_BRAKE_DURATION_MS = 10;
-        public const int MAX_BRAKE_DURATION_MS = 150;
+        public const int DEFAULT_RELEASE_PRESS_DURATION_MS = 100;
+        public const int MIN_RELEASE_PRESS_DURATION_MS = 10;
+        public const int MAX_RELEASE_PRESS_DURATION_MS = 150;
         public const int DEFAULT_MINIMUM_HOLD_MS = 0;
         public const int MIN_MINIMUM_HOLD_MS = 0;
         public const int MAX_MINIMUM_HOLD_MS = 300;
@@ -143,9 +143,9 @@ namespace DS4MapperTest.ActionUtil
             }
         }
 
-        public static int ClampBrakeDurationMs(int value)
+        public static int ClampReleasePressDurationMs(int value)
         {
-            return Math.Clamp(value, MIN_BRAKE_DURATION_MS, MAX_BRAKE_DURATION_MS);
+            return Math.Clamp(value, MIN_RELEASE_PRESS_DURATION_MS, MAX_RELEASE_PRESS_DURATION_MS);
         }
 
         public static int ClampMinimumHoldMs(int value)
