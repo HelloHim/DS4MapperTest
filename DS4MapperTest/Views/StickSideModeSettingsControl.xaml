@@ -78,17 +78,31 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource JsmccLabelText}"/>
                         <TextBox Grid.Column="1" Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus}" Style="{StaticResource JsmccTextBoxStyle}" Width="80"/>
-                        <TextBlock Grid.Column="2" Text="Anti-Dead Zone" Style="{StaticResource JsmccLabelText}"/>
-                        <TextBox Grid.Column="3" Text="{Binding AntiDeadZone, UpdateSourceTrigger=LostFocus}" Style="{StaticResource JsmccTextBoxStyle}" Width="80"/>
-                        <TextBlock Grid.Column="4" Text="Max Zone" Style="{StaticResource JsmccLabelText}"/>
-                        <TextBox Grid.Column="5" Text="{Binding MaxZone, UpdateSourceTrigger=LostFocus}" Style="{StaticResource JsmccTextBoxStyle}" Width="80"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Anti-Dead Zone" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBox Grid.Column="1" Text="{Binding AntiDeadZone, UpdateSourceTrigger=LostFocus}" Style="{StaticResource JsmccTextBoxStyle}" Width="80"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Max Zone" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBox Grid.Column="1" Text="{Binding MaxZone, UpdateSourceTrigger=LostFocus}" Style="{StaticResource JsmccTextBoxStyle}" Width="80"/>
                     </Grid>
                 </Border>
 
@@ -115,15 +129,22 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Vertical Scale" Style="{StaticResource JsmccLabelText}"/>
                         <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="2" Increment="0.05"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                           Value="{Binding VerticalScale, UpdateSourceTrigger=LostFocus}"/>
-                        <TextBlock Grid.Column="2" Text="Rotation" Style="{StaticResource JsmccLabelText}"/>
-                        <hc:NumericUpDown Grid.Column="3" Minimum="-180" Maximum="180" DecimalPlaces="0" Increment="1"
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Rotation" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="-180" Maximum="180" DecimalPlaces="0" Increment="1"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                           Value="{Binding Rotation, UpdateSourceTrigger=LostFocus}"
                                           HorizontalAlignment="Left"/>
@@ -156,12 +177,20 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Max Output" Style="{StaticResource JsmccLabelText}"/>
                         <CheckBox Grid.Column="1" IsChecked="{Binding MaxOutputEnabled}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="2" Text="Max Output Value" Style="{StaticResource JsmccLabelText}"
-                                   Visibility="{Binding MaxOutputEnabled, Converter={StaticResource BoolToVis}}"/>
-                        <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.05"
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}"
+                        Visibility="{Binding MaxOutputEnabled, Converter={StaticResource BoolToVis}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Max Output Value" Style="{StaticResource JsmccLabelText}"/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.05"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding MaxOutput, UpdateSourceTrigger=LostFocus}"
-                                          Visibility="{Binding MaxOutputEnabled, Converter={StaticResource BoolToVis}}"/>
+                                          Value="{Binding MaxOutput, UpdateSourceTrigger=LostFocus}"/>
                     </Grid>
                 </Border>
 
@@ -170,16 +199,22 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="170"/>
-                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Square Stick" Style="{StaticResource JsmccLabelText}"/>
                         <CheckBox Grid.Column="1" IsChecked="{Binding SquareStickEnabled}" Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="2" Text="Roundness" Style="{StaticResource JsmccLabelText}"
-                                   Visibility="{Binding SquareStickEnabled, Converter={StaticResource BoolToVis}}"/>
-                        <TextBox Grid.Column="3" Text="{Binding SquareStickRoundness, UpdateSourceTrigger=LostFocus}"
-                                 Width="80" Style="{StaticResource JsmccTextBoxStyle}"
-                                 Visibility="{Binding SquareStickEnabled, Converter={StaticResource BoolToVis}}"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}"
+                        Visibility="{Binding SquareStickEnabled, Converter={StaticResource BoolToVis}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Roundness" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBox Grid.Column="1" Text="{Binding SquareStickRoundness, UpdateSourceTrigger=LostFocus}"
+                                 Width="80" Style="{StaticResource JsmccTextBoxStyle}"/>
                     </Grid>
                 </Border>
             </StackPanel>
