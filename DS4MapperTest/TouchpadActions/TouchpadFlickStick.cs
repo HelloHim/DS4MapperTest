@@ -129,7 +129,7 @@ namespace DS4MapperTest.TouchpadActions
             get => realWorldCalibration; set => realWorldCalibration = value;
         }
 
-        private double flickThreshold = 0.9;
+        private double flickThreshold = 0.7;
         public double FlickThreshold
         {
             get => flickThreshold; set => flickThreshold = value;
