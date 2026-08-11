@@ -2850,7 +2850,7 @@ namespace DS4MapperTest.ViewModels
                     TouchpadActionPad => "D-Pad mode and direction binds are in Mode Settings. Deadzone and diagonal range are in Zones. Outer ring settings are in Outer Ring.",
                     TouchpadDirectionalSwipe => "Gesture bindings are in Gestures. Deadzone and delay are in Filtering & Stabilisation. Action name is in Mode.",
                     TouchpadCircular => "Scroll settings are available in Trackball & Scroll. Action name is in Mode.",
-                    TouchpadFlickStick => "Movement is in Mouse & Movement. Calibration is in Sensitivity & Calibration. Flick threshold is in Zones & Gestures. Action name is in Mode.",
+                    TouchpadFlickStick => "Flick, snap, and rotation settings are in Mouse & Movement. Calibration and multiplier compensation are in Sensitivity & Calibration. Action name is in Mode.",
                     _ => "This touchpad mode uses DS4MapperTest's existing settings.",
                 };
             }
@@ -2874,8 +2874,7 @@ namespace DS4MapperTest.ViewModels
             mappedAction is TouchpadMouseJoystick ||
             mappedAction is TouchpadStickAction ||
             mappedAction is TouchpadAbsAction ||
-            mappedAction is TouchpadDirectionalSwipe ||
-            mappedAction is TouchpadFlickStick;
+            mappedAction is TouchpadDirectionalSwipe;
 
         public bool IsZoneAction =>
             mappedAction is TouchpadActionPad;

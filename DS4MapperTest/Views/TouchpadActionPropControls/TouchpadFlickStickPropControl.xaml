@@ -1,8 +1,8 @@
-﻿<UserControl x:Class="DS4MapperTest.Views.TouchpadActionPropControls.TouchpadFlickStickPropControl"
+<UserControl x:Class="DS4MapperTest.Views.TouchpadActionPropControls.TouchpadFlickStickPropControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:local="clr-namespace:DS4MapperTest.Views.TouchpadActionPropControls"
              xmlns:shared="clr-namespace:DS4MapperTest.Views.Shared"
@@ -21,148 +21,184 @@
             </StackPanel>
 
             <StackPanel x:Name="MovementFieldsPanel">
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Flick Time" />
-                    <hc:NumericUpDown Minimum="0" Maximum="2000" Value="{Binding FlickTime}" DecimalPlaces="0"
-                                      Increment="50" Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightFlickTime}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Flick Stick" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
 
-                    <Label Content="ms" Margin="8,0,0,0" />
-                </StackPanel>
+                        <Border Style="{StaticResource JsmccSettingRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Flick Mode" Style="{StaticResource JsmccLabelText}"/>
+                                <ComboBox Grid.Column="1" SelectedIndex="{Binding SelectedSubModeIndex}"
+                                          Style="{StaticResource JsmccComboBoxStyle}"
+                                          HorizontalAlignment="Left"
+                                          MinWidth="180">
+                                    <ComboBoxItem>Standard</ComboBoxItem>
+                                    <ComboBoxItem>Flick Only</ComboBoxItem>
+                                    <ComboBoxItem>Rotate Only</ComboBoxItem>
+                                </ComboBox>
+                            </Grid>
+                        </Border>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Flick Time Exponent" />
-                    <hc:NumericUpDown Minimum="0.00" Maximum="1.00" Value="{Binding FlickTimeExponent}" DecimalPlaces="2"
-                                      Increment="0.1" Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightFlickTimeExponent}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                </StackPanel>
+                        <Border Style="{StaticResource JsmccSettingRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Flick Threshold" Style="{StaticResource JsmccLabelText}"/>
+                                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.05"
+                                                  Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Value="{Binding FlickThreshold, UpdateSourceTrigger=LostFocus}"/>
+                            </Grid>
+                        </Border>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Snap Angle" />
-                    <ComboBox SelectedIndex="{Binding SelectedSnapAngleIndex}"
-                              MinWidth="150" Margin="8,0,0,0">
-                        <ComboBoxItem>Off</ComboBoxItem>
-                        <ComboBoxItem>90&#176; (4 directions)</ComboBoxItem>
-                        <ComboBoxItem>45&#176; (8 directions)</ComboBoxItem>
-                    </ComboBox>
-                </StackPanel>
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                Visibility="{Binding ShowFlickSettings, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Flick Time (ms)" Style="{StaticResource JsmccLabelText}"/>
+                                <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="1000" DecimalPlaces="0" Increment="10"
+                                                  Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Value="{Binding FlickTime, UpdateSourceTrigger=LostFocus}"/>
+                            </Grid>
+                        </Border>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
-                            IsEnabled="{Binding SnapEnabled}">
-                    <Label Content="Snap Strength" />
-                    <hc:NumericUpDown Minimum="0.00" Maximum="1.00" Value="{Binding SnapStrength}" DecimalPlaces="2"
-                                      Increment="0.05" Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightSnapStrength}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                </StackPanel>
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                Visibility="{Binding ShowFlickSettings, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Flick Time Exponent" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.05"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding FlickTimeExponent, UpdateSourceTrigger=LostFocus}"/>
+                                </Grid>
+                                <TextBlock Text="Flick Time is always the duration of a 180&#176; flick. At 0, every angle uses it; at 1, smaller flicks take proportionally less time."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Min Angle Threshold" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="360.0" Value="{Binding MinAngleThreshold}" DecimalPlaces="2"
-Increment="1.0" Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightMinAngleThreshold}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                Visibility="{Binding ShowFlickSettings, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Snap Angle" Style="{StaticResource JsmccLabelText}"/>
+                                    <ComboBox Grid.Column="1" SelectedIndex="{Binding SelectedSnapAngleIndex}"
+                                              Style="{StaticResource JsmccComboBoxStyle}"
+                                              HorizontalAlignment="Left"
+                                              MinWidth="180">
+                                        <ComboBoxItem>Off</ComboBoxItem>
+                                        <ComboBoxItem>90&#176; (4 directions)</ComboBoxItem>
+                                        <ComboBoxItem>45&#176; (8 directions)</ComboBoxItem>
+                                    </ComboBox>
+                                </Grid>
+                                <Grid Margin="0,6,0,0" IsEnabled="{Binding SnapEnabled}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Snap Strength" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.05"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding SnapStrength, UpdateSourceTrigger=LostFocus}"/>
+                                </Grid>
+                                <TextBlock Text="Snaps each new flick to the nearest of a fixed set of directions. Strength 1 snaps fully, 0 leaves the flick untouched, and values between bias towards the nearest direction. Sweeping a held touch is never snapped."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
 
-                    <Label Content="&#xB0;" Margin="8,0,0,0" />
-                </StackPanel>
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                Visibility="{Binding ShowRotationSettings, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Release Dampening" Style="{StaticResource JsmccLabelText}"/>
+                                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="2" Increment="0.1"
+                                                  Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Value="{Binding ReleaseDampeningSpeed, UpdateSourceTrigger=LostFocus}"/>
+                            </Grid>
+                        </Border>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Release Dampening Speed" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" Value="{Binding ReleaseDampeningSpeed}" DecimalPlaces="2"
-                                      Increment="0.25" Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightReleaseDampeningSpeed}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-
-                    <Label Content="u/s" Margin="8,0,0,0" />
-                </StackPanel>
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                Visibility="{Binding ShowRotationSettings, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Sweep Rotation Smoothing" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="-1" Maximum="1" DecimalPlaces="2" Increment="0.01"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding RotateSmoothOverride, UpdateSourceTrigger=LostFocus}"/>
+                                </Grid>
+                                <TextBlock Text="-1 uses automatic smoothing; 0 turns it off. Positive values override the small-angle threshold."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
             <StackPanel x:Name="SensitivityFieldsPanel">
-                <!-- Calibration block - synced across profile -->
-                <shared:CalibrationModeControl />
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <!-- Calibration block - synced across profile -->
+                        <shared:CalibrationModeControl Margin="0"/>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Multiplier Compensation" />
-                    <CheckBox IsChecked="{Binding MultiplierCompensation}" VerticalAlignment="Center"
-                              Margin="8,0,0,0" />
-                </StackPanel>
+                        <Border Style="{StaticResource JsmccSettingRowBorder}" Margin="0,12,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Multiplier Compensation" Style="{StaticResource JsmccLabelText}"/>
+                                <CheckBox Grid.Column="1" IsChecked="{Binding MultiplierCompensation}"
+                                          Style="{StaticResource JsmccToggleStyle}" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <TextBlock Text="Divides out an in-game sensitivity multiplier so flick angles stay accurate."
+                                   Style="{StaticResource JsmccMutedText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,6"/>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
-                            IsEnabled="{Binding MultiplierCompensation}">
-                    <Label Content="Acceleration Multiplier" />
-                    <hc:NumericUpDown Minimum="0.01" Maximum="100.0" Value="{Binding AccelerationMultiplier}" DecimalPlaces="3"
-                                      Increment="0.01" Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightAccelerationMultiplier}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                </StackPanel>
-            </StackPanel>
-
-            <StackPanel x:Name="FilteringFieldsPanel">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="Flick Threshold" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="1.0" Value="{Binding FlickThreshold}" DecimalPlaces="2"
-      Increment="0.05" Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightFlickThreshold}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                </StackPanel>
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                IsEnabled="{Binding MultiplierCompensation}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Acceleration Multiplier" Style="{StaticResource JsmccLabelText}"/>
+                                <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100" DecimalPlaces="3" Increment="0.01"
+                                                  Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                  Value="{Binding AccelerationMultiplier, UpdateSourceTrigger=LostFocus}"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
             </StackPanel>
