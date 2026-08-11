@@ -396,6 +396,19 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler SweepSensitivityChanged;
 
+        public double FrontAngleDeadzone
+        {
+            get => action.FrontAngleDeadzone;
+            set
+            {
+                if (action.FrontAngleDeadzone == value) return;
+                action.FrontAngleDeadzone = value;
+                FrontAngleDeadzoneChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler FrontAngleDeadzoneChanged;
+
         public bool HighlightReleaseDampeningSpeed
         {
             get => action.ParentAction == null ||
@@ -466,6 +479,13 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler HighlightSweepSensitivityChanged;
 
+        public bool HighlightFrontAngleDeadzone
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE);
+        }
+        public event EventHandler HighlightFrontAngleDeadzoneChanged;
+
         public event EventHandler ActionPropertyChanged;
         public event EventHandler<StickMapAction> ActionChanged;
 
@@ -514,6 +534,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             AccelerationMultiplierChanged += StickFlickStickPropViewModel_AccelerationMultiplierChanged;
             RotateSmoothOverrideChanged += StickFlickStickPropViewModel_RotateSmoothOverrideChanged;
             SweepSensitivityChanged += StickFlickStickPropViewModel_SweepSensitivityChanged;
+            FrontAngleDeadzoneChanged += StickFlickStickPropViewModel_FrontAngleDeadzoneChanged;
             SnapAngleChanged += StickFlickStickPropViewModel_SnapAngleChanged;
             SnapStrengthChanged += StickFlickStickPropViewModel_SnapStrengthChanged;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
@@ -742,6 +763,17 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
             HighlightSweepSensitivityChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickFlickStickPropViewModel_FrontAngleDeadzoneChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE))
+            {
+                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE);
+            HighlightFrontAngleDeadzoneChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickFlickStickPropViewModel_FlickTimeChanged(object sender, EventArgs e)
