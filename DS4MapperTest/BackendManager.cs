@@ -197,10 +197,12 @@ namespace DS4MapperTest
             // Initialize Crc32 table for app
             Crc32Algorithm.InitializeTable(Crc32Algorithm.DefaultPolynomial);
 
+            using ManualResetEventSlim dispatcherReady = new ManualResetEventSlim(false);
             eventDispatchThread = new Thread(() =>
             {
                 Dispatcher currentDis = Dispatcher.CurrentDispatcher;
                 eventDispatcher = currentDis;
+                dispatcherReady.Set();
                 Dispatcher.Run();
             });
             eventDispatchThread.IsBackground = true;
@@ -208,9 +210,9 @@ namespace DS4MapperTest
             eventDispatchThread.Name = "BackendManager Events";
             eventDispatchThread.Start();
 
-            while (eventDispatcher == null)
+            if (!dispatcherReady.Wait(TimeSpan.FromSeconds(5)))
             {
-                Thread.SpinWait(500);
+                throw new TimeoutException("Timed out initialising the backend event dispatcher.");
             }
         }
 
