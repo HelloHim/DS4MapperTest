@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using DS4MapperTest.GyroActions;
 using DS4MapperTest.ViewModels.TouchpadActionPropViewModels;
 using DS4MapperTest.ActionUtil;
 using DS4MapperTest.MapperUtil;
@@ -53,10 +54,44 @@ namespace DS4MapperTest.Views.TouchpadActionPropControls
                 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void LegacySensNUD_PreviewKeyDown(object sender, KeyEventArgs e)
+        // Mirrors GyroSensitivityControl's Static/Acceleration tab behaviour: picking
+        // Static Sensitivity always clears the acceleration curve, and picking
+        // Acceleration Curve while it is still unset gives it a starting curve.
+        private void SensitivityModeTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.Key == Key.Enter)
-                (sender as UIElement)?.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+            if (e.Source is TabControl tabControl)
+            {
+                SyncSensitivityMode(tabControl);
+            }
+        }
+
+        private void SensitivityModeTabs_DataContextChanged(object sender,
+            DependencyPropertyChangedEventArgs e)
+        {
+            if (sender is TabControl tabControl)
+            {
+                SyncSensitivityMode(tabControl);
+            }
+        }
+
+        private static void SyncSensitivityMode(TabControl tabControl)
+        {
+            if (tabControl.SelectedItem is not TabItem selectedTab ||
+                tabControl.DataContext is not TouchpadMousePropViewModel vm)
+            {
+                return;
+            }
+
+            switch (selectedTab.Header as string)
+            {
+                case "Static Sensitivity":
+                    // Static sensitivity always behaves as an unbound acceleration curve.
+                    vm.AccelCurveChoice = GyroMouseAccelCurveChoice.None;
+                    break;
+                case "Acceleration Curve" when vm.AccelCurveChoice == GyroMouseAccelCurveChoice.None:
+                    vm.AccelCurveChoice = GyroMouseAccelCurveChoice.Linear;
+                    break;
+            }
         }
     }
 }

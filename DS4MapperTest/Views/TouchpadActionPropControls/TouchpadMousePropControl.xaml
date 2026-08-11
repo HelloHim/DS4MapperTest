@@ -8,6 +8,20 @@
              xmlns:shared="clr-namespace:DS4MapperTest.Views.Shared"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style x:Key="TouchSensRowBorder" TargetType="Border" BasedOn="{StaticResource JsmccSettingRowBorder}">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="TouchSensRowLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
+            <Setter Property="Width" Value="190"/>
+        </Style>
+
+        <Style x:Key="TouchSensUnitLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccMutedText}">
+            <Setter Property="Margin" Value="6,0,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </UserControl.Resources>
     <DockPanel Margin="0,8,0,0">
         <ScrollViewer DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
             <StackPanel>
@@ -36,461 +50,620 @@
                 <!-- Calibration block — synced across profile -->
                 <shared:CalibrationModeControl Margin="0"/>
 
-                <StackPanel Margin="0,12,0,6">
-                    <TextBlock Text="Sensitivity" Style="{StaticResource JsmccSectionTitle}"/>
-                    <TextBlock Text="Controls relative mouse sensitivity, vertical scaling, and acceleration for this touchpad input."
-                               Style="{StaticResource JsmccBodyText}"
-                               TextWrapping="Wrap"
-                               Margin="0,4,0,0"/>
-                </StackPanel>
+                <StackPanel Margin="0,12,0,0">
+                    <TabControl Style="{StaticResource JsmccPillTabControlStyle}"
+                                SelectionChanged="SensitivityModeTabs_SelectionChanged"
+                                DataContextChanged="SensitivityModeTabs_DataContextChanged">
+                        <TabItem Header="Static Sensitivity">
+                            <Border Style="{StaticResource JsmccCardBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="Static Sensitivity" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Swipes per 360° (SC2)" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.001"
-                                      Value="{Binding SwipesPer360, FallbackValue='1.0'}" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightSwipesPer360}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                </StackPanel>
+                                    <Border Style="{StaticResource TouchSensRowBorder}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="190"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Horizontal Sensitivity" Style="{StaticResource TouchSensRowLabel}"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.001"
+                                                                  Width="110"
+                                                                  Value="{Binding SwipesPer360, FallbackValue='1.0'}">
+                                                    <hc:NumericUpDown.Style>
+                                                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HighlightSwipesPer360}" Value="False">
+                                                                    <Setter Property="Opacity" Value="0.7" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </hc:NumericUpDown.Style>
+                                                </hc:NumericUpDown>
+                                                <TextBlock Text="Swipe Per 360&#176; (SC2)" Style="{StaticResource TouchSensUnitLabel}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
 
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <Label Content="Legacy Sensitivity" ToolTip="Equivalent value in the original arbitrary sensitivity scale" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="100000.0"
-                                      Value="{Binding LegacySensitivity, UpdateSourceTrigger=LostFocus}"
-                                      DecimalPlaces="4" Width="120" Margin="8,0,0,0"
-                                      IsReadOnly="{Binding LegacySensitivityReadOnly}"
-                                      PreviewKeyDown="LegacySensNUD_PreviewKeyDown">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding LegacySensitivityEditable}" Value="False">
-                                        <Setter Property="Opacity" Value="0.6" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                    <CheckBox Content="Edit" IsChecked="{Binding LegacySensitivityEditable}"
-                              VerticalAlignment="Center" Margin="8,0,0,0" />
-                </StackPanel>
+                                    <Border Style="{StaticResource TouchSensRowBorder}">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <StackPanel.Style>
+                                                    <Style TargetType="StackPanel">
+                                                        <Setter Property="Opacity" Value="1.0"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
+                                                                <Setter Property="Opacity" Value="0.5"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </StackPanel.Style>
+                                                <RadioButton GroupName="VerticalSensitivityMode"
+                                                             IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
+                                                             VerticalAlignment="Center" Width="190" Content="Vertical Sensitivity"
+                                                             Foreground="{DynamicResource JsmccTextMidBrush}"/>
+                                                <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.001"
+                                                                  Width="110"
+                                                                  IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
+                                                                  Value="{Binding VerticalSp360, FallbackValue='1.0'}">
+                                                    <hc:NumericUpDown.Style>
+                                                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
+                                                                    <Setter Property="Opacity" Value="0.7" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </hc:NumericUpDown.Style>
+                                                </hc:NumericUpDown>
+                                                <TextBlock Text="Swipe Per 360&#176; (SC2)" Style="{StaticResource TouchSensUnitLabel}"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                                <StackPanel.Style>
+                                                    <Style TargetType="StackPanel">
+                                                        <Setter Property="Opacity" Value="1.0"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding VerticalScaleIsMultiplierMode}" Value="False">
+                                                                <Setter Property="Opacity" Value="0.5"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </StackPanel.Style>
+                                                <RadioButton GroupName="VerticalSensitivityMode"
+                                                             IsChecked="{Binding VerticalScaleIsMultiplierMode, Mode=TwoWay}"
+                                                             VerticalAlignment="Center" Width="190" Content="Vertical Scale (multiplier)"
+                                                             Foreground="{DynamicResource JsmccTextMidBrush}"/>
+                                                <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
+                                                                  Width="110"
+                                                                  IsEnabled="{Binding VerticalScaleIsMultiplierMode}"
+                                                                  Value="{Binding VerticalScale, FallbackValue='1.0'}">
+                                                    <hc:NumericUpDown.Style>
+                                                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
+                                                                    <Setter Property="Opacity" Value="0.7" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </hc:NumericUpDown.Style>
+                                                </hc:NumericUpDown>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
 
-                <StackPanel Orientation="Vertical" Margin="0,8,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Opacity" Value="1.0" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="False">
-                                        <Setter Property="Opacity" Value="0.4" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <RadioButton GroupName="VerticalSensitivityMode"
-                                     IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
-                                     VerticalAlignment="Center" />
-                        <Label Content="Vertical Sp360" Margin="4,0,0,0" />
-                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0"
-                                          DecimalPlaces="4" Increment="0.001"
-                                          Value="{Binding VerticalSp360, FallbackValue='1.0'}"
-                                          IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
-                                          Width="100" Margin="8,0,0,0">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
-                                            <Setter Property="Opacity" Value="0.7" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-                    </StackPanel>
+                                    <Button Content="Reset to Defaults"
+                                            Command="{Binding ResetAccelerationDefaultsComm}"
+                                            Style="{StaticResource JsmccButtonStyle}"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </TabItem>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Opacity" Value="1.0" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding VerticalScaleIsAbsoluteMode}" Value="True">
-                                        <Setter Property="Opacity" Value="0.4" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <RadioButton GroupName="VerticalSensitivityMode"
-                                     IsChecked="{Binding VerticalScaleIsMultiplierMode, Mode=TwoWay}"
-                                     VerticalAlignment="Center" />
-                        <Label Content="Vertical Scale" Margin="4,0,0,0" />
-                        <hc:NumericUpDown Minimum="0.0" Maximum="10.0"
-                                          DecimalPlaces="4" Increment="0.01"
-                                          Value="{Binding VerticalScale, FallbackValue='1.0'}"
-                                          IsEnabled="{Binding VerticalScaleIsMultiplierMode}"
-                                          Width="100" Margin="8,0,0,0">
-                            <hc:NumericUpDown.Style>
-                                <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightVerticalScale}" Value="False">
-                                            <Setter Property="Opacity" Value="0.7" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </hc:NumericUpDown.Style>
-                        </hc:NumericUpDown>
-                    </StackPanel>
-                </StackPanel>
+                        <TabItem Header="Acceleration Curve">
+                            <StackPanel>
+                                <Border Style="{StaticResource JsmccCardBorder}">
+                                    <StackPanel>
+                                        <TextBlock Text="Acceleration Curve" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
 
-                <Border Background="#187F7F7F" BorderBrush="#667F7F7F"
-                        BorderThickness="1" CornerRadius="4" Padding="12"
-                        Margin="0,8,16,0">
-                    <StackPanel>
-                        <TextBlock Text="Acceleration" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource JsmccTextStrongBrush}"
-                                   Margin="4,0,0,4" />
+                                        <Border Style="{StaticResource TouchSensRowBorder}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="Acceleration Curve" Style="{StaticResource TouchSensRowLabel}"/>
+                                                <ComboBox Grid.Column="1"
+                                                          ItemsSource="{Binding AccelCurveChoiceItems}"
+                                                          DisplayMemberPath="DisplayName"
+                                                          SelectedValuePath="Choice"
+                                                          SelectedValue="{Binding AccelCurveChoice}"
+                                                          Style="{StaticResource JsmccComboBoxStyle}"
+                                                          MinWidth="160"/>
+                                            </Grid>
+                                        </Border>
 
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Acceleration Curve" />
-                            <ComboBox ItemsSource="{Binding AccelCurveChoiceItems}"
-                                      DisplayMemberPath="DisplayName"
-                                      SelectedValuePath="Choice"
-                                      SelectedValue="{Binding AccelCurveChoice}"
-                                      MinWidth="200" Margin="8,0,0,0" />
-                        </StackPanel>
+                                        <StackPanel Visibility="{Binding AccelCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                            <Border Style="{StaticResource TouchSensRowBorder}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="Min Sens X" Style="{StaticResource TouchSensRowLabel}" Width="90"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
+                                                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                          Value="{Binding MinAccelXSens}"/>
+                                                        <TextBlock Text="Swipe Per 360&#176; (SC2)" Style="{StaticResource TouchSensUnitLabel}"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="Min Sens Y" Style="{StaticResource TouchSensRowLabel}" Width="90" Margin="16,0,0,0"/>
+                                                    <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
+                                                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                          Value="{Binding MinAccelYSens}"/>
+                                                        <TextBlock Text="Swipe Per 360&#176; (SC2)" Style="{StaticResource TouchSensUnitLabel}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
 
-                        <Expander Header="Advanced Settings" IsExpanded="False"
-                                  Margin="4,8,0,0"
-                                  Visibility="{Binding AccelCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
-                            <StackPanel Margin="12,8,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Min Sens X" />
-                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0"
-                                              DecimalPlaces="3" Increment="0.1"
-                                              Value="{Binding MinAccelXSens}"
-                                              Width="100" Margin="8,0,0,0" />
-                            <Label Content="Min Sens Y" Margin="16,0,0,0" />
-                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0"
-                                              DecimalPlaces="3" Increment="0.1"
-                                              Value="{Binding MinAccelYSens}"
-                                              Width="100" Margin="8,0,0,0" />
-                        </StackPanel>
+                                            <Border Style="{StaticResource TouchSensRowBorder}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="Max Sens X" Style="{StaticResource TouchSensRowLabel}" Width="90"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
+                                                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                          Value="{Binding MaxAccelXSens}"/>
+                                                        <TextBlock Text="Swipe Per 360&#176; (SC2)" Style="{StaticResource TouchSensUnitLabel}"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="Max Sens Y" Style="{StaticResource TouchSensRowLabel}" Width="90" Margin="16,0,0,0"/>
+                                                    <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
+                                                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                          Value="{Binding MaxAccelYSens}"/>
+                                                        <TextBlock Text="Swipe Per 360&#176; (SC2)" Style="{StaticResource TouchSensUnitLabel}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <Label Content="Max Sens X" />
-                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0"
-                                              DecimalPlaces="3" Increment="0.1"
-                                              Value="{Binding MaxAccelXSens}"
-                                              Width="100" Margin="8,0,0,0" />
-                            <Label Content="Max Sens Y" Margin="16,0,0,0" />
-                            <hc:NumericUpDown Minimum="0.0" Maximum="100.0"
-                                              DecimalPlaces="3" Increment="0.1"
-                                              Value="{Binding MaxAccelYSens}"
-                                              Width="100" Margin="8,0,0,0" />
-                        </StackPanel>
+                                            <Border Style="{StaticResource TouchSensRowBorder}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="190"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="Min Movement Threshold" Style="{StaticResource TouchSensRowLabel}"/>
+                                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.0" Maximum="10000.0" DecimalPlaces="2" Increment="0.5"
+                                                                      Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                      Value="{Binding MinAccelThreshold}"/>
+                                                </Grid>
+                                            </Border>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <Label Content="Min Movement Threshold" />
-                            <hc:NumericUpDown Minimum="0.0" Maximum="10000.0"
-                                              DecimalPlaces="2" Increment="0.5"
-                                              Value="{Binding MinAccelThreshold}"
-                                              Width="100" Margin="8,0,0,0" />
-                            <StackPanel Orientation="Horizontal" Margin="16,0,0,0"
-                                        Visibility="{Binding UsesMaxThreshold, Converter={StaticResource Boolean2VisibilityConverter}}">
-                                <Label Content="Max Movement Threshold" />
-                                <hc:NumericUpDown Minimum="0.0" Maximum="10000.0"
-                                                  DecimalPlaces="2" Increment="0.5"
-                                                  Value="{Binding MaxAccelThreshold}"
-                                                  Width="100" Margin="8,0,0,0" />
+                                            <Border Style="{StaticResource TouchSensRowBorder}"
+                                                    Visibility="{Binding UsesMaxThreshold, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="190"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="Max Movement Threshold" Style="{StaticResource TouchSensRowLabel}"/>
+                                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.0" Maximum="10000.0" DecimalPlaces="2" Increment="0.5"
+                                                                      Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                      Value="{Binding MaxAccelThreshold}"/>
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource JsmccCardBorder}"
+                                        Visibility="{Binding PowerCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                    <StackPanel>
+                                        <TextBlock Text="Mode Parameters - Power" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                                        <Border Style="{StaticResource TouchSensRowBorder}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="Power Exponent" Style="{StaticResource TouchSensRowLabel}"/>
+                                                <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100.0" DecimalPlaces="2" Increment="0.1"
+                                                                  Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding PowerExponent}"/>
+                                            </Grid>
+                                        </Border>
+                                        <Border Style="{StaticResource TouchSensRowBorder}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="Power Reference Velocity" Style="{StaticResource TouchSensRowLabel}"/>
+                                                <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="10000.0" DecimalPlaces="2" Increment="0.5"
+                                                                  Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding PowerVRef}"/>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource JsmccCardBorder}"
+                                        Visibility="{Binding NaturalCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
+                                    <StackPanel>
+                                        <TextBlock Text="Mode Parameters - Natural" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                                        <Border Style="{StaticResource TouchSensRowBorder}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="Natural Half Velocity" Style="{StaticResource TouchSensRowLabel}"/>
+                                                <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="10000.0" DecimalPlaces="2" Increment="0.5"
+                                                                  Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                                  Value="{Binding NaturalVHalf}"/>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
+                        </TabItem>
+                    </TabControl>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel x:Name="FilteringFieldsPanel">
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Dead Zone &amp; Angle Snapping" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+
+                        <Border Style="{StaticResource TouchSensRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Dead Zone" Style="{StaticResource TouchSensRowLabel}" ToolTip="Expressed as raw delta units"/>
+                                <TextBox Grid.Column="1" Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus}" Width="110"
+                                         ToolTip="Expressed as raw delta units">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox" BasedOn="{StaticResource JsmccTextBoxStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HighlightDeadZone}" Value="False">
+                                                    <Setter Property="Opacity" Value="0.7" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource TouchSensRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Vertical Dead Zone" Style="{StaticResource TouchSensRowLabel}"
+                                           ToolTip="Suppresses vertical (Y) movement below this threshold. Expressed as raw delta units"/>
+                                <TextBox Grid.Column="1" Text="{Binding VerticalDeadZone, UpdateSourceTrigger=LostFocus}" Width="110"
+                                         ToolTip="Suppresses vertical (Y) movement below this threshold. Expressed as raw delta units">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox" BasedOn="{StaticResource JsmccTextBoxStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HighlightVerticalDeadZone}" Value="False">
+                                                    <Setter Property="Opacity" Value="0.7" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource TouchSensRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Angle Snapping" Style="{StaticResource TouchSensRowLabel}"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <hc:NumericUpDown Minimum="0.0" Maximum="45.0" DecimalPlaces="1" Increment="0.1"
+                                                      Value="{Binding TrackpadAngleSnapDegrees, FallbackValue='0.0'}"
+                                                      Width="110">
+                                        <hc:NumericUpDown.Style>
+                                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HighlightTrackpadAngleSnapDegrees}" Value="False">
+                                                        <Setter Property="Opacity" Value="0.7" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </hc:NumericUpDown.Style>
+                                    </hc:NumericUpDown>
+                                    <TextBlock Text="degrees" Style="{StaticResource TouchSensUnitLabel}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource TouchSensRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Smooth Angle Snapping" Style="{StaticResource TouchSensRowLabel}"/>
+                                <CheckBox Grid.Column="1" IsChecked="{Binding TrackpadSmoothAngleSnap}" VerticalAlignment="Center">
+                                    <CheckBox.Style>
+                                        <Style TargetType="CheckBox" BasedOn="{StaticResource JsmccToggleStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HighlightTrackpadSmoothAngleSnap}" Value="False">
+                                                    <Setter Property="Opacity" Value="0.7" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </CheckBox.Style>
+                                </CheckBox>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource JsmccCardBorder}" Margin="0,8,0,0">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock Text="Smoothing" Style="{StaticResource JsmccCardTitle}" VerticalAlignment="Center"/>
+                            <CheckBox Style="{StaticResource JsmccToggleStyle}"
+                                      IsChecked="{Binding SmoothingEnabled}"
+                                      VerticalAlignment="Center"
+                                      Margin="12,0,0,0"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
-                                    Visibility="{Binding NaturalCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
-                            <Label Content="Natural vHalf" />
-                            <hc:NumericUpDown Minimum="0.01" Maximum="10000.0"
-                                              DecimalPlaces="2" Increment="0.5"
-                                              Value="{Binding NaturalVHalf}"
-                                              Width="100" Margin="8,0,0,0" />
-                        </StackPanel>
+                        <StackPanel IsEnabled="{Binding SmoothingEnabled}">
+                            <Border Style="{StaticResource TouchSensRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Presets" Style="{StaticResource TouchSensRowLabel}"/>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding SmoothPresetChoiceItems}" DisplayMemberPath="DisplayName"
+                                              SelectedValuePath="Choice" SelectedValue="{Binding SmoothPresetChoice}"
+                                              Style="{StaticResource JsmccComboBoxStyle}" MinWidth="120"/>
+                                </Grid>
+                            </Border>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
-                                    Visibility="{Binding PowerCurveUsed, Converter={StaticResource Boolean2VisibilityConverter}}">
-                            <Label Content="Power vRef" />
-                            <hc:NumericUpDown Minimum="0.01" Maximum="10000.0"
-                                              DecimalPlaces="2" Increment="0.5"
-                                              Value="{Binding PowerVRef}"
-                                              Width="100" Margin="8,0,0,0" />
-                            <Label Content="Power Exponent" Margin="16,0,0,0" />
-                            <hc:NumericUpDown Minimum="0.01" Maximum="100.0"
-                                              DecimalPlaces="2" Increment="0.1"
-                                              Value="{Binding PowerExponent}"
-                                              Width="100" Margin="8,0,0,0" />
-                        </StackPanel>
+                            <Border Style="{StaticResource TouchSensRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="1&#x20ac; MinCutoff" Style="{StaticResource TouchSensRowLabel}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.0" Maximum="10.0" DecimalPlaces="1" Increment="0.1"
+                                                      Value="{Binding SmoothingMinCutoff, FallbackValue='1.0'}"
+                                                      Width="110">
+                                        <hc:NumericUpDown.Style>
+                                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HighlightSmoothingFilter}" Value="False">
+                                                        <Setter Property="Opacity" Value="0.7" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </hc:NumericUpDown.Style>
+                                    </hc:NumericUpDown>
+                                </Grid>
+                            </Border>
 
-                        <Button Content="Reset to Defaults"
-                                Command="{Binding ResetAccelerationDefaultsComm}"
-                                HorizontalAlignment="Left" Margin="0,8,0,0" />
+                            <Border Style="{StaticResource TouchSensRowBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="1&#x20ac; Beta" Style="{StaticResource TouchSensRowLabel}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.0" Maximum="1.0" DecimalPlaces="1" Increment="0.1"
+                                                      Value="{Binding SmoothingBeta, FallbackValue='1.0'}"
+                                                      Width="110">
+                                        <hc:NumericUpDown.Style>
+                                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource JsmccNumericUpDownStyle}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HighlightSmoothingFilter}" Value="False">
+                                                        <Setter Property="Opacity" Value="0.7" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </hc:NumericUpDown.Style>
+                                    </hc:NumericUpDown>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource JsmccCardBorder}" Margin="0,8,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Trackpad Stability Filters" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Filters physical edge and corner jitter before normal deadzone, smoothing, acceleration, and output scaling. Off is completely unfiltered."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                        <Border Style="{StaticResource TouchSensRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Mode" Style="{StaticResource TouchSensRowLabel}"/>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding StabilityModeItems}"
+                                          DisplayMemberPath="DisplayName"
+                                          SelectedValuePath="ChoiceValue"
+                                          SelectedValue="{Binding StabilityMode}"
+                                          Style="{StaticResource JsmccComboBoxStyle}" MinWidth="140"/>
+                            </Grid>
+                        </Border>
+
+                        <Expander Header="Advanced Stability Settings"
+                                  IsExpanded="{Binding StabilityAdvancedExpanded}" Margin="0,8,0,0">
+                            <StackPanel Margin="12,8,0,0">
+                                <TextBlock Text="Changing these values can switch the mode to Custom. Matching an existing preset switches the mode back to that preset."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="Touch Start ms" Style="{StaticResource JsmccLabelText}" Margin="0,0,8,0"
+                                               ToolTip="Suppresses movement briefly after finger-down so unstable first samples cannot twitch the camera."/>
+                                    <hc:NumericUpDown Minimum="0" Maximum="30" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityTouchSettleMs}" Width="90"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                    <TextBlock Text="Base Noise" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Raw coordinate movement below this floor is treated as touchpad sensor noise."/>
+                                    <hc:NumericUpDown Minimum="0" Maximum="100" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityBaseNoiseFloor}" Width="90"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                    <TextBlock Text="Exit Mult" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Multiplier for leaving the locked state. Higher values require clearer movement before unlocking."/>
+                                    <hc:NumericUpDown Minimum="1" Maximum="3" DecimalPlaces="2" Increment="0.1"
+                                                      Value="{Binding StabilityHysteresisExitMultiplier}" Width="90"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <CheckBox Content="Edge Guard" IsChecked="{Binding StabilityEdgeGuardEnabled}"
+                                              Style="{StaticResource JsmccToggleStyle}"
+                                              ToolTip="Raises the noise floor near physical trackpad edges and corners."/>
+                                    <TextBlock Text="Left %" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Width of the left-edge guard zone as a percentage of the pad."/>
+                                    <hc:NumericUpDown Minimum="0" Maximum="30" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityLeftEdgePercent}" Width="80"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                    <TextBlock Text="Top %" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Height of the top-edge guard zone as a percentage of the pad."/>
+                                    <hc:NumericUpDown Minimum="0" Maximum="30" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityTopEdgePercent}" Width="80"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                    <TextBlock Text="Top-left x" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Extra noise multiplier when the touch is in the top-left corner."/>
+                                    <hc:NumericUpDown Minimum="1" Maximum="6" DecimalPlaces="1" Increment="0.1"
+                                                      Value="{Binding StabilityTopLeftCornerMultiplier}" Width="80"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <CheckBox Content="Edge Start Gate" IsChecked="{Binding StabilityEdgeStartGateEnabled}"
+                                              Style="{StaticResource JsmccToggleStyle}"
+                                              ToolTip="If a touch starts in an edge zone, hold output at zero until movement is clearly intentional."/>
+                                    <TextBlock Text="Threshold" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Distance needed to break out of the edge start gate."/>
+                                    <hc:NumericUpDown Minimum="0" Maximum="300" DecimalPlaces="1" Increment="5"
+                                                      Value="{Binding StabilityEdgeStartThreshold}" Width="90"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                    <CheckBox Content="Edge Lock" IsChecked="{Binding StabilityEdgeLockEnabled}"
+                                              Style="{StaticResource JsmccToggleStyle}"
+                                              Margin="16,0,0,0"
+                                              ToolTip="Relocks quickly when movement pauses inside an edge zone."/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <CheckBox Content="Stationary Hold" IsChecked="{Binding StabilityStationaryHoldEnabled}"
+                                              Style="{StaticResource JsmccToggleStyle}"
+                                              ToolTip="Applies stronger noise suppression after the thumb has been still briefly."/>
+                                    <TextBlock Text="Detect ms" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Time the thumb must remain quiet before stationary hold activates."/>
+                                    <hc:NumericUpDown Minimum="0" Maximum="200" DecimalPlaces="1" Increment="5"
+                                                      Value="{Binding StabilityStationaryDetectionMs}" Width="90"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                    <TextBlock Text="Noise x" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Multiplier applied to the noise floor while stationary hold is active."/>
+                                    <hc:NumericUpDown Minimum="1" Maximum="4" DecimalPlaces="1" Increment="0.1"
+                                                      Value="{Binding StabilityStationaryNoiseMultiplier}" Width="80"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                    <TextBlock Text="Breakout" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Movement required to leave stationary hold and resume normal movement."/>
+                                    <hc:NumericUpDown Minimum="0" Maximum="200" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityStationaryBreakoutThreshold}" Width="90"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox Content="Delta Clamp" IsChecked="{Binding StabilityDeltaClampEnabled}"
+                                              Style="{StaticResource JsmccToggleStyle}"
+                                              ToolTip="Caps abnormal one-frame deltas as a safety net."/>
+                                    <TextBlock Text="Max Delta" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Maximum allowed per-frame coordinate delta when delta clamp is enabled."/>
+                                    <hc:NumericUpDown Minimum="10" Maximum="500" DecimalPlaces="1" Increment="10"
+                                                      Value="{Binding StabilityMaxDeltaPerFrame}" Width="90"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                    <TextBlock Text="Fast Pass" Style="{StaticResource JsmccLabelText}" Margin="16,0,8,0"
+                                               ToolTip="Movement above this threshold passes through quickly as intentional fast movement."/>
+                                    <hc:NumericUpDown Minimum="0" Maximum="200" DecimalPlaces="1" Increment="1"
+                                                      Value="{Binding StabilityFastPassthroughThreshold}" Width="90"
+                                                      Style="{StaticResource JsmccNumericUpDownStyle}"/>
+                                </StackPanel>
                             </StackPanel>
                         </Expander>
                     </StackPanel>
                 </Border>
             </StackPanel>
 
-            <StackPanel x:Name="FilteringFieldsPanel">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="Dead Zone" />
-                    <TextBox Text="{Binding DeadZone, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0"
-                         ToolTip="Expressed as raw delta units">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightDeadZone}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Vertical Dead Zone" />
-                    <TextBox Text="{Binding VerticalDeadZone, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0"
-                         ToolTip="Suppresses vertical (Y) movement below this threshold. Expressed as raw delta units">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightVerticalDeadZone}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Angle Snapping" />
-                    <hc:NumericUpDown Minimum="0.0" Maximum="45.0" DecimalPlaces="1" Increment="0.1"
-                                      Value="{Binding TrackpadAngleSnapDegrees, FallbackValue='0.0'}"
-                                      Width="100" Margin="8,0,0,0">
-                        <hc:NumericUpDown.Style>
-                            <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightTrackpadAngleSnapDegrees}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </hc:NumericUpDown.Style>
-                    </hc:NumericUpDown>
-                    <Label Content="degrees" Margin="2,0,0,0" BorderBrush="{x:Null}" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Smooth Angle Snapping" />
-                    <CheckBox IsChecked="{Binding TrackpadSmoothAngleSnap}" VerticalAlignment="Center"
-                              Margin="8,0,0,0" Content="Off / On">
-                        <CheckBox.Style>
-                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightTrackpadSmoothAngleSnap}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </CheckBox.Style>
-                    </CheckBox>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <GroupBox MinWidth="200">
-                        <GroupBox.Header>
-                            <CheckBox IsChecked="{Binding SmoothingEnabled}"
-                                      HorizontalAlignment="Left" HorizontalContentAlignment="Left">
-                                Use Smoothing
-                            </CheckBox>
-                        </GroupBox.Header>
-
-                        <StackPanel IsEnabled="{Binding SmoothingEnabled}">
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="Presets" />
-
-                                <ComboBox ItemsSource="{Binding SmoothPresetChoiceItems}" DisplayMemberPath="DisplayName"
-                                          SelectedValuePath="Choice" SelectedValue="{Binding SmoothPresetChoice}" MinWidth="100" Margin="8,0,0,0">
-                                </ComboBox>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="1&#x20ac; MinCutoff" />
-                                <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="1" Increment="0.1"
-                                  Value="{Binding SmoothingMinCutoff,FallbackValue='1.0'}" Margin="8,0,0,0">
-                                    <hc:NumericUpDown.Style>
-                                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HighlightSmoothingFilter}" Value="False">
-                                                    <Setter Property="Opacity" Value="0.7" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </hc:NumericUpDown.Style>
-                                </hc:NumericUpDown>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="1&#x20ac; Beta" />
-                                <hc:NumericUpDown Minimum="0.0" Maximum="1.0" DecimalPlaces="1" Increment="0.1"
-                                  Value="{Binding SmoothingBeta,FallbackValue='1.0'}" Margin="8,0,0,0">
-                                    <hc:NumericUpDown.Style>
-                                        <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HighlightSmoothingFilter}" Value="False">
-                                                    <Setter Property="Opacity" Value="0.7" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </hc:NumericUpDown.Style>
-                                </hc:NumericUpDown>
-                            </StackPanel>
-
-                        </StackPanel>
-                    </GroupBox>
-                </StackPanel>
-
-                <GroupBox Header="Trackpad Stability Filters" MinWidth="360" Margin="0,8,16,0">
-                    <StackPanel Margin="8,4,8,8">
-                        <TextBlock Text="Filters physical edge and corner jitter before normal deadzone, smoothing, acceleration, and output scaling. Off preserves the old path."
-                                   TextWrapping="Wrap" Margin="0,0,0,8" />
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Mode" />
-                            <ComboBox ItemsSource="{Binding StabilityModeItems}"
-                                      DisplayMemberPath="DisplayName"
-                                      SelectedValuePath="ChoiceValue"
-                                      SelectedValue="{Binding StabilityMode}"
-                                      MinWidth="120" Margin="8,0,0,0" />
-                        </StackPanel>
-
-                        <Expander Header="Advanced Stability Settings"
-                                  IsExpanded="{Binding StabilityAdvancedExpanded}" Margin="0,8,0,0">
-                            <StackPanel Margin="12,8,0,0">
-                                <TextBlock Text="Changing these values can switch the mode to Custom. Matching an existing preset switches the mode back to that preset."
-                                           TextWrapping="Wrap" Margin="0,0,0,8" />
-                                <StackPanel Orientation="Horizontal">
-                                    <Label Content="Touch Start ms"
-                                           ToolTip="Suppresses movement briefly after finger-down so unstable first samples cannot twitch the camera." />
-                                    <hc:NumericUpDown Minimum="0" Maximum="30" DecimalPlaces="1" Increment="1"
-                                                      Value="{Binding StabilityTouchSettleMs}" Width="90" Margin="8,0,0,0" />
-                                    <Label Content="Base Noise" Margin="16,0,0,0"
-                                           ToolTip="Raw coordinate movement below this floor is treated as touchpad sensor noise." />
-                                    <hc:NumericUpDown Minimum="0" Maximum="100" DecimalPlaces="1" Increment="1"
-                                                      Value="{Binding StabilityBaseNoiseFloor}" Width="90" Margin="8,0,0,0" />
-                                    <Label Content="Exit Mult" Margin="16,0,0,0"
-                                           ToolTip="Multiplier for leaving the locked state. Higher values require clearer movement before unlocking." />
-                                    <hc:NumericUpDown Minimum="1" Maximum="3" DecimalPlaces="2" Increment="0.1"
-                                                      Value="{Binding StabilityHysteresisExitMultiplier}" Width="90" Margin="8,0,0,0" />
-                                </StackPanel>
-
-                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                    <CheckBox Content="Edge Guard" IsChecked="{Binding StabilityEdgeGuardEnabled}"
-                                              ToolTip="Raises the noise floor near physical trackpad edges and corners." />
-                                    <Label Content="Left %" Margin="16,0,0,0"
-                                           ToolTip="Width of the left-edge guard zone as a percentage of the pad." />
-                                    <hc:NumericUpDown Minimum="0" Maximum="30" DecimalPlaces="1" Increment="1"
-                                                      Value="{Binding StabilityLeftEdgePercent}" Width="80" Margin="8,0,0,0" />
-                                    <Label Content="Top %" Margin="16,0,0,0"
-                                           ToolTip="Height of the top-edge guard zone as a percentage of the pad." />
-                                    <hc:NumericUpDown Minimum="0" Maximum="30" DecimalPlaces="1" Increment="1"
-                                                      Value="{Binding StabilityTopEdgePercent}" Width="80" Margin="8,0,0,0" />
-                                    <Label Content="Top-left x" Margin="16,0,0,0"
-                                           ToolTip="Extra noise multiplier when the touch is in the top-left corner." />
-                                    <hc:NumericUpDown Minimum="1" Maximum="6" DecimalPlaces="1" Increment="0.1"
-                                                      Value="{Binding StabilityTopLeftCornerMultiplier}" Width="80" Margin="8,0,0,0" />
-                                </StackPanel>
-
-                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                    <CheckBox Content="Edge Start Gate" IsChecked="{Binding StabilityEdgeStartGateEnabled}"
-                                              ToolTip="If a touch starts in an edge zone, hold output at zero until movement is clearly intentional." />
-                                    <Label Content="Threshold" Margin="16,0,0,0"
-                                           ToolTip="Distance needed to break out of the edge start gate." />
-                                    <hc:NumericUpDown Minimum="0" Maximum="300" DecimalPlaces="1" Increment="5"
-                                                      Value="{Binding StabilityEdgeStartThreshold}" Width="90" Margin="8,0,0,0" />
-                                    <CheckBox Content="Edge Lock" IsChecked="{Binding StabilityEdgeLockEnabled}"
-                                              Margin="16,0,0,0"
-                                              ToolTip="Relocks quickly when movement pauses inside an edge zone." />
-                                </StackPanel>
-
-                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                    <CheckBox Content="Stationary Hold" IsChecked="{Binding StabilityStationaryHoldEnabled}"
-                                              ToolTip="Applies stronger noise suppression after the thumb has been still briefly." />
-                                    <Label Content="Detect ms" Margin="16,0,0,0"
-                                           ToolTip="Time the thumb must remain quiet before stationary hold activates." />
-                                    <hc:NumericUpDown Minimum="0" Maximum="200" DecimalPlaces="1" Increment="5"
-                                                      Value="{Binding StabilityStationaryDetectionMs}" Width="90" Margin="8,0,0,0" />
-                                    <Label Content="Noise x" Margin="16,0,0,0"
-                                           ToolTip="Multiplier applied to the noise floor while stationary hold is active." />
-                                    <hc:NumericUpDown Minimum="1" Maximum="4" DecimalPlaces="1" Increment="0.1"
-                                                      Value="{Binding StabilityStationaryNoiseMultiplier}" Width="80" Margin="8,0,0,0" />
-                                    <Label Content="Breakout" Margin="16,0,0,0"
-                                           ToolTip="Movement required to leave stationary hold and resume normal movement." />
-                                    <hc:NumericUpDown Minimum="0" Maximum="200" DecimalPlaces="1" Increment="1"
-                                                      Value="{Binding StabilityStationaryBreakoutThreshold}" Width="90" Margin="8,0,0,0" />
-                                </StackPanel>
-
-                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                    <CheckBox Content="Delta Clamp" IsChecked="{Binding StabilityDeltaClampEnabled}"
-                                              ToolTip="Caps abnormal one-frame deltas as a safety net." />
-                                    <Label Content="Max Delta" Margin="16,0,0,0"
-                                           ToolTip="Maximum allowed per-frame coordinate delta when delta clamp is enabled." />
-                                    <hc:NumericUpDown Minimum="10" Maximum="500" DecimalPlaces="1" Increment="10"
-                                                      Value="{Binding StabilityMaxDeltaPerFrame}" Width="90" Margin="8,0,0,0" />
-                                    <Label Content="Fast Pass" Margin="16,0,0,0"
-                                           ToolTip="Movement above this threshold passes through quickly as intentional fast movement." />
-                                    <hc:NumericUpDown Minimum="0" Maximum="200" DecimalPlaces="1" Increment="1"
-                                                      Value="{Binding StabilityFastPassthroughThreshold}" Width="90" Margin="8,0,0,0" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Expander>
-                    </StackPanel>
-                </GroupBox>
-
-            </StackPanel>
-
             <StackPanel x:Name="TrackballFieldsPanel">
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Trackball" />
-                    <CheckBox IsChecked="{Binding TrackballEnabled}" VerticalAlignment="Center" Margin="8,0,0,0">
-                        <CheckBox.Style>
-                            <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightTrackballEnabled}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </CheckBox.Style>
-                    </CheckBox>
-                </StackPanel>
+                <Border Style="{StaticResource JsmccCardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Trackball" Style="{StaticResource JsmccCardTitle}" Margin="0,0,0,6"/>
 
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Content="Trackball Friction" />
-                    <TextBox Text="{Binding TrackballFriction, UpdateSourceTrigger=LostFocus}" Width="100" Margin="8,0,0,0">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxBaseStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HighlightTrackballFriction}" Value="False">
-                                        <Setter Property="Opacity" Value="0.7" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
-                </StackPanel>
+                        <Border Style="{StaticResource TouchSensRowBorder}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Trackball" Style="{StaticResource TouchSensRowLabel}"/>
+                                <CheckBox Grid.Column="1" IsChecked="{Binding TrackballEnabled}" VerticalAlignment="Center">
+                                    <CheckBox.Style>
+                                        <Style TargetType="CheckBox" BasedOn="{StaticResource JsmccToggleStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HighlightTrackballEnabled}" Value="False">
+                                                    <Setter Property="Opacity" Value="0.7" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </CheckBox.Style>
+                                </CheckBox>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource TouchSensRowBorder}" IsEnabled="{Binding TrackballEnabled}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="190"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Trackball Friction" Style="{StaticResource TouchSensRowLabel}"/>
+                                <TextBox Grid.Column="1" Text="{Binding TrackballFriction, UpdateSourceTrigger=LostFocus}" Width="110">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox" BasedOn="{StaticResource JsmccTextBoxStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HighlightTrackballFriction}" Value="False">
+                                                    <Setter Property="Opacity" Value="0.7" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
             </StackPanel>
