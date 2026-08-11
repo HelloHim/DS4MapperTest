@@ -99,16 +99,24 @@ namespace DS4MapperTest.ViewModels
             {
                 settingsViewModel = value;
                 OnPropertyChanged(nameof(SettingsViewModel));
-                OnPropertyChanged(nameof(IsFlickStickMode));
-                OnPropertyChanged(nameof(CurrentModeDisplayName));
+                OnPropertyChanged(nameof(CurrentModeDescription));
             }
         }
 
-        public bool IsFlickStickMode => settingsViewModel is StickFlickStickPropViewModel;
-
-        public string CurrentModeDisplayName =>
-            (sharedModeItems.FirstOrDefault(item => item.Index == selectedModeIndex)
-                ?? sharedModeItems[0]).DisplayName;
+        public string CurrentModeDescription =>
+            settingsViewModel switch
+            {
+                StickTranslatePropViewModel => "Outputs standard analog joystick movement.",
+                StickPadActionPropViewModel => "Maps stick position to directional button outputs.",
+                StickAnalogEmulationPropViewModel => "Maps stick position to directional button outputs.",
+                StickMousePropViewModel => "Uses stick tilt for relative mouse output, similar to gyro mouse.",
+                StickCircularPropViewModel => "Uses circular stick movement for scroll-style clockwise and counter-clockwise output.",
+                StickAbsMousePropViewModel => "Uses stick position for absolute mouse output.",
+                StickFlickStickPropViewModel => "Flicks the camera to a stick angle instantly, with optional continued rotation while held.",
+                StickHybridAimPropViewModel => "Combines aim-stick turn rate near centre with mouse-drag-like motion at the stick's edge.",
+                StickMouseRingPropViewModel => "Places the mouse cursor on a fixed ring around screen centre based on stick angle.",
+                _ => "This stick does not produce any output.",
+            };
 
         public int SelectedModeIndex
         {

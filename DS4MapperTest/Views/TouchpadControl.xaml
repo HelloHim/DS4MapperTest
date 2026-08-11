@@ -89,61 +89,50 @@
                 </StackPanel>
 
                 <Border Style="{StaticResource TouchpadInlineCard}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180"/>
-                            <ColumnDefinition Width="300"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="{Binding DisplayName}"
+                                   Style="{StaticResource JsmccCardTitle}"/>
+                        <TextBlock Text="{Binding BindingName}"
+                                   Style="{StaticResource JsmccMutedText}"
+                                   Margin="0,3,0,6"/>
 
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="{Binding DisplayName}"
-                                       Style="{StaticResource JsmccCardTitle}"/>
-                            <TextBlock Text="{Binding BindingName}"
-                                       Style="{StaticResource JsmccMutedText}"
-                                       Margin="0,3,0,0"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="0,0,14,0">
-                            <TextBlock Text="Mode"
-                                       Style="{StaticResource JsmccMutedText}"
-                                       Margin="0,0,0,4"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Mode" Style="{StaticResource JsmccLabelText}" Width="120" VerticalAlignment="Center"/>
                             <ComboBox ItemsSource="{Binding AvailableActionOptions}"
                                       SelectedValuePath="Index"
                                       DisplayMemberPath="DisplayName"
                                       SelectedValue="{Binding SelectedActionIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      Style="{StaticResource ComboBoxBaseStyle}"
-                                      MinWidth="180"/>
-                            <Border Style="{StaticResource JsmccSettingRowBorder}"
-                                    Visibility="{Binding ShowPassthruPrecedenceNotice, Converter={StaticResource BoolToVis}}"
-                                    Margin="0,10,0,0">
-                                <StackPanel>
-                                    <TextBlock Text="Passthru Priority"
-                                               Style="{StaticResource JsmccLabelText}"/>
-                                    <TextBlock Text="{Binding PassthruPrecedenceMessage}"
-                                               Style="{StaticResource JsmccBodyText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,4,0,0"/>
-                                </StackPanel>
-                            </Border>
-                            <ContentControl Tag="Extra"
-                                            DataContext="{Binding}"
-                                            Loaded="InlineSettingsHost_Loaded"
-                                            Margin="0,10,0,0"/>
+                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                      MinWidth="180"
+                                      Margin="8,0,0,0"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="{Binding BindingStatus}"
-                                       Style="{StaticResource JsmccBodyText}"
-                                       TextWrapping="Wrap"
-                                       MaxWidth="360"
-                                       HorizontalAlignment="Left"/>
-                            <ContentControl Tag="Bindings"
-                                            DataContext="{Binding}"
-                                            Loaded="InlineSettingsHost_Loaded"
-                                            Margin="0,10,0,0"/>
-                        </StackPanel>
-                    </Grid>
+                        <TextBlock Text="{Binding BindingStatus}"
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,8,0,0"/>
+
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                Visibility="{Binding ShowPassthruPrecedenceNotice, Converter={StaticResource BoolToVis}}"
+                                Margin="0,10,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Passthru Priority"
+                                           Style="{StaticResource JsmccLabelText}"/>
+                                <TextBlock Text="{Binding PassthruPrecedenceMessage}"
+                                           Style="{StaticResource JsmccBodyText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <ContentControl Tag="Extra"
+                                        DataContext="{Binding}"
+                                        Loaded="InlineSettingsHost_Loaded"
+                                        Margin="0,10,0,0"/>
+                        <ContentControl Tag="Bindings"
+                                        DataContext="{Binding}"
+                                        Loaded="InlineSettingsHost_Loaded"
+                                        Margin="0,10,0,0"/>
+                    </StackPanel>
                 </Border>
 
                 <Border Visibility="{Binding IsSensitivityCalibrationAction, Converter={StaticResource BoolToVis}}">
