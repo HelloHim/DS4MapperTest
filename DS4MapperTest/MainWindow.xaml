@@ -1371,6 +1371,13 @@
                                             Click="LoadProfileFromListBtn_Click"
                                             Style="{StaticResource JsmccPrimaryButtonStyle}"/>
                                 </StackPanel>
+                                <TextBlock x:Name="deleteActiveProfileWarningText"
+                                           Text="Switch to a different profile before deleting this one."
+                                           Foreground="{DynamicResource JsmccDangerTextBrush}"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Right"
+                                           Margin="0,6,0,0"
+                                           Visibility="Collapsed"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
