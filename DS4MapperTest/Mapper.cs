@@ -1430,7 +1430,7 @@ namespace DS4MapperTest
             {
                 if (mouseOutputDispatcher != null)
                 {
-                    mouseOutputDispatcher.SetButton(mouseOutputProducerId, MouseOutputRoute.Other, mouseCode, false);
+                    mouseOutputDispatcher.SetButton(mouseOutputProducerId, MouseOutputRoute.Gyro, mouseCode, false);
                 }
                 else
                 {
@@ -1442,7 +1442,7 @@ namespace DS4MapperTest
             {
                 if (mouseOutputDispatcher != null)
                 {
-                    mouseOutputDispatcher.SetButton(mouseOutputProducerId, MouseOutputRoute.Other, mouseCode, true);
+                    mouseOutputDispatcher.SetButton(mouseOutputProducerId, MouseOutputRoute.Gyro, mouseCode, true);
                 }
                 else
                 {
@@ -1936,14 +1936,14 @@ namespace DS4MapperTest
                             if (xDir)
                             {
                                 double xMotion = ((mouseVelocity - tempMouseOffset) * timeDelta * distance + (mouseOffset * timeDelta));
-                                MouseX = xMotion;
-                                MouseSync = true;
+                                AddRouteRelativeMouseMotion(MouseOutputRoute.Gyro, xMotion, 0.0);
+                                SetRouteRelativeMouseSync(MouseOutputRoute.Gyro, true);
                             }
                             else if (yDir)
                             {
                                 double yMotion = ((mouseVelocity - tempMouseOffset) * timeDelta * distance + (mouseOffset * timeDelta));
-                                MouseY = yMotion;
-                                MouseSync = true;
+                                AddRouteRelativeMouseMotion(MouseOutputRoute.Gyro, 0.0, yMotion);
+                                SetRouteRelativeMouseSync(MouseOutputRoute.Gyro, true);
                             }
                         }
                     }
@@ -2100,14 +2100,14 @@ namespace DS4MapperTest
                             if (xDir)
                             {
                                 double xMotion = ((mouseVelocity - tempMouseOffset) * timeDelta * distance + (mouseOffset * timeDelta));
-                                MouseX = xMotion;
-                                MouseSync = true;
+                                AddRouteRelativeMouseMotion(MouseOutputRoute.Gyro, xMotion, 0.0);
+                                SetRouteRelativeMouseSync(MouseOutputRoute.Gyro, true);
                             }
                             else if (yDir)
                             {
                                 double yMotion = ((mouseVelocity - tempMouseOffset) * timeDelta * distance + (mouseOffset * timeDelta));
-                                MouseY = yMotion;
-                                MouseSync = true;
+                                AddRouteRelativeMouseMotion(MouseOutputRoute.Gyro, 0.0, yMotion);
+                                SetRouteRelativeMouseSync(MouseOutputRoute.Gyro, true);
                             }
                         }
                     }
@@ -2280,15 +2280,15 @@ namespace DS4MapperTest
                             if (xDir)
                             {
                                 double xMotion = ((mouseXVelocity - mouseXOffset) * timeDelta * distance + (mouseXOffset * timeDelta));
-                                MouseX = xMotion;
-                                MouseSync = true;
+                                AddRouteRelativeMouseMotion(MouseOutputRoute.Gyro, xMotion, 0.0);
+                                SetRouteRelativeMouseSync(MouseOutputRoute.Gyro, true);
                             }
 
                             if (yDir)
                             {
                                 double yMotion = ((mouseYVelocity - mouseYOffset) * timeDelta * distance + (mouseYOffset * timeDelta));
-                                MouseY = yMotion;
-                                MouseSync = true;
+                                AddRouteRelativeMouseMotion(MouseOutputRoute.Gyro, 0.0, yMotion);
+                                SetRouteRelativeMouseSync(MouseOutputRoute.Gyro, true);
                             }
                         }
                     }
@@ -3113,7 +3113,7 @@ namespace DS4MapperTest
             {
                 if (mouseOutputDispatcher != null)
                 {
-                    mouseOutputDispatcher.QueueWheel(mouseOutputProducerId, MouseOutputRoute.Other,
+                    mouseOutputDispatcher.QueueWheel(mouseOutputProducerId, MouseOutputRoute.Gyro,
                         mouseWheelY * eventInputMapping.WHEEL_TICK_BASE,
                         mouseWheelX * eventInputMapping.WHEEL_TICK_BASE);
                 }
