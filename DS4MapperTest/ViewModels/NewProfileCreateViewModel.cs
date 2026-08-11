@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Collections;
 using static DS4MapperTest.Mapper;
 
@@ -55,6 +56,25 @@ namespace DS4MapperTest.ViewModels
                 profileFolder = value;
                 RaisePropertyChanged(nameof(ProfileFolder));
                 RaisePropertyChanged(nameof(ProfilePath));
+            }
+        }
+
+        public ObservableCollection<string> ProfileFolders =>
+            manager.DeviceProfileListDict[mapper.DeviceType].ProfileFolderCol;
+
+        private string selectedFolderName;
+        public string SelectedFolderName
+        {
+            get => selectedFolderName;
+            set
+            {
+                if (selectedFolderName == value) return;
+                selectedFolderName = value;
+                profileFolder = manager.DeviceProfileListDict[mapper.DeviceType].GetFolderPath(selectedFolderName);
+                RaisePropertyChanged(nameof(SelectedFolderName));
+                RaisePropertyChanged(nameof(ProfileFolder));
+                RaisePropertyChanged(nameof(ProfilePath));
+                ValidateNameField();
             }
         }
 
@@ -151,7 +171,11 @@ namespace DS4MapperTest.ViewModels
             // default. The manage-profiles panel that hosts this view model can
             // only be opened while a controller is connected, so DeviceType is
             // guaranteed to be valid here.
-            profileFolder = mapper.AppGlobal.GetDeviceProfileFolderLocation(mapper.DeviceType);
+            ProfileList profileList = manager.DeviceProfileListDict[mapper.DeviceType];
+            selectedFolderName = profileList.FolderExists(ProfileList.VALORANT_PROFILE_FOLDER)
+                ? ProfileList.VALORANT_PROFILE_FOLDER
+                : profileList.ProfileFolderCol.FirstOrDefault() ?? ProfileList.VALORANT_PROFILE_FOLDER;
+            profileFolder = profileList.GetFolderPath(selectedFolderName);
         }
 
         public bool CreateProfile()
