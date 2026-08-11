@@ -3537,8 +3537,8 @@ namespace DS4MapperTest.ViewModels
         }
 
         public string Description => IsAvailable
-            ? "Temporarily hides this physical controller from other apps while the remapper is running. You may need to restart the game."
-            : "Install HidHide to hide this controller from other apps while the remapper is running.";
+            ? "Temporarily hides this physical controller from other apps while the remapper is running. This is an app-level setting and is not tied to any profile. You may need to restart the game."
+            : "Install HidHide to hide this controller from other apps while the remapper is running. This is an app-level setting and is not tied to any profile. This setting is unavailable because HidHide is not installed.";
 
         private PhysicalControllerVisibilityViewModel(InputDeviceBase device, AppGlobalData appGlobal)
         {
