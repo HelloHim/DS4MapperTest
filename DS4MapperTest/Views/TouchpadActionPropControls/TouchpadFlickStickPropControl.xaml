@@ -146,6 +146,29 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="190"/>
                                         <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Sweep Sensitivity" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="6" DecimalPlaces="4" Increment="0.1"
+                                                      ValueFormat="0.0###"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding SweepSensitivity, UpdateSourceTrigger=LostFocus}"/>
+                                    <TextBlock Grid.Column="2" Text="x" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="Multiplier applied to the continuous sweep rotation as you rotate the stick around its outer edge. It does not affect the initial flick-turn. 1x is a natural 1:1 ratio; 0x disables sweeping."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                Visibility="{Binding ShowRotationSettings, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="Sweep Rotation Smoothing" Style="{StaticResource JsmccLabelText}"/>
                                     <hc:NumericUpDown Grid.Column="1" Minimum="-1" Maximum="1" DecimalPlaces="2" Increment="0.01"
