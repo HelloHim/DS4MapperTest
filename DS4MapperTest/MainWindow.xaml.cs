@@ -41,6 +41,7 @@ namespace DS4MapperTest
         private ProfileListEntry selectedListEntry;
         private NewProfileCreateViewModel overlayNewProfileVM;
         private bool suppressSelectedProfileFolderCombo;
+        private bool suppressFolderManageStatusHide;
         private List<ProfileEntity> profileComboProfiles = new List<ProfileEntity>();
 
         private IntPtr regHandle = new IntPtr();
@@ -57,6 +58,7 @@ namespace DS4MapperTest
         private bool isDirtyClosePromptActive;
         private DispatcherTimer saveStatusHideTimer;
         private DispatcherTimer deleteActiveProfileWarningHideTimer;
+        private DispatcherTimer resetDefaultProfilesStatusHideTimer;
         private static readonly Logger saveProfileLogger = LogManager.GetCurrentClassLogger();
         private readonly ObservableCollection<PhysicalMouseSettingsItem> physicalMouseItems =
             new ObservableCollection<PhysicalMouseSettingsItem>();
@@ -1020,7 +1022,7 @@ namespace DS4MapperTest
             await SwitchProfileAsync(currentDeviceItem, newIndex);
         }
 
-        private void RefreshProfileList()
+        private void RefreshProfileList(string selectedFolderName = null, string selectedProfilePath = null)
         {
             if (currentDeviceItem == null)
             {
@@ -1044,9 +1046,28 @@ namespace DS4MapperTest
                 .ToList();
 
             profileListBox.ItemsSource = groups;
-            RefreshFolderManagementControls();
-            selectedListEntry = null;
-            selectedProfilePanel.Visibility = Visibility.Collapsed;
+            RefreshFolderManagementControls(selectedFolderName);
+
+            selectedListEntry = !string.IsNullOrWhiteSpace(selectedProfilePath)
+                ? entries.FirstOrDefault(entry => string.Equals(entry.Entity.ProfilePath, selectedProfilePath, StringComparison.OrdinalIgnoreCase))
+                : null;
+
+            if (selectedListEntry != null)
+            {
+                profileRenameBox.Text = selectedListEntry.Name;
+                suppressSelectedProfileFolderCombo = true;
+                selectedProfileFolderComboBox.ItemsSource = GetProfileFolderSnapshot();
+                selectedProfileFolderComboBox.SelectedItem = selectedListEntry.FolderName;
+                suppressSelectedProfileFolderCombo = false;
+                selectedProfilePanel.Visibility = Visibility.Visible;
+                Dispatcher.BeginInvoke(new Action(() => SelectProfileListEntry(selectedListEntry)),
+                    DispatcherPriority.Loaded);
+            }
+            else
+            {
+                selectedProfilePanel.Visibility = Visibility.Collapsed;
+            }
+
             HideDeleteActiveProfileWarning();
         }
 
@@ -1089,7 +1110,7 @@ namespace DS4MapperTest
             ClearOtherProfileListSelections(profileListBox, selectedListBox);
             profileRenameBox.Text = selectedListEntry.Name;
             suppressSelectedProfileFolderCombo = true;
-            selectedProfileFolderComboBox.ItemsSource = currentDeviceItem.ProfileFolders;
+            selectedProfileFolderComboBox.ItemsSource = GetProfileFolderSnapshot();
             selectedProfileFolderComboBox.SelectedItem = selectedListEntry.FolderName;
             suppressSelectedProfileFolderCombo = false;
             selectedProfilePanel.Visibility = Visibility.Visible;
@@ -1116,6 +1137,38 @@ namespace DS4MapperTest
 
                 ClearOtherProfileListSelections(child, selectedListBox);
             }
+        }
+
+        private void SelectProfileListEntry(ProfileListEntry entry)
+        {
+            if (entry == null) return;
+
+            SelectProfileListEntry(profileListBox, entry);
+        }
+
+        private bool SelectProfileListEntry(DependencyObject root, ProfileListEntry entry)
+        {
+            if (root == null) return false;
+
+            int childCount = VisualTreeHelper.GetChildrenCount(root);
+            for (int childIndex = 0; childIndex < childCount; childIndex++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(root, childIndex);
+                if (child is ListBox listBox && listBox.Items.Contains(entry))
+                {
+                    listBox.SelectedItem = entry;
+                    listBox.ScrollIntoView(entry);
+                    ClearOtherProfileListSelections(profileListBox, listBox);
+                    return true;
+                }
+
+                if (SelectProfileListEntry(child, entry))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private async Task<bool> SwitchProfileAsync(DeviceListItem item, int newIndex)
@@ -1322,6 +1375,126 @@ namespace DS4MapperTest
         private void FolderManageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             folderRenameBox.Text = folderManageComboBox.SelectedItem as string ?? string.Empty;
+            if (!suppressFolderManageStatusHide)
+            {
+                HideResetDefaultProfilesStatus();
+            }
+            RefreshDefaultProfileResetVisibility();
+        }
+
+        private async void ResetDefaultProfilesBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentDeviceItem == null || editorTestVM == null) return;
+
+            string selectedFolder = folderManageComboBox.SelectedItem as string;
+            if (!string.Equals(selectedFolder, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (MessageBox.Show(
+                    "Reset the bundled default profiles for this controller?\n\nThis will overwrite changes made to profiles in the Default folder.",
+                    "Reset Default Profiles",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            string activeProfilePath = editorTestVM.ProfileEnt?.ProfilePath;
+            string selectedProfilePath = selectedListEntry?.Entity?.ProfilePath ?? activeProfilePath;
+            string activeProfileName = editorTestVM.ProfileEnt?.Name;
+            string selectedProfileName = selectedListEntry?.Name ?? activeProfileName;
+            bool activeDefaultProfile = currentDeviceItem.DevProfileList.Any(profile =>
+                string.Equals(profile.ProfilePath, activeProfilePath, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(profile.FolderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase));
+
+            if (activeDefaultProfile && editorTestVM.IsProfileDirty)
+            {
+                DirtySwitchDecision decision = ShowDirtySwitchDialog(
+                    allowSave: false,
+                    title: "Reset Default Profiles",
+                    messageText: "Resetting defaults will discard unsaved changes to the current profile.");
+                if (decision != DirtySwitchDecision.Discard)
+                {
+                    return;
+                }
+            }
+
+            IsEnabled = false;
+            Exception resetException = null;
+            int resetCount = 0;
+            try
+            {
+                InputDeviceType deviceType = editorTestVM.DeviceMapper.DeviceType;
+                resetCount = await Task.Run(() => appGlobal.ResetBundledDefaultProfiles(deviceType));
+                currentDeviceItem.ProfileListHolder.Refresh();
+
+                if (activeDefaultProfile)
+                {
+                    ProfileEntity restoredActiveProfile = FindRestoredDefaultProfile(activeProfilePath, activeProfileName) ??
+                        currentDeviceItem.DevProfileList.FirstOrDefault(profile =>
+                            string.Equals(profile.FolderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase));
+
+                    if (restoredActiveProfile != null)
+                    {
+                        int activeIndex = currentDeviceItem.DevProfileList.IndexOf(restoredActiveProfile);
+                        await Task.Run(() => currentDeviceItem.ResyncProfileIndex(activeIndex, reloadProfile: true));
+                        appGlobal.activeProfiles[currentDeviceItem.Device.Index] = restoredActiveProfile.ProfilePath;
+                        selectedProfilePath = restoredActiveProfile.ProfilePath;
+                        LoadProfileForDevice(currentDeviceItem);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                resetException = ex;
+            }
+            finally
+            {
+                IsEnabled = true;
+            }
+
+            if (resetException != null)
+            {
+                MessageBox.Show($"Failed to reset default profiles:\n{resetException.Message}", "Reset Default Profiles",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (resetCount == 0)
+            {
+                MessageBox.Show("No bundled default profiles were found for this controller.", "Reset Default Profiles",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            RefreshProfileCombo();
+            selectedProfilePath = FindRestoredDefaultProfile(selectedProfilePath, selectedProfileName)?.ProfilePath ?? selectedProfilePath;
+            RefreshProfileList(ProfileList.DEFAULT_PROFILE_FOLDER, selectedProfilePath);
+            if (resetCount > 0)
+            {
+                ShowResetDefaultProfilesStatus();
+            }
+
+            _ = Dispatcher.BeginInvoke(new Action(() =>
+            {
+                SelectManagedProfileFolder(ProfileList.DEFAULT_PROFILE_FOLDER, preserveResetStatus: true);
+                if (resetCount > 0)
+                {
+                    ShowResetDefaultProfilesStatus();
+                }
+            }), DispatcherPriority.ContextIdle);
+        }
+
+        private ProfileEntity FindRestoredDefaultProfile(string profilePath, string profileName)
+        {
+            if (currentDeviceItem == null) return null;
+
+            return currentDeviceItem.DevProfileList.FirstOrDefault(profile =>
+                    string.Equals(profile.FolderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(profile.ProfilePath, profilePath, StringComparison.OrdinalIgnoreCase)) ??
+                currentDeviceItem.DevProfileList.FirstOrDefault(profile =>
+                    string.Equals(profile.FolderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(profile.Name, profileName, StringComparison.OrdinalIgnoreCase));
         }
 
         private void SelectedProfileFolderComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1384,16 +1557,92 @@ namespace DS4MapperTest
             return true;
         }
 
-        private void RefreshFolderManagementControls()
+        private void RefreshFolderManagementControls(string selectedFolderName = null)
         {
             if (currentDeviceItem == null) return;
 
-            folderManageComboBox.ItemsSource = currentDeviceItem.ProfileFolders;
-            selectedProfileFolderComboBox.ItemsSource = currentDeviceItem.ProfileFolders;
-            if (folderManageComboBox.SelectedIndex < 0 && currentDeviceItem.ProfileFolders.Count > 0)
+            string folderToSelect = selectedFolderName ?? folderManageComboBox.SelectedItem as string;
+            List<string> folderItems = GetProfileFolderSnapshot();
+            folderManageComboBox.ItemsSource = folderItems;
+            selectedProfileFolderComboBox.ItemsSource = folderItems;
+            if (!SelectManagedProfileFolder(folderToSelect))
             {
-                folderManageComboBox.SelectedIndex = 0;
+                SelectManagedProfileFolder(folderItems.FirstOrDefault());
             }
+
+            RefreshDefaultProfileResetVisibility();
+        }
+
+        private List<string> GetProfileFolderSnapshot()
+        {
+            return currentDeviceItem?.ProfileFolders?.ToList() ?? new List<string>();
+        }
+
+        private bool SelectManagedProfileFolder(string folderName, bool preserveResetStatus = false)
+        {
+            if (folderManageComboBox == null || currentDeviceItem == null || string.IsNullOrWhiteSpace(folderName))
+            {
+                return false;
+            }
+
+            List<string> folderItems = folderManageComboBox.Items.Cast<string>().ToList();
+            int folderIndex = folderItems
+                .Select((folder, index) => new { folder, index })
+                .Where(item => string.Equals(item.folder, folderName, StringComparison.OrdinalIgnoreCase))
+                .Select(item => item.index)
+                .DefaultIfEmpty(-1)
+                .First();
+
+            if (folderIndex < 0) return false;
+
+            suppressFolderManageStatusHide = preserveResetStatus;
+            try
+            {
+                folderManageComboBox.SelectedIndex = folderIndex;
+                folderRenameBox.Text = folderItems[folderIndex];
+            }
+            finally
+            {
+                suppressFolderManageStatusHide = false;
+            }
+
+            RefreshDefaultProfileResetVisibility();
+            return true;
+        }
+
+        private void RefreshDefaultProfileResetVisibility()
+        {
+            if (resetDefaultProfilesPanel == null || folderManageComboBox == null) return;
+
+            string selectedFolder = folderManageComboBox.SelectedItem as string;
+            resetDefaultProfilesPanel.Visibility =
+                string.Equals(selectedFolder, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        private void HideResetDefaultProfilesStatus()
+        {
+            if (resetDefaultProfilesStatusText == null) return;
+
+            resetDefaultProfilesStatusHideTimer?.Stop();
+            resetDefaultProfilesStatusText.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowResetDefaultProfilesStatus()
+        {
+            if (resetDefaultProfilesStatusText == null) return;
+
+            resetDefaultProfilesStatusHideTimer?.Stop();
+            resetDefaultProfilesStatusText.Visibility = Visibility.Visible;
+
+            resetDefaultProfilesStatusHideTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+            resetDefaultProfilesStatusHideTimer.Tick += (s, e) =>
+            {
+                resetDefaultProfilesStatusHideTimer.Stop();
+                resetDefaultProfilesStatusText.Visibility = Visibility.Collapsed;
+            };
+            resetDefaultProfilesStatusHideTimer.Start();
         }
 
         private void HideNewProfilePanel()
