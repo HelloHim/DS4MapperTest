@@ -42,7 +42,8 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="Horizontal Sensitivity" Style="{StaticResource SensRowLabel}"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="3" Increment="0.01"
+                                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
+                                                      ValueFormat="0.0###"
                                                       Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                       Value="{Binding Sensitivity, FallbackValue='4.0'}"/>
                                     <TextBlock Text="RWS" Style="{StaticResource SensUnitLabel}"/>
@@ -67,7 +68,8 @@
                                                  IsChecked="{Binding VerticalScaleIsAbsoluteMode, Mode=TwoWay}"
                                                  VerticalAlignment="Center" Width="190" Content="Vertical Sensitivity"
                                                  Foreground="{DynamicResource JsmccTextMidBrush}"/>
-                                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="3" Increment="0.01"
+                                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
+                                                      ValueFormat="0.0###"
                                                       Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                       IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
                                                       Value="{Binding VerticalScale, FallbackValue='0.6'}"/>
@@ -88,7 +90,8 @@
                                                  IsChecked="{Binding VerticalScaleIsMultiplierMode, Mode=TwoWay}"
                                                  VerticalAlignment="Center" Width="190" Content="Vertical Scale (multiplier)"
                                                  Foreground="{DynamicResource JsmccTextMidBrush}"/>
-                                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="3" Increment="0.01"
+                                    <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.01"
+                                                      ValueFormat="0.0###"
                                                       Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                       IsEnabled="{Binding VerticalScaleIsMultiplierMode}"
                                                       Value="{Binding VerticalScaleMultiplier, FallbackValue='1.0'}"/>
@@ -123,19 +126,19 @@
                                         <TextBlock Text="Configure Using" Style="{StaticResource SensRowLabel}"/><ComboBox Grid.Column="1" ItemsSource="{Binding TriggerSensitivityModifierConfigureUsingItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerSensitivityModifierConfigureUsing}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
                                     </Grid></Border>
                                     <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                        <TextBlock Text="Target Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="Absolute Sensitivity keeps the target sensitivity fixed when the base sensitivity changes."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="3" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" IsEnabled="{Binding TriggerSensitivityModifierTargetEditable}" Value="{Binding TriggerSensitivityModifierTargetSensitivity}"/>
+                                        <TextBlock Text="Target Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="Absolute Sensitivity keeps the target sensitivity fixed when the base sensitivity changes."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="4" ValueFormat="0.0###" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" IsEnabled="{Binding TriggerSensitivityModifierTargetEditable}" Value="{Binding TriggerSensitivityModifierTargetSensitivity}"/>
                                     </Grid></Border>
                                     <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                        <TextBlock Text="Multiplier" Style="{StaticResource SensRowLabel}" ToolTip="Multiplier keeps the proportional adjustment fixed when the base sensitivity changes."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="3" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" IsEnabled="{Binding TriggerSensitivityModifierMultiplierEditable}" Value="{Binding TriggerSensitivityModifierMultiplier}"/>
+                                        <TextBlock Text="Multiplier" Style="{StaticResource SensRowLabel}" ToolTip="Multiplier keeps the proportional adjustment fixed when the base sensitivity changes."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="4" ValueFormat="0.0###" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" IsEnabled="{Binding TriggerSensitivityModifierMultiplierEditable}" Value="{Binding TriggerSensitivityModifierMultiplier}"/>
                                     </Grid></Border>
                                     <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                        <TextBlock Text="Base Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="This is the shared horizontal gyro sensitivity. Changes here also update Static Sensitivity."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="3" Increment="0.01" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding Sensitivity}"/>
+                                        <TextBlock Text="Base Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="This is the shared horizontal gyro sensitivity. Changes here also update Static Sensitivity."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="4" Increment="0.01" ValueFormat="0.0###" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding Sensitivity}"/>
                                     </Grid></Border>
                                     <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                         <TextBlock Text="Modify Vertical Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="Off leaves vertical sensitivity unchanged. When enabled, it follows the horizontal modifier."/><CheckBox Grid.Column="1" Content="Match horizontal modifier" Style="{StaticResource JsmccToggleStyle}" IsChecked="{Binding TriggerSensitivityModifierModifyVerticalSensitivity}"/>
                                     </Grid></Border>
                                     <Border Style="{StaticResource SensRowBorder}" IsEnabled="{Binding TriggerSensitivityModifierModifyVerticalSensitivity}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                        <TextBlock Text="Base Vertical Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="This is the shared vertical gyro sensitivity. Changes here also update Static Sensitivity."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="3" Increment="0.01" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding VerticalScale}"/>
+                                        <TextBlock Text="Base Vertical Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="This is the shared vertical gyro sensitivity. Changes here also update Static Sensitivity."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="4" Increment="0.01" ValueFormat="0.0###" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding VerticalScale}"/>
                                     </Grid></Border>
                                     <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                         <TextBlock Text="Response Curve" Style="{StaticResource SensRowLabel}"/><ComboBox Grid.Column="1" ItemsSource="{Binding TriggerSensitivityModifierResponseCurveItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerSensitivityModifierResponseCurve}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>
@@ -188,14 +191,16 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="Min Sens X" Style="{StaticResource SensRowLabel}" Width="90"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="3" Increment="0.1"
+                                        <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.1"
+                                                          ValueFormat="0.0###"
                                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           Value="{Binding MinAccelXSens, FallbackValue='4.0'}"/>
                                         <TextBlock Text="RWS" Style="{StaticResource SensUnitLabel}"/>
                                     </StackPanel>
                                     <TextBlock Grid.Column="2" Text="Min Sens Y" Style="{StaticResource SensRowLabel}" Width="90" Margin="16,0,0,0"/>
                                     <StackPanel Grid.Column="3" Orientation="Horizontal">
-                                        <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="3" Increment="0.1"
+                                        <hc:NumericUpDown Minimum="0.0" Maximum="10.0" DecimalPlaces="4" Increment="0.1"
+                                                          ValueFormat="0.0###"
                                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           Value="{Binding MinAccelYSens, FallbackValue='0.6'}"/>
                                         <TextBlock Text="RWS" Style="{StaticResource SensUnitLabel}"/>
@@ -213,14 +218,16 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="Max Sens X" Style="{StaticResource SensRowLabel}" Width="90"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
+                                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.1"
+                                                          ValueFormat="0.0###"
                                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           Value="{Binding MaxAccelXSens, FallbackValue='4.0'}"/>
                                         <TextBlock Text="RWS" Style="{StaticResource SensUnitLabel}"/>
                                     </StackPanel>
                                     <TextBlock Grid.Column="2" Text="Max Sens Y" Style="{StaticResource SensRowLabel}" Width="90" Margin="16,0,0,0"/>
                                     <StackPanel Grid.Column="3" Orientation="Horizontal">
-                                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="3" Increment="0.1"
+                                        <hc:NumericUpDown Minimum="0.0" Maximum="100.0" DecimalPlaces="4" Increment="0.1"
+                                                          ValueFormat="0.0###"
                                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           Value="{Binding MaxAccelYSens, FallbackValue='0.6'}"/>
                                         <TextBlock Text="RWS" Style="{StaticResource SensUnitLabel}"/>
@@ -340,7 +347,8 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="Horizontal Multiplier" Style="{StaticResource SensRowLabel}"/>
-                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100.0" DecimalPlaces="4" Increment="0.01"
+                                                      ValueFormat="0.0###"
                                                       Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                       Value="{Binding AccelerationMultiplier, FallbackValue='1.0'}"/>
                                 </Grid>
@@ -363,7 +371,8 @@
                                                      IsChecked="{Binding VerticalAccelerationIsAbsoluteMode, Mode=TwoWay}"
                                                      VerticalAlignment="Center" Width="190" Content="Vertical Multiplier"
                                                      Foreground="{DynamicResource JsmccTextMidBrush}"/>
-                                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="4" Increment="0.01"
+                                                          ValueFormat="0.0###"
                                                           Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           IsEnabled="{Binding VerticalAccelerationIsAbsoluteMode}"
                                                           Value="{Binding VerticalAccelerationMultiplier, FallbackValue='1.0'}"/>
@@ -383,7 +392,8 @@
                                                      IsChecked="{Binding VerticalAccelerationIsScaleMode, Mode=TwoWay}"
                                                      VerticalAlignment="Center" Width="190" Content="Vertical Scale"
                                                      Foreground="{DynamicResource JsmccTextMidBrush}"/>
-                                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="4" Increment="0.01"
+                                                          ValueFormat="0.0###"
                                                           Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           IsEnabled="{Binding VerticalAccelerationIsScaleMode}"
                                                           Value="{Binding VerticalAccelerationScale, FallbackValue='1.0'}"/>

@@ -239,7 +239,8 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="Acceleration Multiplier" Style="{StaticResource JsmccLabelText}"/>
-                                <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100" DecimalPlaces="3" Increment="0.01"
+                                <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100" DecimalPlaces="4" Increment="0.01"
+                                                  ValueFormat="0.0###"
                                                   Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                   Value="{Binding AccelerationMultiplier, UpdateSourceTrigger=LostFocus}"/>
                             </Grid>

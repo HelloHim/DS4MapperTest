@@ -1042,7 +1042,8 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="Horizontal Multiplier" Style="{StaticResource JsmccLabelText}"/>
-                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100.0" DecimalPlaces="4" Increment="0.01"
+                                                      ValueFormat="0.0###"
                                                       Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                       Value="{Binding AccelerationMultiplier}"/>
                                 </Grid>
@@ -1065,7 +1066,8 @@
                                                      IsChecked="{Binding VerticalAccelerationIsAbsoluteMode, Mode=TwoWay}"
                                                      VerticalAlignment="Center" Width="190" Content="Vertical Multiplier"
                                                      Foreground="{DynamicResource JsmccTextMidBrush}"/>
-                                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="4" Increment="0.01"
+                                                          ValueFormat="0.0###"
                                                           Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           IsEnabled="{Binding VerticalAccelerationIsAbsoluteMode}"
                                                           Value="{Binding VerticalAccelerationMultiplier}"/>
@@ -1085,7 +1087,8 @@
                                                      IsChecked="{Binding VerticalAccelerationIsScaleMode, Mode=TwoWay}"
                                                      VerticalAlignment="Center" Width="190" Content="Vertical Scale"
                                                      Foreground="{DynamicResource JsmccTextMidBrush}"/>
-                                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="3" Increment="0.01"
+                                        <hc:NumericUpDown Minimum="0.01" Maximum="100.0" DecimalPlaces="4" Increment="0.01"
+                                                          ValueFormat="0.0###"
                                                           Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                           IsEnabled="{Binding VerticalAccelerationIsScaleMode}"
                                                           Value="{Binding VerticalAccelerationScale}"/>
@@ -1456,7 +1459,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Acceleration Multiplier" Style="{StaticResource JsmccLabelText}"/>
-                            <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100" DecimalPlaces="3" Increment="0.01"
+                            <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="100" DecimalPlaces="4" Increment="0.01"
+                                              ValueFormat="0.0###"
                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                               Value="{Binding AccelerationMultiplier, UpdateSourceTrigger=LostFocus}"/>
                         </Grid>
