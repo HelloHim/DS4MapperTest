@@ -64,7 +64,7 @@ namespace DS4MapperTest
                 if (!createdSkel)
                 {
                     MessageBox.Show($"Cannot create config folder structure in {appGlobal.appdatapath}. Exiting",
-                        "Test", MessageBoxButton.OK, MessageBoxImage.Error);
+                        "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     Current.Shutdown(1);
                     return;
                 }
