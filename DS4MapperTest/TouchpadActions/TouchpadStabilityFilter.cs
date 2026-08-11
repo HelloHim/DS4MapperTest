@@ -26,7 +26,7 @@ namespace DS4MapperTest.TouchpadActions
         // DS4/DualSense pads are 1920 counts wide; other pads scale.
         public const double REFERENCE_PAD_WIDTH = 1920.0;
 
-        public const TouchpadStabilityMode DEFAULT_MODE = TouchpadStabilityMode.Light;
+        public const TouchpadStabilityMode DEFAULT_MODE = TouchpadStabilityMode.Balanced;
         public const double DEFAULT_TOUCH_SETTLE_MS = 8.0;
         public const double DEFAULT_BASE_NOISE_FLOOR = 6.0;
         public const double DEFAULT_HYSTERESIS_EXIT_MULTIPLIER = 1.5;
