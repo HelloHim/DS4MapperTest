@@ -186,6 +186,14 @@ namespace DS4MapperTest.ViewModels
             new ObservableCollection<FaceButtonBindingItem>();
         public ObservableCollection<FaceButtonBindingItem> RightStickClickBinding => rightStickClickBinding;
 
+        private ObservableCollection<FaceButtonBindingItem> leftStickTouchBinding =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> LeftStickTouchBinding => leftStickTouchBinding;
+
+        private ObservableCollection<FaceButtonBindingItem> rightStickTouchBinding =
+            new ObservableCollection<FaceButtonBindingItem>();
+        public ObservableCollection<FaceButtonBindingItem> RightStickTouchBinding => rightStickTouchBinding;
+
         private ObservableCollection<FaceButtonBindingItem> extraButtonBindings =
             new ObservableCollection<FaceButtonBindingItem>();
         public ObservableCollection<FaceButtonBindingItem> ExtraButtonBindings => extraButtonBindings;
@@ -1101,17 +1109,21 @@ namespace DS4MapperTest.ViewModels
                 new string[] { "L3", "LSClick" },
                 "Left Stick Click",
                 "Stick click button");
-            AddFirstMatchingButtonBinding(leftStickClickBinding, claimedButtonBindings,
-                new string[] { "LSTouch" },
-                "LS Touch / Left Stick Touch",
-                "Stick touch sensor");
 
             rightStickClickBinding.Clear();
             AddFirstMatchingButtonBinding(rightStickClickBinding, claimedButtonBindings,
                 new string[] { "R3", "RSClick" },
                 "Right Stick Click",
                 "Stick click button");
-            AddFirstMatchingButtonBinding(rightStickClickBinding, claimedButtonBindings,
+
+            leftStickTouchBinding.Clear();
+            AddFirstMatchingButtonBinding(leftStickTouchBinding, claimedButtonBindings,
+                new string[] { "LSTouch" },
+                "LS Touch / Left Stick Touch",
+                "Stick touch sensor");
+
+            rightStickTouchBinding.Clear();
+            AddFirstMatchingButtonBinding(rightStickTouchBinding, claimedButtonBindings,
                 new string[] { "RSTouch" },
                 "RS Touch / Right Stick Touch",
                 "Stick touch sensor");

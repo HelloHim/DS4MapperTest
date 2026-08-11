@@ -19,7 +19,7 @@
     <StackPanel Margin="0,0,0,18">
         <StackPanel Margin="0,0,0,6">
             <TextBlock Text="{Binding SideLabel}" Style="{StaticResource JsmccSectionTitle}"/>
-            <TextBlock Text="Stick click and touch bindings are always available. Additional bindings below depend on the current stick mode."
+            <TextBlock Text="Stick click bindings are always available. Additional bindings below depend on the current stick mode."
                        Style="{StaticResource JsmccBodyText}"
                        TextWrapping="Wrap"
                        Margin="0,4,0,0"/>
