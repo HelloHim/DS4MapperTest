@@ -1284,42 +1284,47 @@
                                 <Grid Margin="0,10,0,0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="118"/>
                                     </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
                                     <TextBox x:Name="newFolderNameBox"
+                                             Grid.Row="0"
                                              Grid.Column="0"
                                              Style="{StaticResource JsmccTextBoxStyle}"/>
                                     <Button Grid.Column="1"
+                                            Grid.Row="0"
                                             Content="Create Folder"
                                             Click="CreateFolderBtn_Click"
                                             Style="{StaticResource JsmccButtonStyle}"
                                             Margin="8,0,0,0"/>
-                                </Grid>
-                                <Grid Margin="0,10,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="150"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
                                     <ComboBox x:Name="folderManageComboBox"
+                                              Grid.Row="1"
                                               Grid.Column="0"
                                               Style="{StaticResource JsmccComboBoxStyle}"
+                                              Margin="0,10,0,0"
                                               SelectionChanged="FolderManageComboBox_SelectionChanged"/>
-                                    <TextBox x:Name="folderRenameBox"
-                                             Grid.Column="1"
-                                             Style="{StaticResource ProfileFolderRenameTextBoxStyle}"
-                                             Margin="8,0,0,0"/>
-                                    <Button Grid.Column="2"
-                                            Content="Rename"
-                                            Click="RenameFolderBtn_Click"
-                                            Style="{StaticResource JsmccButtonStyle}"
-                                            Margin="8,0,0,0"/>
-                                    <Button Grid.Column="3"
+                                    <Button Grid.Column="1"
+                                            Grid.Row="1"
                                             Content="Delete"
                                             Click="DeleteFolderBtn_Click"
                                             Style="{StaticResource JsmccDangerButtonStyle}"
-                                            Margin="8,0,0,0"/>
+                                            Margin="8,10,0,0"/>
+                                    <TextBox x:Name="folderRenameBox"
+                                             Grid.Row="2"
+                                             Grid.Column="0"
+                                             Style="{StaticResource ProfileFolderRenameTextBoxStyle}"
+                                             Margin="0,8,0,0"
+                                             MinWidth="280"/>
+                                    <Button Grid.Column="1"
+                                            Grid.Row="2"
+                                            Content="Rename"
+                                            Click="RenameFolderBtn_Click"
+                                            Style="{StaticResource JsmccButtonStyle}"
+                                            Margin="8,8,0,0"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
