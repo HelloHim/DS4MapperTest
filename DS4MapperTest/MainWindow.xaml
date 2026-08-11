@@ -1326,6 +1326,30 @@
                                             Style="{StaticResource JsmccButtonStyle}"
                                             Margin="8,8,0,0"/>
                                 </Grid>
+                                <Grid x:Name="resetDefaultProfilesPanel"
+                                      Margin="0,8,0,0"
+                                      Visibility="Collapsed">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="118"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Restore the bundled Default profiles."
+                                               Style="{StaticResource JsmccMutedText}"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0"/>
+                                    <Button Grid.Column="1"
+                                            Content="Reset Defaults"
+                                            Click="ResetDefaultProfilesBtn_Click"
+                                            Style="{StaticResource JsmccButtonStyle}"
+                                            Margin="8,0,0,0"/>
+                                </Grid>
+                                <TextBlock x:Name="resetDefaultProfilesStatusText"
+                                           Text="Default profiles restored."
+                                           Foreground="{DynamicResource JsmccSuccessTextBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,6,0,0"
+                                           Visibility="Collapsed"/>
                             </StackPanel>
                         </Border>
 

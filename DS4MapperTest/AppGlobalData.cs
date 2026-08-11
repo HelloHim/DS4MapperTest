@@ -238,6 +238,45 @@ namespace DS4MapperTest
             return resourceNames.Length > 0;
         }
 
+        public int ResetBundledDefaultProfiles(InputDeviceType deviceType)
+        {
+            string devTemplateFolder = GetDeviceProfileFolderName(deviceType);
+            if (string.IsNullOrEmpty(devTemplateFolder)) return 0;
+
+            string destDevProfilePath = GetDeviceProfileFolderLocation(deviceType);
+            Directory.CreateDirectory(Path.Combine(destDevProfilePath, ProfileList.DEFAULT_PROFILE_FOLDER));
+
+            Assembly assembly = typeof(AppGlobalData).Assembly;
+            string assemblyName = assembly.GetName().Name;
+            string resourcePrefix = $"{assemblyName}.{TEMPLATE_PROFILES_DIRNAME}.{devTemplateFolder}.";
+
+            string[] defaultResourceNames = assembly.GetManifestResourceNames()
+                .Where(name => name.StartsWith(resourcePrefix, StringComparison.Ordinal))
+                .Where(name =>
+                {
+                    string fileName = name.Substring(resourcePrefix.Length);
+                    return string.Equals(GetProfileFolderForFileName(fileName), ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.Ordinal);
+                })
+                .ToArray();
+
+            foreach (string resourceName in defaultResourceNames)
+            {
+                string fileName = resourceName.Substring(resourcePrefix.Length);
+                string destFilePath = Path.Combine(destDevProfilePath, ProfileList.DEFAULT_PROFILE_FOLDER, fileName);
+
+                using Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
+                if (resourceStream == null)
+                {
+                    continue;
+                }
+
+                using FileStream destStream = File.Create(destFilePath);
+                resourceStream.CopyTo(destStream);
+            }
+
+            return defaultResourceNames.Length;
+        }
+
         private static string GetProfileFolderForFileName(string fileName)
         {
             return fileName.StartsWith("Default - ", StringComparison.OrdinalIgnoreCase)
@@ -799,6 +838,29 @@ namespace DS4MapperTest
             }
 
             return result;
+        }
+
+        private static string GetDeviceProfileFolderName(InputDeviceType deviceType)
+        {
+            switch (deviceType)
+            {
+                case InputDeviceType.SteamController:
+                    return STEAM_CONTROLLER_PROFILE_DIR;
+                case InputDeviceType.SteamControllerTriton:
+                    return STEAM_CONTROLLER_TRITON_PROFILE_DIR;
+                case InputDeviceType.DS4:
+                    return DS4_PROFILE_DIR;
+                case InputDeviceType.DualSense:
+                    return DUALSENSE_PROFILE_DIR;
+                case InputDeviceType.SwitchPro:
+                    return SWITCH_PRO_PROFILE_DIR;
+                case InputDeviceType.JoyCon:
+                    return JOYCON_PROFILE_DIR;
+                case InputDeviceType.EightBitDoUltimate2Wireless:
+                    return EIGHTBITDO_ULT2WIRELESS_PROFILE_DIR;
+                default:
+                    return string.Empty;
+            }
         }
 
         public void PrepareAbsMonitorBounds(string edid)
