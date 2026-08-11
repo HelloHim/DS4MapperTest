@@ -513,7 +513,7 @@
                                        VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <Border x:Name="unsavedStatusPill"
-                                            Visibility="{Binding IsProfileDirty, Converter={StaticResource BoolToVis}}"
+                                            Visibility="{Binding IsProfileDirty, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}"
                                             Margin="0,4,12,4"
                                             Style="{StaticResource SaveStatusPillWarningStyle}">
                                         <TextBlock Text="Unsaved changes"
