@@ -62,11 +62,13 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="190"/>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Flick Time (ms)" Style="{StaticResource JsmccLabelText}"/>
+                                <TextBlock Grid.Column="0" Text="Flick Time" Style="{StaticResource JsmccLabelText}"/>
                                 <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="1000" DecimalPlaces="0" Increment="10"
                                                   Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                   Value="{Binding FlickTime, UpdateSourceTrigger=LostFocus}"/>
+                                <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
 
@@ -126,6 +128,28 @@
                         </Border>
 
                         <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                Visibility="{Binding ShowFlickSettings, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Front Angle Deadzone" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="180" DecimalPlaces="0" Increment="1"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding FrontAngleDeadzone, UpdateSourceTrigger=LostFocus}"/>
+                                    <TextBlock Grid.Column="2" Text="&#176;" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="Cancels the initial flick-turn when it lands within this many degrees of forward, so you can push the stick up and start sweeping without an unwanted camera turn first. Does not affect the sweep itself."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
                                 Visibility="{Binding ShowRotationSettings, Converter={StaticResource Boolean2VisibilityConverter}}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -137,6 +161,29 @@
                                                   Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                   Value="{Binding ReleaseDampeningSpeed, UpdateSourceTrigger=LostFocus}"/>
                             </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource JsmccSettingRowBorder}"
+                                Visibility="{Binding ShowRotationSettings, Converter={StaticResource Boolean2VisibilityConverter}}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Sweep Sensitivity" Style="{StaticResource JsmccLabelText}"/>
+                                    <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="6" DecimalPlaces="4" Increment="0.1"
+                                                      ValueFormat="0.0###"
+                                                      Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                                      Value="{Binding SweepSensitivity, UpdateSourceTrigger=LostFocus}"/>
+                                    <TextBlock Grid.Column="2" Text="x" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="Multiplier applied to the continuous sweep rotation as you rotate the stick around its outer edge. It does not affect the initial flick-turn. 1x is a natural 1:1 ratio; 0x disables sweeping."
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
                         </Border>
 
                         <Border Style="{StaticResource JsmccSettingRowBorder}"

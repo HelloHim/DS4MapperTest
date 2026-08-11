@@ -6035,6 +6035,38 @@ namespace DS4MapperTest
                     flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
             }
 
+            public double SweepSensitivity
+            {
+                get => flickAction.SweepSensitivity;
+                set
+                {
+                    flickAction.SweepSensitivity = value;
+                    SweepSensitivityChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SweepSensitivityChanged;
+
+            public bool ShouldSerializeSweepSensitivity()
+            {
+                return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
+            }
+
+            public double FrontAngleDeadzone
+            {
+                get => flickAction.FrontAngleDeadzone;
+                set
+                {
+                    flickAction.FrontAngleDeadzone = value;
+                    FrontAngleDeadzoneChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler FrontAngleDeadzoneChanged;
+
+            public bool ShouldSerializeFrontAngleDeadzone()
+            {
+                return flickAction.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE);
+            }
+
             [JsonConverter(typeof(StringEnumConverter))]
             public FlickSnapAngle SnapAngle
             {
@@ -6096,6 +6128,8 @@ namespace DS4MapperTest
             settings.ReleaseDampeningSpeedChanged += Settings_ReleaseDampeningSpeedChanged;
             settings.MultiplierCompensationChanged += Settings_MultiplierCompensationChanged;
             settings.AccelerationMultiplierChanged += Settings_AccelerationMultiplierChanged;
+            settings.SweepSensitivityChanged += Settings_SweepSensitivityChanged;
+            settings.FrontAngleDeadzoneChanged += Settings_FrontAngleDeadzoneChanged;
             settings.SnapAngleChanged += Settings_SnapAngleChanged;
             settings.SnapStrengthChanged += Settings_SnapStrengthChanged;
         }
@@ -6169,6 +6203,16 @@ namespace DS4MapperTest
         private void Settings_AccelerationMultiplierChanged(object sender, EventArgs e)
         {
             flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
+        }
+
+        private void Settings_SweepSensitivityChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
+        }
+
+        private void Settings_FrontAngleDeadzoneChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE);
         }
     }
 
@@ -6435,6 +6479,38 @@ namespace DS4MapperTest
                     flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
             }
 
+            public double SweepSensitivity
+            {
+                get => flickAction.SweepSensitivity;
+                set
+                {
+                    flickAction.SweepSensitivity = value;
+                    SweepSensitivityChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler SweepSensitivityChanged;
+
+            public bool ShouldSerializeSweepSensitivity()
+            {
+                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
+            }
+
+            public double FrontAngleDeadzone
+            {
+                get => flickAction.FrontAngleDeadzone;
+                set
+                {
+                    flickAction.FrontAngleDeadzone = value;
+                    FrontAngleDeadzoneChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler FrontAngleDeadzoneChanged;
+
+            public bool ShouldSerializeFrontAngleDeadzone()
+            {
+                return flickAction.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE);
+            }
+
             public FlickStickSettings(StickFlickStick flickAction)
             {
                 this.flickAction = flickAction;
@@ -6464,6 +6540,8 @@ namespace DS4MapperTest
             settings.MultiplierCompensationChanged += Settings_MultiplierCompensationChanged;
             settings.AccelerationMultiplierChanged += Settings_AccelerationMultiplierChanged;
             settings.RotateSmoothOverrideChanged += Settings_RotateSmoothOverrideChanged;
+            settings.SweepSensitivityChanged += Settings_SweepSensitivityChanged;
+            settings.FrontAngleDeadzoneChanged += Settings_FrontAngleDeadzoneChanged;
             settings.SnapAngleChanged += Settings_SnapAngleChanged;
             settings.SnapStrengthChanged += Settings_SnapStrengthChanged;
         }
@@ -6547,6 +6625,16 @@ namespace DS4MapperTest
         private void Settings_RotateSmoothOverrideChanged(object sender, EventArgs e)
         {
             flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
+        }
+
+        private void Settings_SweepSensitivityChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
+        }
+
+        private void Settings_FrontAngleDeadzoneChanged(object sender, EventArgs e)
+        {
+            flickAction.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.FRONT_ANGLE_DEADZONE);
         }
     }
 
