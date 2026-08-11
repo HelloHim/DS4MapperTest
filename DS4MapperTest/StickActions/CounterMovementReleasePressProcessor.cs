@@ -333,10 +333,10 @@ namespace DS4MapperTest.StickActions
         /// <summary>
         /// The preset that should actually be displayed, derived purely from the current
         /// numeric values rather than the stored preset field: this makes the relationship
-        /// bidirectional. Editing away from 75/120 shows Custom; editing back to exactly
-        /// 75/120 (by hand or via the dropdown) shows CS2 again. There are only two presets
+        /// bidirectional. Editing away from 78/90 shows Custom; editing back to exactly
+        /// 78/90 (by hand or via the dropdown) shows CS2 again. There are only two presets
         /// and CS2 is entirely defined by its values, so there is never a meaningful
-        /// distinction between "custom values that happen to equal 75/120" and "CS2".
+        /// distinction between "custom values that happen to equal 78/90" and "CS2".
         /// </summary>
         public CounterMovementTapLengthPreset EffectiveTapLengthPreset =>
             MatchesCs2Values ? CounterMovementTapLengthPreset.CS2 : CounterMovementTapLengthPreset.Custom;
