@@ -371,6 +371,16 @@ namespace DS4MapperTest.ViewModels
             get => profileListHolder.ProfileListCol;
         }
 
+        public ObservableCollection<string> ProfileFolders
+        {
+            get => profileListHolder.ProfileFolderCol;
+        }
+
+        public ProfileList ProfileListHolder
+        {
+            get => profileListHolder;
+        }
+
         //private EditProfileCommand editProfCommand;
         //public EditProfileCommand EditProfCommand => editProfCommand;
 

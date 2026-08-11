@@ -11,6 +11,7 @@ namespace DS4MapperTest
     {
         private string profilePath;
         private string name;
+        private string folderName;
         private InputDeviceType inputDeviceType;
 
         public string Name
@@ -34,13 +35,26 @@ namespace DS4MapperTest
             get => profilePath;
         }
 
-        public event EventHandler NameChanged;
+        public string FolderName
+        {
+            get => folderName;
+            set
+            {
+                if (folderName == value) return;
+                folderName = value;
+                FolderNameChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
-        public ProfileEntity(string path, string name, InputDeviceType inputDeviceType)
+        public event EventHandler NameChanged;
+        public event EventHandler FolderNameChanged;
+
+        public ProfileEntity(string path, string name, InputDeviceType inputDeviceType, string folderName = "")
         {
             this.profilePath = path;
             this.name = name;
             this.inputDeviceType = inputDeviceType;
+            this.folderName = folderName;
         }
 
         // Lets a rename move the backing file (see MainWindow.RenameProfileBtn_Click)

@@ -37,6 +37,10 @@
             <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
         </Style>
 
+        <Style x:Key="ProfileFolderRenameTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource JsmccTextBoxStyle}">
+            <Setter Property="Background" Value="{DynamicResource JsmccBg2Brush}"/>
+        </Style>
+
         <Style x:Key="LightbarPresetButtonStyle" TargetType="Button" BasedOn="{StaticResource JsmccButtonStyle}">
             <Setter Property="Width" Value="28"/>
             <Setter Property="Height" Value="28"/>
@@ -292,6 +296,20 @@
                                               Width="180"
                                               Style="{StaticResource JsmccComboBoxStyle}"
                                               SelectionChanged="ProfileComboBox_SelectionChanged">
+                                        <ComboBox.GroupStyle>
+                                            <GroupStyle>
+                                                <GroupStyle.HeaderTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontSize="11"
+                                                                   FontStyle="Italic"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource JsmccTextMutedBrush}"
+                                                                   Margin="8,6,8,2"/>
+                                                    </DataTemplate>
+                                                </GroupStyle.HeaderTemplate>
+                                            </GroupStyle>
+                                        </ComboBox.GroupStyle>
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding Name}"
@@ -1257,6 +1275,55 @@
                                     Margin="0,0,0,6"/>
                         </WrapPanel>
 
+                        <Border Style="{StaticResource JsmccCardBorder}"
+                                Padding="12"
+                                Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="Folders"
+                                           Style="{StaticResource JsmccCardTitle}"/>
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="newFolderNameBox"
+                                             Grid.Column="0"
+                                             Style="{StaticResource JsmccTextBoxStyle}"/>
+                                    <Button Grid.Column="1"
+                                            Content="Create Folder"
+                                            Click="CreateFolderBtn_Click"
+                                            Style="{StaticResource JsmccButtonStyle}"
+                                            Margin="8,0,0,0"/>
+                                </Grid>
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox x:Name="folderManageComboBox"
+                                              Grid.Column="0"
+                                              Style="{StaticResource JsmccComboBoxStyle}"
+                                              SelectionChanged="FolderManageComboBox_SelectionChanged"/>
+                                    <TextBox x:Name="folderRenameBox"
+                                             Grid.Column="1"
+                                             Style="{StaticResource ProfileFolderRenameTextBoxStyle}"
+                                             Margin="8,0,0,0"/>
+                                    <Button Grid.Column="2"
+                                            Content="Rename"
+                                            Click="RenameFolderBtn_Click"
+                                            Style="{StaticResource JsmccButtonStyle}"
+                                            Margin="8,0,0,0"/>
+                                    <Button Grid.Column="3"
+                                            Content="Delete"
+                                            Click="DeleteFolderBtn_Click"
+                                            Style="{StaticResource JsmccDangerButtonStyle}"
+                                            Margin="8,0,0,0"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                         <Border x:Name="newProfilePanel"
                                 Visibility="Collapsed"
                                 Style="{StaticResource JsmccCardBorder}"
@@ -1284,24 +1351,13 @@
                                 </StackPanel>
 
                                 <StackPanel Margin="0,0,0,10">
-                                    <TextBlock Text="Profile Path"
+                                    <TextBlock Text="Folder"
                                                Style="{StaticResource JsmccLabelText}"
                                                Margin="0,0,0,4"/>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBox Grid.Column="0"
-                                                 Text="{Binding ProfileFolder, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                                 Validation.ErrorTemplate="{x:Null}"
-                                                 Style="{StaticResource JsmccTextBoxStyle}"/>
-                                        <Button Grid.Column="1"
-                                                Content="Browse"
-                                                Click="NewProfileBrowseBtn_Click"
-                                                Style="{StaticResource JsmccButtonStyle}"
-                                                Margin="8,0,0,0"/>
-                                    </Grid>
+                                    <ComboBox ItemsSource="{Binding ProfileFolders}"
+                                              SelectedItem="{Binding SelectedFolderName, Mode=TwoWay}"
+                                              Style="{StaticResource JsmccComboBoxStyle}"
+                                              MinWidth="180"/>
                                     <TextBlock Text="{Binding ProfileFolderErrors}"
                                                Foreground="{DynamicResource JsmccDangerTextBrush}"
                                                TextWrapping="Wrap"
@@ -1332,49 +1388,72 @@
                             </StackPanel>
                         </Border>
 
-                        <ListBox x:Name="profileListBox"
-                                 MaxHeight="240"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                 Background="{DynamicResource JsmccBgInputBrush}"
-                                 BorderBrush="{DynamicResource JsmccBorderBrush}"
-                                 Foreground="{DynamicResource JsmccTextStrongBrush}"
-                                 SelectionChanged="ProfileListBox_SelectionChanged"
-                                 Loaded="ProfileListBox_Loaded"
-                                 Padding="0">
-                            <ListBox.ItemContainerStyle>
-                                <Style TargetType="ListBoxItem">
-                                    <Setter Property="Padding" Value="10,8"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="*"
-                                                   Foreground="{DynamicResource JsmccAccentBrush}"
-                                                   FontSize="13"
-                                                   VerticalAlignment="Center"
-                                                   Margin="0,0,8,0">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Visibility" Value="Hidden"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                        <TextBlock Text="{Binding Name}"
-                                                   Foreground="{DynamicResource JsmccTextStrongBrush}"
-                                                   VerticalAlignment="Center"
-                                                   FontSize="13"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                        <Border MaxHeight="240"
+                                Background="{DynamicResource JsmccBgInputBrush}"
+                                BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                BorderThickness="1">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          Loaded="ProfileListBox_Loaded">
+                                <ItemsControl x:Name="profileListBox">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                                                      Background="{DynamicResource JsmccBgInputBrush}"
+                                                      BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                                      BorderThickness="0,0,0,1">
+                                                <Expander.Header>
+                                                    <TextBlock Text="{Binding FolderName}"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource JsmccTextMutedBrush}"
+                                                               Margin="2,4"/>
+                                                </Expander.Header>
+                                                <ListBox ItemsSource="{Binding Profiles}"
+                                                         SelectionChanged="ProfileListBox_SelectionChanged"
+                                                         Loaded="ProfileGroupListBox_Loaded"
+                                                         Background="{DynamicResource JsmccBgInputBrush}"
+                                                         BorderThickness="0"
+                                                         Foreground="{DynamicResource JsmccTextStrongBrush}">
+                                                    <ListBox.ItemContainerStyle>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <Setter Property="Padding" Value="10,8"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
+                                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                        </Style>
+                                                    </ListBox.ItemContainerStyle>
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="*"
+                                                                           Foreground="{DynamicResource JsmccAccentBrush}"
+                                                                           FontSize="13"
+                                                                           VerticalAlignment="Center"
+                                                                           Margin="0,0,8,0">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Visibility" Value="Hidden"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                                <TextBlock Text="{Binding Name}"
+                                                                           Foreground="{DynamicResource JsmccTextStrongBrush}"
+                                                                           VerticalAlignment="Center"
+                                                                           FontSize="13"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
+                                            </Expander>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
 
                         <Border x:Name="selectedProfilePanel"
                                 Visibility="Collapsed"
@@ -1391,6 +1470,14 @@
                                             Click="RenameProfileBtn_Click"
                                             Margin="8,0,0,0"
                                             Style="{StaticResource JsmccButtonStyle}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <TextBlock Text="Folder"
+                                               Style="{StaticResource OverlayLabel}"/>
+                                    <ComboBox x:Name="selectedProfileFolderComboBox"
+                                              Width="210"
+                                              Style="{StaticResource JsmccComboBoxStyle}"
+                                              SelectionChanged="SelectedProfileFolderComboBox_SelectionChanged"/>
                                 </StackPanel>
 
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

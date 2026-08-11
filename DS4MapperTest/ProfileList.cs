@@ -14,11 +14,17 @@ namespace DS4MapperTest
 {
     public class ProfileList
     {
+        public const string DEFAULT_PROFILE_FOLDER = "Default";
+        public const string VALORANT_PROFILE_FOLDER = "VALORANT";
+
         private object _proLockobj = new object();
         private ObservableCollection<ProfileEntity> profileListCol =
             new ObservableCollection<ProfileEntity>();
+        private ObservableCollection<string> profileFolderCol =
+            new ObservableCollection<string>();
 
         public ObservableCollection<ProfileEntity> ProfileListCol { get => profileListCol; set => profileListCol = value; }
+        public ObservableCollection<string> ProfileFolderCol { get => profileFolderCol; }
 
         private InputDeviceType inputDeviceType;
 
@@ -26,16 +32,21 @@ namespace DS4MapperTest
         {
             this.inputDeviceType = inputDeviceType;
             BindingOperations.EnableCollectionSynchronization(profileListCol, _proLockobj);
+            BindingOperations.EnableCollectionSynchronization(profileFolderCol, _proLockobj);
         }
 
         public void Refresh()
         {
             profileListCol.Clear();
+            profileFolderCol.Clear();
             string tempDirPath = AppGlobalDataSingleton.Instance.GetDeviceProfileFolderLocation(inputDeviceType);
             if (Directory.Exists(tempDirPath))
             {
-                string[] profiles = Directory.GetFiles(tempDirPath);
-                foreach (string s in profiles)
+                EnsureStandardFolders(tempDirPath);
+                MigrateRootProfiles(tempDirPath);
+                RefreshFolders(tempDirPath);
+
+                foreach (string s in EnumerateProfileFiles(tempDirPath))
                 {
                     if (s.EndsWith(".json"))
                     {
@@ -65,7 +76,8 @@ namespace DS4MapperTest
                                 TrySyncStoredName(s, expectedName);
                             }
 
-                            ProfileEntity item = new ProfileEntity(path: s, name: entryName, inputDeviceType);
+                            string folderName = GetFolderName(tempDirPath, s);
+                            ProfileEntity item = new ProfileEntity(path: s, name: entryName, inputDeviceType, folderName);
                             profileListCol.Add(item);
                         }
                         catch (JsonReaderException)
@@ -76,7 +88,143 @@ namespace DS4MapperTest
                         }
                     }
                 }
+
+                SortProfiles();
             }
+        }
+
+        public string GetDeviceProfileRoot()
+        {
+            return AppGlobalDataSingleton.Instance.GetDeviceProfileFolderLocation(inputDeviceType);
+        }
+
+        public string GetFolderPath(string folderName)
+        {
+            return Path.Combine(GetDeviceProfileRoot(), folderName);
+        }
+
+        public bool FolderExists(string folderName)
+        {
+            return profileFolderCol.Any(item => string.Equals(item, folderName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public bool CreateFolder(string folderName)
+        {
+            string cleanName = NormalizeFolderName(folderName);
+            if (string.IsNullOrWhiteSpace(cleanName) || FolderExists(cleanName))
+            {
+                return false;
+            }
+
+            Directory.CreateDirectory(GetFolderPath(cleanName));
+            InsertFolderName(cleanName);
+            return true;
+        }
+
+        public bool RenameFolder(string oldFolderName, string newFolderName)
+        {
+            string cleanName = NormalizeFolderName(newFolderName);
+            if (string.IsNullOrWhiteSpace(oldFolderName) ||
+                string.IsNullOrWhiteSpace(cleanName) ||
+                string.Equals(oldFolderName, cleanName, StringComparison.OrdinalIgnoreCase) ||
+                FolderExists(cleanName))
+            {
+                return false;
+            }
+
+            string oldPath = GetFolderPath(oldFolderName);
+            string newPath = GetFolderPath(cleanName);
+            Directory.Move(oldPath, newPath);
+
+            int folderIndex = profileFolderCol.IndexOf(oldFolderName);
+            if (folderIndex >= 0)
+            {
+                profileFolderCol.RemoveAt(folderIndex);
+            }
+
+            foreach (ProfileEntity profile in profileListCol.Where(p => string.Equals(p.FolderName, oldFolderName, StringComparison.OrdinalIgnoreCase)))
+            {
+                string newProfilePath = Path.Combine(newPath, Path.GetFileName(profile.ProfilePath));
+                profile.UpdatePath(newProfilePath);
+                profile.FolderName = cleanName;
+            }
+
+            InsertFolderName(cleanName);
+            SortProfiles();
+            return true;
+        }
+
+        public bool DeleteFolder(string folderName)
+        {
+            if (string.IsNullOrWhiteSpace(folderName) ||
+                string.Equals(folderName, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (profileListCol.Any(p => string.Equals(p.FolderName, folderName, StringComparison.OrdinalIgnoreCase)))
+            {
+                return false;
+            }
+
+            string folderPath = GetFolderPath(folderName);
+            if (Directory.Exists(folderPath))
+            {
+                Directory.Delete(folderPath);
+            }
+
+            profileFolderCol.Remove(folderName);
+            return true;
+        }
+
+        public bool MoveProfile(ProfileEntity profile, string folderName)
+        {
+            if (profile == null || string.IsNullOrWhiteSpace(folderName) ||
+                string.Equals(profile.FolderName, folderName, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!FolderExists(folderName))
+            {
+                CreateFolder(folderName);
+            }
+
+            string destPath = Path.Combine(GetFolderPath(folderName), Path.GetFileName(profile.ProfilePath));
+            if (File.Exists(destPath))
+            {
+                return false;
+            }
+
+            File.Move(profile.ProfilePath, destPath);
+            profile.UpdatePath(destPath);
+            profile.FolderName = folderName;
+            SortProfiles();
+            return true;
+        }
+
+        public string GetRelativeProfileName(string profilePath)
+        {
+            string root = GetDeviceProfileRoot();
+            string relative = Path.GetRelativePath(root, profilePath);
+            return Path.ChangeExtension(relative, null);
+        }
+
+        public string ResolveStoredProfilePath(string storedProfile)
+        {
+            if (string.IsNullOrWhiteSpace(storedProfile)) return string.Empty;
+
+            string root = GetDeviceProfileRoot();
+            string relativePath = storedProfile.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+                ? storedProfile
+                : storedProfile + ".json";
+            string candidate = Path.Combine(root, relativePath);
+            if (File.Exists(candidate)) return candidate;
+
+            string fileName = Path.GetFileName(relativePath);
+            return Directory.Exists(root)
+                ? EnumerateProfileFiles(root, fileName).FirstOrDefault() ?? string.Empty
+                : string.Empty;
         }
 
         private static void TrySyncStoredName(string path, string expectedName)
@@ -107,18 +255,137 @@ namespace DS4MapperTest
         {
             lock (_proLockobj)
             {
-                ProfileEntity tempEntity =
-                    new ProfileEntity(profilePath, profileName, deviceType);
-                int insertIdx = profileListCol.TakeWhile((item) => string.Compare(item.Name, profileName) < 0).Count();
-                if (insertIdx > 0 && insertIdx < profileListCol.Count-1)
+                string deviceRoot = AppGlobalDataSingleton.Instance.GetDeviceProfileFolderLocation(deviceType);
+                string folderName = GetFolderName(deviceRoot, profilePath);
+                if (!FolderExists(folderName))
                 {
-                    profileListCol.Insert(insertIdx, tempEntity);
+                    InsertFolderName(folderName);
                 }
-                else
+
+                ProfileEntity tempEntity =
+                    new ProfileEntity(profilePath, profileName, deviceType, folderName);
+                profileListCol.Add(tempEntity);
+                SortProfiles();
+            }
+        }
+
+        private void EnsureStandardFolders(string deviceProfilePath)
+        {
+            Directory.CreateDirectory(Path.Combine(deviceProfilePath, DEFAULT_PROFILE_FOLDER));
+            Directory.CreateDirectory(Path.Combine(deviceProfilePath, VALORANT_PROFILE_FOLDER));
+        }
+
+        private void MigrateRootProfiles(string deviceProfilePath)
+        {
+            foreach (string file in Directory.GetFiles(deviceProfilePath, "*.json", SearchOption.TopDirectoryOnly))
+            {
+                string fileName = Path.GetFileName(file);
+                string destFolder = fileName.StartsWith("Default - ", StringComparison.OrdinalIgnoreCase)
+                    ? DEFAULT_PROFILE_FOLDER
+                    : VALORANT_PROFILE_FOLDER;
+                string destPath = GetUniquePath(Path.Combine(deviceProfilePath, destFolder, fileName));
+                File.Move(file, destPath);
+            }
+        }
+
+        private void RefreshFolders(string deviceProfilePath)
+        {
+            foreach (string folder in Directory.GetDirectories(deviceProfilePath, "*", SearchOption.TopDirectoryOnly))
+            {
+                InsertFolderName(Path.GetFileName(folder));
+            }
+        }
+
+        private static IEnumerable<string> EnumerateProfileFiles(string deviceProfilePath)
+        {
+            foreach (string folder in Directory.EnumerateDirectories(deviceProfilePath, "*", SearchOption.TopDirectoryOnly))
+            {
+                foreach (string file in Directory.EnumerateFiles(folder, "*.json", SearchOption.TopDirectoryOnly))
                 {
-                    profileListCol.Add(tempEntity);
+                    yield return file;
                 }
             }
+        }
+
+        private static IEnumerable<string> EnumerateProfileFiles(string deviceProfilePath, string fileName)
+        {
+            foreach (string folder in Directory.EnumerateDirectories(deviceProfilePath, "*", SearchOption.TopDirectoryOnly))
+            {
+                foreach (string file in Directory.EnumerateFiles(folder, fileName, SearchOption.TopDirectoryOnly))
+                {
+                    yield return file;
+                }
+            }
+        }
+
+        private void InsertFolderName(string folderName)
+        {
+            if (string.IsNullOrWhiteSpace(folderName) || FolderExists(folderName)) return;
+
+            int insertIndex = profileFolderCol
+                .TakeWhile(item => CompareFolderNames(item, folderName) <= 0)
+                .Count();
+            profileFolderCol.Insert(insertIndex, folderName);
+        }
+
+        private void SortProfiles()
+        {
+            List<ProfileEntity> sortedProfiles = profileListCol
+                .OrderBy(item => item.FolderName, new ProfileFolderNameComparer())
+                .ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase)
+                .ToList();
+
+            profileListCol.Clear();
+            foreach (ProfileEntity profile in sortedProfiles)
+            {
+                profileListCol.Add(profile);
+            }
+        }
+
+        private static int CompareFolderNames(string left, string right)
+        {
+            if (string.Equals(left, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return -1;
+            if (string.Equals(right, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return 1;
+            if (string.Equals(left, VALORANT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(right, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return -1;
+            if (string.Equals(right, VALORANT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(left, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return 1;
+            return StringComparer.CurrentCultureIgnoreCase.Compare(left, right);
+        }
+
+        private static string NormalizeFolderName(string folderName)
+        {
+            return (folderName ?? string.Empty).Trim();
+        }
+
+        private static string GetFolderName(string deviceRoot, string profilePath)
+        {
+            string dir = Path.GetDirectoryName(profilePath) ?? deviceRoot;
+            string relativeDir = Path.GetRelativePath(deviceRoot, dir);
+            return relativeDir == "." ? VALORANT_PROFILE_FOLDER : relativeDir;
+        }
+
+        private static string GetUniquePath(string path)
+        {
+            if (!File.Exists(path)) return path;
+
+            string dir = Path.GetDirectoryName(path);
+            string name = Path.GetFileNameWithoutExtension(path);
+            string ext = Path.GetExtension(path);
+            int copyIndex = 1;
+            string candidate;
+            do
+            {
+                candidate = Path.Combine(dir, $"{name}_{copyIndex}{ext}");
+                copyIndex++;
+            } while (File.Exists(candidate));
+
+            return candidate;
+        }
+
+        private class ProfileFolderNameComparer : IComparer<string>
+        {
+            public int Compare(string x, string y) => CompareFolderNames(x, y);
         }
     }
 

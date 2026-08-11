@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -39,6 +40,8 @@ namespace DS4MapperTest
         private bool suppressActionLayerCombo;
         private ProfileListEntry selectedListEntry;
         private NewProfileCreateViewModel overlayNewProfileVM;
+        private bool suppressSelectedProfileFolderCombo;
+        private List<ProfileEntity> profileComboProfiles = new List<ProfileEntity>();
 
         private IntPtr regHandle = new IntPtr();
         private const int DBT_DEVICEARRIVAL = 0x8000;
@@ -79,6 +82,7 @@ namespace DS4MapperTest
             public ProfileEntity Entity { get; }
             public bool IsActive { get; set; }
             public string Name => Entity.Name;
+            public string FolderName => Entity.FolderName;
             public string ProfilePath => Entity.ProfilePath;
 
             public ProfileListEntry(ProfileEntity entity, bool isActive)
@@ -86,6 +90,13 @@ namespace DS4MapperTest
                 Entity = entity;
                 IsActive = isActive;
             }
+        }
+
+        private class ProfileFolderListGroup
+        {
+            public string FolderName { get; set; }
+            public bool IsExpanded { get; set; }
+            public List<ProfileListEntry> Profiles { get; set; }
         }
 
         private class ProfilePreview
@@ -660,23 +671,22 @@ namespace DS4MapperTest
             suppressCombo = true;
             ResyncCurrentDeviceProfileIndexToActiveProfile();
 
-            // Only tear down and rebuild ItemsSource when the backing collection
-            // actually changed (e.g. switching devices). Re-nulling and
-            // immediately reassigning the SAME ObservableCollection (as happens
-            // on every profile switch/delete/discard within one device) makes
-            // WPF resolve an item's data template binding against its internal
-            // unset-value marker (MS.Internal.NamedObject), which throws a
-            // TargetException that crashes the app. Pump the dispatcher between
-            // the clear and the reassignment on the rare path where the source
-            // really does change, same workaround as LoadProfileForDevice.
-            if (profileComboBox.ItemsSource != currentDeviceItem.DevProfileList)
-            {
-                profileComboBox.ItemsSource = null;
-                Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
-                profileComboBox.ItemsSource = currentDeviceItem.DevProfileList;
-            }
+            ProfileEntity activeProfile = currentDeviceItem.ProfileIndex >= 0 &&
+                currentDeviceItem.ProfileIndex < currentDeviceItem.DevProfileList.Count
+                ? currentDeviceItem.DevProfileList[currentDeviceItem.ProfileIndex]
+                : null;
+            string activeFolderName = activeProfile?.FolderName ?? string.Empty;
 
-            profileComboBox.SelectedIndex = currentDeviceItem.ProfileIndex;
+            profileComboProfiles = currentDeviceItem.DevProfileList
+                .Where(profile => string.Equals(profile.FolderName, activeFolderName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            profileComboBox.ItemsSource = null;
+            Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
+            profileComboBox.ItemsSource = profileComboProfiles;
+            ICollectionView view = CollectionViewSource.GetDefaultView(profileComboBox.ItemsSource);
+            view?.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProfileEntity.FolderName)));
+            profileComboBox.SelectedItem = activeProfile;
             suppressCombo = false;
         }
 
@@ -1001,7 +1011,10 @@ namespace DS4MapperTest
         {
             if (suppressCombo || currentDeviceItem == null) return;
 
-            int newIndex = profileComboBox.SelectedIndex;
+            ProfileEntity selectedProfile = profileComboBox.SelectedItem as ProfileEntity;
+            if (selectedProfile == null) return;
+
+            int newIndex = currentDeviceItem.DevProfileList.IndexOf(selectedProfile);
             if (newIndex < 0 || newIndex == currentDeviceItem.ProfileIndex) return;
 
             await SwitchProfileAsync(currentDeviceItem, newIndex);
@@ -1020,7 +1033,18 @@ namespace DS4MapperTest
                 .Select(p => new ProfileListEntry(p, string.Equals(p.ProfilePath, activePath, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            profileListBox.ItemsSource = entries;
+            var groups = entries
+                .GroupBy(entry => entry.FolderName)
+                .Select(group => new ProfileFolderListGroup
+                {
+                    FolderName = group.Key,
+                    IsExpanded = group.Any(entry => entry.IsActive),
+                    Profiles = group.ToList(),
+                })
+                .ToList();
+
+            profileListBox.ItemsSource = groups;
+            RefreshFolderManagementControls();
             selectedListEntry = null;
             selectedProfilePanel.Visibility = Visibility.Collapsed;
             HideDeleteActiveProfileWarning();
@@ -1028,13 +1052,23 @@ namespace DS4MapperTest
 
         private void ProfileListBox_Loaded(object sender, RoutedEventArgs e)
         {
-            // The ListBox's own ScrollViewer lives inside its default control
-            // template, so the app-wide implicit ScrollViewer style (which
-            // wires up ScrollViewerBehavior.BubbleWheelToParent) isn't
-            // guaranteed to reach it. Attach it directly so scrolling the
-            // profile list at its top/bottom edge hands off to the outer
-            // manage-profiles scroll viewer instead of just stopping dead.
+            // The profile browser's own ScrollViewer lives inside the overlay,
+            // so attach wheel bubbling directly. Scrolling at the top or bottom
+            // should hand off to the outer manage-profiles scroll viewer.
             if (ScrollViewerBehavior.FindVisualChild<ScrollViewer>(profileListBox) is ScrollViewer innerScrollViewer)
+            {
+                ScrollViewerBehavior.SetBubbleWheelToParent(innerScrollViewer, true);
+            }
+        }
+
+        private void ProfileGroupListBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Each folder list has its own ScrollViewer in the default control
+            // template, so the app-wide implicit ScrollViewer style (which
+            // wires up ScrollViewerBehavior.BubbleWheelToParent) is not
+            // guaranteed to reach it.
+            if (sender is ListBox listBox &&
+                ScrollViewerBehavior.FindVisualChild<ScrollViewer>(listBox) is ScrollViewer innerScrollViewer)
             {
                 ScrollViewerBehavior.SetBubbleWheelToParent(innerScrollViewer, true);
             }
@@ -1042,7 +1076,9 @@ namespace DS4MapperTest
 
         private void ProfileListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            selectedListEntry = profileListBox.SelectedItem as ProfileListEntry;
+            if (sender is not ListBox selectedListBox) return;
+
+            selectedListEntry = selectedListBox.SelectedItem as ProfileListEntry;
             HideDeleteActiveProfileWarning();
             if (selectedListEntry == null)
             {
@@ -1050,7 +1086,12 @@ namespace DS4MapperTest
                 return;
             }
 
+            ClearOtherProfileListSelections(profileListBox, selectedListBox);
             profileRenameBox.Text = selectedListEntry.Name;
+            suppressSelectedProfileFolderCombo = true;
+            selectedProfileFolderComboBox.ItemsSource = currentDeviceItem.ProfileFolders;
+            selectedProfileFolderComboBox.SelectedItem = selectedListEntry.FolderName;
+            suppressSelectedProfileFolderCombo = false;
             selectedProfilePanel.Visibility = Visibility.Visible;
 
             // Jump the whole manage-profiles panel to the bottom once a
@@ -1060,6 +1101,21 @@ namespace DS4MapperTest
             // for selectedProfilePanel becoming visible before we scroll.
             Dispatcher.BeginInvoke(new Action(() => profilesOverlayScrollViewer.ScrollToBottom()),
                 DispatcherPriority.Loaded);
+        }
+
+        private void ClearOtherProfileListSelections(DependencyObject root, ListBox selectedListBox)
+        {
+            int childCount = VisualTreeHelper.GetChildrenCount(root);
+            for (int childIndex = 0; childIndex < childCount; childIndex++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(root, childIndex);
+                if (child is ListBox listBox && !ReferenceEquals(listBox, selectedListBox))
+                {
+                    listBox.SelectedItem = null;
+                }
+
+                ClearOtherProfileListSelections(child, selectedListBox);
+            }
         }
 
         private async Task<bool> SwitchProfileAsync(DeviceListItem item, int newIndex)
@@ -1169,6 +1225,177 @@ namespace DS4MapperTest
             overlayNewProfileVM.ClearOldErrors();
         }
 
+        private void CreateFolderBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentDeviceItem == null) return;
+
+            string folderName = newFolderNameBox.Text?.Trim();
+            if (!ValidateFolderName(folderName, "Create Folder")) return;
+
+            ProfileList profileList = currentDeviceItem.ProfileListHolder;
+            if (profileList.FolderExists(folderName))
+            {
+                MessageBox.Show("A folder with this name already exists.", "Create Folder",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            profileList.CreateFolder(folderName);
+            newFolderNameBox.Text = string.Empty;
+            RefreshProfileCombo();
+            RefreshProfileList();
+        }
+
+        private void RenameFolderBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentDeviceItem == null || folderManageComboBox.SelectedItem is not string oldFolderName) return;
+
+            string newFolderName = folderRenameBox.Text?.Trim();
+            if (!ValidateFolderName(newFolderName, "Rename Folder")) return;
+
+            if (string.Equals(oldFolderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show("The Default folder cannot be renamed.", "Rename Folder",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            ProfileList profileList = currentDeviceItem.ProfileListHolder;
+            if (profileList.FolderExists(newFolderName))
+            {
+                MessageBox.Show("A folder with this name already exists.", "Rename Folder",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                profileList.RenameFolder(oldFolderName, newFolderName);
+                RefreshProfileCombo();
+                RefreshProfileList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to rename folder:\n{ex.Message}", "Rename Folder",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void DeleteFolderBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentDeviceItem == null || folderManageComboBox.SelectedItem is not string folderName) return;
+
+            if (string.Equals(folderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show("The Default folder cannot be deleted.", "Delete Folder",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            ProfileList profileList = currentDeviceItem.ProfileListHolder;
+            if (currentDeviceItem.DevProfileList.Any(p => string.Equals(p.FolderName, folderName, StringComparison.OrdinalIgnoreCase)))
+            {
+                MessageBox.Show("Move or delete the profiles in this folder first.", "Delete Folder",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (MessageBox.Show($"Delete folder \"{folderName}\"?", "Delete Folder",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                profileList.DeleteFolder(folderName);
+                RefreshProfileCombo();
+                RefreshProfileList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to delete folder:\n{ex.Message}", "Delete Folder",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void FolderManageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            folderRenameBox.Text = folderManageComboBox.SelectedItem as string ?? string.Empty;
+        }
+
+        private void SelectedProfileFolderComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (suppressSelectedProfileFolderCombo || currentDeviceItem == null || selectedListEntry == null) return;
+
+            string folderName = selectedProfileFolderComboBox.SelectedItem as string;
+            if (string.IsNullOrWhiteSpace(folderName) ||
+                string.Equals(folderName, selectedListEntry.FolderName, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            ProfileList profileList = currentDeviceItem.ProfileListHolder;
+            try
+            {
+                if (!profileList.MoveProfile(selectedListEntry.Entity, folderName))
+                {
+                    MessageBox.Show("A profile with this filename already exists in that folder.", "Move Profile",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    selectedProfileFolderComboBox.SelectedItem = selectedListEntry.FolderName;
+                    return;
+                }
+
+                if (editorTestVM != null && selectedListEntry.Entity == editorTestVM.ProfileEnt)
+                {
+                    Mapper mapper = editorTestVM.DeviceMapper;
+                    mapper.ProfileFile = selectedListEntry.Entity.ProfilePath;
+                    appGlobal.activeProfiles[currentDeviceItem.Device.Index] = selectedListEntry.Entity.ProfilePath;
+                }
+
+                RefreshProfileCombo();
+                RefreshProfileList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to move profile:\n{ex.Message}", "Move Profile",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private bool ValidateFolderName(string folderName, string title)
+        {
+            if (string.IsNullOrWhiteSpace(folderName))
+            {
+                MessageBox.Show("Folder name cannot be empty.", title,
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (folderName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
+                folderName.Contains(Path.DirectorySeparatorChar) ||
+                folderName.Contains(Path.AltDirectorySeparatorChar))
+            {
+                MessageBox.Show("Folder name contains invalid characters.", title,
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void RefreshFolderManagementControls()
+        {
+            if (currentDeviceItem == null) return;
+
+            folderManageComboBox.ItemsSource = currentDeviceItem.ProfileFolders;
+            selectedProfileFolderComboBox.ItemsSource = currentDeviceItem.ProfileFolders;
+            if (folderManageComboBox.SelectedIndex < 0 && currentDeviceItem.ProfileFolders.Count > 0)
+            {
+                folderManageComboBox.SelectedIndex = 0;
+            }
+        }
+
         private void HideNewProfilePanel()
         {
             overlayNewProfileVM?.ClearOldErrors();
@@ -1183,7 +1410,7 @@ namespace DS4MapperTest
 
             Mapper mapper = editorTestVM.DeviceMapper;
             string sourceFile = editorTestVM.ProfileEnt.ProfilePath;
-            string profilesDir = appGlobal.GetDeviceProfileFolderLocation(mapper.DeviceType);
+            string profilesDir = Path.GetDirectoryName(sourceFile);
 
             SaveFileDialog dlg = new SaveFileDialog
             {
@@ -1222,7 +1449,11 @@ namespace DS4MapperTest
             if (currentDeviceItem == null || editorTestVM == null) return;
 
             Mapper mapper = editorTestVM.DeviceMapper;
-            string profilesDir = appGlobal.GetDeviceProfileFolderLocation(mapper.DeviceType);
+            BackendManager manager = (App.Current as App).Manager;
+            ProfileList profileListHolder = manager.DeviceProfileListDict[mapper.DeviceType];
+            string profilesDir = profileListHolder.GetDeviceProfileRoot();
+            string importDir = profileListHolder.GetFolderPath(ProfileList.VALORANT_PROFILE_FOLDER);
+            Directory.CreateDirectory(importDir);
 
             OpenFileDialog dlg = new OpenFileDialog
             {
@@ -1236,19 +1467,21 @@ namespace DS4MapperTest
             string srcFile = dlg.FileName;
             string destFile = srcFile;
 
-            if (!string.Equals(Path.GetDirectoryName(srcFile), profilesDir, StringComparison.OrdinalIgnoreCase))
+            bool sourceInsideProfileRoot = Path.GetFullPath(srcFile)
+                .StartsWith(Path.GetFullPath(profilesDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar,
+                    StringComparison.OrdinalIgnoreCase);
+            if (!sourceInsideProfileRoot)
             {
-                destFile = Path.Combine(profilesDir, Path.GetFileName(srcFile));
+                destFile = Path.Combine(importDir, Path.GetFileName(srcFile));
                 if (File.Exists(destFile))
                 {
-                    MessageBox.Show("A profile with that filename already exists in the profiles folder.", "Cannot Import",
+                    MessageBox.Show("A profile with that filename already exists in the VALORANT folder.", "Cannot Import",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
                 File.Copy(srcFile, destFile);
             }
 
-            BackendManager manager = (App.Current as App).Manager;
             var profileList = manager.DeviceProfileListDict[mapper.DeviceType].ProfileListCol;
 
             if (profileList.Any(p => string.Equals(p.ProfilePath, destFile, StringComparison.OrdinalIgnoreCase)))

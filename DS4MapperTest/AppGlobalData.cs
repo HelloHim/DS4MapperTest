@@ -146,6 +146,9 @@ namespace DS4MapperTest
                     {
                         Directory.CreateDirectory(tempDirPath);
                     }
+
+                    Directory.CreateDirectory(Path.Combine(tempDirPath, ProfileList.DEFAULT_PROFILE_FOLDER));
+                    Directory.CreateDirectory(Path.Combine(tempDirPath, ProfileList.VALORANT_PROFILE_FOLDER));
                 }
             }
             catch(UnauthorizedAccessException)
@@ -167,6 +170,9 @@ namespace DS4MapperTest
                     string destDevProfilePath = Path.Combine(appdatapath, PROFILES_FOLDER_NAME, devTemplateFolder);
                     if (Directory.Exists(destDevProfilePath))
                     {
+                        Directory.CreateDirectory(Path.Combine(destDevProfilePath, ProfileList.DEFAULT_PROFILE_FOLDER));
+                        Directory.CreateDirectory(Path.Combine(destDevProfilePath, ProfileList.VALORANT_PROFILE_FOLDER));
+
                         if (!CopyBundledExampleProfiles(devTemplateFolder, destDevProfilePath))
                         {
                             if (!Directory.Exists(exampleDevProfilesPath))
@@ -176,8 +182,11 @@ namespace DS4MapperTest
 
                             foreach (string file in Directory.EnumerateFiles(exampleDevProfilesPath))
                             {
-                                string destFilePath = Path.Combine(destDevProfilePath, Path.GetFileName(file));
-                                if (!File.Exists(destFilePath))
+                                string fileName = Path.GetFileName(file);
+                                string destFolder = GetProfileFolderForFileName(fileName);
+                                string destFilePath = Path.Combine(destDevProfilePath, destFolder, fileName);
+                                string legacyFilePath = Path.Combine(destDevProfilePath, fileName);
+                                if (!File.Exists(destFilePath) && !File.Exists(legacyFilePath))
                                 {
                                     File.Copy(file, destFilePath);
                                 }
@@ -207,9 +216,11 @@ namespace DS4MapperTest
             foreach (string resourceName in resourceNames)
             {
                 string fileName = resourceName.Substring(resourcePrefix.Length);
-                string destFilePath = Path.Combine(destDevProfilePath, fileName);
+                string destFolder = GetProfileFolderForFileName(fileName);
+                string destFilePath = Path.Combine(destDevProfilePath, destFolder, fileName);
+                string legacyFilePath = Path.Combine(destDevProfilePath, fileName);
 
-                if (File.Exists(destFilePath))
+                if (File.Exists(destFilePath) || File.Exists(legacyFilePath))
                 {
                     continue;
                 }
@@ -225,6 +236,13 @@ namespace DS4MapperTest
             }
 
             return resourceNames.Length > 0;
+        }
+
+        private static string GetProfileFolderForFileName(string fileName)
+        {
+            return fileName.StartsWith("Default - ", StringComparison.OrdinalIgnoreCase)
+                ? ProfileList.DEFAULT_PROFILE_FOLDER
+                : ProfileList.VALORANT_PROFILE_FOLDER;
         }
 
         public void RefreshBaseDriverInfo()
@@ -539,8 +557,7 @@ namespace DS4MapperTest
                         string lastProfile = tempToken.Value<string>();
                         if (!string.IsNullOrEmpty(lastProfile))
                         {
-                            lastProfile = Path.Combine(GetDeviceProfileFolderLocation(testDev.DeviceType),
-                                $"{lastProfile}.json");
+                            lastProfile = ResolveStoredProfilePath(testDev.DeviceType, lastProfile);
                         }
 
                         if (!string.IsNullOrEmpty(lastProfile) && File.Exists(lastProfile))
@@ -611,7 +628,7 @@ namespace DS4MapperTest
                                     activeProfiles.TryGetValue(testDev.Index, out string currentProfile) &&
                                     !string.IsNullOrEmpty(currentProfile))
                                 {
-                                    controllerObj["LastProfile"] = Path.GetFileNameWithoutExtension(currentProfile);
+                                    controllerObj["LastProfile"] = GetStoredProfileName(testDev.DeviceType, currentProfile);
                                 }
 
                                 store.PersistSettings(controllerObj);
@@ -643,6 +660,12 @@ namespace DS4MapperTest
                                 string devType = testDev.DeviceType.ToString();
                                 controllerObj["Mac"] = testDev.Serial;
                                 controllerObj["Type"] = devType;
+                                if (testDev.PrimaryDevice &&
+                                    activeProfiles.TryGetValue(testDev.Index, out string currentProfile) &&
+                                    !string.IsNullOrEmpty(currentProfile))
+                                {
+                                    controllerObj["LastProfile"] = GetStoredProfileName(testDev.DeviceType, currentProfile);
+                                }
 
                                 store.PersistSettings(controllerObj);
 
@@ -665,6 +688,42 @@ namespace DS4MapperTest
             {
                 AtomicFileWriter.WriteJson(controllerConfigsPath, tempRootJObj);
             }
+        }
+
+        private string ResolveStoredProfilePath(InputDeviceType deviceType, string storedProfile)
+        {
+            string profileRoot = GetDeviceProfileFolderLocation(deviceType);
+            string relativePath = storedProfile.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+                ? storedProfile
+                : storedProfile + ".json";
+            string profilePath = Path.Combine(profileRoot, relativePath);
+            if (File.Exists(profilePath))
+            {
+                return profilePath;
+            }
+
+            string fileName = Path.GetFileName(relativePath);
+            return Directory.Exists(profileRoot)
+                ? EnumerateDeviceProfileFiles(profileRoot, fileName).FirstOrDefault() ?? string.Empty
+                : string.Empty;
+        }
+
+        private static IEnumerable<string> EnumerateDeviceProfileFiles(string profileRoot, string fileName)
+        {
+            foreach (string folder in Directory.EnumerateDirectories(profileRoot, "*", SearchOption.TopDirectoryOnly))
+            {
+                foreach (string file in Directory.EnumerateFiles(folder, fileName, SearchOption.TopDirectoryOnly))
+                {
+                    yield return file;
+                }
+            }
+        }
+
+        private string GetStoredProfileName(InputDeviceType deviceType, string profilePath)
+        {
+            string profileRoot = GetDeviceProfileFolderLocation(deviceType);
+            string relativePath = Path.GetRelativePath(profileRoot, profilePath);
+            return Path.ChangeExtension(relativePath, null);
         }
 
         public void CreateBlankProfile(string blankProfilePath, Profile tempProfile)
