@@ -155,8 +155,8 @@ Increment="1.0" Width="100" Margin="8,0,0,0">
             <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
                         IsEnabled="{Binding MultiplierCompensation}">
                 <Label Content="Acceleration Multiplier" />
-                <hc:NumericUpDown Minimum="0.01" Maximum="100.0" Value="{Binding AccelerationMultiplier}" DecimalPlaces="3"
-                                  Increment="0.01" Width="100" Margin="8,0,0,0">
+                <hc:NumericUpDown Minimum="0.01" Maximum="100.0" Value="{Binding AccelerationMultiplier}" DecimalPlaces="4"
+                                  ValueFormat="0.0###" Increment="0.01" Width="100" Margin="8,0,0,0">
                     <hc:NumericUpDown.Style>
                         <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                             <Style.Triggers>
