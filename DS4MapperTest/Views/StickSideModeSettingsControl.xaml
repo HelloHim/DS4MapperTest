@@ -1258,6 +1258,24 @@
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Flick Mode" Style="{StaticResource JsmccLabelText}"/>
+                        <ComboBox Grid.Column="1" SelectedIndex="{Binding SelectedSubModeIndex}"
+                                  Style="{StaticResource JsmccComboBoxStyle}"
+                                  HorizontalAlignment="Left"
+                                  MinWidth="180">
+                            <ComboBoxItem>Standard</ComboBoxItem>
+                            <ComboBoxItem>Flick Only</ComboBoxItem>
+                            <ComboBoxItem>Rotate Only</ComboBoxItem>
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Flick Threshold" Style="{StaticResource JsmccLabelText}"/>
                         <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.05"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
@@ -1862,30 +1880,20 @@
         <Border Style="{StaticResource JsmccCardBorder}">
             <StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <StackPanel>
-                        <TextBlock Text="Stick Mode" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding ModeItems}"
-                                  DisplayMemberPath="DisplayName"
-                                  SelectedValuePath="Index"
-                                  SelectedValue="{Binding SelectedModeIndex}"
-                                  Style="{StaticResource JsmccComboBoxStyle}"
-                                  HorizontalAlignment="Left"
-                                  MinWidth="220"/>
-                    </StackPanel>
-
-                    <StackPanel Margin="16,0,0,0"
-                                Visibility="{Binding IsFlickStickMode, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="Flick Mode" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
-                        <ComboBox SelectedIndex="{Binding SettingsViewModel.SelectedSubModeIndex}"
-                                  Style="{StaticResource JsmccComboBoxStyle}"
-                                  HorizontalAlignment="Left"
-                                  MinWidth="180">
-                            <ComboBoxItem>Standard</ComboBoxItem>
-                            <ComboBoxItem>Flick Only</ComboBoxItem>
-                            <ComboBoxItem>Rotate Only</ComboBoxItem>
-                        </ComboBox>
-                    </StackPanel>
+                    <TextBlock Text="Stick Mode" Style="{StaticResource JsmccLabelText}" Width="120" VerticalAlignment="Center"/>
+                    <ComboBox ItemsSource="{Binding ModeItems}"
+                              DisplayMemberPath="DisplayName"
+                              SelectedValuePath="Index"
+                              SelectedValue="{Binding SelectedModeIndex}"
+                              Style="{StaticResource JsmccComboBoxStyle}"
+                              MinWidth="180"
+                              Margin="8,0,0,0"/>
                 </StackPanel>
+
+                <TextBlock Text="{Binding CurrentModeDescription}"
+                           Style="{StaticResource JsmccBodyText}"
+                           TextWrapping="Wrap"
+                           Margin="0,8,0,0"/>
             </StackPanel>
         </Border>
 
