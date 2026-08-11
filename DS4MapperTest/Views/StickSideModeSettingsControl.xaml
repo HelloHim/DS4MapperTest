@@ -1279,8 +1279,9 @@
                     </Grid>
                 </Border>
 
-                <Border Style="{StaticResource ModeRowBorder}">
-                    <StackPanel Visibility="{Binding ShowFlickSettings, Converter={StaticResource BoolToVis}}">
+                <Border Style="{StaticResource ModeRowBorder}"
+                        Visibility="{Binding ShowFlickSettings, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="170"/>
