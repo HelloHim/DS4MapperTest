@@ -23,9 +23,9 @@ namespace DS4MapperTest.StickActions
         public const int MIN_WAIT_VARIANCE_PERCENT = 0;
         public const int MAX_WAIT_VARIANCE_PERCENT = 100;
 
-        // New actions default to Wait Variance Percentage, the mode that reproduces CS2's
-        // 78-90ms range from an 84ms base and a 7% variance.
-        private OppositeTapLengthMode mode = OppositeTapLengthMode.WaitVariancePercentage;
+        // New actions default to Time Variance (Range), showing CS2's 78-90ms range
+        // directly rather than the equivalent 84ms base and 7% variance.
+        private OppositeTapLengthMode mode = OppositeTapLengthMode.MinimumAndMaximum;
         public OppositeTapLengthMode Mode
         {
             get => mode;
