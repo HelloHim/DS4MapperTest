@@ -74,6 +74,9 @@ namespace DS4MapperTest.ViewModels
 
         public MouseOutputRoute Route { get; }
         public string RouteLabel => GetRouteDisplayName(Route);
+        public bool IsGyroRoute => Route == MouseOutputRoute.Gyro;
+        public bool IsAbsoluteMouseRoute => Route == MouseOutputRoute.AbsoluteMouse;
+        public bool IsOtherRoute => Route == MouseOutputRoute.Other;
         public ObservableCollection<MouseRoutingDestinationOptionViewModel> DestinationOptions { get; }
 
         public MouseOutputDestination StagedDestination
@@ -179,10 +182,13 @@ namespace DS4MapperTest.ViewModels
         {
             return route switch
             {
+                MouseOutputRoute.Gyro => "Gyro Mouse",
                 MouseOutputRoute.JoystickMouse => "Joystick Mouse",
                 MouseOutputRoute.FlickStick => "Flick Stick",
-                MouseOutputRoute.UnifiedVirtualMouse => "Unified Virtual Mouse",
+                MouseOutputRoute.Trackpad => "Trackpad Relative Mouse",
+                MouseOutputRoute.UnifiedVirtualMouse => "Physical Mouse Forwarding",
                 MouseOutputRoute.TriggerMouse => "Trigger Mouse",
+                MouseOutputRoute.Other => "Flick Turn Binds",
                 MouseOutputRoute.AbsoluteMouse => "Absolute Mouse",
                 _ => route.ToString(),
             };
@@ -215,10 +221,10 @@ namespace DS4MapperTest.ViewModels
             MouseOutputRoute.JoystickMouse,
             MouseOutputRoute.FlickStick,
             MouseOutputRoute.Trackpad,
-            MouseOutputRoute.UnifiedVirtualMouse,
-            MouseOutputRoute.TriggerMouse,
-            MouseOutputRoute.Other,
             MouseOutputRoute.AbsoluteMouse,
+            MouseOutputRoute.Other,
+            MouseOutputRoute.TriggerMouse,
+            MouseOutputRoute.UnifiedVirtualMouse,
         };
 
         private readonly IMouseOutputRoutingService routingService;
@@ -461,10 +467,13 @@ namespace DS4MapperTest.ViewModels
         {
             return route switch
             {
+                MouseOutputRoute.Gyro => "Gyro Mouse",
                 MouseOutputRoute.JoystickMouse => "Joystick Mouse",
                 MouseOutputRoute.FlickStick => "Flick Stick",
-                MouseOutputRoute.UnifiedVirtualMouse => "Unified Virtual Mouse",
+                MouseOutputRoute.Trackpad => "Trackpad Relative Mouse",
+                MouseOutputRoute.UnifiedVirtualMouse => "Physical Mouse Forwarding",
                 MouseOutputRoute.TriggerMouse => "Trigger Mouse",
+                MouseOutputRoute.Other => "Flick Turn Binds",
                 MouseOutputRoute.AbsoluteMouse => "Absolute Mouse",
                 _ => route.ToString(),
             };
