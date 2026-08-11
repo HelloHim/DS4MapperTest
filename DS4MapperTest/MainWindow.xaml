@@ -7,7 +7,7 @@
         xmlns:views="clr-namespace:DS4MapperTest.Views"
         xmlns:converters="clr-namespace:DS4MapperTest.Converters"
         mc:Ignorable="d"
-        Title="DS4Mapper"
+        Title="DS4MapperTest"
         Height="720" Width="1100"
         MinHeight="600" MinWidth="680"
         Background="{DynamicResource JsmccBg0Brush}"
