@@ -329,7 +329,7 @@
                   CanContentScroll="False">
         <StackPanel Margin="0,0,10,12">
             <TextBlock Text="Mode Settings" Style="{StaticResource JsmccSectionTitle}"/>
-            <TextBlock Text="Controls the gyro's output direction and motion behaviour: which axes it drives, invert, and (for Directional Swipe) which button each swipe direction presses."
+            <TextBlock Text="Settings for the gyro's currently selected output mode."
                        Style="{StaticResource JsmccBodyText}"
                        TextWrapping="Wrap"
                        Margin="0,4,0,0"/>
