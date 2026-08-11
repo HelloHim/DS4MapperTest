@@ -327,8 +327,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <WrapPanel Grid.Column="0"
-                                       Orientation="Horizontal"
+                            <StackPanel Grid.Column="0">
+                            <WrapPanel Orientation="Horizontal"
                                        VerticalAlignment="Center">
                                 <TextBlock x:Name="serviceStatusText"
                                            Text="Stopped"
@@ -350,21 +350,24 @@
                                         Margin="0,4,12,4"
                                         Style="{StaticResource JsmccButtonStyle}"/>
 
-                                <TextBlock x:Name="gyroCalibrationStatusText"
-                                           Visibility="Collapsed"
-                                           Margin="0,4,0,4"
-                                           Style="{StaticResource JsmccMutedText}"
-                                           FontSize="12"
-                                           VerticalAlignment="Center"/>
+                            <Button x:Name="mouseRoutingButton"
+                                    Content="Mouse Routing"
+                                    Click="MouseRoutingButton_Click"
+                                    Margin="12,4,0,4"
+                                    VerticalAlignment="Center"
+                                    ToolTip="Configure global controller mouse-output routing"
+                                    Style="{StaticResource JsmccButtonStyle}"/>
+                            </WrapPanel>
 
-                                <Button x:Name="mouseRoutingButton"
-                                        Content="Mouse Routing"
-                                        Click="MouseRoutingButton_Click"
-                                        Margin="12,4,0,4"
-                                        ToolTip="Configure global controller mouse-output routing"
-                                        Style="{StaticResource JsmccButtonStyle}"/>
+                            <TextBlock x:Name="gyroCalibrationStatusText"
+                                       Visibility="Collapsed"
+                                       Margin="0,4,0,4"
+                                       Style="{StaticResource JsmccMutedText}"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"/>
+                            </StackPanel>
 
-                                <Popup x:Name="mouseRoutingPopup"
+                            <Popup x:Name="mouseRoutingPopup"
                                        PlacementTarget="{Binding ElementName=mouseRoutingButton}"
                                        Placement="Bottom"
                                        StaysOpen="False"
@@ -588,7 +591,6 @@
                                         </ScrollViewer>
                                     </Border>
                                 </Popup>
-                            </WrapPanel>
 
                             <WrapPanel Grid.Column="1"
                                        Orientation="Horizontal"

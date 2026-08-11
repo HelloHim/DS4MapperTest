@@ -508,7 +508,7 @@ namespace DS4MapperTest
                 double seconds = status.RemainingMilliseconds / 1000.0;
                 gyroCalibrationStatusText.Text = status.IsWaitingToStart
                     ? $"Gyro calibration starts in {seconds:F1}s"
-                    : $"Keep controller still; gyro calibration: {seconds:F1}s";
+                    : $"Keep controller on a flat surface. Calibrating gyro: {seconds:F1}s";
             }
         }
 
