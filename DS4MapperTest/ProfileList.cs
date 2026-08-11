@@ -344,13 +344,23 @@ namespace DS4MapperTest
 
         private static int CompareFolderNames(string left, string right)
         {
-            if (string.Equals(left, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return -1;
-            if (string.Equals(right, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return 1;
-            if (string.Equals(left, VALORANT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(right, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return -1;
-            if (string.Equals(right, VALORANT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(left, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return 1;
+            if (string.Equals(left, right, StringComparison.OrdinalIgnoreCase)) return 0;
+
+            int leftRank = GetFolderSortRank(left);
+            int rightRank = GetFolderSortRank(right);
+            if (leftRank != rightRank)
+            {
+                return leftRank.CompareTo(rightRank);
+            }
+
             return StringComparer.CurrentCultureIgnoreCase.Compare(left, right);
+        }
+
+        private static int GetFolderSortRank(string folderName)
+        {
+            if (string.Equals(folderName, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return 0;
+            if (string.Equals(folderName, VALORANT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return 1;
+            return 2;
         }
 
         private static string NormalizeFolderName(string folderName)
