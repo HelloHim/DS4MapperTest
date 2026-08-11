@@ -29,7 +29,7 @@ namespace DS4MapperTest.ViewModels
         private static readonly List<StickModeItem> sharedModeItems = new List<StickModeItem>
         {
             new StickModeItem("Unbound", 0),
-            new StickModeItem("Stick", 1),
+            new StickModeItem("Joystick", 1),
             new StickModeItem("Directional Pad", 2),
             new StickModeItem("Joystick Mouse", 3),
             new StickModeItem("Flick Stick", 6),
