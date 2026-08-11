@@ -67,6 +67,9 @@ namespace DS4MapperTest.ViewModels
         public ObservableCollection<FaceButtonBindingItem> ClickBindingItems =>
             side == "LS" ? owner.LeftStickClickBinding : owner.RightStickClickBinding;
 
+        public ObservableCollection<FaceButtonBindingItem> TouchBindingItems =>
+            side == "LS" ? owner.LeftStickTouchBinding : owner.RightStickTouchBinding;
+
         public StickBindingItemsTest BindingItem
         {
             get
