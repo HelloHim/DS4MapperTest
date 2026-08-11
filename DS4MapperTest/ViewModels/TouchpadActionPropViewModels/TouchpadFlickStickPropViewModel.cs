@@ -171,6 +171,27 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
         // --- End calibration fields ---
 
+        public int SelectedSubModeIndex
+        {
+            get => (int)action.SubMode;
+            set
+            {
+                FlickStickSubMode subMode = (FlickStickSubMode)value;
+                if (action.SubMode == subMode) return;
+                action.SubMode = subMode;
+                SubModeChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedSubModeIndex)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowFlickSettings)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowRotationSettings)));
+            }
+        }
+        public event EventHandler SubModeChanged;
+
+        public bool ShowFlickSettings => action.SubMode != FlickStickSubMode.RotateOnly;
+
+        public bool ShowRotationSettings => action.SubMode != FlickStickSubMode.FlickOnly;
+
         public double FlickThreshold
         {
             get => action.FlickThreshold;
@@ -263,6 +284,19 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             }
         }
         public event EventHandler AccelerationMultiplierChanged;
+
+        public double RotateSmoothOverride
+        {
+            get => action.RotateSmoothOverride;
+            set
+            {
+                if (action.RotateSmoothOverride == value) return;
+                action.RotateSmoothOverride = value;
+                RotateSmoothOverrideChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler RotateSmoothOverrideChanged;
 
         public int SelectedSnapAngleIndex
         {
@@ -365,6 +399,13 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler HighlightMinAngleThresholdChanged;
 
+        public bool HighlightRotateSmoothOverride
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
+        }
+        public event EventHandler HighlightRotateSmoothOverrideChanged;
+
         public override event EventHandler ActionPropertyChanged;
 
         public TouchpadFlickStickPropViewModel(Mapper mapper, TouchpadMapAction action)
@@ -402,6 +443,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             });
 
             NameChanged += TouchpadFlickStickPropViewModel_NameChanged;
+            SubModeChanged += TouchpadFlickStickPropViewModel_SubModeChanged;
             FlickThresholdChanged += TouchpadFlickStickPropViewModel_FlickThresholdChanged;
             FlickTimeChanged += TouchpadFlickStickPropViewModel_FlickTimeChanged;
             FlickTimeExponentChanged += TouchpadFlickStickPropViewModel_FlickTimeExponentChanged;
@@ -409,6 +451,7 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             ReleaseDampeningSpeedChanged += TouchpadFlickStickPropViewModel_ReleaseDampeningSpeedChanged;
             MultiplierCompensationChanged += TouchpadFlickStickPropViewModel_MultiplierCompensationChanged;
             AccelerationMultiplierChanged += TouchpadFlickStickPropViewModel_AccelerationMultiplierChanged;
+            RotateSmoothOverrideChanged += TouchpadFlickStickPropViewModel_RotateSmoothOverrideChanged;
             SnapAngleChanged += TouchpadFlickStickPropViewModel_SnapAngleChanged;
             SnapStrengthChanged += TouchpadFlickStickPropViewModel_SnapStrengthChanged;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
@@ -668,6 +711,27 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.ACCELERATION_MULTIPLIER);
             HighlightAccelerationMultiplierChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadFlickStickPropViewModel_RotateSmoothOverrideChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE))
+            {
+                action.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
+            HighlightRotateSmoothOverrideChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void TouchpadFlickStickPropViewModel_SubModeChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(TouchpadFlickStick.PropertyKeyStrings.SUB_MODE))
+            {
+                action.ChangedProperties.Add(TouchpadFlickStick.PropertyKeyStrings.SUB_MODE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, TouchpadFlickStick.PropertyKeyStrings.SUB_MODE);
         }
     }
 }
