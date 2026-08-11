@@ -802,7 +802,6 @@
                                                                TextWrapping="Wrap"/>
                                                 </Border>
                                                 <views:StickSideModeSettingsControl Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
-                                                <views:StickSideAdvancedControl Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
                                             </StackPanel>
                                         </ScrollViewer>
                                     </TabItem>
@@ -818,7 +817,6 @@
                                                                TextWrapping="Wrap"/>
                                                 </Border>
                                                 <views:StickSideModeSettingsControl Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
-                                                <views:StickSideAdvancedControl Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
                                             </StackPanel>
                                         </ScrollViewer>
                                     </TabItem>
