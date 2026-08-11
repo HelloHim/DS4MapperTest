@@ -54,6 +54,7 @@ namespace DS4MapperTest
         private bool isClosingAfterDirtyPrompt;
         private bool isDirtyClosePromptActive;
         private DispatcherTimer saveStatusHideTimer;
+        private DispatcherTimer deleteActiveProfileWarningHideTimer;
         private static readonly Logger saveProfileLogger = LogManager.GetCurrentClassLogger();
         private readonly ObservableCollection<PhysicalMouseSettingsItem> physicalMouseItems =
             new ObservableCollection<PhysicalMouseSettingsItem>();
@@ -756,7 +757,18 @@ namespace DS4MapperTest
 
             editorTestVM.SwitchActionSets(newIndex);
 
-            await Task.Run(() => editorTestVM.ActionResetEvent.Wait());
+            // See TestSave/TestFakeSave: ProcessMappingChangeAction only tries once, for up
+            // to 500ms, to halt the input reading thread before giving up and never running
+            // the queued action (and its ActionResetEvent.Set()) at all. Without a bounded
+            // wait here, a missed halt window hung this method, and the whole window with it
+            // since IsEnabled stays false, forever.
+            if (!await Task.Run(() => editorTestVM.ActionResetEvent.Wait(TimeSpan.FromSeconds(5))))
+            {
+                MessageBox.Show("Timed out waiting for the mapper thread to become available for switching Action Sets.",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                IsEnabled = true;
+                return;
+            }
 
             DataContext = null;
             editorTestVM.RefreshSetBindings();
@@ -786,7 +798,18 @@ namespace DS4MapperTest
 
             editorTestVM.SwitchActionLayer(newIndex);
 
-            await Task.Run(() => editorTestVM.ActionResetEvent.Wait());
+            // See TestSave/TestFakeSave: ProcessMappingChangeAction only tries once, for up
+            // to 500ms, to halt the input reading thread before giving up and never running
+            // the queued action (and its ActionResetEvent.Set()) at all. Without a bounded
+            // wait here, a missed halt window hung this method, and the whole window with it
+            // since IsEnabled stays false, forever.
+            if (!await Task.Run(() => editorTestVM.ActionResetEvent.Wait(TimeSpan.FromSeconds(5))))
+            {
+                MessageBox.Show("Timed out waiting for the mapper thread to become available for switching Action Layers.",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                IsEnabled = true;
+                return;
+            }
 
             DataContext = null;
             editorTestVM.RefreshLayerBindings();
@@ -1001,6 +1024,7 @@ namespace DS4MapperTest
             profileListBox.ItemsSource = entries;
             selectedListEntry = null;
             selectedProfilePanel.Visibility = Visibility.Collapsed;
+            HideDeleteActiveProfileWarning();
         }
 
         private void ProfileListBox_Loaded(object sender, RoutedEventArgs e)
@@ -1020,6 +1044,7 @@ namespace DS4MapperTest
         private void ProfileListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             selectedListEntry = profileListBox.SelectedItem as ProfileListEntry;
+            HideDeleteActiveProfileWarning();
             if (selectedListEntry == null)
             {
                 selectedProfilePanel.Visibility = Visibility.Collapsed;
@@ -1346,7 +1371,7 @@ namespace DS4MapperTest
             }
         }
 
-        private async void DeleteProfileBtn_Click(object sender, RoutedEventArgs e)
+        private void DeleteProfileBtn_Click(object sender, RoutedEventArgs e)
         {
             if (selectedListEntry == null || currentDeviceItem == null) return;
 
@@ -1355,10 +1380,19 @@ namespace DS4MapperTest
             ProfileEntity activeEnt = editorTestVM?.ProfileEnt;
             bool isActive = string.Equals(ent.ProfilePath, activeEnt?.ProfilePath, StringComparison.OrdinalIgnoreCase);
 
-            int deleteIndex = profileList.IndexOf(ent);
-            if (deleteIndex < 0) return;
+            // Deleting the active profile used to remove it and reload a replacement
+            // in its place, but that reload raced ChangeProfile against the mapper's
+            // own input-thread halt window and could leave the window disabled with
+            // no way to recover. Rather than chase that race further, require the
+            // user to switch away first: a profile can't be pulled out from under
+            // itself while it's the one actually loaded.
+            if (isActive)
+            {
+                ShowDeleteActiveProfileWarning();
+                return;
+            }
 
-            if (isActive && profileList.Count <= 1)
+            if (profileList.Count <= 1)
             {
                 MessageBox.Show("Cannot delete the only remaining profile.", "Delete",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -1384,40 +1418,20 @@ namespace DS4MapperTest
                 return;
             }
 
-            if (isActive)
+            suppressCombo = true;
+            profileList.Remove(ent);
+            if (activeEnt != null)
             {
-                ProfileEntity replacement = deleteIndex > 0
-                    ? profileList[deleteIndex - 1]
-                    : profileList[deleteIndex + 1];
-
-                IsEnabled = false;
-                suppressCombo = true;
-                profileList.Remove(ent);
-                int newIndex = profileList.IndexOf(replacement);
-
-                await Task.Run(() => currentDeviceItem.ResyncProfileIndex(newIndex, reloadProfile: true));
-
-                suppressCombo = false;
-                LoadProfileForDevice(currentDeviceItem);
-                IsEnabled = true;
-            }
-            else
-            {
-                suppressCombo = true;
-                profileList.Remove(ent);
-                if (activeEnt != null)
+                int activeIndex = profileList.IndexOf(activeEnt);
+                if (activeIndex >= 0)
                 {
-                    int activeIndex = profileList.IndexOf(activeEnt);
-                    if (activeIndex >= 0)
-                    {
-                        currentDeviceItem.ResyncProfileIndex(activeIndex, reloadProfile: false);
-                    }
+                    currentDeviceItem.ResyncProfileIndex(activeIndex, reloadProfile: false);
                 }
-                suppressCombo = false;
-
-                RefreshProfileCombo();
-                RefreshProfileList();
             }
+            suppressCombo = false;
+
+            RefreshProfileCombo();
+            RefreshProfileList();
         }
 
         private async void SaveProfileButton_Click(object sender, RoutedEventArgs e)
@@ -1632,6 +1646,26 @@ namespace DS4MapperTest
                 MinWidth = 82,
                 Margin = new Thickness(8, 0, 0, 0),
             };
+        }
+
+        private void ShowDeleteActiveProfileWarning()
+        {
+            deleteActiveProfileWarningHideTimer?.Stop();
+            deleteActiveProfileWarningText.Visibility = Visibility.Visible;
+
+            deleteActiveProfileWarningHideTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+            deleteActiveProfileWarningHideTimer.Tick += (s, e) =>
+            {
+                deleteActiveProfileWarningHideTimer.Stop();
+                deleteActiveProfileWarningText.Visibility = Visibility.Collapsed;
+            };
+            deleteActiveProfileWarningHideTimer.Start();
+        }
+
+        private void HideDeleteActiveProfileWarning()
+        {
+            deleteActiveProfileWarningHideTimer?.Stop();
+            deleteActiveProfileWarningText.Visibility = Visibility.Collapsed;
         }
 
         private void StartSaveStatusHideTimer(TimeSpan delay, bool revertButton)
