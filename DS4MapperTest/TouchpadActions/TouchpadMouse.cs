@@ -126,10 +126,10 @@ namespace DS4MapperTest.TouchpadActions
         private double TRACKBALL_SCALE = 0.000023;
         private const int TRACKBALL_BUFFER_LEN = 8;
 
-        private const int DEFAULT_DEADZONE = 1;
+        private const int DEFAULT_DEADZONE = 0;
         private const int DEFAULT_VERTICAL_DEAD_ZONE = 0;
         public const double DEFAULT_SWIPES_PER_360 = 1.0;
-        public const double DEFAULT_VERTICAL_SCALE = 0.5;
+        public const double DEFAULT_VERTICAL_SCALE = 1.0;
         private const bool DEFAULT_SMOOTHING_ENABLED = false;
         public const GyroMouseAccelCurveChoice DEFAULT_ACCEL_CURVE =
             GyroMouseAccelCurveChoice.None;
@@ -237,7 +237,7 @@ namespace DS4MapperTest.TouchpadActions
             get => ref smoothingFilterSettings;
         }
 
-        private bool trackballEnabled = true;
+        private bool trackballEnabled = false;
         public bool TrackballEnabled
         {
             get => trackballEnabled;
