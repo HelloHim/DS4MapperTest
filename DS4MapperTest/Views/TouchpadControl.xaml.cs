@@ -519,7 +519,7 @@ namespace DS4MapperTest.Views
             return section switch
             {
                 "MouseMovement" => $"{item.DisplayName} is currently set to Unbound. Choose a movement mode in Mode to configure movement settings.",
-                "ModeSettings" => $"{item.DisplayName} is currently set to Unbound. Choose D-Pad Zones in Mode to configure touchpad mode settings.",
+                "ModeSettings" => $"{item.DisplayName} is currently set to Unbound. Choose Directional Pad in Mode to configure touchpad mode settings.",
                 "SensitivityCalibration" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure sensitivity and calibration settings.",
                 "FilteringStabilisation" => $"{item.DisplayName} is currently set to Unbound. Choose a touchpad mode in Mode to configure filtering and stabilisation settings.",
                 "Zones" => $"{item.DisplayName} is currently set to Unbound. Choose a zone-capable mode in Mode to configure zone settings.",
