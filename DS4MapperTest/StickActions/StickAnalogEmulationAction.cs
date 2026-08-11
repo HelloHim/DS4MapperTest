@@ -53,8 +53,8 @@ namespace DS4MapperTest.StickActions
             public const string COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT = "OppositeTapStartDelayVariancePercent";
             public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "OppositeTapStartDelayMinimumMs";
             public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "OppositeTapStartDelayMaximumMs";
-            // Unchanged from the pre-rename "Digital Release Brake" feature: neither the
-            // concept nor its serialised name changed, only the feature it belongs to.
+            // Kept under the counter-movement namespace so the serialised setting matches
+            // the current UI label.
             public const string COUNTER_MOVEMENT_MIN_HOLD_MS = "CounterMovementMinimumHoldMs";
             public const string REQUIRED_STICK_DEFLECTION_THRESHOLD = "RequiredStickDeflectionThreshold";
         }
@@ -135,7 +135,7 @@ namespace DS4MapperTest.StickActions
         // Emulation has no dedicated diagonal buttons.
         private CounterMovementReleasePressProcessor counterMovementReleasePress = new CounterMovementReleasePressProcessor();
         public CounterMovementReleasePressProcessor CounterMovementReleasePress => counterMovementReleasePress;
-        private AxisDirButton[] brakeSlotButtons = new AxisDirButton[13];
+        private AxisDirButton[] releasePressSlotButtons = new AxisDirButton[13];
 
         private double xNorm, yNorm;
 
@@ -316,12 +316,12 @@ namespace DS4MapperTest.StickActions
             }
         }
 
-        private void RefreshBrakeSlotButtons()
+        private void RefreshReleasePressSlotButtons()
         {
-            brakeSlotButtons[(int)StickPadAction.DpadDirections.Up] = dirButtons[(int)DirSlot.Up];
-            brakeSlotButtons[(int)StickPadAction.DpadDirections.Down] = dirButtons[(int)DirSlot.Down];
-            brakeSlotButtons[(int)StickPadAction.DpadDirections.Left] = dirButtons[(int)DirSlot.Left];
-            brakeSlotButtons[(int)StickPadAction.DpadDirections.Right] = dirButtons[(int)DirSlot.Right];
+            releasePressSlotButtons[(int)StickPadAction.DpadDirections.Up] = dirButtons[(int)DirSlot.Up];
+            releasePressSlotButtons[(int)StickPadAction.DpadDirections.Down] = dirButtons[(int)DirSlot.Down];
+            releasePressSlotButtons[(int)StickPadAction.DpadDirections.Left] = dirButtons[(int)DirSlot.Left];
+            releasePressSlotButtons[(int)StickPadAction.DpadDirections.Right] = dirButtons[(int)DirSlot.Right];
         }
 
         public override void Prepare(Mapper mapper, int axisXVal, int axisYVal, bool alterState = true)
@@ -398,12 +398,12 @@ namespace DS4MapperTest.StickActions
 
             wasInSafeZone = inSafeZone;
 
-            // Digital Release Brake: derive an independent raw 8-way digital bucket purely for
+            // Counter Movement Release Press derives an independent raw 8-way digital bucket purely for
             // spring snap-back detection, kept separate from the selected Direction Resolution's
-            // blend rounding so the brake behaves consistently regardless of mode. Only whichever
-            // cardinal bit(s) the brake actually removes from that bucket this tick are then
+            // blend rounding so the release press behaves consistently regardless of mode. Only whichever
+            // cardinal bit(s) the release press actually removes from that bucket this tick are then
             // masked out of the smooth primary/secondary emission below.
-            RefreshBrakeSlotButtons();
+            RefreshReleasePressSlotButtons();
             AnalogEmulationMath.ComputeDirectionBlend(xNorm, yNorm, AnalogEmulationMath.ResolutionMode.EightWay,
                 directionMode == AnalogEmulationMath.ResolutionMode.EightWay ? diagonalZoneWidth : DEFAULT_DIAGONAL_ZONE_WIDTH,
                 out AnalogEmulationMath.Direction rawPrimary, out AnalogEmulationMath.Direction rawSecondary, out double rawBlend);
@@ -445,7 +445,7 @@ namespace DS4MapperTest.StickActions
                 if (btn.active) anyActive = true;
             }
 
-            counterMovementReleasePress.Event(mapper, brakeSlotButtons);
+            counterMovementReleasePress.Event(mapper, releasePressSlotButtons);
 
             active = anyActive;
             activeEvent = false;
@@ -453,8 +453,8 @@ namespace DS4MapperTest.StickActions
 
         public override void Release(Mapper mapper, bool resetState = true, bool ignoreReleaseActions = false)
         {
-            RefreshBrakeSlotButtons();
-            counterMovementReleasePress.Cleanup(mapper, brakeSlotButtons);
+            RefreshReleasePressSlotButtons();
+            counterMovementReleasePress.Cleanup(mapper, releasePressSlotButtons);
 
             for (int i = 0; i < dirButtons.Length; i++)
             {
@@ -478,8 +478,8 @@ namespace DS4MapperTest.StickActions
         {
             StickAnalogEmulationAction checkAnalog = checkAction as StickAnalogEmulationAction;
 
-            RefreshBrakeSlotButtons();
-            counterMovementReleasePress.Cleanup(mapper, brakeSlotButtons);
+            RefreshReleasePressSlotButtons();
+            counterMovementReleasePress.Cleanup(mapper, releasePressSlotButtons);
 
             for (int i = 0; i < dirButtons.Length; i++)
             {

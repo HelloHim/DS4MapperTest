@@ -12,7 +12,7 @@ namespace DS4MapperTest.TouchpadActions
         {
             Idle,
             Tracking,
-            Braking,
+            OppositeTapActive,
         }
 
         public const int CS2_TAP_LENGTH_MINIMUM_MS = CounterMovementReleasePressProcessor.CS2_TAP_LENGTH_MINIMUM_MS;
@@ -192,11 +192,11 @@ namespace DS4MapperTest.TouchpadActions
         /// </summary>
         public (int Minimum, int Maximum) GetEffectiveOppositeTapStartDelayRange() => startDelayTiming.GetEffectiveRange();
 
-        private int minimumHoldMs = DigitalReleaseBrakePulse.DEFAULT_MINIMUM_HOLD_MS;
+        private int minimumHoldMs = DigitalReleasePressPulse.DEFAULT_MINIMUM_HOLD_MS;
         public int MinimumHoldMs
         {
             get => minimumHoldMs;
-            set => minimumHoldMs = DigitalReleaseBrakePulse.ClampMinimumHoldMs(value);
+            set => minimumHoldMs = DigitalReleasePressPulse.ClampMinimumHoldMs(value);
         }
 
         private PressState state = PressState.Idle;
@@ -299,7 +299,7 @@ namespace DS4MapperTest.TouchpadActions
                 activeComponents = rawMask;
                 Advance(dt);
                 state = pulseOwnedComponents != 0 || pendingOppositeComponents != 0 ?
-                    PressState.Braking : PressState.Tracking;
+                    PressState.OppositeTapActive : PressState.Tracking;
                 return rawCurrentDir;
             }
 
@@ -317,9 +317,9 @@ namespace DS4MapperTest.TouchpadActions
 
             if (pulseOwnedComponents != 0 || pendingOppositeComponents != 0)
             {
-                state = PressState.Braking;
+                state = PressState.OppositeTapActive;
             }
-            else if (state != PressState.Braking)
+            else if (state != PressState.OppositeTapActive)
             {
                 state = PressState.Idle;
             }
@@ -346,9 +346,9 @@ namespace DS4MapperTest.TouchpadActions
                 return;
             }
 
-            foreach (uint component in DigitalReleaseBrakePulse.CardinalComponents)
+            foreach (uint component in DigitalReleasePressPulse.CardinalComponents)
             {
-                if (!DigitalReleaseBrakePulse.Has(pulseOwnedComponents, component))
+                if (!DigitalReleasePressPulse.Has(pulseOwnedComponents, component))
                 {
                     continue;
                 }
@@ -396,7 +396,7 @@ namespace DS4MapperTest.TouchpadActions
 
             if (pulseOwnedComponents != 0 || pendingOppositeComponents != 0)
             {
-                state = PressState.Braking;
+                state = PressState.OppositeTapActive;
             }
             else
             {
@@ -417,9 +417,9 @@ namespace DS4MapperTest.TouchpadActions
                 return;
             }
 
-            foreach (uint component in DigitalReleaseBrakePulse.CardinalComponents)
+            foreach (uint component in DigitalReleasePressPulse.CardinalComponents)
             {
-                if (!DigitalReleaseBrakePulse.Has(explicitReleaseComponents, component))
+                if (!DigitalReleasePressPulse.Has(explicitReleaseComponents, component))
                 {
                     continue;
                 }
@@ -442,18 +442,18 @@ namespace DS4MapperTest.TouchpadActions
 
         private void AccumulateHold(uint rawMask, double dt)
         {
-            holdUp = DigitalReleaseBrakePulse.Has(rawMask, DigitalReleaseBrakePulse.UP) ? holdUp + dt : 0.0;
-            holdDown = DigitalReleaseBrakePulse.Has(rawMask, DigitalReleaseBrakePulse.DOWN) ? holdDown + dt : 0.0;
-            holdLeft = DigitalReleaseBrakePulse.Has(rawMask, DigitalReleaseBrakePulse.LEFT) ? holdLeft + dt : 0.0;
-            holdRight = DigitalReleaseBrakePulse.Has(rawMask, DigitalReleaseBrakePulse.RIGHT) ? holdRight + dt : 0.0;
+            holdUp = DigitalReleasePressPulse.Has(rawMask, DigitalReleasePressPulse.UP) ? holdUp + dt : 0.0;
+            holdDown = DigitalReleasePressPulse.Has(rawMask, DigitalReleasePressPulse.DOWN) ? holdDown + dt : 0.0;
+            holdLeft = DigitalReleasePressPulse.Has(rawMask, DigitalReleasePressPulse.LEFT) ? holdLeft + dt : 0.0;
+            holdRight = DigitalReleasePressPulse.Has(rawMask, DigitalReleasePressPulse.RIGHT) ? holdRight + dt : 0.0;
         }
 
         private double GetHold(uint component)
         {
-            if (component == DigitalReleaseBrakePulse.UP) return holdUp;
-            if (component == DigitalReleaseBrakePulse.DOWN) return holdDown;
-            if (component == DigitalReleaseBrakePulse.LEFT) return holdLeft;
-            if (component == DigitalReleaseBrakePulse.RIGHT) return holdRight;
+            if (component == DigitalReleasePressPulse.UP) return holdUp;
+            if (component == DigitalReleasePressPulse.DOWN) return holdDown;
+            if (component == DigitalReleasePressPulse.LEFT) return holdLeft;
+            if (component == DigitalReleasePressPulse.RIGHT) return holdRight;
             return 0.0;
         }
 
@@ -466,9 +466,9 @@ namespace DS4MapperTest.TouchpadActions
 
             double minHoldSeconds = minimumHoldMs / 1000.0;
             uint eligible = 0;
-            foreach (uint component in DigitalReleaseBrakePulse.CardinalComponents)
+            foreach (uint component in DigitalReleasePressPulse.CardinalComponents)
             {
-                if (DigitalReleaseBrakePulse.Has(releasedComponents, component) &&
+                if (DigitalReleasePressPulse.Has(releasedComponents, component) &&
                     GetHold(component) + double.Epsilon >= minHoldSeconds)
                 {
                     eligible |= component;
@@ -508,7 +508,7 @@ namespace DS4MapperTest.TouchpadActions
                 selectedStartDelayMs = randomProvider.NextInclusive(effectiveStartDelayMinimumMs, effectiveStartDelayMaximumMs);
             }
             actualOppositeHoldMs = Math.Max(0, selectedTotalTapWindowMs - selectedStartDelayMs);
-            pendingOppositeComponents = DigitalReleaseBrakePulse.OppositeMask(eligible);
+            pendingOppositeComponents = DigitalReleasePressPulse.OppositeMask(eligible);
             releasePressElapsedSeconds = 0.0;
             releasePressStartTimestamp = Stopwatch.GetTimestamp();
 
@@ -518,7 +518,7 @@ namespace DS4MapperTest.TouchpadActions
             }
             else
             {
-                state = PressState.Braking;
+                state = PressState.OppositeTapActive;
             }
         }
 
@@ -534,7 +534,7 @@ namespace DS4MapperTest.TouchpadActions
 
             pulseOwnedComponents = pendingOppositeComponents;
             pendingOppositeComponents = 0;
-            state = PressState.Braking;
+            state = PressState.OppositeTapActive;
         }
 
         private void EndOppositeTap()

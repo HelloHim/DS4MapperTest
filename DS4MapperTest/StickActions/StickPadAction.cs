@@ -58,8 +58,8 @@ namespace DS4MapperTest.StickActions
             public const string COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT = "OppositeTapStartDelayVariancePercent";
             public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "OppositeTapStartDelayMinimumMs";
             public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "OppositeTapStartDelayMaximumMs";
-            // Unchanged from the pre-rename "Digital Release Brake" feature: neither the
-            // concept nor its serialised name changed, only the feature it belongs to.
+            // Kept under the counter-movement namespace so the serialised setting matches
+            // the current UI label.
             public const string COUNTER_MOVEMENT_MIN_HOLD_MS = "CounterMovementMinimumHoldMs";
             public const string REQUIRED_STICK_DEFLECTION_THRESHOLD = "RequiredStickDeflectionThreshold";
         }
@@ -358,7 +358,7 @@ namespace DS4MapperTest.StickActions
 
             }
 
-            // Digital Release Brake sees the active D-Pad zone every tick (including the
+            // Counter Movement Release Press sees the active D-Pad zone every tick (including the
             // ticks where the stick has already left the dead zone but is still physically
             // in motion) and may mask components out of currentDir while a pulse is
             // suppressing the stick's own returning direction. DetermineDirection already

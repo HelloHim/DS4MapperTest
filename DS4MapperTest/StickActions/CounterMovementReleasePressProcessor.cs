@@ -57,7 +57,7 @@ namespace DS4MapperTest.StickActions
         private const double DT_ABS_MAX_SECONDS = 0.5;
         private const double DT_AVG_TAU_SECONDS = 0.2;
 
-        public static readonly int DEFAULT_TAP_LENGTH_MS = DigitalReleaseBrakePulse.DEFAULT_BRAKE_DURATION_MS;
+        public static readonly int DEFAULT_TAP_LENGTH_MS = DigitalReleasePressPulse.DEFAULT_RELEASE_PRESS_DURATION_MS;
 
         public const int CS2_TAP_LENGTH_MINIMUM_MS = 78;
         public const int CS2_TAP_LENGTH_MAXIMUM_MS = 90;
@@ -124,7 +124,7 @@ namespace DS4MapperTest.StickActions
         public int MinimumHoldMs
         {
             get => minimumHoldMs;
-            set => minimumHoldMs = DigitalReleaseBrakePulse.ClampMinimumHoldMs(value);
+            set => minimumHoldMs = DigitalReleasePressPulse.ClampMinimumHoldMs(value);
         }
 
         private double armingThreshold = DEFAULT_ARMING_THRESHOLD;
@@ -808,7 +808,7 @@ namespace DS4MapperTest.StickActions
             }
             else if (touchesPulse)
             {
-                // Reverse into brake direction: hand the key over to the normal masked path
+                // Reverse into the release press direction: hand the key over to the normal masked path
                 // without an intervening release, so it stays continuously held. That silent
                 // hand-off is only correct when the pulse was driving the action's own
                 // direction binding, i.e. the very same AxisDirButton the normal path is

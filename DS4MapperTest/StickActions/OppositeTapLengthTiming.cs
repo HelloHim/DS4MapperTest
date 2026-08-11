@@ -44,7 +44,7 @@ namespace DS4MapperTest.StickActions
         public int FixedMs
         {
             get => fixedMs;
-            set => fixedMs = DigitalReleaseBrakePulse.ClampBrakeDurationMs(value);
+            set => fixedMs = DigitalReleasePressPulse.ClampReleasePressDurationMs(value);
         }
 
         private int variancePercent = CS2_WAIT_VARIANCE_PERCENT;
@@ -58,14 +58,14 @@ namespace DS4MapperTest.StickActions
         public int MinimumMs
         {
             get => minimumMs;
-            set => minimumMs = DigitalReleaseBrakePulse.ClampBrakeDurationMs(value);
+            set => minimumMs = DigitalReleasePressPulse.ClampReleasePressDurationMs(value);
         }
 
         private int maximumMs = CS2_TAP_LENGTH_MAXIMUM_MS;
         public int MaximumMs
         {
             get => maximumMs;
-            set => maximumMs = DigitalReleaseBrakePulse.ClampBrakeDurationMs(value);
+            set => maximumMs = DigitalReleasePressPulse.ClampReleasePressDurationMs(value);
         }
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace DS4MapperTest.StickActions
 
             if (requestedMinimum == requestedMaximum)
             {
-                return (DigitalReleaseBrakePulse.ClampBrakeDurationMs(requestedMinimum), 0);
+                return (DigitalReleasePressPulse.ClampReleasePressDurationMs(requestedMinimum), 0);
             }
 
             double exactMidpoint = (requestedMinimum + requestedMaximum) / 2.0;
@@ -184,7 +184,7 @@ namespace DS4MapperTest.StickActions
             double approxPercent = sum == 0 ? 0.0 :
                 ((requestedMaximum - requestedMinimum) / (double)sum) * 100.0;
 
-            int bestFixed = DigitalReleaseBrakePulse.MIN_BRAKE_DURATION_MS;
+            int bestFixed = DigitalReleasePressPulse.MIN_RELEASE_PRESS_DURATION_MS;
             int bestPercent = MIN_WAIT_VARIANCE_PERCENT;
             long bestTotalError = 0;
             long bestMaxError = 0;
@@ -192,8 +192,8 @@ namespace DS4MapperTest.StickActions
             double bestPercentDelta = 0;
             bool found = false;
 
-            for (int candidateFixed = DigitalReleaseBrakePulse.MIN_BRAKE_DURATION_MS;
-                candidateFixed <= DigitalReleaseBrakePulse.MAX_BRAKE_DURATION_MS; candidateFixed++)
+            for (int candidateFixed = DigitalReleasePressPulse.MIN_RELEASE_PRESS_DURATION_MS;
+                candidateFixed <= DigitalReleasePressPulse.MAX_RELEASE_PRESS_DURATION_MS; candidateFixed++)
             {
                 for (int candidatePercent = MIN_WAIT_VARIANCE_PERCENT; candidatePercent <= MAX_WAIT_VARIANCE_PERCENT; candidatePercent++)
                 {

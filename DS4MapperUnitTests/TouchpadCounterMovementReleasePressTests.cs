@@ -47,7 +47,7 @@ namespace DS4MapperUnitTests
             TestMapper.KeyReferenceCountDict.Clear();
         }
 
-        private string BuildProfileJson(bool brakeEnabled = true, int minHoldMs = 80, int durationMs = 40)
+        private string BuildProfileJson(bool releasePressEnabled = true, int minHoldMs = 80, int durationMs = 40)
         {
             return $@"{{
   ""Name"": ""TouchpadCounterMovementReleasePressTest"",
@@ -83,7 +83,7 @@ namespace DS4MapperUnitTests
                 ""PadMode"": ""Standard"",
                 ""DeadZone"": 0.0,
                 ""DiagonalRange"": 45,
-                ""BrakeEnabled"": {brakeEnabled.ToString().ToLowerInvariant()},
+                ""BrakeEnabled"": {releasePressEnabled.ToString().ToLowerInvariant()},
                 ""BrakeDurationMs"": {durationMs},
                 ""CounterMovementMinimumHoldMs"": {minHoldMs}
               }}
@@ -106,7 +106,7 @@ namespace DS4MapperUnitTests
         }
 
         private (TestMapper mapper, TouchpadActionPad padAction) LoadMapper(
-            bool brakeEnabled = true, int minHoldMs = 80, int durationMs = 40)
+            bool releasePressEnabled = true, int minHoldMs = 80, int durationMs = 40)
         {
             ProfileSerializer.EventInputMapper = new SendInputMapping();
 
@@ -117,7 +117,7 @@ namespace DS4MapperUnitTests
             tempProfile.ActionSets.Clear();
 
             ProfileSerializer profileSerializer = new ProfileSerializer(tempProfile);
-            JsonConvert.PopulateObject(BuildProfileJson(brakeEnabled, minHoldMs, durationMs), profileSerializer);
+            JsonConvert.PopulateObject(BuildProfileJson(releasePressEnabled, minHoldMs, durationMs), profileSerializer);
             profileSerializer.PopulateProfile();
             tempProfile.ResetAliases();
 
@@ -190,7 +190,7 @@ namespace DS4MapperUnitTests
             Assert.IsTrue(KeyDown(VK_D));
 
             Lift(mapper);
-            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.Braking, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
             Assert.IsFalse(KeyDown(VK_D));
             Assert.IsTrue(KeyDown(VK_A));
 
@@ -200,7 +200,7 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void BelowMinimumHold_DoesNotBrake()
+        public void BelowMinimumHold_DoesNotReleasePress()
         {
             var (mapper, _) = LoadMapper(minHoldMs: 80);
 
@@ -211,14 +211,14 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void ExactMinimumHoldBoundary_Brakes()
+        public void ExactMinimumHoldBoundary_ReleasePresses()
         {
             var (mapper, padAction) = LoadMapper(minHoldMs: 80);
 
             HoldRight(mapper, 10);
             Lift(mapper);
 
-            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.Braking, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_A));
         }
 
@@ -230,7 +230,7 @@ namespace DS4MapperUnitTests
             HoldUpRight(mapper, 20);
             Lift(mapper);
 
-            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.Braking, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_S));
             Assert.IsTrue(KeyDown(VK_A));
 
@@ -241,7 +241,7 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void ZoneSliding_DoesNotBrakeUntilLift()
+        public void ZoneSliding_DoesNotReleasePressUntilLift()
         {
             var (mapper, _) = LoadMapper();
 
@@ -351,9 +351,9 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void FeatureDisabled_DoesNotBrake()
+        public void FeatureDisabled_DoesNotReleasePress()
         {
-            var (mapper, _) = LoadMapper(brakeEnabled: false);
+            var (mapper, _) = LoadMapper(releasePressEnabled: false);
 
             HoldRight(mapper, 20);
             Lift(mapper);
