@@ -383,6 +383,19 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler RotateSmoothOverrideChanged;
 
+        public double SweepSensitivity
+        {
+            get => action.SweepSensitivity;
+            set
+            {
+                if (action.SweepSensitivity == value) return;
+                action.SweepSensitivity = value;
+                SweepSensitivityChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler SweepSensitivityChanged;
+
         public bool HighlightReleaseDampeningSpeed
         {
             get => action.ParentAction == null ||
@@ -446,6 +459,13 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler HighlightRotateSmoothOverrideChanged;
 
+        public bool HighlightSweepSensitivity
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
+        }
+        public event EventHandler HighlightSweepSensitivityChanged;
+
         public event EventHandler ActionPropertyChanged;
         public event EventHandler<StickMapAction> ActionChanged;
 
@@ -493,6 +513,7 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             MultiplierCompensationChanged += StickFlickStickPropViewModel_MultiplierCompensationChanged;
             AccelerationMultiplierChanged += StickFlickStickPropViewModel_AccelerationMultiplierChanged;
             RotateSmoothOverrideChanged += StickFlickStickPropViewModel_RotateSmoothOverrideChanged;
+            SweepSensitivityChanged += StickFlickStickPropViewModel_SweepSensitivityChanged;
             SnapAngleChanged += StickFlickStickPropViewModel_SnapAngleChanged;
             SnapStrengthChanged += StickFlickStickPropViewModel_SnapStrengthChanged;
             mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
@@ -710,6 +731,17 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.ROTATE_SMOOTH_OVERRIDE);
             HighlightRotateSmoothOverrideChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickFlickStickPropViewModel_SweepSensitivityChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY))
+            {
+                action.ChangedProperties.Add(StickFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickFlickStick.PropertyKeyStrings.SWEEP_SENSITIVITY);
+            HighlightSweepSensitivityChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickFlickStickPropViewModel_FlickTimeChanged(object sender, EventArgs e)

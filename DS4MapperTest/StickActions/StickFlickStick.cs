@@ -38,6 +38,7 @@ namespace DS4MapperTest.StickActions
             public const string SUB_MODE = "SubMode";
             public const string SNAP_ANGLE = "SnapAngle";
             public const string SNAP_STRENGTH = "SnapStrength";
+            public const string SWEEP_SENSITIVITY = "SweepSensitivity";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -56,6 +57,7 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.SUB_MODE,
             PropertyKeyStrings.SNAP_ANGLE,
             PropertyKeyStrings.SNAP_STRENGTH,
+            PropertyKeyStrings.SWEEP_SENSITIVITY,
         };
 
         public class FlickStickMappingData
@@ -201,6 +203,17 @@ namespace DS4MapperTest.StickActions
         {
             get => rotateSmoothOverride;
             set => rotateSmoothOverride = Math.Clamp(value, -1.0, 1.0);
+        }
+
+        // Matches Steam Input's Flick Stick Sweep Sensitivity. A dimensionless
+        // multiplier applied only to the continuous sweep rotation, not the
+        // initial flick-turn. 1.0 is a natural 1:1 angular ratio; 0 disables
+        // sweep rotation entirely.
+        private double sweepSensitivity = 1.0;
+        public double SweepSensitivity
+        {
+            get => sweepSensitivity;
+            set => sweepSensitivity = Math.Clamp(value, 0.0, 6.0);
         }
 
         private FlickStickSubMode subMode = FlickStickSubMode.Standard;
@@ -372,7 +385,7 @@ namespace DS4MapperTest.StickActions
                         double outputScale = realWorldCalibration / inGameSens;
                         if (outputScale != 0.0)
                         {
-                            double rotationOutput = angleChange * sweepDampen * outputScale;
+                            double rotationOutput = angleChange * sweepSensitivity * sweepDampen * outputScale;
                             int maxSmoothingSamples = mapper.CurrentLatency > 0.0
                                 ? Math.Clamp((int)Math.Ceiling(0.064 / mapper.CurrentLatency), 1,
                                     FlickStickMappingData.FLICK_SMOOTH_SAMPLE_COUNT)
@@ -525,6 +538,9 @@ namespace DS4MapperTest.StickActions
                         case PropertyKeyStrings.SNAP_STRENGTH:
                             snapStrength = tempFlickAction.snapStrength;
                             break;
+                        case PropertyKeyStrings.SWEEP_SENSITIVITY:
+                            sweepSensitivity = tempFlickAction.sweepSensitivity;
+                            break;
                         default:
                             break;
                     }
@@ -595,6 +611,9 @@ namespace DS4MapperTest.StickActions
                     break;
                 case PropertyKeyStrings.SNAP_STRENGTH:
                     snapStrength = tempFlickAction.snapStrength;
+                    break;
+                case PropertyKeyStrings.SWEEP_SENSITIVITY:
+                    sweepSensitivity = tempFlickAction.sweepSensitivity;
                     break;
                 default:
                     break;
