@@ -18,12 +18,8 @@ namespace DS4MapperTest
             var configuration = LogManager.Configuration;
             var wrapTarget = configuration.FindTargetByName<WrapperTargetBase>("logfile") as WrapperTargetBase;
             var fileTarget = wrapTarget.WrappedTarget as NLog.Targets.FileTarget;
-            fileTarget.FileName = Path.Combine(appGlobal.appdatapath,
-                AppGlobalData.LOGS_FOLDER_NAME,
-                "ds4mapper_log.txt");
-            fileTarget.ArchiveFileName = Path.Combine(appGlobal.appdatapath,
-                AppGlobalData.LOGS_FOLDER_NAME,
-                "ds4mapper_log_{#}.txt");
+            fileTarget.FileName = Path.Combine(appGlobal.LogsPath, "ds4mapper_log.txt");
+            fileTarget.ArchiveFileName = Path.Combine(appGlobal.LogsPath, "ds4mapper_log_{#}.txt");
             LogManager.Configuration = configuration;
             LogManager.ReconfigExistingLoggers();
 

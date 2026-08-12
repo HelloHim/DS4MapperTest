@@ -23,7 +23,9 @@ namespace DS4MapperTest
         public const string APP_SETTINGS_FILENAME = "Settings.json";
         public const string CONTROLLER_CONFIGS_FILENAME = "ControllerConfigs.json";
         public const string APP_FOLDER_NAME = "DS4Test";
+        public const string DEVELOPMENT_APP_FOLDER_NAME = ApplicationDataPathResolver.DevelopmentAppFolderName;
         public const string PROFILES_FOLDER_NAME = "Profiles";
+        public const string LEGACY_PROFILES_FOLDER_NAME = "LegacyProfiles";
         public const string LOGS_FOLDER_NAME = "Logs";
         public const string STEAM_CONTROLLER_PROFILE_DIR = "SteamController";
         public const string STEAM_CONTROLLER_TRITON_PROFILE_DIR = "SteamControllerTriton";
@@ -50,8 +52,12 @@ namespace DS4MapperTest
         public string userAppDataPath =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), APP_FOLDER_NAME);
         public string baseProfilesPath;
+        public string legacyProfilesPath;
+        public string LegacyProfilesPath => legacyProfilesPath;
+        public string logsPath;
         public string controllerConfigsPath;
         public string ControllerConfigsPath => controllerConfigsPath;
+        public string LogsPath => logsPath;
 
         public const string BLANK_VIGEMBUS_VERSION = "0.0.0.0";
         public const string MIN_SUPPORTED_VIGEMBUS_VERSION = "1.17.333.0";
@@ -99,10 +105,21 @@ namespace DS4MapperTest
 
         public AppGlobalData()
         {
-            // Default to using remote AppData folder
-            appdatapath = userAppDataPath;
-            baseProfilesPath = Path.Combine(appdatapath, PROFILES_FOLDER_NAME);
-            controllerConfigsPath = Path.Combine(appdatapath, CONTROLLER_CONFIGS_FILENAME);
+            ApplyApplicationDataPaths(ApplicationDataPathResolver.ResolveDefault());
+        }
+
+        public void SetApplicationDataRoot(string rootPath)
+        {
+            ApplyApplicationDataPaths(new ApplicationDataPathSet(rootPath));
+        }
+
+        private void ApplyApplicationDataPaths(ApplicationDataPathSet paths)
+        {
+            appdatapath = paths.RootPath;
+            baseProfilesPath = paths.ProfilesPath;
+            legacyProfilesPath = paths.LegacyProfilesPath;
+            logsPath = paths.LogsPath;
+            controllerConfigsPath = paths.ControllerConfigsPath;
         }
 
         public void FindConfigLocation()
@@ -119,10 +136,10 @@ namespace DS4MapperTest
             try
             {
                 Directory.CreateDirectory(appdatapath);
-                Directory.CreateDirectory(Path.Combine(appdatapath, PROFILES_FOLDER_NAME));
+                Directory.CreateDirectory(baseProfilesPath);
                 CreateDeviceProfilesSkeleton();
 
-                Directory.CreateDirectory(Path.Combine(appdatapath, LOGS_FOLDER_NAME));
+                Directory.CreateDirectory(logsPath);
             }
             catch (UnauthorizedAccessException)
             {
@@ -139,9 +156,11 @@ namespace DS4MapperTest
 
             try
             {
+                RelocateLegacyDeviceProfileFolders();
+
                 foreach(string deviceProfFolder in checkFoldersList)
                 {
-                    string tempDirPath = Path.Combine(appdatapath, PROFILES_FOLDER_NAME, deviceProfFolder);
+                    string tempDirPath = Path.Combine(legacyProfilesPath, deviceProfFolder);
                     if (!Directory.Exists(tempDirPath))
                     {
                         Directory.CreateDirectory(tempDirPath);
@@ -159,6 +178,75 @@ namespace DS4MapperTest
             return result;
         }
 
+        // Installs made before the legacy store was split out keep their
+        // per-controller directories directly inside the universal profile
+        // root, where the app now lists every directory as a user profile
+        // folder. Those directories are not profile folders and cannot be
+        // deleted from the UI (they still hold legacy .json profiles), so move
+        // them under the dedicated legacy root once.
+        public void RelocateLegacyDeviceProfileFolders()
+        {
+            if (!Directory.Exists(baseProfilesPath)) return;
+
+            foreach (string deviceProfFolder in checkFoldersList)
+            {
+                string sourcePath = Path.Combine(baseProfilesPath, deviceProfFolder);
+                string destPath = Path.Combine(legacyProfilesPath, deviceProfFolder);
+                if (!Directory.Exists(sourcePath)) continue;
+
+                try
+                {
+                    if (!Directory.Exists(destPath))
+                    {
+                        Directory.CreateDirectory(legacyProfilesPath);
+                        Directory.Move(sourcePath, destPath);
+                        continue;
+                    }
+
+                    // A legacy folder already exists at the destination (e.g. a
+                    // previous relocation was interrupted). Merge whatever the
+                    // old location still holds, then drop the empty husk.
+                    MergeDirectoryInto(sourcePath, destPath);
+                }
+                catch (IOException)
+                {
+                    // Leave the folder where it is and try again next launch
+                    // rather than failing startup over profile housekeeping.
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
+            }
+        }
+
+        private static void MergeDirectoryInto(string sourceDir, string destDir)
+        {
+            Directory.CreateDirectory(destDir);
+
+            foreach (string file in Directory.EnumerateFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
+            {
+                string destFile = Path.Combine(destDir, Path.GetFileName(file));
+                if (File.Exists(destFile))
+                {
+                    File.Delete(file);
+                }
+                else
+                {
+                    File.Move(file, destFile);
+                }
+            }
+
+            foreach (string dir in Directory.EnumerateDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly))
+            {
+                MergeDirectoryInto(dir, Path.Combine(destDir, Path.GetFileName(dir)));
+            }
+
+            if (!Directory.EnumerateFileSystemEntries(sourceDir).Any())
+            {
+                Directory.Delete(sourceDir);
+            }
+        }
+
         public bool CheckAndCopyExampleProfiles()
         {
             bool result = true;
@@ -167,7 +255,7 @@ namespace DS4MapperTest
                 foreach(string devTemplateFolder in checkFoldersList)
                 {
                     string exampleDevProfilesPath = Path.Combine(exedirpath, TEMPLATE_PROFILES_DIRNAME, devTemplateFolder);
-                    string destDevProfilePath = Path.Combine(appdatapath, PROFILES_FOLDER_NAME, devTemplateFolder);
+                    string destDevProfilePath = Path.Combine(legacyProfilesPath, devTemplateFolder);
                     if (Directory.Exists(destDevProfilePath))
                     {
                         Directory.CreateDirectory(Path.Combine(destDevProfilePath, ProfileList.DEFAULT_PROFILE_FOLDER));
@@ -294,14 +382,14 @@ namespace DS4MapperTest
 
         public void LoadAppSettings()
         {
-            string configPath = Path.Combine(appdatapath, APP_SETTINGS_FILENAME);
+            string configPath = ConfigPath;
             appSettings = new AppSettingsStore(configPath);
             appSettings.LoadConfig();
         }
 
         public void CreateAppSettings()
         {
-            string configPath = Path.Combine(appdatapath, APP_SETTINGS_FILENAME);
+            string configPath = ConfigPath;
             appSettings = new AppSettingsStore(configPath);
             appSettings.SaveConfig();
         }
@@ -809,35 +897,10 @@ namespace DS4MapperTest
 
         public string GetDeviceProfileFolderLocation(InputDeviceType deviceType)
         {
-            string result = string.Empty;
-            switch (deviceType)
-            {
-                case InputDeviceType.SteamController:
-                    result = Path.Combine(baseProfilesPath, STEAM_CONTROLLER_PROFILE_DIR);
-                    break;
-                case InputDeviceType.SteamControllerTriton:
-                    result = Path.Combine(baseProfilesPath, STEAM_CONTROLLER_TRITON_PROFILE_DIR);
-                    break;
-                case InputDeviceType.DS4:
-                    result = Path.Combine(baseProfilesPath, DS4_PROFILE_DIR);
-                    break;
-                case InputDeviceType.DualSense:
-                    result = Path.Combine(baseProfilesPath, DUALSENSE_PROFILE_DIR);
-                    break;
-                case InputDeviceType.SwitchPro:
-                    result = Path.Combine(baseProfilesPath, SWITCH_PRO_PROFILE_DIR);
-                    break;
-                case InputDeviceType.JoyCon:
-                    result = Path.Combine(baseProfilesPath, JOYCON_PROFILE_DIR);
-                    break;
-                case InputDeviceType.EightBitDoUltimate2Wireless:
-                    result = Path.Combine(baseProfilesPath, EIGHTBITDO_ULT2WIRELESS_PROFILE_DIR);
-                    break;
-                default:
-                    break;
-            }
-
-            return result;
+            string folderName = GetDeviceProfileFolderName(deviceType);
+            return string.IsNullOrEmpty(folderName)
+                ? string.Empty
+                : Path.Combine(legacyProfilesPath, folderName);
         }
 
         private static string GetDeviceProfileFolderName(InputDeviceType deviceType)
@@ -998,5 +1061,12 @@ namespace DS4MapperTest
                 return instance;
             }
         }
+
+#if MAKE_TESTS
+        internal static void SetInstanceForTests(AppGlobalData appGlobal)
+        {
+            instance = appGlobal;
+        }
+#endif
     }
 }
