@@ -20,6 +20,7 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <converters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVis"/>
+        <converters:ProfileEntityNameConverter x:Key="ProfileEntityName"/>
 
         <Style x:Key="PlaceholderCardText" TargetType="TextBlock" BasedOn="{StaticResource JsmccMutedText}">
             <Setter Property="FontStyle" Value="Italic"/>
@@ -292,27 +293,28 @@
                                                VerticalAlignment="Center"
                                                Margin="0,0,10,0"/>
 
+                                    <TextBlock x:Name="profileFolderText"
+                                               FontSize="11"
+                                               FontStyle="Italic"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource JsmccTextMutedBrush}"
+                                               VerticalAlignment="Center"
+                                               Visibility="Collapsed"
+                                               Margin="0,0,8,0"/>
+
+                                    <!-- No GroupStyle here: the combo only ever lists the
+                                         active folder's profiles, so the group header was
+                                         decoration (now the profileFolderText label above),
+                                         and grouping made WPF reflect over ProfileEntity a
+                                         second way. See ProfileEntityNameConverter. -->
                                     <ComboBox x:Name="profileComboBox"
                                               Width="180"
+                                              IsSynchronizedWithCurrentItem="False"
                                               Style="{StaticResource JsmccComboBoxStyle}"
                                               SelectionChanged="ProfileComboBox_SelectionChanged">
-                                        <ComboBox.GroupStyle>
-                                            <GroupStyle>
-                                                <GroupStyle.HeaderTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Name}"
-                                                                   FontSize="11"
-                                                                   FontStyle="Italic"
-                                                                   FontWeight="SemiBold"
-                                                                   Foreground="{DynamicResource JsmccTextMutedBrush}"
-                                                                   Margin="8,6,8,2"/>
-                                                    </DataTemplate>
-                                                </GroupStyle.HeaderTemplate>
-                                            </GroupStyle>
-                                        </ComboBox.GroupStyle>
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding Name}"
+                                                <TextBlock Text="{Binding Converter={StaticResource ProfileEntityName}}"
                                                            TextTrimming="CharacterEllipsis"
                                                            VerticalAlignment="Center"/>
                                             </DataTemplate>
@@ -1374,46 +1376,56 @@
                                                                Foreground="{DynamicResource JsmccTextMutedBrush}"
                                                                Margin="2,4"/>
                                                 </Expander.Header>
-                                                <ListBox ItemsSource="{Binding Profiles}"
-                                                         SelectionChanged="ProfileListBox_SelectionChanged"
-                                                         Loaded="ProfileGroupListBox_Loaded"
-                                                         Background="{DynamicResource JsmccBgInputBrush}"
-                                                         BorderThickness="0"
-                                                         Foreground="{DynamicResource JsmccTextStrongBrush}">
-                                                    <ListBox.ItemContainerStyle>
-                                                        <Style TargetType="ListBoxItem">
-                                                            <Setter Property="Padding" Value="10,8"/>
-                                                            <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
-                                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                                        </Style>
-                                                    </ListBox.ItemContainerStyle>
-                                                    <ListBox.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="*"
-                                                                           Foreground="{DynamicResource JsmccAccentBrush}"
-                                                                           FontSize="13"
-                                                                           VerticalAlignment="Center"
-                                                                           Margin="0,0,8,0">
-                                                                    <TextBlock.Style>
-                                                                        <Style TargetType="TextBlock">
-                                                                            <Setter Property="Visibility" Value="Hidden"/>
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </TextBlock.Style>
-                                                                </TextBlock>
-                                                                <TextBlock Text="{Binding Name}"
-                                                                           Foreground="{DynamicResource JsmccTextStrongBrush}"
-                                                                           VerticalAlignment="Center"
-                                                                           FontSize="13"/>
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </ListBox.ItemTemplate>
-                                                </ListBox>
+                                                <Grid>
+                                                    <!-- Folders are listed even while empty, so give a
+                                                         newly created one something to show. -->
+                                                    <TextBlock Text="No profiles in this folder yet"
+                                                               Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"
+                                                               FontSize="12"
+                                                               FontStyle="Italic"
+                                                               Foreground="{DynamicResource JsmccTextMutedBrush}"
+                                                               Margin="10,8"/>
+                                                    <ListBox ItemsSource="{Binding Profiles}"
+                                                             SelectionChanged="ProfileListBox_SelectionChanged"
+                                                             Loaded="ProfileGroupListBox_Loaded"
+                                                             Background="Transparent"
+                                                             BorderThickness="0"
+                                                             Foreground="{DynamicResource JsmccTextStrongBrush}">
+                                                        <ListBox.ItemContainerStyle>
+                                                            <Style TargetType="ListBoxItem">
+                                                                <Setter Property="Padding" Value="10,8"/>
+                                                                <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
+                                                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                            </Style>
+                                                        </ListBox.ItemContainerStyle>
+                                                        <ListBox.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="*"
+                                                                               Foreground="{DynamicResource JsmccAccentBrush}"
+                                                                               FontSize="13"
+                                                                               VerticalAlignment="Center"
+                                                                               Margin="0,0,8,0">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Visibility" Value="Hidden"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                    <TextBlock Text="{Binding Name}"
+                                                                               Foreground="{DynamicResource JsmccTextStrongBrush}"
+                                                                               VerticalAlignment="Center"
+                                                                               FontSize="13"/>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ListBox.ItemTemplate>
+                                                    </ListBox>
+                                                </Grid>
                                             </Expander>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
