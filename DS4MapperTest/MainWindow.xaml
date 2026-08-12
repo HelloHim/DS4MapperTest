@@ -378,6 +378,14 @@
                                     VerticalAlignment="Center"
                                     ToolTip="Configure global controller mouse-output routing"
                                     Style="{StaticResource JsmccButtonStyle}"/>
+
+                                <Button x:Name="sdlDiagnosticsButton"
+                                        Content="SDL Diagnostics"
+                                        Click="SdlDiagnosticsButton_Click"
+                                        Margin="12,4,0,4"
+                                        VerticalAlignment="Center"
+                                        ToolTip="Inspect SDL3 controller discovery and raw input without driving mappings"
+                                        Style="{StaticResource JsmccButtonStyle}"/>
                             </WrapPanel>
 
                             <TextBlock x:Name="gyroCalibrationStatusText"

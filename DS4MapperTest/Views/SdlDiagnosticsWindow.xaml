@@ -1,0 +1,199 @@
+<Window x:Class="DS4MapperTest.Views.SdlDiagnosticsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:DS4MapperTest.Converters"
+        mc:Ignorable="d"
+        Title="SDL3 Diagnostics"
+        Height="720"
+        Width="1040"
+        MinHeight="560"
+        MinWidth="820"
+        Background="{DynamicResource JsmccBg0Brush}">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVis"/>
+        <Style x:Key="DiagnosticLabel" TargetType="TextBlock" BasedOn="{StaticResource JsmccLabelText}">
+            <Setter Property="Width" Value="130"/>
+            <Setter Property="Margin" Value="0,0,10,4"/>
+        </Style>
+        <Style x:Key="DiagnosticValue" TargetType="TextBlock" BasedOn="{StaticResource JsmccBodyText}">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Margin="0,0,0,12">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="Capture"
+                        Click="CaptureButton_Click"
+                        Style="{StaticResource JsmccButtonStyle}"
+                        Margin="0,0,8,0"/>
+                <Button Content="Refresh"
+                        Click="RefreshButton_Click"
+                        Style="{StaticResource JsmccButtonStyle}"/>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="SDL3 Diagnostics" Style="{StaticResource JsmccPageTitle}"/>
+                <TextBlock Text="{Binding StatusText}" Style="{StaticResource JsmccMutedText}"/>
+            </StackPanel>
+        </DockPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource JsmccPanelBorder}" Padding="12">
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Top"
+                               Text="Devices"
+                               Style="{StaticResource JsmccSectionTitle}"
+                               Margin="0,0,0,8"/>
+                    <ListBox ItemsSource="{Binding Devices}"
+                             SelectedItem="{Binding SelectedDevice, Mode=TwoWay}"
+                             Background="{DynamicResource JsmccBgInputBrush}"
+                             BorderBrush="{DynamicResource JsmccBorderBrush}"
+                             Foreground="{DynamicResource JsmccTextStrongBrush}"
+                             DisplayMemberPath="DisplayName"/>
+                </DockPanel>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource JsmccPanelBorder}" Padding="12">
+                <Grid>
+                    <TextBlock Text="No SDL gamepad selected"
+                               Style="{StaticResource JsmccBodyText}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Visibility="{Binding HasSelectedDevice, Converter={StaticResource InvertBoolToVis}}"/>
+
+                    <TabControl Style="{StaticResource JsmccPillTabControlStyle}"
+                                Visibility="{Binding HasSelectedDevice, Converter={StaticResource BoolToVis}}">
+                        <TabItem Header="Identity">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="0,8,0,0">
+                                    <DockPanel><TextBlock Text="Name" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.Name}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="Connected" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Connected}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="Instance ID" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.InstanceId}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="GUID" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.Guid}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="VID" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.VendorId}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="PID" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.ProductId}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="Product Version" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.ProductVersion}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="Serial" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.SerialNumber}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="Connection" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.ConnectionType}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="Player Index" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.PlayerIndex}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="Mapped Gamepad" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.IsMappedGamepad}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="Best-effort Key" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.BestEffortPersistentKey}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="Mapping" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.MappingName}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <DockPanel><TextBlock Text="Path" Style="{StaticResource DiagnosticLabel}"/><TextBlock Text="{Binding SelectedDevice.Info.DevicePath}" Style="{StaticResource DiagnosticValue}"/></DockPanel>
+                                    <TextBlock Text="{Binding SelectedDevice.Info.IdentityNotes}" Style="{StaticResource JsmccMutedText}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="Buttons">
+                            <DataGrid ItemsSource="{Binding SelectedDevice.Info.Buttons}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Index" Binding="{Binding Index}" Width="70"/>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                                    <DataGridCheckBoxColumn Header="Supported" Binding="{Binding Supported}" Width="100"/>
+                                    <DataGridCheckBoxColumn Header="Pressed" Binding="{Binding Pressed}" Width="90"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+
+                        <TabItem Header="Axes">
+                            <DataGrid ItemsSource="{Binding SelectedDevice.Info.Axes}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Index" Binding="{Binding Index}" Width="70"/>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                                    <DataGridCheckBoxColumn Header="Supported" Binding="{Binding Supported}" Width="100"/>
+                                    <DataGridTextColumn Header="Raw" Binding="{Binding RawValue}" Width="100"/>
+                                    <DataGridTextColumn Header="Normalised" Binding="{Binding NormalizedValue, StringFormat=F4}" Width="110"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+
+                        <TabItem Header="Touchpads">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding SelectedDevice.Info.Touchpads}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource JsmccCardBorder}">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding TouchpadIndex, StringFormat=Touchpad {0}}" Style="{StaticResource JsmccSectionTitle}"/>
+                                                    <TextBlock Text="{Binding FingerCapacity, StringFormat=Finger capacity: {0}}" Style="{StaticResource JsmccMutedText}" Margin="0,2,0,8"/>
+                                                    <DataGrid ItemsSource="{Binding Fingers}" AutoGenerateColumns="False" IsReadOnly="True">
+                                                        <DataGrid.Columns>
+                                                            <DataGridTextColumn Header="Finger" Binding="{Binding FingerIndex}" Width="80"/>
+                                                            <DataGridCheckBoxColumn Header="Active" Binding="{Binding Active}" Width="80"/>
+                                                            <DataGridTextColumn Header="X" Binding="{Binding X, StringFormat=F4}" Width="100"/>
+                                                            <DataGridTextColumn Header="Y" Binding="{Binding Y, StringFormat=F4}" Width="100"/>
+                                                            <DataGridTextColumn Header="Pressure" Binding="{Binding Pressure, StringFormat=F4}" Width="100"/>
+                                                            <DataGridTextColumn Header="Error" Binding="{Binding LastError}" Width="*"/>
+                                                        </DataGrid.Columns>
+                                                    </DataGrid>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="Sensors">
+                            <DataGrid ItemsSource="{Binding SelectedDevice.Info.Sensors}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Sensor" Binding="{Binding Name}" Width="100"/>
+                                    <DataGridCheckBoxColumn Header="Supported" Binding="{Binding Supported}" Width="100"/>
+                                    <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled}" Width="90"/>
+                                    <DataGridTextColumn Header="Rate Hz" Binding="{Binding DataRateHz}" Width="90"/>
+                                    <DataGridTextColumn Header="Units" Binding="{Binding Units}" Width="90"/>
+                                    <DataGridTextColumn Header="Values" Binding="{Binding ValuesText}" Width="*"/>
+                                    <DataGridTextColumn Header="Error" Binding="{Binding LastError}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+
+                        <TabItem Header="Events">
+                            <ListBox ItemsSource="{Binding Events}"
+                                     Background="{DynamicResource JsmccBgInputBrush}"
+                                     BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                     Foreground="{DynamicResource JsmccTextStrongBrush}"/>
+                        </TabItem>
+
+                        <TabItem Header="Errors">
+                            <ListBox ItemsSource="{Binding Errors}"
+                                     Background="{DynamicResource JsmccBgInputBrush}"
+                                     BorderBrush="{DynamicResource JsmccBorderBrush}"
+                                     Foreground="{DynamicResource JsmccTextStrongBrush}"/>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <TextBlock Grid.Row="2"
+                   Text="{Binding LastCapturePath}"
+                   Style="{StaticResource JsmccMutedText}"
+                   TextWrapping="Wrap"
+                   Margin="0,10,0,0"/>
+    </Grid>
+</Window>

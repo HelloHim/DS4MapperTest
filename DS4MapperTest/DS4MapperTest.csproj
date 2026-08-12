@@ -65,6 +65,8 @@
     <PackageReference Include="HandyControl" Version="3.5.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.3" />
+    <PackageReference Include="SDL3-CS" Version="3.4.14.1" />
+    <PackageReference Include="SDL3-CS.Windows" Version="3.4.14.1" />
     <PackageReference Include="WpfScreenHelper" Version="2.1.1" />
   </ItemGroup>
 
@@ -94,6 +96,24 @@
   <Target Name="RemoveLegacyTemplateProfilesOutput" AfterTargets="Build">
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Remove-Item -LiteralPath '$(TargetDir)template_profiles' -Recurse -Force -ErrorAction SilentlyContinue&quot;"
           Condition="Exists('$(TargetDir)template_profiles')" />
+  </Target>
+
+  <PropertyGroup>
+    <Sdl3WindowsNativePath>$(NuGetPackageRoot)sdl3-cs.windows\3.4.14.1\runtimes\win-x64\native\SDL3.dll</Sdl3WindowsNativePath>
+  </PropertyGroup>
+
+  <Target Name="CopySdl3WindowsNativeLibrary" AfterTargets="Build"
+          Condition="'$(Platform)' == 'x64' and Exists('$(Sdl3WindowsNativePath)')">
+    <Copy SourceFiles="$(Sdl3WindowsNativePath)"
+          DestinationFolder="$(TargetDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopySdl3WindowsNativeLibraryOnPublish" AfterTargets="Publish"
+          Condition="'$(Platform)' == 'x64' and '$(PublishDir)' != '' and Exists('$(Sdl3WindowsNativePath)')">
+    <Copy SourceFiles="$(Sdl3WindowsNativePath)"
+          DestinationFolder="$(PublishDir)"
+          SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

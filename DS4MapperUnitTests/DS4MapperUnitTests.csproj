@@ -26,4 +26,15 @@
     <ProjectReference Include="..\DS4MapperTest\DS4MapperTest.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <Sdl3WindowsNativePath>$(NuGetPackageRoot)sdl3-cs.windows\3.4.14.1\runtimes\win-x64\native\SDL3.dll</Sdl3WindowsNativePath>
+  </PropertyGroup>
+
+  <Target Name="CopySdl3WindowsNativeLibrary" AfterTargets="Build"
+          Condition="'$(Platform)' == 'x64' and Exists('$(Sdl3WindowsNativePath)')">
+    <Copy SourceFiles="$(Sdl3WindowsNativePath)"
+          DestinationFolder="$(TargetDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>
