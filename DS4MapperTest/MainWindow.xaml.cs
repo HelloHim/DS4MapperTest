@@ -42,7 +42,7 @@ namespace DS4MapperTest
         private NewProfileCreateViewModel overlayNewProfileVM;
         private bool suppressSelectedProfileFolderCombo;
         private bool suppressFolderManageStatusHide;
-        private List<ProfileEntity> profileComboProfiles = new List<ProfileEntity>();
+        private readonly ObservableCollection<ProfileEntity> profileComboProfiles = new ObservableCollection<ProfileEntity>();
 
         private IntPtr regHandle = new IntPtr();
         private const int DBT_DEVICEARRIVAL = 0x8000;
@@ -679,24 +679,35 @@ namespace DS4MapperTest
                 : null;
             string activeFolderName = activeProfile?.FolderName ?? string.Empty;
 
-            profileComboProfiles = currentDeviceItem.DevProfileList
+            List<ProfileEntity> updatedProfiles = currentDeviceItem.DevProfileList
                 .Where(profile => string.Equals(profile.FolderName, activeFolderName, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            // Clearing ItemsSource while SelectedItem still points at a (possibly
-            // now-removed, e.g. just-deleted) profile trips a WPF-internal bug in
-            // ComboBox.UpdateSelectionBoxItem ("Object type ProfileEntity does not
-            // match target type MS.Internal.NamedObject"). That exception was
-            // getting swallowed by the app's global handler, aborting this method
-            // before RefreshProfileList() ran, so a deleted profile stayed visible
-            // until a second delete attempt happened to avoid the same race.
-            // Dropping the selection first leaves nothing stale to reconcile.
-            profileComboBox.SelectedItem = null;
-            profileComboBox.ItemsSource = null;
-            Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
-            profileComboBox.ItemsSource = profileComboProfiles;
-            ICollectionView view = CollectionViewSource.GetDefaultView(profileComboBox.ItemsSource);
-            view?.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProfileEntity.FolderName)));
+            // Nulling ItemsSource and reassigning it (even after clearing
+            // SelectedItem first) trips a WPF-internal bug in grouped
+            // ComboBox.UpdateSelectionBoxItem ("Object type ProfileEntity does
+            // not match target type MS.Internal.NamedObject") whenever that
+            // transition races the ComboBox's own layout/group update. That
+            // exception aborted this method before RefreshProfileList() ran,
+            // so e.g. a just-deleted profile stayed visible until a second
+            // delete attempt, and Reset Default Profiles surfaced it directly
+            // as a failure dialog. Bind the ComboBox to one persistent
+            // collection for its whole lifetime instead and just update its
+            // contents in place -- WPF's normal CollectionChanged handling
+            // for a stable ItemsSource never goes through that code path.
+            if (profileComboBox.ItemsSource == null)
+            {
+                profileComboBox.ItemsSource = profileComboProfiles;
+                ICollectionView view = CollectionViewSource.GetDefaultView(profileComboProfiles);
+                view?.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProfileEntity.FolderName)));
+            }
+
+            profileComboProfiles.Clear();
+            foreach (ProfileEntity profile in updatedProfiles)
+            {
+                profileComboProfiles.Add(profile);
+            }
+
             profileComboBox.SelectedItem = activeProfile;
             suppressCombo = false;
         }
