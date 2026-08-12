@@ -1124,12 +1124,13 @@ namespace DS4MapperTest
             suppressSelectedProfileFolderCombo = false;
             selectedProfilePanel.Visibility = Visibility.Visible;
 
-            // Jump the whole manage-profiles panel to the bottom once a
-            // profile is picked, so Load This Profile/Delete are visible
-            // immediately instead of requiring a manual scroll to find them.
-            // Deferred to Loaded priority so layout has already accounted
-            // for selectedProfilePanel becoming visible before we scroll.
-            Dispatcher.BeginInvoke(new Action(() => profilesOverlayScrollViewer.ScrollToBottom()),
+            // Scroll just far enough that Name/Folder/Delete/Load This Profile are
+            // fully in view once a profile is picked, rather than always jumping to
+            // the very bottom of the overlay (which now has the collapsible Folders
+            // panel below this one). BringIntoView is a no-op when the panel is
+            // already fully visible. Deferred to Loaded priority so layout has
+            // already accounted for selectedProfilePanel becoming visible first.
+            Dispatcher.BeginInvoke(new Action(() => selectedProfilePanel.BringIntoView()),
                 DispatcherPriority.Loaded);
         }
 
@@ -1227,18 +1228,21 @@ namespace DS4MapperTest
         {
             if (currentDeviceItem == null) return;
             RefreshProfileList();
+            HideManageFoldersPanel();
             profilesOverlay.Visibility = Visibility.Visible;
         }
 
         private void CloseProfileOverlay_Click(object sender, RoutedEventArgs e)
         {
             HideNewProfilePanel();
+            HideManageFoldersPanel();
             profilesOverlay.Visibility = Visibility.Collapsed;
         }
 
         private void ProfilesOverlayBackdrop_MouseDown(object sender, MouseButtonEventArgs e)
         {
             HideNewProfilePanel();
+            HideManageFoldersPanel();
             profilesOverlay.Visibility = Visibility.Collapsed;
         }
 
@@ -1247,14 +1251,45 @@ namespace DS4MapperTest
             if (e.Key == Key.Escape && profilesOverlay.Visibility == Visibility.Visible)
             {
                 HideNewProfilePanel();
+                HideManageFoldersPanel();
                 profilesOverlay.Visibility = Visibility.Collapsed;
                 e.Handled = true;
             }
         }
 
+        private void ManageFoldersBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentDeviceItem == null) return;
+
+            if (manageFoldersPanel.Visibility == Visibility.Visible)
+            {
+                HideManageFoldersPanel();
+                return;
+            }
+
+            RefreshFolderManagementControls();
+            manageFoldersPanel.Visibility = Visibility.Visible;
+        }
+
+        private void CloseManageFoldersBtn_Click(object sender, RoutedEventArgs e)
+        {
+            HideManageFoldersPanel();
+        }
+
+        private void HideManageFoldersPanel()
+        {
+            manageFoldersPanel.Visibility = Visibility.Collapsed;
+        }
+
         private void NewProfileBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null || editorTestVM == null) return;
+
+            if (newProfilePanel.Visibility == Visibility.Visible)
+            {
+                HideNewProfilePanel();
+                return;
+            }
 
             BackendManager manager = (App.Current as App).Manager;
             Mapper mapper = editorTestVM.DeviceMapper;
