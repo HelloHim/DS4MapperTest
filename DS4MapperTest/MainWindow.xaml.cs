@@ -41,6 +41,7 @@ namespace DS4MapperTest
         private ProfileListEntry selectedListEntry;
         private NewProfileCreateViewModel overlayNewProfileVM;
         private bool suppressSelectedProfileFolderCombo;
+        private bool suppressProfileListSelection;
         private bool suppressFolderManageStatusHide;
         private readonly ObservableCollection<ProfileEntity> profileComboProfiles = new ObservableCollection<ProfileEntity>();
         // Names as they were last pushed into the combo. The items themselves are
@@ -1225,21 +1226,26 @@ namespace DS4MapperTest
 
         private void ProfileListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (suppressProfileListSelection) return;
             if (sender is not ListBox selectedListBox) return;
 
-            selectedListEntry = selectedListBox.SelectedItem as ProfileListEntry;
+            // Hold the entry locally. Anything below that clears another folder's
+            // list re-enters this handler, and reading the field again afterwards
+            // would pick up that nested call's state instead of this click's.
+            ProfileListEntry clickedEntry = selectedListBox.SelectedItem as ProfileListEntry;
+            selectedListEntry = clickedEntry;
             HideDeleteActiveProfileWarning();
-            if (selectedListEntry == null)
+            if (clickedEntry == null)
             {
                 selectedProfilePanel.Visibility = Visibility.Collapsed;
                 return;
             }
 
             ClearOtherProfileListSelections(profileListBox, selectedListBox);
-            profileRenameBox.Text = selectedListEntry.Name;
+            profileRenameBox.Text = clickedEntry.Name;
             suppressSelectedProfileFolderCombo = true;
             selectedProfileFolderComboBox.ItemsSource = GetProfileFolderSnapshot();
-            selectedProfileFolderComboBox.SelectedItem = selectedListEntry.FolderName;
+            selectedProfileFolderComboBox.SelectedItem = clickedEntry.FolderName;
             suppressSelectedProfileFolderCombo = false;
             selectedProfilePanel.Visibility = Visibility.Visible;
 
@@ -1255,6 +1261,26 @@ namespace DS4MapperTest
 
         private void ClearOtherProfileListSelections(DependencyObject root, ListBox selectedListBox)
         {
+            // Each folder in the browser has its own list, so picking a profile in
+            // one folder has to drop the selection in the others. Those lists raise
+            // SelectionChanged as they are cleared, which reads as the user
+            // deselecting and would tear down the panel this click is setting up.
+            // The list being clicked is never touched here, so suppressing the
+            // handler for the duration only silences the clearing.
+            bool wasSuppressed = suppressProfileListSelection;
+            suppressProfileListSelection = true;
+            try
+            {
+                ClearOtherProfileListSelectionsCore(root, selectedListBox);
+            }
+            finally
+            {
+                suppressProfileListSelection = wasSuppressed;
+            }
+        }
+
+        private void ClearOtherProfileListSelectionsCore(DependencyObject root, ListBox selectedListBox)
+        {
             int childCount = VisualTreeHelper.GetChildrenCount(root);
             for (int childIndex = 0; childIndex < childCount; childIndex++)
             {
@@ -1264,7 +1290,7 @@ namespace DS4MapperTest
                     listBox.SelectedItem = null;
                 }
 
-                ClearOtherProfileListSelections(child, selectedListBox);
+                ClearOtherProfileListSelectionsCore(child, selectedListBox);
             }
         }
 
