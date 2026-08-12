@@ -17,6 +17,7 @@ namespace DS4MapperTest.SteamControllerLibrary
         ushort? ProductId { get; }
         bool IsConnected { get; }
         bool OwnsReader { get; }
+        int? BatteryPercent { get; }
         SteamControllerState ReadState();
     }
 
@@ -36,6 +37,7 @@ namespace DS4MapperTest.SteamControllerLibrary
         public ushort? ProductId => device.HidDevice == null ? null : (ushort?)device.HidDevice.Attributes.ProductId;
         public bool IsConnected => device.Synced;
         public bool OwnsReader => false;
+        public int? BatteryPercent => device.Battery <= 100 ? (int?)device.Battery : null;
 
         public SteamControllerDeviceStateSource(SteamControllerDevice device)
         {
@@ -70,6 +72,7 @@ namespace DS4MapperTest.SteamControllerLibrary
         public ushort? ProductId => device.HidDevice == null ? null : (ushort?)device.HidDevice.Attributes.ProductId;
         public bool IsConnected => device.Synced;
         public bool OwnsReader => true;
+        public int? BatteryPercent => device.Battery <= 100 ? (int?)device.Battery : null;
 
         public SteamControllerReaderStateSource(SteamControllerDevice device)
         {
@@ -104,6 +107,7 @@ namespace DS4MapperTest.SteamControllerLibrary
         public ControllerCapabilities Capabilities { get; }
         public ControllerDisplayInfo DisplayInfo => Capabilities.DisplayInfo;
         public UniversalControllerStateSnapshot State => state;
+        public int? BatteryPercent => source.BatteryPercent;
 
         public SteamControllerUniversalController(
             ISteamControllerNativeStateSource source,

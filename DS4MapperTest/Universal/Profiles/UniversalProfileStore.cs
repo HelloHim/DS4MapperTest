@@ -25,6 +25,7 @@ namespace DS4MapperTest.Universal.Profiles
     {
         public const string ProfileFileExtension = ".universal-profile.json";
         private const string TempExtension = ".tmp";
+        private const int MaxSafeFileBaseLength = 120;
         private readonly string rootPath;
 
         public UniversalProfileStore(string rootPath)
@@ -52,6 +53,11 @@ namespace DS4MapperTest.Universal.Profiles
             }
 
             return Path.Combine(rootPath, $"{profileId:D}{ProfileFileExtension}");
+        }
+
+        public string GetNamedProfilePath(string displayName)
+        {
+            return Path.Combine(rootPath, BuildSafeFileName(displayName));
         }
 
         public string ResolveRelativeProfilePath(string fileName)
@@ -88,9 +94,71 @@ namespace DS4MapperTest.Universal.Profiles
 
         public void Save(UniversalProfile profile)
         {
+            SaveToPath(profile, GetProfilePath(profile.ProfileId));
+        }
+
+        public void SaveNamed(UniversalProfile profile, string previousPath = null)
+        {
+            if (profile == null) throw new ArgumentNullException(nameof(profile));
+
+            Directory.CreateDirectory(rootPath);
+            string targetPath = GetNamedProfilePath(profile.DisplayName);
+            UniversalProfileStoreEntry collision = EnumerateProfiles().FirstOrDefault(item =>
+                item.Loaded &&
+                item.Profile.ProfileId != profile.ProfileId &&
+                (string.Equals(item.Profile.DisplayName, profile.DisplayName, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(Path.GetFileName(item.Path), Path.GetFileName(targetPath), StringComparison.OrdinalIgnoreCase)));
+            if (collision != null)
+            {
+                throw new InvalidOperationException($"A universal profile named \"{profile.DisplayName}\" already exists.");
+            }
+
+            SaveToPath(profile, targetPath);
+
+            if (!string.IsNullOrWhiteSpace(previousPath) &&
+                !string.Equals(Path.GetFullPath(previousPath), targetPath, StringComparison.OrdinalIgnoreCase) &&
+                File.Exists(previousPath))
+            {
+                File.Delete(previousPath);
+            }
+        }
+
+        public void Delete(string profilePath)
+        {
+            string fullPath = EnsurePathInsideRoot(profilePath);
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+            }
+        }
+
+        public UniversalProfile LoadFromPath(string profilePath)
+        {
+            return UniversalProfileSerializer.Deserialize(File.ReadAllText(EnsurePathInsideRoot(profilePath)));
+        }
+
+        public string FindProfilePath(Guid profileId)
+        {
+            string legacyPath = GetProfilePath(profileId);
+            if (File.Exists(legacyPath)) return legacyPath;
+
+            return EnumerateProfiles()
+                .FirstOrDefault(item => item.Loaded && item.Profile.ProfileId == profileId)
+                ?.Path;
+        }
+
+        private void SaveToPath(UniversalProfile profile, string targetPath)
+        {
+            if (profile == null) throw new ArgumentNullException(nameof(profile));
+            UniversalProfileValidationResult validation = UniversalProfileValidator.Validate(profile);
+            if (!validation.IsValid)
+            {
+                throw new UniversalProfileValidationException(validation);
+            }
+
             string json = UniversalProfileSerializer.Serialize(profile);
             Directory.CreateDirectory(rootPath);
-            string targetPath = GetProfilePath(profile.ProfileId);
+            targetPath = EnsurePathInsideRoot(targetPath);
             string tempPath = Path.Combine(rootPath, $".{profile.ProfileId:D}.{Guid.NewGuid():N}{TempExtension}");
             try
             {
@@ -131,7 +199,8 @@ namespace DS4MapperTest.Universal.Profiles
 
         public UniversalProfile Load(Guid profileId)
         {
-            return UniversalProfileSerializer.Deserialize(File.ReadAllText(GetProfilePath(profileId)));
+            string path = FindProfilePath(profileId) ?? GetProfilePath(profileId);
+            return UniversalProfileSerializer.Deserialize(File.ReadAllText(path));
         }
 
         public IReadOnlyList<UniversalProfileStoreEntry> EnumerateProfiles()
@@ -178,6 +247,60 @@ namespace DS4MapperTest.Universal.Profiles
             };
 
             return reserved.Any(item => string.Equals(item, name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static string BuildSafeFileName(string displayName)
+        {
+            string baseName = (displayName ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(baseName))
+            {
+                baseName = "Profile";
+            }
+
+            foreach (char c in Path.GetInvalidFileNameChars().Concat(new[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' }).Distinct())
+            {
+                baseName = baseName.Replace(c, '_');
+            }
+
+            baseName = baseName.Trim().TrimEnd('.');
+            while (baseName.Contains("__"))
+            {
+                baseName = baseName.Replace("__", "_");
+            }
+
+            if (string.IsNullOrWhiteSpace(baseName))
+            {
+                baseName = "Profile";
+            }
+
+            if (IsReservedWindowsName(baseName))
+            {
+                baseName = "_" + baseName;
+            }
+
+            if (baseName.Length > MaxSafeFileBaseLength)
+            {
+                baseName = baseName.Substring(0, MaxSafeFileBaseLength).TrimEnd(' ', '.');
+            }
+
+            return baseName + ProfileFileExtension;
+        }
+
+        private string EnsurePathInsideRoot(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException("Profile path cannot be empty.", nameof(path));
+            }
+
+            string fullPath = Path.GetFullPath(path);
+            string fullRoot = EnsureTrailingSeparator(rootPath);
+            if (!fullPath.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Profile path resolves outside the universal profile root.", nameof(path));
+            }
+
+            return fullPath;
         }
     }
 }

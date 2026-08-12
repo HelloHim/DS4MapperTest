@@ -41,8 +41,8 @@ namespace DS4MapperTest.ViewModels
 
         // The original Steam Controller registers its single stick as "Stick";
         // every other mapper uses "LS"/"RS"
-        private static readonly string[] leftStickAliases = new string[] { "LS", "Stick" };
-        private static readonly string[] rightStickAliases = new string[] { "RS" };
+        private static readonly string[] leftStickAliases = new string[] { "LS", "Stick", "LeftStick" };
+        private static readonly string[] rightStickAliases = new string[] { "RS", "RightStick" };
 
         private readonly ProfileEditorTestViewModel owner;
         private readonly string side;
@@ -69,6 +69,8 @@ namespace DS4MapperTest.ViewModels
 
         public ObservableCollection<FaceButtonBindingItem> TouchBindingItems =>
             side == "LS" ? owner.LeftStickTouchBinding : owner.RightStickTouchBinding;
+
+        public bool HasTouchBindings => TouchBindingItems.Count > 0;
 
         public StickBindingItemsTest BindingItem
         {
@@ -162,6 +164,8 @@ namespace DS4MapperTest.ViewModels
 
             OnPropertyChanged(nameof(HasBinding));
             OnPropertyChanged(nameof(ClickBindingItems));
+            OnPropertyChanged(nameof(HasTouchBindings));
+            OnPropertyChanged(nameof(TouchBindingItems));
         }
 
         private static int ResolveModeIndex(StickMapAction action)

@@ -28,6 +28,7 @@ namespace DS4MapperTest
         private MouseOutputDestination triggerMouseDestination = MouseOutputDestination.FakerInputMouse;
         private MouseOutputDestination otherMouseDestination = MouseOutputDestination.FakerInputMouse;
         private MouseOutputDestination absoluteMouseDestination = MouseOutputDestination.FakerInputMouse;
+        private bool nintendoFaceButtonSwapEnabled = false;
 
         public int ConfigVersion
         {
@@ -111,6 +112,12 @@ namespace DS4MapperTest
             get => absoluteMouseDestination;
             set => absoluteMouseDestination = MouseOutputRoutingPolicy.SanitizeConfiguredDestination(
                 MouseOutputRoute.AbsoluteMouse, value, viiperAbsoluteMouseSupported: false);
+        }
+
+        public bool NintendoFaceButtonSwapEnabled
+        {
+            get => nintendoFaceButtonSwapEnabled;
+            set => nintendoFaceButtonSwapEnabled = value;
         }
 
         public MouseOutputRoutingTable MouseOutputRouting
@@ -277,6 +284,12 @@ namespace DS4MapperTest
         {
             get => MouseOutputRoutingPolicy.SerializeDestination(settings.AbsoluteMouseDestination);
             set => TryApplyDestination(value, destination => settings.AbsoluteMouseDestination = destination);
+        }
+
+        public bool NintendoFaceButtonSwapEnabled
+        {
+            get => settings.NintendoFaceButtonSwapEnabled;
+            set => settings.NintendoFaceButtonSwapEnabled = value;
         }
 
         public AppSettingsSerializer(AppSettingsStore appStore)

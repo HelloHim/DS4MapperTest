@@ -108,6 +108,9 @@ namespace DS4MapperTest.SdlDiagnostics
         public string DevicePath { get; set; } = string.Empty;
         public string ConnectionType { get; set; } = string.Empty;
         public int? PlayerIndex { get; set; }
+        public int? BatteryPercent { get; set; }
+        public string BatteryState { get; set; } = string.Empty;
+        public string BatteryDisplay => BatteryPercent.HasValue ? $"{BatteryPercent.Value}%" : "Unknown";
         public bool IsMappedGamepad { get; set; }
         public string BestEffortPersistentKey { get; set; } = string.Empty;
         public string IdentityNotes { get; set; } = string.Empty;
@@ -168,6 +171,8 @@ namespace DS4MapperTest.SdlDiagnostics
                 DevicePath = source.DevicePath,
                 ConnectionType = source.ConnectionType,
                 PlayerIndex = source.PlayerIndex,
+                BatteryPercent = source.BatteryPercent,
+                BatteryState = source.BatteryState,
                 IsMappedGamepad = source.IsMappedGamepad,
                 BestEffortPersistentKey = source.BestEffortPersistentKey,
                 IdentityNotes = source.IdentityNotes,

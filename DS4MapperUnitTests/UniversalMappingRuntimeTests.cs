@@ -80,6 +80,36 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void UniversalDPadBindingsCompileToClassicDPadControl()
+        {
+            InputBindingMeta dpadBinding = UniversalLegacyBindingMap.CreateBindingList()
+                .Single(item => item.id == "DPad");
+
+            Assert.AreEqual(InputBindingMeta.InputControlType.DPad, dpadBinding.controlType);
+
+            UniversalProfile profile = CreateProfile(
+                "dpad",
+                Binding(UniversalInputId.DPadUp, 1),
+                Binding(UniversalInputId.DPadDown, 1),
+                Binding(UniversalInputId.DPadLeft, 1),
+                Binding(UniversalInputId.DPadRight, 1));
+
+            UniversalCompiledProfile compiled = UniversalProfileRuntimeCompiler.Compile(
+                profile,
+                Capabilities(
+                    UniversalInputId.DPadUp,
+                    UniversalInputId.DPadDown,
+                    UniversalInputId.DPadLeft,
+                    UniversalInputId.DPadRight));
+
+            StringAssert.Contains(compiled.LegacyJson, "\"Input\":\"DPad\"");
+            Assert.AreEqual("DPad", compiled.ActiveBindingIds[UniversalInputId.DPadUp]);
+            Assert.AreEqual("DPad", compiled.ActiveBindingIds[UniversalInputId.DPadDown]);
+            Assert.AreEqual("DPad", compiled.ActiveBindingIds[UniversalInputId.DPadLeft]);
+            Assert.AreEqual("DPad", compiled.ActiveBindingIds[UniversalInputId.DPadRight]);
+        }
+
+        [TestMethod]
         public void MapperProcessesPressHoldReleaseOnce()
         {
             UniversalController controller = CreateController(
@@ -272,6 +302,31 @@ namespace DS4MapperUnitTests
             session.SwitchProfile(CreateProfile("new", Binding(UniversalInputId.FaceButtonEast, 1)));
 
             Assert.AreEqual(0, TestMapper.KeyReferenceCountDict.Count);
+        }
+
+        [TestMethod]
+        public void SessionActiveProfileReflectsWhatTheSelectorChoseAndAnySwitch()
+        {
+            // Backs profile-selection UI: the editor reads Session.ActiveProfile to tell
+            // the user which profile is actually live for a connected controller right now.
+            UniversalController controller = CreateController(
+                UniversalControllerBackendIds.Sdl3,
+                "active-profile",
+                false,
+                Capabilities(UniversalInputId.FaceButtonSouth, UniversalInputId.FaceButtonEast));
+            RecordingVirtualKeyboard output = new RecordingVirtualKeyboard();
+            UniversalProfile oldProfile = CreateProfile("old", Binding(UniversalInputId.FaceButtonSouth, 1));
+            using UniversalMapperSession session = new UniversalMapperSession(
+                controller, oldProfile, output, CreateMapping());
+
+            Assert.AreEqual(oldProfile.ProfileId, session.ActiveProfile.ProfileId);
+            Assert.AreEqual("old", session.ActiveProfile.DisplayName);
+
+            UniversalProfile newProfile = CreateProfile("new", Binding(UniversalInputId.FaceButtonEast, 1));
+            session.SwitchProfile(newProfile);
+
+            Assert.AreEqual(newProfile.ProfileId, session.ActiveProfile.ProfileId);
+            Assert.AreEqual("new", session.ActiveProfile.DisplayName);
         }
 
         [TestMethod]

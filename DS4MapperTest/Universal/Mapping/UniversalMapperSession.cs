@@ -30,6 +30,10 @@ namespace DS4MapperTest.Universal.Mapping
         public string BackendSessionId => Controller.Identity.BackendSessionId;
         public bool IsDisposed => disposed;
 
+        // The profile actually compiled and running for this controller right
+        // now, as selected by IUniversalProfileSelector at connect/switch time.
+        public UniversalProfile ActiveProfile => Mapper.CompiledProfile?.SourceProfile;
+
         public void ProcessCurrentState()
         {
             lock (syncRoot)

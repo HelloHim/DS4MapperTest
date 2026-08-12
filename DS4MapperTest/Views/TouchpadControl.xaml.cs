@@ -103,6 +103,21 @@ namespace DS4MapperTest.Views
                     Header = GetTouchpadTabHeader(entry.item, entry.classification.side),
                     Content = content,
                 };
+                ApplyCenterAvailability(tab, content, entry.classification.side, vm);
+                touchpadSideTabs.Add(tab);
+                TabControlRoot.Items.Add(tab);
+            }
+
+            bool hasCenterTab = ordered.Any(entry => entry.classification.side == TouchpadPadSide.Whole);
+            if (!hasCenterTab && vm.HasSupportedTouchpadHardware && !vm.HasCenterTouchpad)
+            {
+                FrameworkElement content = CreateUnavailableCenterTouchpadContent();
+                TabItem tab = new TabItem
+                {
+                    Header = "Center Touchpad",
+                    Content = content,
+                    Opacity = 0.48,
+                };
                 touchpadSideTabs.Add(tab);
                 TabControlRoot.Items.Add(tab);
             }
@@ -137,13 +152,48 @@ namespace DS4MapperTest.Views
             return content;
         }
 
+        private static void ApplyCenterAvailability(TabItem tab, FrameworkElement content,
+            TouchpadPadSide side, ProfileEditorTestViewModel vm)
+        {
+            if (side != TouchpadPadSide.Whole || vm.HasCenterTouchpad)
+            {
+                return;
+            }
+
+            tab.Opacity = 0.48;
+            if (content != null)
+            {
+                content.IsEnabled = false;
+            }
+        }
+
+        private FrameworkElement CreateUnavailableCenterTouchpadContent()
+        {
+            Border border = new Border
+            {
+                IsEnabled = false,
+                Opacity = 0.48,
+                Padding = new Thickness(12),
+                Margin = new Thickness(0, 4, 0, 0),
+            };
+
+            if (TryFindResource("JsmccCardBorder") is Style borderStyle)
+            {
+                border.Style = borderStyle;
+            }
+
+            border.Child = CreateMessage(
+                "Center Touchpad settings only apply to PlayStation-style single-touchpad controllers.");
+            return border;
+        }
+
         private static (int rank, TouchpadPadSide side) ClassifyTouchpadBinding(string bindingName)
         {
             return bindingName switch
             {
-                "Touchpad" => (0, TouchpadPadSide.Whole),
-                "TouchpadLeft" or "LeftTouchpad" => (1, TouchpadPadSide.Left),
-                "TouchpadRight" or "RightTouchpad" => (2, TouchpadPadSide.Right),
+                "Touchpad" or "PrimaryTouchSurface" => (2, TouchpadPadSide.Whole),
+                "TouchpadLeft" or "LeftTouchpad" or "LeftTouchSurface" => (0, TouchpadPadSide.Left),
+                "TouchpadRight" or "RightTouchpad" or "RightTouchSurface" => (1, TouchpadPadSide.Right),
                 _ => (3, TouchpadPadSide.Other),
             };
         }
@@ -413,8 +463,7 @@ namespace DS4MapperTest.Views
                         return propControl;
                     }
                 case TouchpadPassthruAction:
-                    return CreateMessage(
-                        $"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no inline settings.");
+                    return new Border { Visibility = Visibility.Collapsed };
                 default:
                     return CreateMessage($"{item.DisplayName} is set to {item.ActionDisplayName}. This mode has no inline settings.");
             }

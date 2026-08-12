@@ -169,6 +169,23 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void SdlMapsCapsenseButtonsToStickTouchCapabilities()
+        {
+            SdlRawGamepadInfo info = CreateSdlDevice();
+            info.Buttons.Add(new SdlRawButtonState { Name = "LeftStickTouch", Supported = true, Pressed = true });
+            info.Buttons.Add(new SdlRawButtonState { Name = "RightStickCapsense", Supported = true, Pressed = false });
+
+            SdlUniversalStateTranslator translator = new SdlUniversalStateTranslator();
+            ControllerCapabilities capabilities = translator.CreateCapabilities(info);
+            UniversalControllerStateSnapshot state = translator.CreateState(info, capabilities, true, 1, DateTimeOffset.UtcNow);
+
+            Assert.IsTrue(capabilities.Supports(UniversalInputId.LeftStickTouch));
+            Assert.IsTrue(capabilities.Supports(UniversalInputId.RightStickTouch));
+            Assert.IsTrue(state.Values[UniversalInputId.LeftStickTouch].Pressed);
+            Assert.IsFalse(state.Values[UniversalInputId.RightStickTouch].Pressed);
+        }
+
+        [TestMethod]
         public void SdlNormalisesAxesAndPairsSticksWithoutDeadzones()
         {
             SdlRawGamepadInfo info = CreateSdlDevice();
@@ -204,7 +221,7 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void SdlOneTouchpadMapsToPrimaryOnlyAndPreservesContactsAndClick()
+        public void SdlOneTouchpadMapsToPrimaryAndDerivedHalves()
         {
             SdlRawGamepadInfo info = CreateSdlDevice();
             info.Buttons.Add(new SdlRawButtonState { Name = "Touchpad", Supported = true, Pressed = true });
@@ -224,12 +241,103 @@ namespace DS4MapperUnitTests
             UniversalControllerStateSnapshot state = translator.CreateState(info, capabilities, true, 1, DateTimeOffset.UtcNow);
 
             Assert.IsTrue(capabilities.Supports(UniversalInputId.PrimaryTouchSurface));
-            Assert.IsFalse(capabilities.Supports(UniversalInputId.LeftTouchSurface));
-            Assert.IsFalse(capabilities.Supports(UniversalInputId.RightTouchSurface));
+            Assert.IsTrue(capabilities.Supports(UniversalInputId.LeftTouchSurface));
+            Assert.IsTrue(capabilities.Supports(UniversalInputId.RightTouchSurface));
+            Assert.IsTrue(capabilities.Supports(UniversalInputId.LeftTouchSurfaceClick));
+            Assert.IsTrue(capabilities.Supports(UniversalInputId.RightTouchSurfaceClick));
             Assert.IsTrue(state.Values[UniversalInputId.PrimaryTouchSurfaceClick].Pressed);
             Assert.IsTrue(state.Values[UniversalInputId.PrimaryTouchSurface].TouchClickPressed);
             Assert.AreEqual(2, state.Values[UniversalInputId.PrimaryTouchSurface].Contacts.Count);
             Assert.AreEqual(7, state.Values[UniversalInputId.PrimaryTouchSurface].Contacts[0].ContactId);
+            Assert.AreEqual(1, state.Values[UniversalInputId.LeftTouchSurface].Contacts.Count);
+            Assert.AreEqual(7, state.Values[UniversalInputId.LeftTouchSurface].Contacts[0].ContactId);
+            Assert.AreEqual(1, state.Values[UniversalInputId.RightTouchSurface].Contacts.Count);
+            Assert.AreEqual(8, state.Values[UniversalInputId.RightTouchSurface].Contacts[0].ContactId);
+            Assert.IsTrue(state.Values[UniversalInputId.LeftTouchSurfaceClick].Pressed);
+            Assert.IsTrue(state.Values[UniversalInputId.RightTouchSurfaceClick].Pressed);
+        }
+
+        [TestMethod]
+        public void SdlSingleTouchpadHalfClickRequiresTouchOnThatHalf()
+        {
+            SdlRawGamepadInfo info = CreateSdlDevice();
+            info.Buttons.Add(new SdlRawButtonState { Name = "Touchpad", Supported = true, Pressed = true });
+            info.Touchpads.Add(new SdlRawTouchpadState { TouchpadIndex = 0, FingerCapacity = 1 });
+
+            SdlUniversalStateTranslator translator = new SdlUniversalStateTranslator();
+            ControllerCapabilities capabilities = translator.CreateCapabilities(info);
+            UniversalControllerStateSnapshot state = translator.CreateState(info, capabilities, true, 1, DateTimeOffset.UtcNow);
+
+            Assert.IsTrue(state.Values[UniversalInputId.PrimaryTouchSurfaceClick].Pressed);
+            Assert.IsFalse(state.Values[UniversalInputId.LeftTouchSurfaceClick].Pressed);
+            Assert.IsFalse(state.Values[UniversalInputId.RightTouchSurfaceClick].Pressed);
+        }
+
+        [TestMethod]
+        public void NintendoFaceSwapChangesLiveRoutingOnly()
+        {
+            SdlRawGamepadInfo info = CreateSdlDevice();
+            info.Name = "Nintendo Switch Pro Controller";
+            info.Buttons.Add(new SdlRawButtonState { Name = "South", Supported = true, Pressed = true });
+            info.Buttons.Add(new SdlRawButtonState { Name = "East", Supported = true, Pressed = false });
+            info.Buttons.Add(new SdlRawButtonState { Name = "North", Supported = true, Pressed = true });
+            info.Buttons.Add(new SdlRawButtonState { Name = "West", Supported = true, Pressed = false });
+
+            SdlUniversalStateTranslator translator = new SdlUniversalStateTranslator();
+            ControllerCapabilities capabilities = translator.CreateCapabilities(info);
+
+            UniversalLiveInputRoutingOptions.NintendoFaceButtonSwapEnabled = false;
+            UniversalControllerStateSnapshot unswapped = translator.CreateState(info, capabilities, true, 1, DateTimeOffset.UtcNow);
+            Assert.IsTrue(unswapped.Values[UniversalInputId.FaceButtonSouth].Pressed);
+            Assert.IsFalse(unswapped.Values[UniversalInputId.FaceButtonEast].Pressed);
+            Assert.IsFalse(unswapped.Values[UniversalInputId.FaceButtonWest].Pressed);
+            Assert.IsTrue(unswapped.Values[UniversalInputId.FaceButtonNorth].Pressed);
+
+            UniversalLiveInputRoutingOptions.NintendoFaceButtonSwapEnabled = true;
+            try
+            {
+                UniversalControllerStateSnapshot swapped = translator.CreateState(info, capabilities, true, 2, DateTimeOffset.UtcNow);
+                Assert.IsFalse(swapped.Values[UniversalInputId.FaceButtonSouth].Pressed);
+                Assert.IsTrue(swapped.Values[UniversalInputId.FaceButtonEast].Pressed);
+                Assert.IsTrue(swapped.Values[UniversalInputId.FaceButtonWest].Pressed);
+                Assert.IsFalse(swapped.Values[UniversalInputId.FaceButtonNorth].Pressed);
+            }
+            finally
+            {
+                UniversalLiveInputRoutingOptions.NintendoFaceButtonSwapEnabled = false;
+            }
+        }
+
+        [TestMethod]
+        public void SdlBackendSuppressesKnownVirtualOutputControllers()
+        {
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            api.AddDevice(CreateSdlDevice(91));
+            SdlRawGamepadInfo virtualOutput = CreateSdlDevice(92);
+            virtualOutput.Name = "Xbox 360 Controller for Windows";
+            virtualOutput.DevicePath = @"root\vigem\0000";
+            api.AddDevice(virtualOutput);
+            using SdlUniversalControllerBackend backend = new SdlUniversalControllerBackend(api);
+
+            Assert.IsTrue(backend.Start(out string error), error);
+
+            Assert.AreEqual(1, backend.Controllers.Count);
+            Assert.AreEqual("91", backend.Controllers[0].Identity.BackendSessionId);
+            CollectionAssert.Contains(api.ClosedInstances, 92u);
+        }
+
+        [TestMethod]
+        public void SdlBackendPublishesBatteryPercent()
+        {
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            SdlRawGamepadInfo device = CreateSdlDevice(93);
+            device.BatteryPercent = 67;
+            api.AddDevice(device);
+            using SdlUniversalControllerBackend backend = new SdlUniversalControllerBackend(api);
+
+            Assert.IsTrue(backend.Start(out string error), error);
+
+            Assert.AreEqual(67, backend.Controllers[0].BatteryPercent);
         }
 
         [TestMethod]
@@ -436,6 +544,38 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void ManagerOmitsDisconnectedAndSuppressedControllers()
+        {
+            UniversalController connected = (UniversalController)CreateController(
+                UniversalControllerBackendIds.Sdl3, "connected", false);
+            UniversalController disconnected = (UniversalController)CreateController(
+                UniversalControllerBackendIds.Sdl3, "disconnected", false);
+            UniversalController suppressed = (UniversalController)CreateController(
+                UniversalControllerBackendIds.Sdl3, "suppressed", false);
+            disconnected.MarkDisconnected();
+            suppressed.MarkSuppressed();
+
+            FakeUniversalBackend backend = new FakeUniversalBackend(connected, disconnected, suppressed);
+            using UniversalControllerManager manager = new UniversalControllerManager(new[] { backend });
+            manager.Start(out _);
+
+            Assert.AreEqual(1, manager.Controllers.Count);
+            Assert.AreSame(connected, manager.Controllers[0]);
+        }
+
+        [TestMethod]
+        public void KnownVirtualOutputDevicesAreSuppressedBeforeSelection()
+        {
+            SdlRawGamepadInfo info = CreateSdlDevice(vendorId: 0, productId: 0);
+            info.Name = "Xbox 360 Controller for Windows";
+            info.MappingName = "xinput";
+            info.DevicePath = @"usbip\viiper\virtual-xbox";
+
+            Assert.IsTrue(SdlUniversalStateTranslator.IsKnownVirtualOutputController(info));
+            Assert.IsTrue(new SdlUniversalStateTranslator().ShouldSuppressForNativeSteamController(info));
+        }
+
+        [TestMethod]
         public void UnknownIdentityFieldsRemainUnknown()
         {
             UniversalDeviceIdentity identity = new UniversalDeviceIdentity("sdl3", "42");
@@ -527,6 +667,7 @@ namespace DS4MapperUnitTests
             public bool IsConnected => Connected;
             public bool Owns { get; set; }
             public bool OwnsReader => Owns;
+            public int? BatteryPercent { get; set; }
             public bool Disposed { get; private set; }
             public SteamControllerState State { get; set; }
 
