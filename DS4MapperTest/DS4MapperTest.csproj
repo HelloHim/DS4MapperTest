@@ -20,11 +20,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <DefineConstants>$(DefineConstants);WIN64</DefineConstants>
+    <DefineConstants>$(DefineConstants);WIN64;DS4MAPPER_DEV_APPDATA</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Tests|x64'">
-    <DefineConstants>$(DefineConstants);WIN64;MAKE_TESTS</DefineConstants>
+    <DefineConstants>$(DefineConstants);WIN64;MAKE_TESTS;DS4MAPPER_DEV_APPDATA</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
