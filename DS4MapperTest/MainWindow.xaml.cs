@@ -43,6 +43,10 @@ namespace DS4MapperTest
         private bool suppressSelectedProfileFolderCombo;
         private bool suppressFolderManageStatusHide;
         private readonly ObservableCollection<ProfileEntity> profileComboProfiles = new ObservableCollection<ProfileEntity>();
+        // Names as they were last pushed into the combo. The items themselves are
+        // reused across refreshes, so a rename mutates an entity that is already
+        // in the collection and would otherwise leave stale text on screen.
+        private readonly List<string> profileComboNames = new List<string>();
 
         private IntPtr regHandle = new IntPtr();
         private const int DBT_DEVICEARRIVAL = 0x8000;
@@ -99,6 +103,7 @@ namespace DS4MapperTest
             public string FolderName { get; set; }
             public bool IsExpanded { get; set; }
             public List<ProfileListEntry> Profiles { get; set; }
+            public bool IsEmpty => Profiles == null || Profiles.Count == 0;
         }
 
         private class ProfilePreview
@@ -122,6 +127,10 @@ namespace DS4MapperTest
             controlListVM.ReadProfileFailure += ControlListVM_ReadProfileFailure;
             controlListVM.ControllerList.CollectionChanged += ControllerList_CollectionChanged;
             deviceComboBox.ItemsSource = controlListVM.ControllerList;
+            // Bound once for the window's lifetime. Reassigning a ComboBox's
+            // ItemsSource while it holds a selection is what made refreshes throw;
+            // RefreshProfileCombo updates this collection's contents instead.
+            profileComboBox.ItemsSource = profileComboProfiles;
             physicalMouseComboBox.ItemsSource = physicalMouseItems;
             mouseRoutingPanelVM = new MouseRoutingPanelViewModel(
                 manager.MouseOutputRoutingController,
@@ -583,7 +592,7 @@ namespace DS4MapperTest
             {
                 noDeviceHint.Visibility = Visibility.Visible;
                 actionContextRow.IsEnabled = false;
-                profileComboBox.ItemsSource = null;
+                ClearProfileComboItems();
                 profileListBox.ItemsSource = null;
                 actionSetComboBox.ItemsSource = null;
                 actionLayerComboBox.ItemsSource = null;
@@ -671,45 +680,92 @@ namespace DS4MapperTest
             if (currentDeviceItem == null) return;
 
             suppressCombo = true;
-            ResyncCurrentDeviceProfileIndexToActiveProfile();
-
-            ProfileEntity activeProfile = currentDeviceItem.ProfileIndex >= 0 &&
-                currentDeviceItem.ProfileIndex < currentDeviceItem.DevProfileList.Count
-                ? currentDeviceItem.DevProfileList[currentDeviceItem.ProfileIndex]
-                : null;
-            string activeFolderName = activeProfile?.FolderName ?? string.Empty;
-
-            List<ProfileEntity> updatedProfiles = currentDeviceItem.DevProfileList
-                .Where(profile => string.Equals(profile.FolderName, activeFolderName, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            // Nulling ItemsSource and reassigning it (even after clearing
-            // SelectedItem first) trips a WPF-internal bug in grouped
-            // ComboBox.UpdateSelectionBoxItem ("Object type ProfileEntity does
-            // not match target type MS.Internal.NamedObject") whenever that
-            // transition races the ComboBox's own layout/group update. That
-            // exception aborted this method before RefreshProfileList() ran,
-            // so e.g. a just-deleted profile stayed visible until a second
-            // delete attempt, and Reset Default Profiles surfaced it directly
-            // as a failure dialog. Bind the ComboBox to one persistent
-            // collection for its whole lifetime instead and just update its
-            // contents in place -- WPF's normal CollectionChanged handling
-            // for a stable ItemsSource never goes through that code path.
-            if (profileComboBox.ItemsSource == null)
+            try
             {
-                profileComboBox.ItemsSource = profileComboProfiles;
-                ICollectionView view = CollectionViewSource.GetDefaultView(profileComboProfiles);
-                view?.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProfileEntity.FolderName)));
+                ResyncCurrentDeviceProfileIndexToActiveProfile();
+
+                ProfileEntity activeProfile = currentDeviceItem.ProfileIndex >= 0 &&
+                    currentDeviceItem.ProfileIndex < currentDeviceItem.DevProfileList.Count
+                    ? currentDeviceItem.DevProfileList[currentDeviceItem.ProfileIndex]
+                    : null;
+                string activeFolderName = activeProfile?.FolderName ?? string.Empty;
+
+                List<ProfileEntity> updatedProfiles = currentDeviceItem.DevProfileList
+                    .Where(profile => string.Equals(profile.FolderName, activeFolderName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                UpdateProfileComboItems(updatedProfiles, activeProfile);
+
+                profileFolderText.Text = activeFolderName;
+                profileFolderText.Visibility = string.IsNullOrEmpty(activeFolderName)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                // Every profile operation (load, delete, rename, move, reset
+                // defaults) refreshes this combo and then refreshes the profile
+                // browser. Letting a refresh failure escape aborted the rest of
+                // the operation's UI update -- that is what made a deleted
+                // profile linger until a second delete attempt -- and surfaced a
+                // raw WPF message in the caller's error dialog. The model is
+                // already up to date by this point, so log and carry on.
+                saveProfileLogger.Error(ex, "Failed to refresh the profile combo box");
+            }
+            finally
+            {
+                suppressCombo = false;
+            }
+        }
+
+        /// <summary>
+        /// Brings the ComboBox's items in line with <paramref name="updatedProfiles"/>,
+        /// touching the bound collection only when its contents actually changed.
+        /// </summary>
+        private void UpdateProfileComboItems(List<ProfileEntity> updatedProfiles, ProfileEntity activeProfile)
+        {
+            bool sameItems = profileComboProfiles.SequenceEqual(updatedProfiles) &&
+                profileComboNames.SequenceEqual(updatedProfiles.Select(profile => profile.Name ?? string.Empty),
+                    StringComparer.Ordinal);
+
+            // Most refreshes (loading a profile, saving, switching folders back and
+            // forth) leave the listed profiles untouched and only move the
+            // selection, so skipping the rebuild keeps the ComboBox out of the
+            // clear/repopulate window entirely.
+            if (sameItems)
+            {
+                if (!ReferenceEquals(profileComboBox.SelectedItem, activeProfile))
+                {
+                    profileComboBox.SelectedItem = activeProfile;
+                }
+
+                return;
             }
 
+            // Drop the selection first: removing the selected item from the bound
+            // collection makes WPF hand the ComboBox's selection box one of its
+            // internal sentinel objects, and anything that then reads a property
+            // off that sentinel throws.
+            profileComboBox.SelectedItem = null;
+
             profileComboProfiles.Clear();
+            profileComboNames.Clear();
             foreach (ProfileEntity profile in updatedProfiles)
             {
                 profileComboProfiles.Add(profile);
+                profileComboNames.Add(profile.Name ?? string.Empty);
             }
 
             profileComboBox.SelectedItem = activeProfile;
-            suppressCombo = false;
+        }
+
+        private void ClearProfileComboItems()
+        {
+            profileComboBox.SelectedItem = null;
+            profileComboProfiles.Clear();
+            profileComboNames.Clear();
+            profileFolderText.Text = string.Empty;
+            profileFolderText.Visibility = Visibility.Collapsed;
         }
 
         private void ResyncCurrentDeviceProfileIndexToActiveProfile()
@@ -1055,13 +1111,44 @@ namespace DS4MapperTest
                 .Select(p => new ProfileListEntry(p, string.Equals(p.ProfilePath, activePath, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            var groups = entries
-                .GroupBy(entry => entry.FolderName)
-                .Select(group => new ProfileFolderListGroup
+            var entriesByFolder = entries
+                .GroupBy(entry => entry.FolderName, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(group => group.Key, group => group.ToList(), StringComparer.OrdinalIgnoreCase);
+
+            // Drive the browser off the folder list rather than off the profiles,
+            // so a folder that has just been created (or emptied) still shows up,
+            // collapsed, instead of only appearing once something is moved into it.
+            // ProfileFolderCol is already in display order (Default, VALORANT, then
+            // alphabetical); anything a profile claims but the folder list has not
+            // caught up with yet is appended so no profile can go missing.
+            List<string> folderNames = GetProfileFolderSnapshot();
+            foreach (string folderName in entriesByFolder.Keys)
+            {
+                if (!folderNames.Contains(folderName, StringComparer.OrdinalIgnoreCase))
                 {
-                    FolderName = group.Key,
-                    IsExpanded = group.Any(entry => entry.IsActive),
-                    Profiles = group.ToList(),
+                    folderNames.Add(folderName);
+                }
+            }
+
+            // Rebuilding the browser used to collapse every folder the user had
+            // opened, so an action taken inside a folder (a delete especially)
+            // looked like it had done nothing at all. Carry the open folders over.
+            HashSet<string> expandedFolders = GetExpandedProfileFolders();
+
+            var groups = folderNames
+                .Select(folderName =>
+                {
+                    entriesByFolder.TryGetValue(folderName, out List<ProfileListEntry> folderEntries);
+                    folderEntries ??= new List<ProfileListEntry>();
+                    return new ProfileFolderListGroup
+                    {
+                        FolderName = folderName,
+                        IsExpanded = expandedFolders.Contains(folderName) ||
+                            folderEntries.Any(entry => entry.IsActive) ||
+                            (!string.IsNullOrWhiteSpace(selectedProfilePath) &&
+                                folderEntries.Any(entry => string.Equals(entry.ProfilePath, selectedProfilePath, StringComparison.OrdinalIgnoreCase))),
+                        Profiles = folderEntries,
+                    };
                 })
                 .ToList();
 
@@ -1089,6 +1176,27 @@ namespace DS4MapperTest
             }
 
             HideDeleteActiveProfileWarning();
+        }
+
+        private HashSet<string> GetExpandedProfileFolders()
+        {
+            HashSet<string> expandedFolders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (profileListBox.ItemsSource is not IEnumerable<ProfileFolderListGroup> currentGroups)
+            {
+                return expandedFolders;
+            }
+
+            foreach (ProfileFolderListGroup group in currentGroups)
+            {
+                // IsExpanded is two-way bound to each folder's Expander, so the
+                // group objects still on screen carry the user's current state.
+                if (group.IsExpanded && !string.IsNullOrWhiteSpace(group.FolderName))
+                {
+                    expandedFolders.Add(group.FolderName);
+                }
+            }
+
+            return expandedFolders;
         }
 
         private void ProfileListBox_Loaded(object sender, RoutedEventArgs e)
@@ -1538,6 +1646,7 @@ namespace DS4MapperTest
 
             if (resetException != null)
             {
+                saveProfileLogger.Error(resetException, "Failed to reset default profiles");
                 MessageBox.Show($"Failed to reset default profiles:\n{resetException.Message}", "Reset Default Profiles",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -1975,6 +2084,7 @@ namespace DS4MapperTest
             }
             catch (Exception ex)
             {
+                saveProfileLogger.Error(ex, "Failed to delete profile");
                 MessageBox.Show($"Failed to delete profile:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -1982,6 +2092,7 @@ namespace DS4MapperTest
 
             suppressCombo = true;
             profileList.Remove(ent);
+            selectedListEntry = null;
             if (activeEnt != null)
             {
                 int activeIndex = profileList.IndexOf(activeEnt);
@@ -1992,8 +2103,11 @@ namespace DS4MapperTest
             }
             suppressCombo = false;
 
-            RefreshProfileCombo();
+            // The browser is what the user is looking at when they hit Delete, so
+            // refresh it first: the deleted profile has to disappear on this
+            // attempt even if redrawing the top-bar combo hits trouble.
             RefreshProfileList();
+            RefreshProfileCombo();
         }
 
         private async void SaveProfileButton_Click(object sender, RoutedEventArgs e)
