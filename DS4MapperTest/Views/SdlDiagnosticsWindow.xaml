@@ -172,6 +172,27 @@
                             </DataGrid>
                         </TabItem>
 
+                        <TabItem Header="Universal">
+                            <DockPanel LastChildFill="True">
+                                <TextBlock DockPanel.Dock="Top"
+                                           Text="{Binding UniversalStatusText}"
+                                           Style="{StaticResource JsmccMutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,8,0,8"/>
+                                <DataGrid ItemsSource="{Binding UniversalInputs}"
+                                          AutoGenerateColumns="False"
+                                          IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Input" Binding="{Binding InputId}" Width="170"/>
+                                        <DataGridTextColumn Header="Kind" Binding="{Binding ValueKind}" Width="130"/>
+                                        <DataGridTextColumn Header="Native" Binding="{Binding NativeLabel}" Width="130"/>
+                                        <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="160"/>
+                                        <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </TabItem>
+
                         <TabItem Header="Events">
                             <ListBox ItemsSource="{Binding Events}"
                                      Background="{DynamicResource JsmccBgInputBrush}"
