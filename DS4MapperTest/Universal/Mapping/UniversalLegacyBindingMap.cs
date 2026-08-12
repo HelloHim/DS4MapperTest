@@ -178,10 +178,10 @@ namespace DS4MapperTest.Universal.Mapping
             yield return Button(UniversalInputId.MiscButton14, "MiscButton14", "Misc Button 14");
             yield return Button(UniversalInputId.MiscButton15, "MiscButton15", "Misc Button 15");
             yield return Button(UniversalInputId.MiscButton16, "MiscButton16", "Misc Button 16");
-            yield return Button(UniversalInputId.DPadUp, "DPad", "D-Pad");
-            yield return Button(UniversalInputId.DPadDown, "DPad", "D-Pad");
-            yield return Button(UniversalInputId.DPadLeft, "DPad", "D-Pad");
-            yield return Button(UniversalInputId.DPadRight, "DPad", "D-Pad");
+            yield return Control(UniversalInputId.DPadUp, "DPad", InputBindingMeta.InputControlType.DPad, "D-Pad");
+            yield return Control(UniversalInputId.DPadDown, "DPad", InputBindingMeta.InputControlType.DPad, "D-Pad");
+            yield return Control(UniversalInputId.DPadLeft, "DPad", InputBindingMeta.InputControlType.DPad, "D-Pad");
+            yield return Control(UniversalInputId.DPadRight, "DPad", InputBindingMeta.InputControlType.DPad, "D-Pad");
             yield return Control(UniversalInputId.LeftTrigger, "LeftTrigger", InputBindingMeta.InputControlType.Trigger, "Left Trigger");
             yield return Control(UniversalInputId.RightTrigger, "RightTrigger", InputBindingMeta.InputControlType.Trigger, "Right Trigger");
             yield return Control(UniversalInputId.LeftStick, "LeftStick", InputBindingMeta.InputControlType.Stick, "Left Stick");

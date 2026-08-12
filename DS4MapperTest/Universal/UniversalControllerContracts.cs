@@ -110,6 +110,7 @@ namespace DS4MapperTest.Universal
         ControllerCapabilities Capabilities { get; }
         ControllerDisplayInfo DisplayInfo { get; }
         UniversalControllerStateSnapshot State { get; }
+        int? BatteryPercent { get; }
     }
 
     public interface IUniversalControllerBackend : IDisposable
@@ -131,6 +132,7 @@ namespace DS4MapperTest.Universal
         public UniversalControllerConnectionState ConnectionState { get; private set; }
         public ControllerCapabilities Capabilities { get; private set; }
         public ControllerDisplayInfo DisplayInfo => Capabilities.DisplayInfo;
+        public int? BatteryPercent { get; private set; }
 
         public UniversalControllerStateSnapshot State
         {
@@ -167,6 +169,13 @@ namespace DS4MapperTest.Universal
         public void PublishCapabilities(ControllerCapabilities capabilities)
         {
             Capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
+        }
+
+        public void PublishBatteryPercent(int? batteryPercent)
+        {
+            BatteryPercent = batteryPercent >= 0 && batteryPercent <= 100
+                ? batteryPercent
+                : null;
         }
 
         public void MarkSuppressed()
@@ -268,6 +277,7 @@ namespace DS4MapperTest.Universal
             {
                 IUniversalController[] candidates = backends
                     .SelectMany(backend => backend.Controllers)
+                    .Where(controller => controller.ConnectionState == UniversalControllerConnectionState.Connected)
                     .ToArray();
 
                 IEnumerable<IUniversalController> unique = candidates

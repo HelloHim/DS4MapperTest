@@ -24,6 +24,10 @@ using DS4MapperTest.ViewModels;
 using DS4MapperTest.Behaviors;
 using NLog;
 using DS4MapperTest.PhysicalMouse;
+using DS4MapperTest.Universal;
+using DS4MapperTest.Universal.Editor;
+using DS4MapperTest.Universal.Mapping;
+using DS4MapperTest.Universal.Profiles;
 
 namespace DS4MapperTest
 {
@@ -74,6 +78,7 @@ namespace DS4MapperTest
         private bool appliedPhysicalMouseForwardingEnabled;
         private string appliedPhysicalMouseId;
         private SdlDiagnosticsWindow sdlDiagnosticsWindow;
+        private readonly UniversalProfileStore universalProfileStore = UniversalProfileStore.CreateDefault();
 
         private const double NavCompactWidthThreshold = 820;
         private bool isNavCompact;
@@ -113,6 +118,12 @@ namespace DS4MapperTest
             public string Name { get; set; }
         }
 
+        private sealed class UniversalProfileSaveUiUpdate
+        {
+            public string ProfilePath { get; set; }
+            public string DisplayName { get; set; }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -121,6 +132,7 @@ namespace DS4MapperTest
         public void PostInit(AppGlobalData appGlobal)
         {
             this.appGlobal = appGlobal;
+            UniversalLiveInputRoutingOptions.Apply(appGlobal?.appSettings);
 
             BackendManager manager = (App.Current as App).Manager;
             controlListVM = new ControllerListViewModel(manager);
@@ -164,26 +176,24 @@ namespace DS4MapperTest
 
         private void SetNavCompactMode(bool compact)
         {
-            if (compact == isNavCompact) return;
             isNavCompact = compact;
+            navPopup.IsOpen = false;
+            navSidebarBorder.Child = null;
+            navPopupHost.Child = null;
 
             if (compact)
             {
-                navPopup.IsOpen = false;
-                navSidebarBorder.Child = null;
-                navPopupHost.Child = navStackPanel;
                 navSidebarBorder.Visibility = Visibility.Collapsed;
                 navColumn.Width = new GridLength(0);
                 navHamburgerButton.Visibility = Visibility.Visible;
+                navPopupHost.Child = navStackPanel;
             }
             else
             {
-                navPopup.IsOpen = false;
-                navPopupHost.Child = null;
-                navSidebarBorder.Child = navStackPanel;
-                navSidebarBorder.Visibility = Visibility.Visible;
-                navColumn.Width = new GridLength(240);
                 navHamburgerButton.Visibility = Visibility.Collapsed;
+                navSidebarBorder.Visibility = Visibility.Visible;
+                navColumn.Width = new GridLength(220);
+                navSidebarBorder.Child = navStackPanel;
             }
         }
 
@@ -410,6 +420,52 @@ namespace DS4MapperTest
             sdlDiagnosticsWindow.Show();
         }
 
+        private void NintendoFaceSwapCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            bool enabled = editorTestVM?.ShowFaceButtonSwapToggle == true &&
+                nintendoFaceSwapCheckBox?.IsChecked == true;
+            UniversalLiveInputRoutingOptions.NintendoFaceButtonSwapEnabled = enabled;
+            if (appGlobal?.appSettings != null)
+            {
+                appGlobal.appSettings.NintendoFaceButtonSwapEnabled = enabled;
+                appGlobal.SaveAppSettings();
+            }
+
+            if (editorTestVM == null) return;
+
+            DataContext = null;
+            editorTestVM.RefreshLayerBindings();
+            DataContext = editorTestVM;
+        }
+
+        private void RaiseUniversalControllerStateProperties()
+        {
+            bool showSwap = editorTestVM?.ShowFaceButtonSwapToggle == true;
+            UniversalLiveInputRoutingOptions.Apply(appGlobal?.appSettings);
+            if (!showSwap)
+            {
+                UniversalLiveInputRoutingOptions.NintendoFaceButtonSwapEnabled = false;
+            }
+
+            if (nintendoFaceSwapCheckBox != null)
+            {
+                nintendoFaceSwapCheckBox.Visibility = showSwap ? Visibility.Visible : Visibility.Collapsed;
+                nintendoFaceSwapCheckBox.IsChecked = showSwap && UniversalLiveInputRoutingOptions.NintendoFaceButtonSwapEnabled;
+            }
+
+            if (navTrackpad != null &&
+                editorTestVM?.HasSupportedTouchpadHardware != true &&
+                navTrackpad.IsChecked == true)
+            {
+                navKeybinds.IsChecked = true;
+            }
+        }
+
+        private void RefreshUniversalProfileLists()
+        {
+            controlListVM?.RefreshUniversalProfileLists();
+        }
+
         private void ApplyMouseRoutingButton_Click(object sender, RoutedEventArgs e)
         {
             if (mouseRoutingPanelVM?.Apply() == true)
@@ -525,12 +581,21 @@ namespace DS4MapperTest
         {
             BackendManager manager = (Application.Current as App).Manager;
             DeviceReaderBase reader = manager?.GetDeviceReader(currentDeviceItem?.Device);
-            reader?.RequestGyroCalibration();
+            if (reader != null)
+            {
+                reader.RequestGyroCalibration();
+            }
+            else
+            {
+                currentDeviceItem?.UniversalSession?.Mapper.RequestGyroCalibration();
+            }
+
             UpdateGyroCalibrationControls(manager);
         }
 
         private void GyroCalibrationStatusTimer_Tick(object sender, EventArgs e)
         {
+            currentDeviceItem?.RefreshUniversalState();
             UpdateGyroCalibrationControls((Application.Current as App).Manager);
         }
 
@@ -539,10 +604,15 @@ namespace DS4MapperTest
             if (gyroCalibrateButton == null || gyroCalibrationStatusText == null) return;
 
             DeviceReaderBase reader = manager?.GetDeviceReader(currentDeviceItem?.Device);
-            Common.GyroCalibrationStatus status = reader?.GyroCalibrationStatus;
+            Common.GyroCalibrationStatus status =
+                reader?.GyroCalibrationStatus ??
+                currentDeviceItem?.UniversalSession?.Mapper.GyroCalibrationStatus;
             bool active = status != null && (status.IsWaitingToStart || status.IsCalibrating);
+            bool canCalibrate =
+                reader != null ||
+                currentDeviceItem?.UniversalSession?.Controller.Capabilities.Supports(UniversalInputId.Gyroscope) == true;
 
-            gyroCalibrateButton.IsEnabled = manager?.IsRunning == true && reader != null && !active;
+            gyroCalibrateButton.IsEnabled = manager?.IsRunning == true && canCalibrate && !active;
             gyroCalibrationStatusText.Visibility = active ? Visibility.Visible : Visibility.Collapsed;
             if (active)
             {
@@ -555,10 +625,16 @@ namespace DS4MapperTest
 
         private void ControllerList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add && editorTestVM == null)
+            if (e.Action == NotifyCollectionChangedAction.Add && currentDeviceItem == null)
             {
                 DeviceListItem item = e.NewItems[0] as DeviceListItem;
-                Dispatcher.BeginInvoke((Action)(() => LoadProfileForDevice(item)));
+                Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    if (currentDeviceItem == null)
+                    {
+                        LoadProfileForDevice(item);
+                    }
+                }));
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove)
             {
@@ -592,6 +668,7 @@ namespace DS4MapperTest
             editorTestVM = null;
             currentDeviceItem = null;
             DataContext = null;
+            RaiseUniversalControllerStateProperties();
 
             suppressDeviceCombo = true;
             deviceComboBox.SelectedItem = null;
@@ -623,16 +700,35 @@ namespace DS4MapperTest
             if (item == null || item.ProfileIndex < 0) return false;
 
             BackendManager manager = (App.Current as App).Manager;
-            if (!manager.MapperDict.ContainsKey(item.Device.Index)) return false;
+            Mapper mapper;
+            var profileList = item.DevProfileList;
+            if (item.IsUniversal)
+            {
+                mapper = item.UniversalSession.Mapper;
+            }
+            else
+            {
+                if (!manager.MapperDict.ContainsKey(item.Device.Index)) return false;
 
-            Mapper mapper = manager.MapperDict[item.Device.Index];
-            InputDeviceType devType = mapper.DeviceType;
-            if (!manager.DeviceProfileListDict.ContainsKey(devType)) return false;
+                mapper = manager.MapperDict[item.Device.Index];
+                InputDeviceType devType = mapper.DeviceType;
+                if (!manager.DeviceProfileListDict.ContainsKey(devType)) return false;
 
-            var profileList = manager.DeviceProfileListDict[devType].ProfileListCol;
+                profileList = manager.DeviceProfileListDict[devType].ProfileListCol;
+            }
+
             if (item.ProfileIndex >= profileList.Count) return false;
 
             ProfileEntity profileEnt = profileList[item.ProfileIndex];
+            if (item.IsUniversal)
+            {
+                UniversalProfile selectedProfile = universalProfileStore.LoadFromPath(profileEnt.ProfilePath);
+                if (item.UniversalSession.ActiveProfile == null ||
+                    item.UniversalSession.ActiveProfile.ProfileId != selectedProfile.ProfileId)
+                {
+                    manager.UniversalMappingRuntime.SwitchProfile(item.UniversalSession.LogicalControllerId, selectedProfile);
+                }
+            }
 
             InlineBindingEditorService.CloseAny();
             ExitRenameSetMode();
@@ -652,6 +748,7 @@ namespace DS4MapperTest
             editorTestVM = new ProfileEditorTestViewModel(mapper, profileEnt, mapper.ActionProfile);
             DataContext = editorTestVM;
             editorTestVM.Test();
+            RaiseUniversalControllerStateProperties();
 
             currentDeviceItem = item;
             noDeviceHint.Visibility = Visibility.Collapsed;
@@ -826,7 +923,9 @@ namespace DS4MapperTest
 
             foreach (DeviceListItem other in controlListVM.ControllerList)
             {
-                if (other == currentDeviceItem || !ReferenceEquals(other.ProfileListHolder, sharedList))
+                if (other.IsUniversal ||
+                    other == currentDeviceItem ||
+                    !ReferenceEquals(other.ProfileListHolder, sharedList))
                 {
                     continue;
                 }
@@ -977,9 +1076,24 @@ namespace DS4MapperTest
             IsEnabled = true;
         }
 
-        private void AddSetBtn_Click(object sender, RoutedEventArgs e)
+        private async void AddSetBtn_Click(object sender, RoutedEventArgs e)
         {
-            editorTestVM?.AddSet();
+            if (editorTestVM == null) return;
+
+            try
+            {
+                int newIndex = editorTestVM.AddSet();
+                RefreshActionSetCombo();
+                if (newIndex >= 0)
+                {
+                    await SwitchActionSetAsync(newIndex);
+                }
+            }
+            catch (TimeoutException ex)
+            {
+                MessageBox.Show(ex.Message, "Add Action Set",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void RemoveSetBtn_Click(object sender, RoutedEventArgs e)
@@ -998,9 +1112,24 @@ namespace DS4MapperTest
             await SwitchActionSetAsync(editorTestVM.SelectedActionSetIndex);
         }
 
-        private void AddLayerBtn_Click(object sender, RoutedEventArgs e)
+        private async void AddLayerBtn_Click(object sender, RoutedEventArgs e)
         {
-            editorTestVM?.AddLayer();
+            if (editorTestVM == null) return;
+
+            try
+            {
+                int newIndex = editorTestVM.AddLayer();
+                RefreshActionLayerCombo();
+                if (newIndex >= 0)
+                {
+                    await SwitchActionLayerAsync(newIndex);
+                }
+            }
+            catch (TimeoutException ex)
+            {
+                MessageBox.Show(ex.Message, "Add Action Layer",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void RemoveLayerBtn_Click(object sender, RoutedEventArgs e)
@@ -1298,10 +1427,44 @@ namespace DS4MapperTest
             if (suppressProfileListSelection) return;
             if (sender is not ListBox selectedListBox) return;
 
-            // Hold the entry locally. Anything below that clears another folder's
-            // list re-enters this handler, and reading the field again afterwards
-            // would pick up that nested call's state instead of this click's.
             ProfileListEntry clickedEntry = selectedListBox.SelectedItem as ProfileListEntry;
+            ApplyProfileListSelection(selectedListBox, clickedEntry);
+        }
+
+        private void ProfileListBoxItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not ListBoxItem item ||
+                item.DataContext is not ProfileListEntry clickedEntry)
+            {
+                return;
+            }
+
+            ListBox selectedListBox = FindVisualAncestor<ListBox>(item);
+            if (selectedListBox == null)
+            {
+                return;
+            }
+
+            bool wasSuppressed = suppressProfileListSelection;
+            suppressProfileListSelection = true;
+            try
+            {
+                selectedListBox.SelectedItem = clickedEntry;
+            }
+            finally
+            {
+                suppressProfileListSelection = wasSuppressed;
+            }
+
+            ApplyProfileListSelection(selectedListBox, clickedEntry);
+            e.Handled = true;
+        }
+
+        private void ApplyProfileListSelection(ListBox selectedListBox, ProfileListEntry clickedEntry)
+        {
+            // Hold the entry locally. Anything below that clears another folder's
+            // list re-enters selection plumbing, so the field must be set from
+            // this click's row, not from a later deselection event.
             selectedListEntry = clickedEntry;
             HideDeleteActiveProfileWarning();
             if (clickedEntry == null)
@@ -1326,6 +1489,23 @@ namespace DS4MapperTest
             // already accounted for selectedProfilePanel becoming visible first.
             Dispatcher.BeginInvoke(new Action(() => selectedProfilePanel.BringIntoView()),
                 DispatcherPriority.Loaded);
+        }
+
+        private static T FindVisualAncestor<T>(DependencyObject start)
+            where T : DependencyObject
+        {
+            DependencyObject current = start;
+            while (current != null)
+            {
+                if (current is T match)
+                {
+                    return match;
+                }
+
+                current = VisualTreeHelper.GetParent(current);
+            }
+
+            return null;
         }
 
         private void ClearOtherProfileListSelections(DependencyObject root, ListBox selectedListBox)
@@ -1474,6 +1654,12 @@ namespace DS4MapperTest
         private void ManageFoldersBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null) return;
+            if (currentDeviceItem.IsUniversal)
+            {
+                MessageBox.Show("Universal profiles are managed in one shared profile list.",
+                    "Manage Folders", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
 
             if (manageFoldersPanel.Visibility == Visibility.Visible)
             {
@@ -1522,6 +1708,12 @@ namespace DS4MapperTest
         {
             if (currentDeviceItem == null || overlayNewProfileVM == null) return;
 
+            if (currentDeviceItem.IsUniversal)
+            {
+                CreateUniversalProfileFromClassicDialog();
+                return;
+            }
+
             bool validForm = overlayNewProfileVM.ValidateForm();
             if (!validForm) return;
 
@@ -1547,6 +1739,77 @@ namespace DS4MapperTest
             }
         }
 
+        private void CreateUniversalProfileFromClassicDialog()
+        {
+            string profileName = overlayNewProfileVM.ProfileName?.Trim();
+            if (string.IsNullOrWhiteSpace(profileName))
+            {
+                MessageBox.Show("Profile name cannot be empty.", "Create Profile",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                UniversalProfile profile = CreateBlankUniversalProfile(profileName);
+                UniversalProfileEditorSaveCoordinator coordinator = new UniversalProfileEditorSaveCoordinator(
+                    universalProfileStore,
+                    (logicalControllerId, savedProfile) =>
+                    {
+                        BackendManager manager = (App.Current as App).Manager;
+                        manager.UniversalMappingRuntime?.SwitchProfile(logicalControllerId, savedProfile);
+                    });
+
+                Guid? activeControllerId = currentDeviceItem.UniversalSession?.LogicalControllerId;
+                UniversalProfileEditorSaveResult result = coordinator.SaveProfile(
+                    profile,
+                    activeControllerId,
+                    universalProfileStore.GetNamedProfilePath(profile.DisplayName));
+                if (!result.Success)
+                {
+                    MessageBox.Show(string.Join("\n", result.Issues.Select(issue => issue.Message)),
+                        "Create Profile", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                HideNewProfilePanel();
+                RefreshUniversalProfileLists();
+
+                string newPath = universalProfileStore.FindProfilePath(profile.ProfileId);
+                ProfileEntity newEnt = currentDeviceItem.DevProfileList.FirstOrDefault(p =>
+                    string.Equals(p.ProfilePath, newPath, StringComparison.OrdinalIgnoreCase));
+                if (newEnt != null)
+                {
+                    int newIndex = currentDeviceItem.DevProfileList.IndexOf(newEnt);
+                    _ = SwitchProfileAsync(currentDeviceItem, newIndex);
+                }
+                else
+                {
+                    RefreshProfileCombo();
+                    RefreshProfileList();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to create profile:\n{ex.Message}", "Create Profile",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private static UniversalProfile CreateBlankUniversalProfile(string profileName)
+        {
+            UniversalProfile profile = new UniversalProfile
+            {
+                DisplayName = profileName,
+                Description = profileName,
+                CreatedUtc = DateTimeOffset.UtcNow,
+            };
+            UniversalProfileActionSet set = new UniversalProfileActionSet { Index = 0, Name = "Main" };
+            set.Layers.Add(new UniversalProfileActionLayer { Index = 0, Name = "Default" });
+            profile.ActionSets.Add(set);
+            return profile;
+        }
+
         private void NewProfileBrowseBtn_Click(object sender, RoutedEventArgs e)
         {
             if (overlayNewProfileVM == null) return;
@@ -1565,6 +1828,7 @@ namespace DS4MapperTest
         private void CreateFolderBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null) return;
+            if (currentDeviceItem.IsUniversal) return;
 
             string folderName = newFolderNameBox.Text?.Trim();
             if (!ValidateFolderName(folderName, "Create Folder")) return;
@@ -1586,6 +1850,7 @@ namespace DS4MapperTest
         private void RenameFolderBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null || folderManageComboBox.SelectedItem is not string oldFolderName) return;
+            if (currentDeviceItem.IsUniversal) return;
 
             string newFolderName = folderRenameBox.Text?.Trim();
             if (!ValidateFolderName(newFolderName, "Rename Folder")) return;
@@ -1621,6 +1886,7 @@ namespace DS4MapperTest
         private void DeleteFolderBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null || folderManageComboBox.SelectedItem is not string folderName) return;
+            if (currentDeviceItem.IsUniversal) return;
 
             if (string.Equals(folderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase))
             {
@@ -1669,6 +1935,7 @@ namespace DS4MapperTest
         private async void ResetDefaultProfilesBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null || editorTestVM == null) return;
+            if (currentDeviceItem.IsUniversal) return;
 
             string selectedFolder = folderManageComboBox.SelectedItem as string;
             if (!string.Equals(selectedFolder, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase))
@@ -1785,6 +2052,7 @@ namespace DS4MapperTest
         private void SelectedProfileFolderComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (suppressSelectedProfileFolderCombo || currentDeviceItem == null || selectedListEntry == null) return;
+            if (currentDeviceItem.IsUniversal) return;
 
             string folderName = selectedProfileFolderComboBox.SelectedItem as string;
             if (string.IsNullOrWhiteSpace(folderName) ||
@@ -2078,6 +2346,12 @@ namespace DS4MapperTest
                 return;
             }
 
+            if (currentDeviceItem?.IsUniversal == true)
+            {
+                RenameUniversalProfile(selectedListEntry.Entity, newName);
+                return;
+            }
+
             if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             {
                 MessageBox.Show("Profile name contains invalid characters.", "Rename",
@@ -2136,6 +2410,53 @@ namespace DS4MapperTest
             }
         }
 
+        private void RenameUniversalProfile(ProfileEntity ent, string newName)
+        {
+            try
+            {
+                UniversalProfile profile = universalProfileStore.LoadFromPath(ent.ProfilePath);
+                string oldPath = ent.ProfilePath;
+                profile.DisplayName = newName;
+                UniversalProfileEditorSaveCoordinator coordinator = new UniversalProfileEditorSaveCoordinator(
+                    universalProfileStore,
+                    (logicalControllerId, savedProfile) =>
+                    {
+                        BackendManager manager = (App.Current as App).Manager;
+                        manager.UniversalMappingRuntime?.SwitchProfile(logicalControllerId, savedProfile);
+                    });
+
+                Guid? reloadId = editorTestVM?.ProfileEnt == ent
+                    ? currentDeviceItem?.UniversalSession?.LogicalControllerId
+                    : null;
+                UniversalProfileEditorSaveResult result = coordinator.SaveProfile(profile, reloadId, oldPath);
+                if (!result.Success)
+                {
+                    MessageBox.Show(string.Join("\n", result.Issues.Select(issue => issue.Message)),
+                        "Rename", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                string newPath = universalProfileStore.FindProfilePath(profile.ProfileId) ??
+                    universalProfileStore.GetNamedProfilePath(profile.DisplayName);
+                ent.UpdatePath(newPath);
+                ent.Name = profile.DisplayName;
+
+                if (editorTestVM != null && ent == editorTestVM.ProfileEnt)
+                {
+                    editorTestVM.SetProfileNameWithoutDirty(profile.DisplayName);
+                }
+
+                RefreshUniversalProfileLists();
+                RefreshProfileCombo();
+                RefreshProfileList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to rename profile:\n{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void DeleteProfileBtn_Click(object sender, RoutedEventArgs e)
         {
             if (selectedListEntry == null || currentDeviceItem == null) return;
@@ -2174,7 +2495,14 @@ namespace DS4MapperTest
 
             try
             {
-                File.Delete(ent.ProfilePath);
+                if (currentDeviceItem.IsUniversal)
+                {
+                    universalProfileStore.Delete(ent.ProfilePath);
+                }
+                else
+                {
+                    File.Delete(ent.ProfilePath);
+                }
             }
             catch (Exception ex)
             {
@@ -2185,7 +2513,14 @@ namespace DS4MapperTest
             }
 
             suppressCombo = true;
-            profileList.Remove(ent);
+            if (currentDeviceItem.IsUniversal)
+            {
+                RefreshUniversalProfileLists();
+            }
+            else
+            {
+                profileList.Remove(ent);
+            }
             selectedListEntry = null;
             if (activeEnt != null)
             {
@@ -2228,9 +2563,17 @@ namespace DS4MapperTest
             IsEnabled = false;
 
             Exception saveException = null;
+            UniversalProfileSaveUiUpdate universalSaveUpdate = null;
             try
             {
-                await Task.Run(() => activeVM.TestSave(activeVM.ProfileEnt, activeVM.DeviceMapper.ActionProfile));
+                if (activeVM.DeviceMapper is UniversalMapper universalMapper)
+                {
+                    universalSaveUpdate = await Task.Run(() => SaveUniversalProfileFromClassicEditor(activeVM, universalMapper));
+                }
+                else
+                {
+                    await Task.Run(() => activeVM.TestSave(activeVM.ProfileEnt, activeVM.DeviceMapper.ActionProfile));
+                }
             }
             catch (Exception ex)
             {
@@ -2245,6 +2588,15 @@ namespace DS4MapperTest
 
             if (saveException == null)
             {
+                if (universalSaveUpdate != null)
+                {
+                    activeVM.ProfileEnt.UpdatePath(universalSaveUpdate.ProfilePath);
+                    activeVM.ProfileEnt.Name = universalSaveUpdate.DisplayName;
+                    RefreshUniversalProfileLists();
+                    RefreshProfileCombo();
+                    RefreshProfileList();
+                }
+
                 activeVM.MarkProfileClean();
                 saveProfileButton.Content = "Saved ✓";
                 ShowSaveStatusPill(success: true);
@@ -2259,6 +2611,41 @@ namespace DS4MapperTest
                 StartSaveStatusHideTimer(TimeSpan.FromSeconds(6), revertButton: false);
                 return false;
             }
+        }
+
+        private UniversalProfileSaveUiUpdate SaveUniversalProfileFromClassicEditor(ProfileEditorTestViewModel activeVM, UniversalMapper universalMapper)
+        {
+            UniversalProfile latest = universalProfileStore.LoadFromPath(activeVM.ProfileEnt.ProfilePath);
+            UniversalProfile updated = UniversalClassicProfileProjector.BuildUpdatedProfile(
+                universalMapper,
+                activeVM.DeviceMapper.ActionProfile,
+                latest);
+            string oldPath = activeVM.ProfileEnt.ProfilePath;
+            UniversalProfileEditorSaveCoordinator coordinator = new UniversalProfileEditorSaveCoordinator(
+                universalProfileStore,
+                (logicalControllerId, savedProfile) =>
+                {
+                    BackendManager manager = (App.Current as App).Manager;
+                    manager.UniversalMappingRuntime?.SwitchProfile(logicalControllerId, savedProfile);
+                });
+
+            UniversalProfileEditorSaveResult result = coordinator.SaveProfile(
+                updated,
+                currentDeviceItem?.UniversalSession?.LogicalControllerId,
+                oldPath);
+            if (!result.Success)
+            {
+                throw new InvalidOperationException(string.Join(Environment.NewLine,
+                    result.Issues.Select(issue => $"{issue.Location}: {issue.Message}")));
+            }
+
+            string newPath = universalProfileStore.FindProfilePath(updated.ProfileId) ??
+                universalProfileStore.GetNamedProfilePath(updated.DisplayName);
+            return new UniversalProfileSaveUiUpdate
+            {
+                ProfilePath = newPath,
+                DisplayName = updated.DisplayName,
+            };
         }
 
         private async Task<bool> DiscardCurrentProfileChangesAsync()

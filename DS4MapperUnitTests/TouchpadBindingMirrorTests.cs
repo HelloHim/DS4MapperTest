@@ -34,12 +34,15 @@ namespace DS4MapperUnitTests
             vm.Test();
 
             CollectionAssert.AreEquivalent(
-                new string[] { "Left Touch", "Right Touch", "Main Press", "Left Press", "Right Press" },
+                new string[] { "Left Touch", "Right Touch", "Center Touch", "Left Press", "Right Press", "Center Press" },
                 vm.TouchpadButtonBindings.Select(item => item.DisplayName).ToArray());
 
             AssertTouchpadButton(vm, "Left Touch", "LeftPadTouch");
             AssertTouchpadButton(vm, "Right Touch", "RightPadTouch");
-            AssertTouchpadButton(vm, "Main Press", "TouchClick");
+            FaceButtonBindingItem centerTouch = AssertTouchpadButton(vm, "Center Touch", "CenterTouch");
+            FaceButtonBindingItem centerPress = AssertTouchpadButton(vm, "Center Press", "TouchClick");
+            Assert.IsFalse(centerTouch.IsAvailable);
+            Assert.IsFalse(centerPress.IsAvailable);
 
             FaceButtonBindingItem leftClick = AssertTouchpadButton(vm, "Left Press", "LeftPadClick");
             FaceButtonBindingItem rightClick = AssertTouchpadButton(vm, "Right Press", "RightPadClick");
@@ -54,6 +57,16 @@ namespace DS4MapperUnitTests
             CollectionAssert.DoesNotContain(
                 vm.ExtraButtonBindings.Select(item => item.DisplayName).ToArray(),
                 "Right Touch");
+        }
+
+        [TestMethod]
+        public void TouchpadSidebarEligibilityIsLimitedToPlayStationAndSteamFamilies()
+        {
+            AssertTouchpadEligibility(InputDeviceType.DualSense, true, true);
+            AssertTouchpadEligibility(InputDeviceType.SteamController, true, false);
+            AssertTouchpadEligibility(InputDeviceType.SteamControllerTriton, true, false);
+            AssertTouchpadEligibility(InputDeviceType.SwitchPro, false, false);
+            AssertTouchpadEligibility(InputDeviceType.None, false, false);
         }
 
         private void AddButtonBinding(string id, string displayName)
@@ -78,6 +91,26 @@ namespace DS4MapperUnitTests
                     layer.actionSetActionDict.Clear();
                 }
             }
+        }
+
+        private static void AssertTouchpadEligibility(
+            InputDeviceType deviceType,
+            bool expectedSupported,
+            bool expectedCenter)
+        {
+            Profile profile = new Profile { Name = $"Touchpad-{deviceType}" };
+            profile.ActionSets[0].ActionLayers[0].Name = "Default";
+            TestMapper mapper = new TestMapper(profile)
+            {
+                DeviceTypeOverride = deviceType,
+            };
+            ProfileEditorTestViewModel vm = new ProfileEditorTestViewModel(
+                mapper,
+                new ProfileEntity("", profile.Name, deviceType),
+                profile);
+
+            Assert.AreEqual(expectedSupported, vm.HasSupportedTouchpadHardware, $"{deviceType} touchpad tab eligibility.");
+            Assert.AreEqual(expectedCenter, vm.HasCenterTouchpad, $"{deviceType} centre touchpad eligibility.");
         }
 
         private static FaceButtonBindingItem AssertTouchpadButton(

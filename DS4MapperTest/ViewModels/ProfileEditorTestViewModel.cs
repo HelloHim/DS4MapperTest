@@ -20,6 +20,9 @@ using DS4MapperTest.MapperUtil;
 using DS4MapperTest.SteamControllerLibrary;
 using System.Windows.Media;
 using DS4MapperTest.ViewModels.Common;
+using DS4MapperTest.Universal;
+using DS4MapperTest.Universal.Editor;
+using DS4MapperTest.Universal.Mapping;
 
 namespace DS4MapperTest.ViewModels
 {
@@ -248,6 +251,11 @@ namespace DS4MapperTest.ViewModels
             get => touchpadBindings;
         }
 
+        private ObservableCollection<TouchBindingItemsTest> touchpadTouchSurfaceBindings =
+            new ObservableCollection<TouchBindingItemsTest>();
+        public ObservableCollection<TouchBindingItemsTest> TouchpadTouchSurfaceBindings =>
+            touchpadTouchSurfaceBindings;
+
         private SteamControllerPadRotationViewModel steamPadRotation;
         public SteamControllerPadRotationViewModel SteamPadRotation =>
             steamPadRotation ??= SteamControllerPadRotationViewModel.Create(mapper);
@@ -260,9 +268,39 @@ namespace DS4MapperTest.ViewModels
 
         public bool HasPhysicalControllerVisibility => PhysicalControllerVisibility != null;
 
-        public bool UsesPlayStationTouchpadClickNames =>
+        public bool UsesPlayStationTouchpadClickNames => IsPlayStationController;
+
+        public bool IsNintendoController =>
+            string.Equals((mapper as UniversalMapper)?.Controller.DisplayInfo.GlyphFamily, "nintendo", StringComparison.OrdinalIgnoreCase) ||
+            mapper?.DeviceType == InputDeviceType.SwitchPro ||
+            mapper?.DeviceType == InputDeviceType.JoyCon;
+
+        public bool IsPlayStationController =>
+            string.Equals((mapper as UniversalMapper)?.Controller.DisplayInfo.GlyphFamily, "playstation", StringComparison.OrdinalIgnoreCase) ||
             mapper?.DeviceType == InputDeviceType.DS4 ||
             mapper?.DeviceType == InputDeviceType.DualSense;
+
+        public bool IsSteamController =>
+            string.Equals((mapper as UniversalMapper)?.Controller.DisplayInfo.GlyphFamily, "steam", StringComparison.OrdinalIgnoreCase) ||
+            mapper?.DeviceType == InputDeviceType.SteamController ||
+            mapper?.DeviceType == InputDeviceType.SteamControllerTriton;
+
+        public bool ShowFaceButtonSwapToggle =>
+            !IsPlayStationController && FaceButtonBindings.Count > 0;
+
+        public bool HasCenterTouchpad =>
+            IsPlayStationController;
+
+        public bool HasSupportedTouchpadHardware =>
+            IsPlayStationController || IsSteamController;
+
+        public bool HasPaddleControls =>
+            ControllerSupportsUniversalInput(UniversalInputId.LeftRearPrimary) ||
+            ControllerSupportsUniversalInput(UniversalInputId.RightRearPrimary) ||
+            ControllerSupportsUniversalInput(UniversalInputId.LeftRearSecondary) ||
+            ControllerSupportsUniversalInput(UniversalInputId.RightRearSecondary) ||
+            ControllerSupportsUniversalInput(UniversalInputId.LeftGripTouch) ||
+            ControllerSupportsUniversalInput(UniversalInputId.RightGripTouch);
 
         public string TouchpadClickBindingsTabHeader =>
             UsesPlayStationTouchpadClickNames ? "Click Bindings" : "Press Bindings";
@@ -895,6 +933,7 @@ namespace DS4MapperTest.ViewModels
             touchpadButtonBindingItems.Clear();
             triggerKeybinds.Clear();
             touchpadBindings.Clear();
+            touchpadTouchSurfaceBindings.Clear();
             touchpadMouseMovementBindings.Clear();
             touchpadZoneGestureBindings.Clear();
             touchpadTrackballScrollBindings.Clear();
@@ -924,6 +963,7 @@ namespace DS4MapperTest.ViewModels
             touchpadButtonBindingItems.Clear();
             triggerKeybinds.Clear();
             touchpadBindings.Clear();
+            touchpadTouchSurfaceBindings.Clear();
             touchpadMouseMovementBindings.Clear();
             touchpadZoneGestureBindings.Clear();
             touchpadTrackballScrollBindings.Clear();
@@ -977,7 +1017,7 @@ namespace DS4MapperTest.ViewModels
                 if (tempProfile.CurrentActionSet.CurrentActionLayer.touchpadActionDict.
                         TryGetValue(meta.id, out TouchpadMapAction tempTouchAct))
                 {
-                    TouchBindingItemsTest tempItem = new TouchBindingItemsTest(meta.id, meta.displayName, tempTouchAct, mapper);
+                    TouchBindingItemsTest tempItem = CreateTouchBindingItem(meta, tempTouchAct);
                     tempItem.TouchpadClickBinding = CreateTouchpadClickBinding(tempItem);
                     touchpadBindings.Add(tempItem);
                 }
@@ -989,7 +1029,7 @@ namespace DS4MapperTest.ViewModels
                 if (tempProfile.CurrentActionSet.CurrentActionLayer.touchpadActionDict.
                         TryGetValue(meta.id, out TouchpadMapAction tempTouchAct))
                 {
-                    TouchBindingItemsTest tempItem = new TouchBindingItemsTest(meta.id, meta.displayName, tempTouchAct, mapper);
+                    TouchBindingItemsTest tempItem = CreateTouchBindingItem(meta, tempTouchAct);
                     tempItem.TouchpadClickBinding = CreateTouchpadClickBinding(tempItem);
                     touchpadBindings.Add(tempItem);
                 }
@@ -1069,14 +1109,46 @@ namespace DS4MapperTest.ViewModels
             PopulateStickKeybinds();
             PopulateTouchpadGroups();
             RaisePropertyChanged(nameof(HasAlwaysOnKeybinds));
+            RaisePropertyChanged(nameof(ShowFaceButtonSwapToggle));
+            RaisePropertyChanged(nameof(HasCenterTouchpad));
+            RaisePropertyChanged(nameof(HasSupportedTouchpadHardware));
+            RaisePropertyChanged(nameof(HasPaddleControls));
+        }
+
+        private TouchBindingItemsTest CreateTouchBindingItem(InputBindingMeta meta,
+            TouchpadMapAction action)
+        {
+            bool available = true;
+            string unavailableMessage = null;
+            if (UniversalLegacyBindingMap.TryGetUniversalInput(meta.id, out UniversalInputId inputId))
+            {
+                available = ControllerSupportsUniversalInput(inputId);
+                if (!available)
+                {
+                    unavailableMessage = inputId == UniversalInputId.PrimaryTouchSurface
+                        ? "The connected controller does not have a centre touchpad touch area. This binding is preserved in the profile and becomes editable when a PlayStation-style touchpad controller is connected."
+                        : "The connected controller does not report this touchpad input. This binding is preserved in the profile and becomes editable when compatible hardware is connected.";
+                }
+            }
+
+            return new TouchBindingItemsTest(meta.id, meta.displayName, action, mapper,
+                available, unavailableMessage);
         }
 
         private void PopulateTouchpadGroups()
         {
+            touchpadTouchSurfaceBindings.Clear();
             touchpadMouseMovementBindings.Clear();
             touchpadZoneGestureBindings.Clear();
             touchpadTrackballScrollBindings.Clear();
             touchpadAdvancedBindings.Clear();
+
+            foreach (TouchBindingItemsTest item in touchpadBindings
+                .OrderBy(GetTouchpadTouchBindingRank)
+                .ThenBy(item => item.BindingName, StringComparer.OrdinalIgnoreCase))
+            {
+                touchpadTouchSurfaceBindings.Add(item);
+            }
 
             foreach (TouchBindingItemsTest item in touchpadBindings)
             {
@@ -1106,25 +1178,25 @@ namespace DS4MapperTest.ViewModels
         {
             leftStickClickBinding.Clear();
             AddFirstMatchingButtonBinding(leftStickClickBinding, claimedButtonBindings,
-                new string[] { "L3", "LSClick" },
+                new string[] { "L3", "LSClick", "LeftStickClick" },
                 "Left Stick Click",
                 "Stick click button");
 
             rightStickClickBinding.Clear();
             AddFirstMatchingButtonBinding(rightStickClickBinding, claimedButtonBindings,
-                new string[] { "R3", "RSClick" },
+                new string[] { "R3", "RSClick", "RightStickClick" },
                 "Right Stick Click",
                 "Stick click button");
 
             leftStickTouchBinding.Clear();
             AddFirstMatchingButtonBinding(leftStickTouchBinding, claimedButtonBindings,
-                new string[] { "LSTouch" },
+                new string[] { "LSTouch", "LeftStickTouch" },
                 "LS Touch / Left Stick Touch",
                 "Stick touch sensor");
 
             rightStickTouchBinding.Clear();
             AddFirstMatchingButtonBinding(rightStickTouchBinding, claimedButtonBindings,
-                new string[] { "RSTouch" },
+                new string[] { "RSTouch", "RightStickTouch" },
                 "RS Touch / Right Stick Touch",
                 "Stick touch sensor");
         }
@@ -1133,37 +1205,38 @@ namespace DS4MapperTest.ViewModels
         {
             extraButtonBindings.Clear();
 
-            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
-                new string[] { "FnL" },
-                "Fn Left",
-                "Function button");
-            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
-                new string[] { "FnR" },
-                "Fn Right",
-                "Function button");
-            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
-                new string[] { "LeftGripSense" },
-                "Left Grip Sense",
-                "Grip sensor");
-            AddFirstMatchingButtonBinding(extraButtonBindings, claimedButtonBindings,
-                new string[] { "RightGripSense" },
-                "Right Grip Sense",
-                "Grip sensor");
-            // Fallback: surface any backend button binding no named section
-            // claimed. Follows mapper BindingList order so the list is stable
-            foreach (BindingItemsTest item in buttonBindings)
+            for (int slot = 1; slot <= 6; slot++)
             {
+                string bindingName = $"MiscButton{slot}";
+                if (!buttonBindingsIndexDict.TryGetValue(bindingName, out int index))
+                {
+                    continue;
+                }
+
+                BindingItemsTest item = buttonBindings[index];
                 if (claimedButtonBindings.Contains(item.BindingName))
                 {
                     continue;
                 }
 
                 claimedButtonBindings.Add(item.BindingName);
-                string label = !string.IsNullOrWhiteSpace(item.DisplayInputMapString)
-                    ? item.DisplayInputMapString
-                    : item.BindingName;
+                UniversalInputId inputId = (UniversalInputId)((int)UniversalInputId.MiscButton1 + (slot - 1));
+                string label = ControllerMiscLabelProvider.GetLabel(
+                    inputId,
+                    (mapper as UniversalMapper)?.Controller.Capabilities);
                 extraButtonBindings.Add(new FaceButtonBindingItem(this, item, label));
             }
+        }
+
+        private static int GetTouchpadTouchBindingRank(TouchBindingItemsTest item)
+        {
+            return item.BindingName switch
+            {
+                "TouchpadLeft" or "LeftTouchpad" or "LeftTouchSurface" => 0,
+                "TouchpadRight" or "RightTouchpad" or "RightTouchSurface" => 1,
+                "Touchpad" or "PrimaryTouchSurface" => 2,
+                _ => 3,
+            };
         }
 
         private void PopulateTouchpadButtonBindings()
@@ -1174,37 +1247,60 @@ namespace DS4MapperTest.ViewModels
             FaceButtonBindingItem item;
 
             item = AddTouchpadButtonBinding(
-                new string[] { "LeftPadTouch", "LeftTouchpadTouch" },
+                new string[] { "LeftPadTouch", "LeftTouchpadTouch", "LeftTouchSurface" },
                 "Left Touch",
                 "Touchpad touch sensor");
             if (item != null) touchpadTouchBindings.Add(item);
 
             item = AddTouchpadButtonBinding(
-                new string[] { "RightPadTouch", "RightTouchpadTouch" },
+                new string[] { "RightPadTouch", "RightTouchpadTouch", "RightTouchSurface" },
                 "Right Touch",
                 "Touchpad touch sensor");
             if (item != null) touchpadTouchBindings.Add(item);
 
             item = AddTouchpadButtonBinding(
-                new string[] { "TouchClick" },
-                UsesPlayStationTouchpadClickNames ? "Center Click" : "Main Press",
-                UsesPlayStationTouchpadClickNames ? "Physical full-pad click" : "Physical full-pad press",
-                UsesPlayStationTouchpadClickNames);
-            if (item != null) touchpadPressBindings.Add(item);
+                new string[] { "PrimaryTouchSurface" },
+                "Center Touch",
+                "Touchpad touch sensor",
+                false,
+                HasCenterTouchpad,
+                GetUnavailableCenterTouchMessage());
+            item ??= FaceButtonBindingItem.Unavailable(this, "CenterTouch", "Center Touch",
+                "Touchpad touch sensor", GetUnavailableCenterTouchMessage());
+            touchpadTouchBindings.Add(item);
+            if (!touchpadButtonBindings.Contains(item))
+            {
+                touchpadButtonBindings.Add(item);
+            }
 
             item = AddTouchpadButtonBinding(
-                new string[] { "LeftPadClick", "LeftTouchpadClick" },
+                new string[] { "LeftPadClick", "LeftTouchpadClick", "LeftTouchSurfaceClick" },
                 UsesPlayStationTouchpadClickNames ? "Left-side Click" : "Left Press",
                 UsesPlayStationTouchpadClickNames ? "Physical left-side click" : "Physical left-pad press",
                 UsesPlayStationTouchpadClickNames);
             if (item != null) touchpadPressBindings.Add(item);
 
             item = AddTouchpadButtonBinding(
-                new string[] { "RightPadClick", "RightTouchpadClick" },
+                new string[] { "RightPadClick", "RightTouchpadClick", "RightTouchSurfaceClick" },
                 UsesPlayStationTouchpadClickNames ? "Right-side Click" : "Right Press",
                 UsesPlayStationTouchpadClickNames ? "Physical right-side click" : "Physical right-pad press",
                 UsesPlayStationTouchpadClickNames);
             if (item != null) touchpadPressBindings.Add(item);
+
+            item = AddTouchpadButtonBinding(
+                new string[] { "TouchClick", "PrimaryTouchSurfaceClick" },
+                "Center Press",
+                UsesPlayStationTouchpadClickNames ? "Physical full-pad click" : "Physical full-pad press",
+                UsesPlayStationTouchpadClickNames,
+                HasCenterTouchpad,
+                GetUnavailableCenterPressMessage());
+            item ??= FaceButtonBindingItem.Unavailable(this, "CenterPress", "Center Press",
+                "Physical full-pad press", GetUnavailableCenterPressMessage());
+            touchpadPressBindings.Add(item);
+            if (!touchpadButtonBindings.Contains(item))
+            {
+                touchpadButtonBindings.Add(item);
+            }
         }
 
         private void PopulateStickKeybinds()
@@ -1232,19 +1328,13 @@ namespace DS4MapperTest.ViewModels
 
             string[][] faceAliases = new string[][]
             {
-                new string[] { "A", "Cross" },
-                new string[] { "B", "Circle" },
-                new string[] { "X", "Square" },
-                new string[] { "Y", "Triangle" },
+                new string[] { "A", "Cross", "FaceButtonSouth" },
+                new string[] { "B", "Circle", "FaceButtonEast" },
+                new string[] { "X", "Square", "FaceButtonWest" },
+                new string[] { "Y", "Triangle", "FaceButtonNorth" },
             };
 
-            string[] displayNames = new string[]
-            {
-                "A / Cross",
-                "B / Circle",
-                "X / Square",
-                "Y / Triangle",
-            };
+            string[] displayNames = ResolveFaceButtonDisplayNames();
 
             for (int i = 0; i < faceAliases.Length; i++)
             {
@@ -1272,14 +1362,14 @@ namespace DS4MapperTest.ViewModels
 
             string[][] bumperAliases = new string[][]
             {
-                new string[] { "L1", "LB", "LShoulder" },
-                new string[] { "R1", "RB", "RShoulder" },
+                new string[] { "L1", "LB", "LShoulder", "LeftShoulder" },
+                new string[] { "R1", "RB", "RShoulder", "RightShoulder" },
             };
 
             string[] displayNames = new string[]
             {
-                "L1 / Left Bumper",
-                "R1 / Right Bumper",
+                "Left Bumper",
+                "Right Bumper",
             };
 
             for (int i = 0; i < bumperAliases.Length; i++)
@@ -1302,20 +1392,44 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        private string[] ResolveFaceButtonDisplayNames()
+        {
+            ControllerCapabilities capabilities = (mapper as UniversalMapper)?.Controller.Capabilities;
+            UniversalInputId[] order =
+            {
+                UniversalInputId.FaceButtonSouth,
+                UniversalInputId.FaceButtonEast,
+                UniversalInputId.FaceButtonWest,
+                UniversalInputId.FaceButtonNorth,
+            };
+
+            string[] labels = order
+                .Select(input => ControllerLabelProvider.GetLabel(input, capabilities))
+                .ToArray();
+
+            if (ShowFaceButtonSwapToggle && UniversalLiveInputRoutingOptions.NintendoFaceButtonSwapEnabled)
+            {
+                (labels[0], labels[1]) = (labels[1], labels[0]);
+                (labels[2], labels[3]) = (labels[3], labels[2]);
+            }
+
+            return labels;
+        }
+
         private void PopulateCenterButtonBindings()
         {
             centerButtonBindings.Clear();
 
             AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
-                new string[] { "Options", "Start", "Plus" },
+                new string[] { "Options", "Start", "Plus", "Menu" },
                 "Options / Menu",
                 "System button");
             AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
-                new string[] { "Share", "Create", "Capture", "Back", "Minus" },
+                new string[] { "Share", "Create", "Capture", "Back", "Minus", "View" },
                 "Share / View",
                 "System button");
             AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
-                new string[] { "PS", "Home", "Guide", "Steam" },
+                new string[] { "PS", "Home", "Guide", "Steam", "System" },
                 "PS / Home",
                 "System button");
             AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
@@ -1323,7 +1437,7 @@ namespace DS4MapperTest.ViewModels
                 "Mic",
                 "System button");
             AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
-                new string[] { "QAM" },
+                new string[] { "QAM", "QuickAccessMenu" },
                 "QAM",
                 "Quick Access Menu button");
             AddFirstMatchingButtonBinding(centerButtonBindings, claimedButtonBindings,
@@ -1335,33 +1449,50 @@ namespace DS4MapperTest.ViewModels
         private void PopulatePaddleButtonBindings()
         {
             paddleButtonBindings.Clear();
+            const string unavailablePaddleMessage =
+                "The connected controller does not report this paddle, rear button, or grip input. This binding is preserved in the profile and becomes editable when compatible hardware is connected.";
 
             AddFirstMatchingButtonBinding(paddleButtonBindings,
-                new string[] { "BLP", "L4", "LSideL" },
-                "L Paddle 1 / L4 / L SL");
+                new string[] { "BLP", "L4", "LSideL", "LeftRearPrimary" },
+                "Left Paddle 1",
+                ControllerSupportsUniversalInput(UniversalInputId.LeftRearPrimary),
+                unavailablePaddleMessage);
             AddFirstMatchingButtonBinding(paddleButtonBindings,
-                new string[] { "BRP", "R4", "RSideL" },
-                "R Paddle 1 / R4 / R SL");
+                new string[] { "BRP", "R4", "RSideL", "RightRearPrimary" },
+                "Right Paddle 1",
+                ControllerSupportsUniversalInput(UniversalInputId.RightRearPrimary),
+                unavailablePaddleMessage);
             AddFirstMatchingButtonBinding(paddleButtonBindings,
-                new string[] { "L5", "PL", "LSideR" },
-                "L Paddle 2 / L5 / L SR");
+                new string[] { "L5", "PL", "LSideR", "LeftRearSecondary" },
+                "Left Paddle 2",
+                ControllerSupportsUniversalInput(UniversalInputId.LeftRearSecondary),
+                unavailablePaddleMessage);
             AddFirstMatchingButtonBinding(paddleButtonBindings,
-                new string[] { "R5", "PR", "RSideR" },
-                "R Paddle 2 / R5 / R SR");
+                new string[] { "R5", "PR", "RSideR", "RightRearSecondary" },
+                "Right Paddle 2",
+                ControllerSupportsUniversalInput(UniversalInputId.RightRearSecondary),
+                unavailablePaddleMessage);
             AddFirstMatchingButtonBinding(paddleButtonBindings,
                 new string[] { "LeftGrip" },
-                "Left Grip");
+                "Left Grip",
+                ControllerSupportsUniversalInput(UniversalInputId.LeftGripTouch),
+                unavailablePaddleMessage);
             AddFirstMatchingButtonBinding(paddleButtonBindings,
                 new string[] { "RightGrip" },
-                "Right Grip");
+                "Right Grip",
+                ControllerSupportsUniversalInput(UniversalInputId.RightGripTouch),
+                unavailablePaddleMessage);
         }
 
         private void AddFirstMatchingButtonBinding(
             ObservableCollection<FaceButtonBindingItem> target,
             string[] aliases,
-            string displayName)
+            string displayName,
+            bool isAvailable = true,
+            string unavailableMessage = null)
         {
-            AddFirstMatchingButtonBinding(target, claimedButtonBindings, aliases, displayName, null);
+            AddFirstMatchingButtonBinding(target, claimedButtonBindings, aliases, displayName,
+                null, isAvailable, unavailableMessage);
         }
 
         private bool AddFirstMatchingButtonBinding(
@@ -1369,7 +1500,9 @@ namespace DS4MapperTest.ViewModels
             HashSet<string> claimedBindings,
             string[] aliases,
             string displayName,
-            string subtitle)
+            string subtitle,
+            bool isAvailable = true,
+            string unavailableMessage = null)
         {
             BindingItemsTest item = null;
             foreach (string alias in aliases)
@@ -1388,7 +1521,8 @@ namespace DS4MapperTest.ViewModels
 
             if (item != null)
             {
-                target.Add(new FaceButtonBindingItem(this, item, displayName, subtitle));
+                target.Add(new FaceButtonBindingItem(this, item, displayName, subtitle,
+                    isAvailable: isAvailable, unavailableMessage: unavailableMessage));
                 claimedBindings?.Add(item.BindingName);
                 return true;
             }
@@ -1400,10 +1534,12 @@ namespace DS4MapperTest.ViewModels
         {
             string[] aliases = touchpadItem.BindingName switch
             {
-                "LeftTouchpad" => new string[] { "LeftPadClick", "LeftTouchpadClick" },
-                "TouchpadLeft" => new string[] { "LeftPadClick", "LeftTouchpadClick" },
-                "RightTouchpad" => new string[] { "RightPadClick", "RightTouchpadClick" },
-                "TouchpadRight" => new string[] { "RightPadClick", "RightTouchpadClick" },
+                "LeftTouchpad" => new string[] { "LeftPadClick", "LeftTouchpadClick", "LeftTouchSurfaceClick" },
+                "TouchpadLeft" => new string[] { "LeftPadClick", "LeftTouchpadClick", "LeftTouchSurfaceClick" },
+                "LeftTouchSurface" => new string[] { "LeftTouchSurfaceClick", "LeftPadClick", "LeftTouchpadClick" },
+                "RightTouchpad" => new string[] { "RightPadClick", "RightTouchpadClick", "RightTouchSurfaceClick" },
+                "TouchpadRight" => new string[] { "RightPadClick", "RightTouchpadClick", "RightTouchSurfaceClick" },
+                "RightTouchSurface" => new string[] { "RightTouchSurfaceClick", "RightPadClick", "RightTouchpadClick" },
                 _ => Array.Empty<string>(),
             };
 
@@ -1412,7 +1548,7 @@ namespace DS4MapperTest.ViewModels
                 if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
                 {
                     return AddTouchpadButtonBinding(buttonBindings[index],
-                        touchpadItem.BindingName == "RightTouchpad" || touchpadItem.BindingName == "TouchpadRight"
+                        IsRightTouchSurfaceBinding(touchpadItem.BindingName)
                             ? (UsesPlayStationTouchpadClickNames ? "Right-side Click" : "Right Press")
                             : (UsesPlayStationTouchpadClickNames ? "Left-side Click" : "Left Press"),
                         UsesPlayStationTouchpadClickNames ? "Physical touchpad click" : "Physical touchpad press",
@@ -1423,19 +1559,42 @@ namespace DS4MapperTest.ViewModels
             return null;
         }
 
+        private static bool IsRightTouchSurfaceBinding(string bindingName)
+        {
+            return bindingName == "RightTouchpad" ||
+                bindingName == "TouchpadRight" ||
+                bindingName == "RightTouchSurface";
+        }
+
         private FaceButtonBindingItem AddTouchpadButtonBinding(string[] aliases,
-            string displayName, string subtitle, bool usesClickTerminology = false)
+            string displayName, string subtitle, bool usesClickTerminology = false,
+            bool isAvailable = true, string unavailableMessage = null)
         {
             foreach (string alias in aliases)
             {
                 if (buttonBindingsIndexDict.TryGetValue(alias, out int index))
                 {
                     return AddTouchpadButtonBinding(buttonBindings[index], displayName, subtitle,
-                        usesClickTerminology);
+                        usesClickTerminology, isAvailable, unavailableMessage);
                 }
             }
 
             return null;
+        }
+
+        private static string GetUnavailableCenterTouchMessage()
+        {
+            return "The connected controller does not have a centre touchpad touch area. This binding is preserved in the profile and becomes editable when a PlayStation-style touchpad controller is connected.";
+        }
+
+        private static string GetUnavailableCenterPressMessage()
+        {
+            return "The connected controller does not have a centre touchpad press. This binding is preserved in the profile and becomes editable when a PlayStation-style touchpad controller is connected.";
+        }
+
+        private bool ControllerSupportsUniversalInput(UniversalInputId inputId)
+        {
+            return (mapper as UniversalMapper)?.Controller.Capabilities.Supports(inputId) == true;
         }
 
         private static readonly HashSet<string> PressureCapableClickBindingNames =
@@ -1445,7 +1604,8 @@ namespace DS4MapperTest.ViewModels
             };
 
         private FaceButtonBindingItem AddTouchpadButtonBinding(BindingItemsTest item,
-            string displayName, string subtitle, bool usesClickTerminology = false)
+            string displayName, string subtitle, bool usesClickTerminology = false,
+            bool isAvailable = true, string unavailableMessage = null)
         {
             if (item == null)
             {
@@ -1466,7 +1626,8 @@ namespace DS4MapperTest.ViewModels
 
             FaceButtonBindingItem bindingItem =
                 new FaceButtonBindingItem(this, item, displayName, subtitle,
-                    isTouchpadPressureCapable, usesClickTerminology);
+                    isTouchpadPressureCapable, usesClickTerminology, isAvailable,
+                    unavailableMessage);
             touchpadButtonBindingItems.Add(item.BindingName, bindingItem);
             touchpadButtonBindings.Add(bindingItem);
             return bindingItem;
@@ -1478,8 +1639,8 @@ namespace DS4MapperTest.ViewModels
 
             string[][] triggerAliases = new string[][]
             {
-                new string[] { "L2", "LT" },
-                new string[] { "R2", "RT" },
+                new string[] { "L2", "LT", "LeftTrigger" },
+                new string[] { "R2", "RT", "RightTrigger" },
             };
 
             string[] displayNames = new string[]
@@ -2487,19 +2648,30 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
-        public void AddLayer()
+        public int AddLayer()
         {
             ActionLayer tempLayer = null;
+            int newIndex = -1;
+            actionResetEvent.Reset();
             mapper.ProcessMappingChangeAction(() =>
             {
                 int ind = mapper.ActionProfile.CurrentActionSet.ActionLayers.Count;
                 tempLayer = new ActionLayer(ind);
                 tempLayer.Name = $"Layer {ind+1}";
                 mapper.ActionProfile.CurrentActionSet.ActionLayers.Add(tempLayer);
+                newIndex = ind;
+                actionResetEvent.Set();
             });
+
+            if (!actionResetEvent.Wait(TimeSpan.FromSeconds(5)) || tempLayer == null || newIndex < 0)
+            {
+                throw new TimeoutException("Timed out waiting for the mapper thread to create an Action Layer.");
+            }
 
             ActionLayerItemsTest tempItem = new ActionLayerItemsTest(mapper.ActionProfile.CurrentActionSet, tempLayer, layerItems.Count);
             layerItems.Add(tempItem);
+            MarkProfileDirty();
+            return newIndex;
         }
 
         public void RemoveLayer()
@@ -2518,22 +2690,34 @@ namespace DS4MapperTest.ViewModels
             SelectedActionLayerIndex = 0;
         }
 
-        public void AddSet()
+        public int AddSet()
         {
             ActionSet tempSet = null;
+            int newIndex = -1;
+            actionResetEvent.Reset();
             mapper.ProcessMappingChangeAction(() =>
             {
                 int ind = mapper.ActionProfile.ActionSets.Count;
                 tempSet = new ActionSet(ind, $"Set {ind+1}");
+                tempSet.DefaultActionLayer.Name = "Default";
                 mapper.ActionProfile.ActionSets.Add(tempSet);
                 mapper.PrepopulateBlankActionLayer(tempSet.DefaultActionLayer);
 
                 tempSet.ClearCompositeLayerActions();
                 tempSet.PrepareCompositeLayer();
+                newIndex = ind;
+                actionResetEvent.Set();
             });
+
+            if (!actionResetEvent.Wait(TimeSpan.FromSeconds(5)) || tempSet == null || newIndex < 0)
+            {
+                throw new TimeoutException("Timed out waiting for the mapper thread to create an Action Set.");
+            }
 
             ActionSetItemsTest tempItem = new ActionSetItemsTest(tempSet);
             actionSetItems.Add(tempItem);
+            MarkProfileDirty();
+            return newIndex;
         }
 
         public void RemoveSet()
@@ -2735,6 +2919,11 @@ namespace DS4MapperTest.ViewModels
             get => displayInputMapString;
         }
 
+        public bool IsAvailable { get; }
+        public string UnavailableMessage { get; }
+        public bool HasUnavailableMessage =>
+            !IsAvailable && !string.IsNullOrWhiteSpace(UnavailableMessage);
+
         public string bindingName;
         public string BindingName
         {
@@ -2765,11 +2954,9 @@ namespace DS4MapperTest.ViewModels
             {
                 return bindingName switch
                 {
-                    "Touchpad" => "Center Touchpad",
-                    "TouchpadLeft" => UsesSteamTouchpadSideNames ? "Left Touchpad" : "Left-side Touchpad",
-                    "LeftTouchpad" => UsesSteamTouchpadSideNames ? "Left Touchpad" : "Left-side Touchpad",
-                    "TouchpadRight" => UsesSteamTouchpadSideNames ? "Right Touchpad" : "Right-side Touchpad",
-                    "RightTouchpad" => UsesSteamTouchpadSideNames ? "Right Touchpad" : "Right-side Touchpad",
+                    "Touchpad" or "PrimaryTouchSurface" => "Center Touchpad",
+                    "TouchpadLeft" or "LeftTouchpad" or "LeftTouchSurface" => UsesSteamTouchpadSideNames ? "Left Touchpad" : "Left-side Touchpad",
+                    "TouchpadRight" or "RightTouchpad" or "RightTouchSurface" => UsesSteamTouchpadSideNames ? "Right Touchpad" : "Right-side Touchpad",
                     _ => displayInputMapString,
                 };
             }
@@ -2810,6 +2997,7 @@ namespace DS4MapperTest.ViewModels
             get => GetActionIndex(mappedAction);
             set
             {
+                if (!IsAvailable) return;
                 if (value == SelectedActionIndex) return;
 
                 TouchpadBindEditViewModel editVM = new TouchpadBindEditViewModel(mapper, mappedAction);
@@ -2913,13 +3101,17 @@ namespace DS4MapperTest.ViewModels
 
         public bool IsUnbound => mappedAction is TouchpadNoAction;
 
-        public bool IsWholeTouchpadBinding => bindingName == "Touchpad";
+        public bool IsWholeTouchpadBinding =>
+            bindingName == "Touchpad" ||
+            bindingName == "PrimaryTouchSurface";
 
         public bool IsSideTouchpadBinding =>
             bindingName == "TouchpadLeft" ||
             bindingName == "LeftTouchpad" ||
             bindingName == "TouchpadRight" ||
-            bindingName == "RightTouchpad";
+            bindingName == "RightTouchpad" ||
+            bindingName == "LeftTouchSurface" ||
+            bindingName == "RightTouchSurface";
 
         public bool ShowPassthruPrecedenceNotice =>
             UsesClickTerminology &&
@@ -2974,12 +3166,15 @@ namespace DS4MapperTest.ViewModels
         }
 
         public TouchBindingItemsTest(string bindingName, string displayInputMap,
-            MapAction mappedAction, Mapper mapper)
+            MapAction mappedAction, Mapper mapper, bool isAvailable = true,
+            string unavailableMessage = null)
         {
             this.bindingName = bindingName;
             this.displayInputMapString = displayInputMap;
             this.mappedAction = mappedAction as TouchpadMapAction;
             this.mapper = mapper;
+            IsAvailable = isAvailable;
+            UnavailableMessage = unavailableMessage;
         }
 
         public void UpdateAction(TouchpadMapAction action)
@@ -3025,6 +3220,9 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(HasAdvancedTouchpadSettings));
             OnPropertyChanged(nameof(ShowAdvancedTouchpadSettingsEmptyMessage));
             OnPropertyChanged(nameof(AdvancedTouchpadSettingsEmptyMessage));
+            OnPropertyChanged(nameof(IsAvailable));
+            OnPropertyChanged(nameof(UnavailableMessage));
+            OnPropertyChanged(nameof(HasUnavailableMessage));
         }
 
         private bool WholeTouchpadUsesPassthru
@@ -3032,7 +3230,8 @@ namespace DS4MapperTest.ViewModels
             get
             {
                 if (mapper?.ActionProfile?.CurrentActionSet?.CurrentActionLayer?.touchpadActionDict != null &&
-                    mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.touchpadActionDict.TryGetValue("Touchpad", out TouchpadMapAction wholeTouchAction))
+                    (mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.touchpadActionDict.TryGetValue("Touchpad", out TouchpadMapAction wholeTouchAction) ||
+                    mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.touchpadActionDict.TryGetValue("PrimaryTouchSurface", out wholeTouchAction)))
                 {
                     return wholeTouchAction.OutputsNativeTouch;
                 }

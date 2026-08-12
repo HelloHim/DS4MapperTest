@@ -1,4 +1,5 @@
 using DS4MapperTest.ButtonActions;
+using DS4MapperTest.Common;
 using DS4MapperTest.DPadActions;
 using DS4MapperTest.GyroActions;
 using DS4MapperTest.MapperUtil;
@@ -22,6 +23,7 @@ namespace DS4MapperTest.Universal.Mapping
         private TouchEventFrame previousPrimaryTouchFrame;
         private TouchEventFrame previousLeftTouchFrame;
         private TouchEventFrame previousRightTouchFrame;
+        private readonly GyroCalibration gyroCalibration = new GyroCalibration();
         private bool stopped = true;
 
         public UniversalMapper(IUniversalController controller, UniversalProfile profile)
@@ -37,6 +39,12 @@ namespace DS4MapperTest.Universal.Mapping
         public override DeviceReaderBase BaseReader => null;
         public InputDeviceType DeviceTypeOverride { get; private set; }
         public override InputDeviceType DeviceType => DeviceTypeOverride;
+        public GyroCalibrationStatus GyroCalibrationStatus => gyroCalibration.Status;
+
+        public void RequestGyroCalibration()
+        {
+            gyroCalibration.RequestCalibrationAfterDelay(1000);
+        }
 
         public override void Start(VirtualKBMBase fakerInputHandler, VirtualKBMMapping eventInputMapping)
         {
@@ -381,17 +389,26 @@ namespace DS4MapperTest.Universal.Mapping
             double gyroPitchDegrees = RadiansToDegrees(gyro.X);
             double gyroRollDegrees = RadiansToDegrees(gyro.Z);
 
+            int gyroYaw = ScaleLegacyGyro(gyroYawDegrees);
+            int gyroPitch = ScaleLegacyGyro(gyroPitchDegrees);
+            int gyroRoll = ScaleLegacyGyro(gyroRollDegrees);
+            int accelX = ScaleLegacyAccel(accel.X);
+            int accelY = ScaleLegacyAccel(accel.Y);
+            int accelZ = ScaleLegacyAccel(accel.Z);
+            gyroCalibration.Update(ref gyroYaw, ref gyroPitch, ref gyroRoll,
+                ref accelX, ref accelY, ref accelZ);
+
             GyroEventFrame frame = new GyroEventFrame
             {
-                GyroYaw = ScaleLegacyGyro(gyroYawDegrees),
-                GyroPitch = ScaleLegacyGyro(gyroPitchDegrees),
-                GyroRoll = ScaleLegacyGyro(gyroRollDegrees),
+                GyroYaw = ClampLegacySensor(gyroYaw - gyroCalibration.gyro_offset_x),
+                GyroPitch = ClampLegacySensor(gyroPitch - gyroCalibration.gyro_offset_y),
+                GyroRoll = ClampLegacySensor(gyroRoll - gyroCalibration.gyro_offset_z),
                 AngGyroYaw = gyroYawDegrees,
                 AngGyroPitch = gyroPitchDegrees,
                 AngGyroRoll = gyroRollDegrees,
-                AccelX = ScaleLegacyAccel(accel.X),
-                AccelY = ScaleLegacyAccel(accel.Y),
-                AccelZ = ScaleLegacyAccel(accel.Z),
+                AccelX = ClampLegacySensor(accelX),
+                AccelY = ClampLegacySensor(accelY),
+                AccelZ = ClampLegacySensor(accelZ),
                 AccelXG = accel.X / 9.80665,
                 AccelYG = accel.Y / 9.80665,
                 AccelZG = accel.Z / 9.80665,
@@ -432,9 +449,37 @@ namespace DS4MapperTest.Universal.Mapping
 
         private static InputDeviceType ResolveDeviceType(IUniversalController controller)
         {
-            return controller.Identity.BackendName == UniversalControllerBackendIds.SteamControllerNative
-                ? InputDeviceType.SteamController
-                : InputDeviceType.None;
+            if (controller.Identity.BackendName == UniversalControllerBackendIds.SteamControllerNative)
+            {
+                return InputDeviceType.SteamController;
+            }
+
+            string family = controller.DisplayInfo?.GlyphFamily ?? string.Empty;
+            string name = controller.DisplayInfo?.DisplayName ?? string.Empty;
+            if (string.Equals(family, "playstation", StringComparison.OrdinalIgnoreCase))
+            {
+                return InputDeviceType.DualSense;
+            }
+
+            if (string.Equals(family, "nintendo", StringComparison.OrdinalIgnoreCase))
+            {
+                return name.IndexOf("joy", StringComparison.OrdinalIgnoreCase) >= 0
+                    ? InputDeviceType.JoyCon
+                    : InputDeviceType.SwitchPro;
+            }
+
+            if (name.IndexOf("8bitdo", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return InputDeviceType.EightBitDoUltimate2Wireless;
+            }
+
+            if (name.IndexOf("triton", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                name.IndexOf("steam controller 2026", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return InputDeviceType.SteamControllerTriton;
+            }
+
+            return InputDeviceType.None;
         }
 
         private static bool TryMapActivationCode(JoypadActionCodes code, out UniversalInputId input)
@@ -517,6 +562,11 @@ namespace DS4MapperTest.Universal.Mapping
         private static short ScaleLegacyAccel(double metresPerSecondSquared)
         {
             return (short)Math.Clamp(Math.Round((metresPerSecondSquared / 9.80665) * 16384.0), short.MinValue, short.MaxValue);
+        }
+
+        private static short ClampLegacySensor(int value)
+        {
+            return (short)Math.Clamp(value, short.MinValue, short.MaxValue);
         }
     }
 }

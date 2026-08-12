@@ -60,7 +60,9 @@ namespace DS4MapperTest.ViewModels
         }
 
         public ObservableCollection<string> ProfileFolders =>
-            manager.DeviceProfileListDict[mapper.DeviceType].ProfileFolderCol;
+            manager.DeviceProfileListDict.TryGetValue(mapper.DeviceType, out ProfileList profileList)
+                ? profileList.ProfileFolderCol
+                : new ObservableCollection<string> { ProfileList.DEFAULT_PROFILE_FOLDER };
 
         private string selectedFolderName;
         public string SelectedFolderName
@@ -70,7 +72,9 @@ namespace DS4MapperTest.ViewModels
             {
                 if (selectedFolderName == value) return;
                 selectedFolderName = value;
-                profileFolder = manager.DeviceProfileListDict[mapper.DeviceType].GetFolderPath(selectedFolderName);
+                profileFolder = manager.DeviceProfileListDict.TryGetValue(mapper.DeviceType, out ProfileList profileList)
+                    ? profileList.GetFolderPath(selectedFolderName)
+                    : ApplicationDataPathResolver.ResolveDefault().UniversalProfilesPath;
                 RaisePropertyChanged(nameof(SelectedFolderName));
                 RaisePropertyChanged(nameof(ProfileFolder));
                 RaisePropertyChanged(nameof(ProfilePath));
@@ -171,11 +175,18 @@ namespace DS4MapperTest.ViewModels
             // default. The manage-profiles panel that hosts this view model can
             // only be opened while a controller is connected, so DeviceType is
             // guaranteed to be valid here.
-            ProfileList profileList = manager.DeviceProfileListDict[mapper.DeviceType];
-            selectedFolderName = profileList.FolderExists(ProfileList.VALORANT_PROFILE_FOLDER)
-                ? ProfileList.VALORANT_PROFILE_FOLDER
-                : profileList.ProfileFolderCol.FirstOrDefault() ?? ProfileList.VALORANT_PROFILE_FOLDER;
-            profileFolder = profileList.GetFolderPath(selectedFolderName);
+            if (manager.DeviceProfileListDict.TryGetValue(mapper.DeviceType, out ProfileList profileList))
+            {
+                selectedFolderName = profileList.FolderExists(ProfileList.VALORANT_PROFILE_FOLDER)
+                    ? ProfileList.VALORANT_PROFILE_FOLDER
+                    : profileList.ProfileFolderCol.FirstOrDefault() ?? ProfileList.VALORANT_PROFILE_FOLDER;
+                profileFolder = profileList.GetFolderPath(selectedFolderName);
+            }
+            else
+            {
+                selectedFolderName = ProfileList.DEFAULT_PROFILE_FOLDER;
+                profileFolder = ApplicationDataPathResolver.ResolveDefault().UniversalProfilesPath;
+            }
         }
 
         public bool CreateProfile()

@@ -21,15 +21,15 @@
                         <Style.Triggers>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding LeftStickKeybinds.HasBinding}" Value="False"/>
-                                    <Condition Binding="{Binding RightStickKeybinds.HasBinding}" Value="False"/>
+                                    <Condition Binding="{Binding LeftStickKeybinds.HasTouchBindings}" Value="False"/>
+                                    <Condition Binding="{Binding RightStickKeybinds.HasTouchBindings}" Value="False"/>
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="Visibility" Value="Visible"/>
                             </MultiDataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <TextBlock Text="No stick bindings available for this controller."
+                <TextBlock Text="No capacitive stick-touch bindings are reported for this controller."
                            Style="{StaticResource JsmccBodyText}"
                            TextWrapping="Wrap"/>
             </Border>

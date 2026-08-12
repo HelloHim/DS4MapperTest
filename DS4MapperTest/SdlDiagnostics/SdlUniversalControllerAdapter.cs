@@ -61,6 +61,12 @@ namespace DS4MapperTest.SdlDiagnostics
                 ["RightShoulder"] = UniversalInputId.RightShoulder,
                 ["LeftStick"] = UniversalInputId.LeftStickClick,
                 ["RightStick"] = UniversalInputId.RightStickClick,
+                ["LeftStickTouch"] = UniversalInputId.LeftStickTouch,
+                ["RightStickTouch"] = UniversalInputId.RightStickTouch,
+                ["LeftStickTouchSensor"] = UniversalInputId.LeftStickTouch,
+                ["RightStickTouchSensor"] = UniversalInputId.RightStickTouch,
+                ["LeftStickCapsense"] = UniversalInputId.LeftStickTouch,
+                ["RightStickCapsense"] = UniversalInputId.RightStickTouch,
                 ["Start"] = UniversalInputId.Menu,
                 ["Back"] = UniversalInputId.View,
                 ["Guide"] = UniversalInputId.System,
@@ -108,6 +114,7 @@ namespace DS4MapperTest.SdlDiagnostics
             {
                 if (TryMapButton(button.Name, out UniversalInputId inputId))
                 {
+                    inputId = ApplyFaceButtonSwap(info, inputId);
                     AddDescriptor(descriptors, inputId, info, $"button:{button.Name}", button.Name);
                 }
             }
@@ -135,6 +142,13 @@ namespace DS4MapperTest.SdlDiagnostics
             foreach (KeyValuePair<int, SdlUniversalTouchSurfaceTarget> mapping in touchpadMappingPolicy.MapTouchpads(info))
             {
                 AddDescriptor(descriptors, TouchSurfaceId(mapping.Value), info, $"touchpad:{mapping.Key}", TouchLabel(mapping.Value));
+                if (mapping.Value == SdlUniversalTouchSurfaceTarget.Primary)
+                {
+                    AddDescriptor(descriptors, UniversalInputId.LeftTouchSurface, info, $"touchpad:{mapping.Key}:left", "Left Touchpad");
+                    AddDescriptor(descriptors, UniversalInputId.RightTouchSurface, info, $"touchpad:{mapping.Key}:right", "Right Touchpad");
+                    AddDescriptor(descriptors, UniversalInputId.LeftTouchSurfaceClick, info, $"touchpad:{mapping.Key}:left-click", "Left Touchpad Click");
+                    AddDescriptor(descriptors, UniversalInputId.RightTouchSurfaceClick, info, $"touchpad:{mapping.Key}:right-click", "Right Touchpad Click");
+                }
             }
 
             if (HasEnabledSensor(info, "Gyro"))
@@ -171,10 +185,13 @@ namespace DS4MapperTest.SdlDiagnostics
 
             foreach (SdlRawButtonState button in info.Buttons.Where(item => item.Supported))
             {
-                if (TryMapButton(button.Name, out UniversalInputId inputId) &&
-                    capabilities.Supports(inputId))
+                if (TryMapButton(button.Name, out UniversalInputId inputId))
                 {
-                    values[inputId] = UniversalInputValue.DigitalButton(button.Pressed);
+                    inputId = ApplyFaceButtonSwap(info, inputId);
+                    if (capabilities.Supports(inputId))
+                    {
+                        values[inputId] = UniversalInputValue.DigitalButton(button.Pressed);
+                    }
                 }
             }
 
@@ -195,7 +212,56 @@ namespace DS4MapperTest.SdlDiagnostics
 
         public bool ShouldSuppressForNativeSteamController(SdlRawGamepadInfo info)
         {
-            return OriginalSteamControllerIdentity.IsOriginalSteamController(info.VendorId, info.ProductId);
+            return OriginalSteamControllerIdentity.IsOriginalSteamController(info.VendorId, info.ProductId) ||
+                IsKnownVirtualOutputController(info);
+        }
+
+        public static bool IsKnownVirtualOutputController(SdlRawGamepadInfo info)
+        {
+            string text = $"{info?.Name} {info?.MappingName} {info?.DevicePath}".ToLowerInvariant();
+            bool hasVirtualBusMarker =
+                text.Contains("fakerinput") ||
+                text.Contains("viiper") ||
+                text.Contains("vigem") ||
+                text.Contains("nefarius") ||
+                text.Contains("usbip");
+
+            return hasVirtualBusMarker ||
+                HasVirtualOutputIdentity(info, text) ||
+                IsVirtualDevicePath(info?.DevicePath) ||
+                text.Contains("virtual xbox") ||
+                text.Contains("virtual dualshock") ||
+                text.Contains("virtual dualsense");
+        }
+
+        private static bool HasVirtualOutputIdentity(SdlRawGamepadInfo info, string text)
+        {
+            if (info?.VendorId != 0 || info?.ProductId != 0)
+            {
+                return false;
+            }
+
+            return text.Contains("xbox 360 controller for windows") ||
+                text.Contains("dualshock 4") ||
+                text.Contains("dualsense") ||
+                text.Contains("switch pro controller 2");
+        }
+
+        private static bool IsVirtualDevicePath(string devicePath)
+        {
+            if (string.IsNullOrWhiteSpace(devicePath))
+            {
+                return false;
+            }
+
+            try
+            {
+                return Util.CheckIfVirtualDevice(devicePath);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static void AddDescriptor(
@@ -245,6 +311,24 @@ namespace DS4MapperTest.SdlDiagnostics
         private static bool TryMapButton(string name, out UniversalInputId inputId)
         {
             return ButtonMap.TryGetValue(name ?? string.Empty, out inputId);
+        }
+
+        private static UniversalInputId ApplyFaceButtonSwap(SdlRawGamepadInfo info, UniversalInputId inputId)
+        {
+            if (!UniversalLiveInputRoutingOptions.NintendoFaceButtonSwapEnabled ||
+                InferFamily(info) == "playstation")
+            {
+                return inputId;
+            }
+
+            return inputId switch
+            {
+                UniversalInputId.FaceButtonSouth => UniversalInputId.FaceButtonEast,
+                UniversalInputId.FaceButtonEast => UniversalInputId.FaceButtonSouth,
+                UniversalInputId.FaceButtonWest => UniversalInputId.FaceButtonNorth,
+                UniversalInputId.FaceButtonNorth => UniversalInputId.FaceButtonWest,
+                _ => inputId,
+            };
         }
 
         private static bool HasAxis(SdlRawGamepadInfo info, string name)
@@ -338,6 +422,58 @@ namespace DS4MapperTest.SdlDiagnostics
                         finger.Y,
                         finger.Pressure)),
                     clickPressed);
+
+                if (mapping.Value == SdlUniversalTouchSurfaceTarget.Primary)
+                {
+                    AddDerivedSinglePadHalf(values, capabilities, touchpad,
+                        UniversalInputId.LeftTouchSurface,
+                        UniversalInputId.LeftTouchSurfaceClick,
+                        clickPressed,
+                        left: true);
+                    AddDerivedSinglePadHalf(values, capabilities, touchpad,
+                        UniversalInputId.RightTouchSurface,
+                        UniversalInputId.RightTouchSurfaceClick,
+                        clickPressed,
+                        left: false);
+                }
+            }
+        }
+
+        private static void AddDerivedSinglePadHalf(
+            Dictionary<UniversalInputId, UniversalInputValue> values,
+            ControllerCapabilities capabilities,
+            SdlRawTouchpadState touchpad,
+            UniversalInputId surfaceInput,
+            UniversalInputId clickInput,
+            bool physicalClickPressed,
+            bool left)
+        {
+            UniversalTouchContact[] contacts = touchpad.Fingers
+                .Where(finger => finger.Active && (left ? finger.X < 0.5f : finger.X >= 0.5f))
+                .Select(finger => new UniversalTouchContact(
+                    finger.FingerIndex,
+                    finger.Active,
+                    finger.X,
+                    finger.Y,
+                    finger.Pressure))
+                .ToArray();
+
+            bool halfTouched = contacts.Any();
+            if (capabilities.Supports(surfaceInput))
+            {
+                values[surfaceInput] = UniversalInputValue.TouchSurface(
+                    contacts,
+                    physicalClickPressed && halfTouched);
+            }
+
+            // Single physical touchpads have one click switch. Side click
+            // bindings fire only when that switch is pressed while an active
+            // touch is on the same half. Dual-pad controllers bypass this
+            // derived path and report independent pad clicks directly.
+            if (capabilities.Supports(clickInput))
+            {
+                values[clickInput] = UniversalInputValue.DigitalButton(
+                    physicalClickPressed && halfTouched);
             }
         }
 
@@ -493,6 +629,7 @@ namespace DS4MapperTest.SdlDiagnostics
                     try
                     {
                         api.RefreshLiveState(tracked.Handle, tracked.Info);
+                        tracked.Controller.PublishBatteryPercent(tracked.Info.BatteryPercent);
                         tracked.Sequence++;
                         tracked.Controller.PublishState(translator.CreateState(
                             tracked.Info,
@@ -591,7 +728,7 @@ namespace DS4MapperTest.SdlDiagnostics
                     logger.Warn($"SDL universal backend failed to close suppressed instance {instanceId}: {ex.Message}");
                 }
 
-                logger.Info($"SDL universal backend suppressed original Steam Controller instance {instanceId}");
+                logger.Info($"SDL universal backend suppressed non-authoritative instance {instanceId}: {info.Name}");
                 return;
             }
 
@@ -606,6 +743,7 @@ namespace DS4MapperTest.SdlDiagnostics
                     DateTimeOffset.UtcNow),
                 capabilities,
                 translator.CreateState(info, capabilities, true, 1, DateTimeOffset.UtcNow));
+            controller.PublishBatteryPercent(info.BatteryPercent);
 
             devices[instanceId] = new TrackedDevice
             {
@@ -641,6 +779,7 @@ namespace DS4MapperTest.SdlDiagnostics
             tracked.Info = info;
             ControllerCapabilities capabilities = translator.CreateCapabilities(tracked.Info);
             tracked.Controller.PublishCapabilities(capabilities);
+            tracked.Controller.PublishBatteryPercent(tracked.Info.BatteryPercent);
             tracked.Sequence++;
             tracked.Controller.PublishState(translator.CreateState(
                 tracked.Info,

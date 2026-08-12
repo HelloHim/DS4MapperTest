@@ -85,6 +85,10 @@ namespace DS4MapperTest.Universal.Mapping
         public IReadOnlyList<UniversalMapperSession> Sessions =>
             new ReadOnlyCollection<UniversalMapperSession>(sessions.Values.ToArray());
 
+        public UniversalControllerManager ControllerManager => controllerManager;
+
+        public event EventHandler SessionsChanged;
+
         public IReadOnlyList<string> StartupErrors { get; private set; } =
             Array.Empty<string>();
         public IReadOnlyList<ProfileMigrationReport> StartupMigrationReports { get; private set; } =
@@ -202,6 +206,7 @@ namespace DS4MapperTest.Universal.Mapping
 
         private void ReconcileSessions()
         {
+            bool changed = false;
             IReadOnlyList<IUniversalController> authoritative = controllerManager.Controllers
                 .Where(item => item.ConnectionState == UniversalControllerConnectionState.Connected)
                 .Where(item => item.Identity.BackendName != UniversalControllerBackendIds.DiagnosticObserver)
@@ -215,6 +220,7 @@ namespace DS4MapperTest.Universal.Mapping
             {
                 sessions[staleId].Dispose();
                 sessions.Remove(staleId);
+                changed = true;
                 logger.Info($"Disposed universal mapper session {staleId} after controller removal.");
             }
 
@@ -239,12 +245,18 @@ namespace DS4MapperTest.Universal.Mapping
                         outputMapping,
                         mouseOutputDispatcher,
                         viiperServerHandle));
+                    changed = true;
                     logger.Info($"Created universal mapper session {logicalId} from backend {controller.Identity.BackendName}.");
                 }
                 catch (Exception ex) when (ex is JsonException || ex is UniversalProfileCompilationException || ex is UniversalProfileValidationException)
                 {
                     logger.Error(ex, $"Failed to activate universal profile for controller {logicalId} from {controller.Identity.BackendName}.");
                 }
+            }
+
+            if (changed)
+            {
+                SessionsChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 

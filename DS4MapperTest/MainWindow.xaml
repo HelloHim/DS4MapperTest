@@ -182,7 +182,7 @@
     <Grid Background="{DynamicResource JsmccBg0Brush}">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="navColumn" Width="240"/>
+                <ColumnDefinition x:Name="navColumn" Width="0"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -191,7 +191,8 @@
                     Background="{DynamicResource JsmccBg1Brush}"
                     BorderBrush="{DynamicResource JsmccBorderBrush}"
                     BorderThickness="0,0,1,0"
-                    Padding="20,24">
+                    Padding="20,24"
+                    Visibility="Collapsed">
                 <StackPanel x:Name="navStackPanel">
                     <RadioButton x:Name="navGyroSensitivity"
                                  GroupName="MainNav"
@@ -208,6 +209,7 @@
                                  GroupName="MainNav"
                                  Content="Touchpad"
                                  Style="{StaticResource JsmccNavButtonStyle}"
+                                 IsEnabled="{Binding HasSupportedTouchpadHardware, FallbackValue=False}"
                                  Checked="NavRadio_Checked"/>
                     <RadioButton x:Name="navSticks"
                                  GroupName="MainNav"
@@ -280,7 +282,7 @@
 
                                     <ComboBox x:Name="deviceComboBox"
                                               Width="220"
-                                              ItemTemplate="{StaticResource DeviceComboBoxItemTemplate}"
+                                              DisplayMemberPath="DisplayNameWithBattery"
                                               Style="{StaticResource JsmccComboBoxStyle}"
                                               SelectionChanged="DeviceComboBox_SelectionChanged"/>
                                 </StackPanel>
@@ -385,6 +387,7 @@
                                         VerticalAlignment="Center"
                                         ToolTip="Inspect SDL3 controller discovery and raw input without driving mappings"
                                         Style="{StaticResource JsmccButtonStyle}"/>
+
                             </WrapPanel>
 
                             <TextBlock x:Name="gyroCalibrationStatusText"
@@ -665,8 +668,7 @@
                         Background="{DynamicResource JsmccBg1Brush}"
                         BorderBrush="{DynamicResource JsmccBorderBrush}"
                         BorderThickness="0,0,0,1"
-                        Padding="28,8"
-                        IsEnabled="False">
+                        Padding="28,8">
                     <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <StackPanel x:Name="actionSetGroup" Orientation="Horizontal" Margin="0,0,28,0">
                             <StackPanel Orientation="Horizontal" Margin="0,4,0,4">
@@ -852,7 +854,19 @@
 
                                 <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
                                     <TabItem Header="Face">
-                                        <views:FaceKeybindsControl/>
+                                        <StackPanel>
+                                            <DockPanel Margin="0,0,0,10">
+                                                <CheckBox x:Name="nintendoFaceSwapCheckBox"
+                                                          DockPanel.Dock="Right"
+                                                          Content="Nintendo ABXY layout"
+                                                          Checked="NintendoFaceSwapCheckBox_Changed"
+                                                          Unchecked="NintendoFaceSwapCheckBox_Changed"
+                                                          Style="{StaticResource JsmccToggleStyle}"
+                                                          HorizontalAlignment="Right"
+                                                          Visibility="{Binding ShowFaceButtonSwapToggle, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}"/>
+                                            </DockPanel>
+                                            <views:FaceKeybindsControl/>
+                                        </StackPanel>
                                     </TabItem>
                                     <TabItem Header="D-Pad">
                                         <views:DPadKeybindsControl/>
@@ -867,6 +881,16 @@
                                         <views:CenterKeybindsControl/>
                                     </TabItem>
                                     <TabItem Header="Paddles">
+                                        <TabItem.Style>
+                                            <Style TargetType="TabItem" BasedOn="{StaticResource JsmccPillTabItemStyle}">
+                                                <Setter Property="Opacity" Value="1"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasPaddleControls}" Value="False">
+                                                        <Setter Property="Opacity" Value="0.48"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TabItem.Style>
                                         <views:PaddlesKeybindsControl/>
                                     </TabItem>
                                     <TabItem Header="Extra">
@@ -1404,6 +1428,8 @@
                                                                 <Setter Property="Padding" Value="10,8"/>
                                                                 <Setter Property="Foreground" Value="{DynamicResource JsmccTextStrongBrush}"/>
                                                                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                                <EventSetter Event="PreviewMouseLeftButtonDown"
+                                                                             Handler="ProfileListBoxItem_PreviewMouseLeftButtonDown"/>
                                                             </Style>
                                                         </ListBox.ItemContainerStyle>
                                                         <ListBox.ItemTemplate>

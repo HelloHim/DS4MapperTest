@@ -114,6 +114,8 @@ namespace DS4MapperTest.SdlDiagnostics
                 DevicePath = SafeString(() => GetGamepadPath(handle.NativeHandle)) ?? string.Empty,
                 ConnectionType = SafeString(() => GetGamepadConnectionState(handle.NativeHandle).ToString()) ?? string.Empty,
                 PlayerIndex = NegativeToNull(SafeInt(() => GetGamepadPlayerIndex(handle.NativeHandle), -1)),
+                BatteryPercent = QueryBatteryPercent(handle),
+                BatteryState = QueryBatteryState(handle),
                 IsMappedGamepad = SafeBool(() => IsGamepad(instanceId)),
             };
 
@@ -178,6 +180,41 @@ namespace DS4MapperTest.SdlDiagnostics
 
             RefreshTouchpads(handle, info);
             RefreshSensorValues(handle, info);
+            int? batteryPercent = QueryBatteryPercent(handle);
+            if (batteryPercent != info.BatteryPercent)
+            {
+                info.BatteryPercent = batteryPercent;
+            }
+            info.BatteryState = QueryBatteryState(handle);
+        }
+
+        private static int? QueryBatteryPercent(SdlGamepadHandle handle)
+        {
+            int percent = -1;
+            try
+            {
+                PowerState state = GetGamepadPowerInfo(handle.NativeHandle, out percent);
+                return state == PowerState.Error || state == PowerState.Unknown || percent < 0 || percent > 100
+                    ? null
+                    : percent;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string QueryBatteryState(SdlGamepadHandle handle)
+        {
+            int percent = -1;
+            try
+            {
+                return GetGamepadPowerInfo(handle.NativeHandle, out percent).ToString();
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         private static SdlRawButtonState CreateButtonState(SdlGamepadHandle handle, GamepadButton button)

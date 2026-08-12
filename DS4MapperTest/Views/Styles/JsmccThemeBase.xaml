@@ -209,6 +209,13 @@
                             <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccAccentBrush}"/>
                             <Setter Property="BorderThickness" Value="2"/>
                         </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource JsmccBg1Brush}"/>
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource JsmccBorderBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource JsmccTextMutedBrush}"/>
+                            <Setter Property="Opacity" Value="0.48"/>
+                            <Setter Property="Cursor" Value="Arrow"/>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

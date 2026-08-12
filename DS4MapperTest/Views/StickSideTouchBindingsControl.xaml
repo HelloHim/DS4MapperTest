@@ -17,13 +17,41 @@
     </UserControl.Resources>
 
     <StackPanel Margin="0,0,0,18">
-        <StackPanel Margin="0,0,0,6">
+        <StackPanel Margin="0,0,0,6"
+                    IsEnabled="{Binding HasTouchBindings}">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Opacity" Value="1"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasTouchBindings}" Value="False">
+                            <Setter Property="Opacity" Value="0.48"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
             <TextBlock Text="{Binding SideLabel}" Style="{StaticResource JsmccSectionTitle}"/>
             <TextBlock Text="Stick touch bindings are always available, for controllers whose stick reports a touch sensor."
                        Style="{StaticResource JsmccBodyText}"
                        TextWrapping="Wrap"
                        Margin="0,4,0,0"/>
         </StackPanel>
+
+        <Border IsEnabled="False">
+            <Border.Style>
+                <Style TargetType="Border" BasedOn="{StaticResource JsmccCardBorder}">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Setter Property="Opacity" Value="0.48"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasTouchBindings}" Value="False">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="This stick does not report a capacitive touch sensor."
+                       Style="{StaticResource JsmccBodyText}"
+                       TextWrapping="Wrap"/>
+        </Border>
 
         <ItemsControl ItemsSource="{Binding TouchBindingItems}">
             <ItemsControl.ItemTemplate>

@@ -1416,7 +1416,7 @@ namespace DS4MapperTest
                     if (refCount <= 0)
                     {
 #if !MAKE_TESTS
-                        eventInputHandler.PerformKeyRelease(vk);
+                        eventInputHandler?.PerformKeyRelease(vk);
 #endif
                         keyReferenceCountDict.Remove(vk);
                     }
@@ -1432,7 +1432,7 @@ namespace DS4MapperTest
                 if (!keyReferenceCountDict.TryGetValue(vk, out int refCount))
                 {
 #if !MAKE_TESTS
-                    eventInputHandler.PerformKeyPress(vk);
+                    eventInputHandler?.PerformKeyPress(vk);
 #endif
                     keyReferenceCountDict.Add(vk, 1);
                 }
@@ -3309,7 +3309,18 @@ namespace DS4MapperTest
             }
             */
 
-            BaseReader.HaltReportingRunAction(tempAct);
+            // BaseReader is null for mappers with no live device reader to halt
+            // (e.g. UniversalActionContentEditorSession's offline UniversalMapper) -
+            // there is no reporting thread to pause, so just run the action directly.
+            if (BaseReader != null)
+            {
+                BaseReader.HaltReportingRunAction(tempAct);
+            }
+            else
+            {
+                tempAct?.Invoke();
+            }
+
             if (suppressProfileDirtyTracking == 0)
             {
                 ProfileEditCommitted?.Invoke(this, EventArgs.Empty);

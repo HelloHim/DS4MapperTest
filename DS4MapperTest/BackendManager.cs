@@ -429,9 +429,12 @@ namespace DS4MapperTest
         private void StartUniversalMappingRuntime()
         {
             UniversalProfileStore store = UniversalProfileStore.CreateDefault();
+            PruneNonSteamControllerDevMigrations(store);
             LegacyProfileMigrator migrator = new LegacyProfileMigrator(store);
             IReadOnlyList<LegacyProfileMigrationSource> migrationSources =
-                UniversalMappingRuntime.DiscoverLegacyProfileSources(deviceProfileListDict);
+                UniversalMappingRuntime.DiscoverLegacyProfileSources(deviceProfileListDict)
+                    .Where(source => source.Family == InputDeviceType.SteamController)
+                    .ToArray();
 
             List<IUniversalControllerBackend> backends = new List<IUniversalControllerBackend>
             {
@@ -473,6 +476,30 @@ namespace DS4MapperTest
                 Name = "Universal Mapper Runtime",
             };
             universalMappingThread.Start();
+        }
+
+        private static void PruneNonSteamControllerDevMigrations(UniversalProfileStore store)
+        {
+            if (ApplicationDataPathResolver.DefaultBuildFlavor != ApplicationDataBuildFlavor.Development)
+            {
+                return;
+            }
+
+            foreach (UniversalProfileStoreEntry entry in store.EnumerateProfiles())
+            {
+                if (!entry.Loaded || entry.Profile?.Migration == null)
+                {
+                    continue;
+                }
+
+                if (string.Equals(entry.Profile.Migration.SourceFamily,
+                    InputDeviceType.SteamController.ToString(), StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                store.Delete(entry.Path);
+            }
         }
 
         private IEnumerable<ISteamControllerNativeStateSource> CreateSteamControllerSources()

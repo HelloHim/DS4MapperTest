@@ -41,6 +41,10 @@ namespace DS4MapperTest.ViewModels
         public ProfileEditorTestViewModel Owner => owner;
         public string BindingName { get; }
         public string DisplayName { get; }
+        public bool IsAvailable { get; } = true;
+        public string UnavailableMessage { get; }
+        public bool HasUnavailableMessage =>
+            !IsAvailable && !string.IsNullOrWhiteSpace(UnavailableMessage);
 
         // This binding's own JoypadActionCodes identity, used to mirror a Sim Press pairing
         // onto whichever button is picked as its trigger (and back). Empty for a binding
@@ -70,13 +74,13 @@ namespace DS4MapperTest.ViewModels
         public bool HasSimPress => HasFunc<SimPressFunc>();
         public bool HasStartPress => HasFunc<StartPressFunc>();
         public bool HasReleasePress => HasFunc<ReleaseFunc>();
-        public bool CanAddHoldPress => !HasHoldPress;
-        public bool CanAddDoublePress => !HasDoublePress;
-        public bool CanAddDistancePress => !HasDistancePress;
-        public bool CanAddChordedPress => !HasChordedPress;
-        public bool CanAddSimPress => !HasSimPress;
-        public bool CanAddStartPress => !HasStartPress;
-        public bool CanAddReleasePress => !HasReleasePress;
+        public bool CanAddHoldPress => IsAvailable && !HasHoldPress;
+        public bool CanAddDoublePress => IsAvailable && !HasDoublePress;
+        public bool CanAddDistancePress => IsAvailable && !HasDistancePress;
+        public bool CanAddChordedPress => IsAvailable && !HasChordedPress;
+        public bool CanAddSimPress => IsAvailable && !HasSimPress;
+        public bool CanAddStartPress => IsAvailable && !HasStartPress;
+        public bool CanAddReleasePress => IsAvailable && !HasReleasePress;
 
         // True for a Steam Controller 2 touchpad click binding, set at construction time
         // (ProfileEditorTestViewModel.AddTouchpadButtonBinding) based on device type and
@@ -239,7 +243,8 @@ namespace DS4MapperTest.ViewModels
 
         public FaceButtonBindingItem(ProfileEditorTestViewModel owner,
             BindingItemsTest sourceItem, string displayName, string subtitle = null,
-            bool isTouchpadPressureCapable = false, bool usesClickTerminology = false)
+            bool isTouchpadPressureCapable = false, bool usesClickTerminology = false,
+            bool isAvailable = true, string unavailableMessage = null)
         {
             this.owner = owner;
             BindingName = sourceItem.BindingName;
@@ -248,8 +253,29 @@ namespace DS4MapperTest.ViewModels
             mappedAction = sourceItem.MappedAction;
             this.isTouchpadPressureCapable = isTouchpadPressureCapable;
             this.usesClickTerminology = usesClickTerminology;
+            IsAvailable = isAvailable;
+            UnavailableMessage = unavailableMessage;
 
             RefreshFunctions();
+        }
+
+        private FaceButtonBindingItem(ProfileEditorTestViewModel owner,
+            string bindingName, string displayName, string subtitle, string unavailableMessage)
+        {
+            this.owner = owner;
+            BindingName = bindingName;
+            DisplayName = displayName;
+            Subtitle = subtitle;
+            IsAvailable = false;
+            UnavailableMessage = unavailableMessage;
+        }
+
+        public static FaceButtonBindingItem Unavailable(ProfileEditorTestViewModel owner,
+            string bindingName, string displayName, string subtitle = null,
+            string unavailableMessage = null)
+        {
+            return new FaceButtonBindingItem(owner, bindingName, displayName, subtitle,
+                unavailableMessage);
         }
 
         public void UpdateAction(ButtonMapAction action)
@@ -261,6 +287,10 @@ namespace DS4MapperTest.ViewModels
         public void RefreshFunctions()
         {
             functionItems.Clear();
+            if (!IsAvailable && mappedAction == null)
+            {
+                return;
+            }
 
             if (IsTouchpadPressureBinding)
             {

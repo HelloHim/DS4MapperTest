@@ -1,5 +1,6 @@
 using DS4MapperTest;
 using DS4MapperTest.Universal;
+using DS4MapperTest.Universal.Editor;
 using DS4MapperTest.Universal.Profiles;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
@@ -230,6 +231,70 @@ namespace DS4MapperUnitTests
 
                 Assert.AreNotEqual(store.GetProfilePath(first.ProfileId), store.GetProfilePath(second.ProfileId));
                 Assert.AreEqual(2, store.EnumerateProfiles().Count(item => item.Loaded));
+            }
+        }
+
+        [TestMethod]
+        public void NamedSaveSanitisesFilenameAndRenamesFile()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile profile = CreateProfile("CON");
+
+                store.SaveNamed(profile, store.GetNamedProfilePath(profile.DisplayName));
+                string firstPath = store.FindProfilePath(profile.ProfileId);
+
+                Assert.AreEqual("_CON.universal-profile.json", Path.GetFileName(firstPath));
+                Assert.IsTrue(File.Exists(firstPath));
+
+                profile.DisplayName = "bad:name/with*chars?";
+                store.SaveNamed(profile, firstPath);
+                string secondPath = store.FindProfilePath(profile.ProfileId);
+
+                Assert.AreEqual("bad_name_with_chars_.universal-profile.json", Path.GetFileName(secondPath));
+                Assert.IsFalse(File.Exists(firstPath));
+                Assert.IsTrue(File.Exists(secondPath));
+            }
+        }
+
+        [TestMethod]
+        public void NamedSaveRejectsDisplayNameAndSanitisedFilenameCollisions()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile first = CreateProfile("Same");
+                UniversalProfile second = CreateProfile("same");
+                UniversalProfile third = CreateProfile("bad/name");
+                UniversalProfile fourth = CreateProfile("bad:name");
+
+                store.SaveNamed(first, store.GetNamedProfilePath(first.DisplayName));
+                ExpectException<InvalidOperationException>(() =>
+                    store.SaveNamed(second, store.GetNamedProfilePath(second.DisplayName)));
+
+                store.SaveNamed(third, store.GetNamedProfilePath(third.DisplayName));
+                ExpectException<InvalidOperationException>(() =>
+                    store.SaveNamed(fourth, store.GetNamedProfilePath(fourth.DisplayName)));
+            }
+        }
+
+        [TestMethod]
+        public void ClassicProfileListBridgeListsEveryUniversalProfile()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                store.SaveNamed(CreateProfile("Xbox Shared"), store.GetNamedProfilePath("Xbox Shared"));
+                store.SaveNamed(CreateProfile("Steam Shared"), store.GetNamedProfilePath("Steam Shared"));
+
+                UniversalClassicProfileList list = new UniversalClassicProfileList(store);
+                list.Refresh();
+
+                CollectionAssert.AreEquivalent(
+                    new[] { "Xbox Shared", "Steam Shared" },
+                    list.Profiles.Select(item => item.Name).ToArray());
+                Assert.IsTrue(list.Profiles.All(item => item.InputDeviceType == InputDeviceType.None));
             }
         }
 

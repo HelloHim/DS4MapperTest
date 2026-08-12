@@ -173,12 +173,12 @@ namespace DS4MapperTest.Universal.Mapping
                     continue;
                 }
 
+                activeBindingIds[binding.Input] = runtimeBinding.LegacyBindingId;
                 if (!emitted.Add((runtimeBinding.LegacyBindingId, binding.Action)))
                 {
                     continue;
                 }
 
-                activeBindingIds[binding.Input] = runtimeBinding.LegacyBindingId;
                 inputMappings.Add(new JObject
                 {
                     ["Input"] = runtimeBinding.LegacyBindingId,

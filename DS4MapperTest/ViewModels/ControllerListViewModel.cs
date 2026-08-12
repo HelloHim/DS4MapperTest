@@ -1,5 +1,8 @@
 ﻿//using DS4MapperTest.SteamControllerLibrary;
 using DS4MapperTest.Common;
+using DS4MapperTest.Universal.Editor;
+using DS4MapperTest.Universal.Mapping;
+using DS4MapperTest.Universal.Profiles;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -57,6 +60,8 @@ namespace DS4MapperTest.ViewModels
         public Dictionary<int, DeviceListItem> ControllerDict { get => controllerDict; set => controllerDict = value; }
 
         private BackendManager backendManager;
+        private UniversalClassicProfileList universalProfiles;
+        private UniversalProfileStore universalStore;
         private int selectedIndex = -1;
 
         //public ProfileList DeviceProfileList
@@ -107,6 +112,11 @@ namespace DS4MapperTest.ViewModels
 
         private void BackendManager_ServiceStopped(object sender, EventArgs e)
         {
+            if (backendManager.UniversalMappingRuntime != null)
+            {
+                backendManager.UniversalMappingRuntime.SessionsChanged -= UniversalMappingRuntime_SessionsChanged;
+            }
+
             using (WriteLocker locker = new WriteLocker(_colListLocker))
             {
                 controllerList.Clear();
@@ -116,6 +126,14 @@ namespace DS4MapperTest.ViewModels
 
         private void BackendManager_ServiceStarted(object sender, EventArgs e)
         {
+            if (backendManager.UniversalMappingRuntime != null)
+            {
+                backendManager.UniversalMappingRuntime.SessionsChanged -= UniversalMappingRuntime_SessionsChanged;
+                backendManager.UniversalMappingRuntime.SessionsChanged += UniversalMappingRuntime_SessionsChanged;
+                RefreshUniversalControllers();
+                return;
+            }
+
             using (WriteLocker locker = new WriteLocker(_colListLocker))
             {
                 int i = 0;
@@ -150,6 +168,46 @@ namespace DS4MapperTest.ViewModels
                     }
                 }
             }
+        }
+
+        private void UniversalMappingRuntime_SessionsChanged(object sender, EventArgs e)
+        {
+            RefreshUniversalControllers();
+        }
+
+        private void RefreshUniversalControllers()
+        {
+            UniversalMappingRuntime runtime = backendManager.UniversalMappingRuntime;
+            if (runtime == null) return;
+
+            universalStore ??= UniversalProfileStore.CreateDefault();
+            universalProfiles ??= new UniversalClassicProfileList(universalStore);
+            universalProfiles.Refresh();
+
+            using (WriteLocker locker = new WriteLocker(_colListLocker))
+            {
+                controllerList.Clear();
+                controllerDict.Clear();
+                int i = 0;
+                foreach (UniversalMapperSession session in runtime.Sessions)
+                {
+                    DeviceListItem devItem = new DeviceListItem(session, i, universalProfiles);
+                    string activePath = session.ActiveProfile != null
+                        ? universalStore.FindProfilePath(session.ActiveProfile.ProfileId)
+                        : string.Empty;
+                    devItem.PostInit(activePath);
+                    devItem.ProfileIndexChanged += DevItem_ProfileIndexChanged;
+                    devItem.EditProfileRequested += DevItem_EditProfileRequested;
+                    controllerList.Add(devItem);
+                    controllerDict[i] = devItem;
+                    i++;
+                }
+            }
+        }
+
+        public void RefreshUniversalProfileLists()
+        {
+            universalProfiles?.Refresh();
         }
 
         private void DevItem_EditProfileRequested(object sender, EventArgs e)
@@ -207,6 +265,14 @@ namespace DS4MapperTest.ViewModels
         private void DevItem_ProfileIndexChanged(object sender, EventArgs e)
         {
             DeviceListItem item = sender as DeviceListItem;
+            if (item?.IsUniversal == true)
+            {
+                if (item.ProfileIndex < 0 || item.ProfileIndex >= item.DevProfileList.Count) return;
+                UniversalProfile profile = universalStore.LoadFromPath(item.DevProfileList[item.ProfileIndex].ProfilePath);
+                backendManager.UniversalMappingRuntime.SwitchProfile(item.UniversalSession.LogicalControllerId, profile);
+                return;
+            }
+
             Mapper map = backendManager.MapperDict[item.Device.Index];
             string profilePath = backendManager.DeviceProfileListDict[item.Device.DeviceType].ProfileListCol[item.ProfileIndex].ProfilePath;
 
@@ -262,6 +328,13 @@ namespace DS4MapperTest.ViewModels
 
         public void DuplicateProfile(DeviceListItem item, string inputFile, string outputFile)
         {
+            if (item?.IsUniversal == true)
+            {
+                File.Copy(inputFile, outputFile);
+                universalProfiles.Refresh();
+                return;
+            }
+
             // Copy file as is
             File.Copy(inputFile, outputFile);
 
@@ -300,6 +373,8 @@ namespace DS4MapperTest.ViewModels
         private int itemIndex;
         private InputDeviceBase device;
         private ProfileList profileListHolder;
+        private UniversalClassicProfileList universalProfileListHolder;
+        private UniversalMapperSession universalSession;
         private int profileIndex = -1;
         private bool batteryKnown;
 
@@ -315,10 +390,15 @@ namespace DS4MapperTest.ViewModels
             get => device;
         }
 
+        public bool IsUniversal => universalSession != null;
+        public UniversalMapperSession UniversalSession => universalSession;
+
         public string DisplayName
         {
-            get => $"{device.DevTypeStr} ({device.Serial})";
+            get => device.DevTypeStr;
         }
+
+        public string DisplayNameWithBattery => $"{DisplayName}  {Battery}";
 
         public int DisplayIndex
         {
@@ -334,6 +414,11 @@ namespace DS4MapperTest.ViewModels
         {
             get
             {
+                if (universalSession?.Controller.BatteryPercent is int universalBattery)
+                {
+                    return $"{universalBattery}%";
+                }
+
                 uint batteryValue = device.Battery;
                 return batteryKnown && batteryValue <= 100
                     ? $"{batteryValue}%"
@@ -368,12 +453,12 @@ namespace DS4MapperTest.ViewModels
 
         public ObservableCollection<ProfileEntity> DevProfileList
         {
-            get => profileListHolder.ProfileListCol;
+            get => universalProfileListHolder?.Profiles ?? profileListHolder.ProfileListCol;
         }
 
         public ObservableCollection<string> ProfileFolders
         {
-            get => profileListHolder.ProfileFolderCol;
+            get => universalProfileListHolder?.Folders ?? profileListHolder.ProfileFolderCol;
         }
 
         public ProfileList ProfileListHolder
@@ -408,25 +493,62 @@ namespace DS4MapperTest.ViewModels
             });
         }
 
+        public DeviceListItem(UniversalMapperSession session, int itemIndex, UniversalClassicProfileList profileListHolder)
+            : this(new UniversalClassicInputDevice(session, itemIndex), itemIndex, null)
+        {
+            universalSession = session;
+            universalProfileListHolder = profileListHolder;
+            batteryKnown = session.Controller.BatteryPercent.HasValue;
+        }
+
         private void Device_BatteryChanged(object sender, EventArgs e)
         {
             batteryKnown = device.Battery <= 100;
             RaisePropertyChanged(nameof(Battery));
+            RaisePropertyChanged(nameof(DisplayNameWithBattery));
             BatteryChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void RefreshUniversalState()
+        {
+            if (universalSession == null)
+            {
+                return;
+            }
+
+            int? percent = universalSession.Controller.BatteryPercent;
+            batteryKnown = percent.HasValue;
+            uint nextBattery = percent.HasValue ? (uint)percent.Value : uint.MaxValue;
+            if (device.Battery != nextBattery)
+            {
+                device.Battery = nextBattery;
+            }
+            else
+            {
+                RaisePropertyChanged(nameof(Battery));
+                RaisePropertyChanged(nameof(DisplayNameWithBattery));
+                BatteryChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public void PostInit(string profilePath)
         {
-            ProfileEntity temp = profileListHolder.ProfileListCol.SingleOrDefault((item) => item.ProfilePath == profilePath);
+            ProfileEntity temp = DevProfileList.SingleOrDefault((item) =>
+                string.Equals(item.ProfilePath, profilePath, StringComparison.OrdinalIgnoreCase));
             if (temp != null)
             {
-                int ind = profileListHolder.ProfileListCol.IndexOf(temp);
+                int ind = DevProfileList.IndexOf(temp);
                 ProfileIndex = ind;
             }
             else
             {
-                ProfileIndex = -1;
+                ProfileIndex = DevProfileList.Count > 0 ? 0 : -1;
             }
+        }
+
+        public override string ToString()
+        {
+            return DisplayNameWithBattery;
         }
     }
 }

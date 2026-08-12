@@ -79,7 +79,17 @@
         </DataTemplate>
 
         <DataTemplate x:Key="TouchpadPadSettingsTemplate">
-            <StackPanel>
+            <StackPanel IsEnabled="{Binding IsAvailable}">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsAvailable}" Value="False">
+                                <Setter Property="Opacity" Value="0.48"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
                 <StackPanel Margin="0,0,0,6">
                     <TextBlock Text="Mode" Style="{StaticResource JsmccSectionTitle}"/>
                     <TextBlock Text="Choose the mode for this touchpad input, and give it a custom name."
@@ -95,6 +105,11 @@
                         <TextBlock Text="{Binding BindingName}"
                                    Style="{StaticResource JsmccMutedText}"
                                    Margin="0,3,0,6"/>
+                        <TextBlock Text="{Binding UnavailableMessage}"
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8"
+                                   Visibility="{Binding HasUnavailableMessage, Converter={StaticResource BoolToVis}}"/>
 
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Mode" Style="{StaticResource JsmccLabelText}" Width="120" VerticalAlignment="Center"/>
@@ -293,12 +308,30 @@
         <TabControl x:Name="TabControlRoot" Style="{StaticResource JsmccPillTabControlStyle}">
             <TabItem Header="Touch Bindings">
                 <StackPanel>
-                    <views:SharedButtonKeybindsControl
-                        SectionTitle="Touch Bindings"
-                        Description="Touchpad capacitive touch bindings."
-                        EmptyText="No touchpad touch bindings were found for this controller."
-                        CardSubtitle="Touchpad input"
-                        ItemsSource="{Binding TouchpadTouchBindings}"/>
+                    <StackPanel Margin="0,0,0,6">
+                        <TextBlock Text="Touch Bindings" Style="{StaticResource JsmccSectionTitle}"/>
+                        <TextBlock Text="Touchpad capacitive touch bindings."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Border>
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource JsmccCardBorder}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TouchpadTouchSurfaceBindings.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="No touchpad touch bindings were found for this controller."
+                                   Style="{StaticResource JsmccBodyText}"
+                                   TextWrapping="Wrap"/>
+                    </Border>
+                    <ItemsControl ItemsSource="{Binding TouchpadTouchSurfaceBindings}"
+                                  ItemTemplate="{StaticResource TouchpadPadSettingsTemplate}"/>
                 </StackPanel>
             </TabItem>
             <TabItem Header="{Binding TouchpadClickBindingsTabHeader}">
