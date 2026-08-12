@@ -47,6 +47,15 @@ namespace DS4MapperTest
         {
         }
 
+        // Callers (TestSave/TestFakeSave) wait up to 5s for this method to run their
+        // action, so retry catching the input thread's brief per-cycle wait window
+        // across nearly that whole budget. A single 500ms attempt only needs to land
+        // during the (usually much shorter) processing portion of one input cycle to
+        // miss entirely, which silently dropped the requested action and burned the
+        // caller's full 5s wait doing nothing.
+        private const int HaltTotalTimeoutMs = 4500;
+        private const int HaltAttemptTimeoutMs = 500;
+
         /// <summary>
         /// Must not be run from input thread. Waits for input thread to be in a wait state
         /// and then tell thread to no longer invoke the Report event. Input thread will then
@@ -56,8 +65,22 @@ namespace DS4MapperTest
         /// <param name="act">Action to execute in current thread</param>
         public void HaltReportingRunAction(Action act)
         {
-            // Wait for controller to be in a wait period
-            bool result = readWaitEv.Wait(millisecondsTimeout: 500);
+            // Wait for controller to be in a wait period, retrying until the overall
+            // budget is spent rather than giving up after a single missed window.
+            bool result = false;
+            long deadline = Environment.TickCount64 + HaltTotalTimeoutMs;
+            while (Environment.TickCount64 < deadline)
+            {
+                int remaining = (int)(deadline - Environment.TickCount64);
+                if (remaining <= 0) break;
+
+                if (readWaitEv.Wait(Math.Min(HaltAttemptTimeoutMs, remaining)))
+                {
+                    result = true;
+                    break;
+                }
+            }
+
             if (result)
             {
                 readWaitEv.Reset();

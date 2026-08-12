@@ -683,6 +683,15 @@ namespace DS4MapperTest
                 .Where(profile => string.Equals(profile.FolderName, activeFolderName, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
+            // Clearing ItemsSource while SelectedItem still points at a (possibly
+            // now-removed, e.g. just-deleted) profile trips a WPF-internal bug in
+            // ComboBox.UpdateSelectionBoxItem ("Object type ProfileEntity does not
+            // match target type MS.Internal.NamedObject"). That exception was
+            // getting swallowed by the app's global handler, aborting this method
+            // before RefreshProfileList() ran, so a deleted profile stayed visible
+            // until a second delete attempt happened to avoid the same race.
+            // Dropping the selection first leaves nothing stale to reconcile.
+            profileComboBox.SelectedItem = null;
             profileComboBox.ItemsSource = null;
             Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
             profileComboBox.ItemsSource = profileComboProfiles;
@@ -1181,11 +1190,37 @@ namespace DS4MapperTest
 
             IsEnabled = false;
             suppressCombo = true;
-            await Task.Run(() => { item.ProfileIndex = newIndex; });
-            LoadProfileForDevice(item);
-            suppressCombo = false;
-            IsEnabled = true;
-            return true;
+
+            bool loaded = false;
+            Exception switchException = null;
+            try
+            {
+                await Task.Run(() => { item.ProfileIndex = newIndex; });
+                loaded = LoadProfileForDevice(item);
+            }
+            catch (Exception ex)
+            {
+                switchException = ex;
+            }
+            finally
+            {
+                suppressCombo = false;
+                IsEnabled = true;
+            }
+
+            if (switchException != null)
+            {
+                saveProfileLogger.Error(switchException, "Failed to switch profile");
+                MessageBox.Show(
+                    $"Failed to load the selected profile:\n{switchException.Message}",
+                    "Load Profile",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                RefreshProfileCombo();
+                return false;
+            }
+
+            return loaded;
         }
 
         private void ManageProfilesBtn_Click(object sender, RoutedEventArgs e)
@@ -1939,33 +1974,23 @@ namespace DS4MapperTest
             IsEnabled = false;
 
             Exception saveException = null;
-            bool liveReloaded = false;
             try
             {
                 await Task.Run(() => activeVM.TestSave(activeVM.ProfileEnt, activeVM.DeviceMapper.ActionProfile));
-                if (currentDeviceItem != null)
-                {
-                    int profileIndex = currentDeviceItem.ProfileIndex;
-                    await Task.Run(() => currentDeviceItem.ResyncProfileIndex(profileIndex, reloadProfile: true));
-                    liveReloaded = true;
-                }
             }
             catch (Exception ex)
             {
                 saveException = ex;
             }
-
-            IsEnabled = true;
-            saveProfileButton.IsEnabled = true;
-            isSavingProfile = false;
+            finally
+            {
+                IsEnabled = true;
+                saveProfileButton.IsEnabled = true;
+                isSavingProfile = false;
+            }
 
             if (saveException == null)
             {
-                if (liveReloaded && currentDeviceItem != null)
-                {
-                    LoadProfileForDevice(currentDeviceItem);
-                }
-
                 activeVM.MarkProfileClean();
                 saveProfileButton.Content = "Saved ✓";
                 ShowSaveStatusPill(success: true);

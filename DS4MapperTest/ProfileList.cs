@@ -283,7 +283,23 @@ namespace DS4MapperTest
                 string destFolder = fileName.StartsWith("Default - ", StringComparison.OrdinalIgnoreCase)
                     ? DEFAULT_PROFILE_FOLDER
                     : VALORANT_PROFILE_FOLDER;
-                string destPath = GetUniquePath(Path.Combine(deviceProfilePath, destFolder, fileName));
+                string destPath = Path.Combine(deviceProfilePath, destFolder, fileName);
+
+                // This migration only ever moves stray pre-folders-era files that
+                // still sit directly in the device root; that location should be
+                // empty otherwise. If the subfolder already has a same-named file,
+                // the root copy is a leftover of an already-completed migration
+                // (e.g. left behind by a move that didn't fully clear the source),
+                // not a distinct profile. Numbering it with GetUniquePath used to
+                // pile up an ever-growing "_1", "_2", ... duplicate of every
+                // bundled default profile on each subsequent startup; discard the
+                // stale root copy instead.
+                if (File.Exists(destPath))
+                {
+                    File.Delete(file);
+                    continue;
+                }
+
                 File.Move(file, destPath);
             }
         }
@@ -373,24 +389,6 @@ namespace DS4MapperTest
             string dir = Path.GetDirectoryName(profilePath) ?? deviceRoot;
             string relativeDir = Path.GetRelativePath(deviceRoot, dir);
             return relativeDir == "." ? VALORANT_PROFILE_FOLDER : relativeDir;
-        }
-
-        private static string GetUniquePath(string path)
-        {
-            if (!File.Exists(path)) return path;
-
-            string dir = Path.GetDirectoryName(path);
-            string name = Path.GetFileNameWithoutExtension(path);
-            string ext = Path.GetExtension(path);
-            int copyIndex = 1;
-            string candidate;
-            do
-            {
-                candidate = Path.Combine(dir, $"{name}_{copyIndex}{ext}");
-                copyIndex++;
-            } while (File.Exists(candidate));
-
-            return candidate;
         }
 
         private class ProfileFolderNameComparer : IComparer<string>
