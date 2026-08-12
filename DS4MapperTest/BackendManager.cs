@@ -12,6 +12,11 @@ using System.Diagnostics;
 using System.IO;
 using DS4MapperTest.JoyConLibrary;
 using DS4MapperTest.PhysicalMouse;
+using DS4MapperTest.SdlDiagnostics;
+using DS4MapperTest.SteamControllerLibrary;
+using DS4MapperTest.Universal;
+using DS4MapperTest.Universal.Mapping;
+using DS4MapperTest.Universal.Profiles;
 using NLog;
 
 namespace DS4MapperTest
@@ -79,6 +84,10 @@ namespace DS4MapperTest
         private readonly PhysicalMouseService physicalMouseService = new PhysicalMouseService();
         public PhysicalMouseServiceStatus PhysicalMouseStatus => physicalMouseService.Status;
         private readonly HidHideVisibilityManager hidHideVisibilityManager;
+        private UniversalMappingRuntime universalMappingRuntime;
+        private Thread universalMappingThread;
+        private volatile bool stopUniversalMappingThread;
+        public UniversalMappingRuntime UniversalMappingRuntime => universalMappingRuntime;
 
         private Dictionary<int, Mapper> mapperDict;
         public Dictionary<int, Mapper> MapperDict
@@ -367,6 +376,17 @@ namespace DS4MapperTest
             temper.Start();
             temper.Join();
 
+            StartUniversalMappingRuntime();
+            if (universalMappingRuntime != null)
+            {
+                isRunning = true;
+                changingService = false;
+                mouseOutputRoutingController.SetServiceRunning(true);
+                ServiceStarted?.Invoke(this, EventArgs.Empty);
+                LogDebug("Service started with universal controller runtime");
+                return;
+            }
+
             int ind = 0;
             //foreach (InputDeviceBase device in enumerator.GetFoundDevices())
             foreach (InputDeviceBase device in testEnumerator.GetKnownDevices())
@@ -515,6 +535,84 @@ namespace DS4MapperTest
             ProfileSerializer.EventInputMapper = eventInputMapping;
 
             LogDebug($"KBM Event Handler: {virtualEventHandler.GetFullDisplayName()}");
+        }
+
+        private void StartUniversalMappingRuntime()
+        {
+            UniversalProfileStore store = UniversalProfileStore.CreateDefault();
+            LegacyProfileMigrator migrator = new LegacyProfileMigrator(store);
+            IReadOnlyList<LegacyProfileMigrationSource> migrationSources =
+                UniversalMappingRuntime.DiscoverLegacyProfileSources(deviceProfileListDict);
+
+            List<IUniversalControllerBackend> backends = new List<IUniversalControllerBackend>
+            {
+                new SteamControllerUniversalBackend(CreateSteamControllerSources()),
+                new SdlUniversalControllerBackend(new Sdl3NativeDiagnosticApi()),
+            };
+
+            UniversalControllerManager controllerManager = new UniversalControllerManager(backends);
+            universalMappingRuntime = new UniversalMappingRuntime(
+                controllerManager,
+                new UniversalProfileStoreSelector(store),
+                virtualEventHandler,
+                eventInputMapping,
+                mouseOutputDispatcher,
+                serverHandle,
+                migrator,
+                migrationSources);
+
+            bool started = universalMappingRuntime.Start();
+            foreach (string error in universalMappingRuntime.StartupErrors)
+            {
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    logger.Warn($"Universal controller backend start issue: {error}");
+                    LogDebug($"Universal controller backend start issue: {error}", warning: true);
+                }
+            }
+
+            if (!started && universalMappingRuntime.Sessions.Count == 0)
+            {
+                LogDebug("Universal controller runtime started without active mapper sessions; controllers remain unmapped until a universal backend is available.", warning: true);
+            }
+
+            stopUniversalMappingThread = false;
+            universalMappingThread = new Thread(UniversalMappingLoop)
+            {
+                IsBackground = true,
+                Priority = ThreadPriority.AboveNormal,
+                Name = "Universal Mapper Runtime",
+            };
+            universalMappingThread.Start();
+        }
+
+        private IEnumerable<ISteamControllerNativeStateSource> CreateSteamControllerSources()
+        {
+            foreach (InputDeviceBase device in testEnumerator.GetKnownDevices())
+            {
+                if (device is SteamControllerDevice steamDevice &&
+                    device.DeviceType == InputDeviceType.SteamController)
+                {
+                    yield return new SteamControllerReaderStateSource(steamDevice);
+                }
+            }
+        }
+
+        private void UniversalMappingLoop()
+        {
+            while (!stopUniversalMappingThread)
+            {
+                try
+                {
+                    universalMappingRuntime?.Refresh();
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Universal mapping runtime refresh failed.");
+                }
+
+                Thread.Sleep(8);
+            }
         }
 
         internal static string DetermineConfiguredOutputHandlerIdentifier(
@@ -744,6 +842,19 @@ namespace DS4MapperTest
 
             PreServiceStop?.Invoke(this, EventArgs.Empty);
 
+            stopUniversalMappingThread = true;
+            if (universalMappingThread != null &&
+                universalMappingThread.IsAlive &&
+                Thread.CurrentThread != universalMappingThread)
+            {
+                universalMappingThread.Join();
+            }
+
+            universalMappingThread = null;
+            universalMappingRuntime?.Stop();
+            universalMappingRuntime?.Dispose();
+            universalMappingRuntime = null;
+
             foreach (Mapper mapper in mapperDict.Values)
             {
                 mapper.Stop();
@@ -827,6 +938,11 @@ namespace DS4MapperTest
             if (isRunning)
             {
                 using WriteLocker locker = new WriteLocker(_hotplugLock);
+                if (universalMappingRuntime != null)
+                {
+                    universalMappingRuntime.Refresh();
+                    return;
+                }
 
                 Task temp = Task.Run(() =>
                 {

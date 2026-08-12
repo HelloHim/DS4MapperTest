@@ -941,7 +941,25 @@ namespace DS4MapperTest
             PrepareProfileActions(null);
         }
 
-        private void PrepareProfileActions(List<ProfileActionsMapping> tempMappings)
+        protected void LoadProfileFromJson(string json, string loadedProfileFile = "")
+        {
+            editActionSet = null;
+            editLayer = null;
+
+            actionProfile = new Profile();
+            Profile tempProfile = actionProfile;
+            tempProfile.ActionSets.Clear();
+
+            ProfileSerializer profileSerializer = new ProfileSerializer(tempProfile);
+            JsonConvert.PopulateObject(json, profileSerializer);
+            profileSerializer.PopulateProfile();
+            tempProfile.ResetAliases();
+            profileFile = loadedProfileFile ?? string.Empty;
+
+            PrepareProfileActions(profileSerializer.ActionMappings);
+        }
+
+        protected void PrepareProfileActions(List<ProfileActionsMapping> tempMappings)
         {
             Profile tempProfile = actionProfile;
 

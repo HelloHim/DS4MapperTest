@@ -206,6 +206,8 @@ namespace DS4MapperTest.Universal
             }
         }
 
+        public event EventHandler ControllersChanged;
+
         public UniversalControllerManager(IEnumerable<IUniversalControllerBackend> backends)
         {
             this.backends = new ReadOnlyCollection<IUniversalControllerBackend>(
@@ -275,6 +277,8 @@ namespace DS4MapperTest.Universal
                 controllers = new ReadOnlyCollection<IUniversalController>(
                     UniversalBackendArbitrator.SelectAuthoritativeControllers(unique).ToArray());
             }
+
+            ControllersChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void ThrowIfDisposed()
