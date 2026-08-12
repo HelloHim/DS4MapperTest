@@ -73,6 +73,7 @@ namespace DS4MapperTest
         private string stagedPhysicalMouseId;
         private bool appliedPhysicalMouseForwardingEnabled;
         private string appliedPhysicalMouseId;
+        private SdlDiagnosticsWindow sdlDiagnosticsWindow;
 
         private const double NavCompactWidthThreshold = 820;
         private bool isNavCompact;
@@ -390,6 +391,23 @@ namespace DS4MapperTest
             {
                 mouseRoutingPanelVM.PopupOpen = false;
             }
+        }
+
+        private void SdlDiagnosticsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sdlDiagnosticsWindow != null)
+            {
+                sdlDiagnosticsWindow.Activate();
+                return;
+            }
+
+            sdlDiagnosticsWindow = new SdlDiagnosticsWindow(appGlobal)
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            };
+            sdlDiagnosticsWindow.Closed += (_, _) => sdlDiagnosticsWindow = null;
+            sdlDiagnosticsWindow.Show();
         }
 
         private void ApplyMouseRoutingButton_Click(object sender, RoutedEventArgs e)
@@ -2560,6 +2578,8 @@ namespace DS4MapperTest
             DataContext = null;
             editorTestVM?.UnregisterEvents();
             mouseRoutingPanelVM?.Dispose();
+            sdlDiagnosticsWindow?.Close();
+            sdlDiagnosticsWindow = null;
 
             Util.UnregisterNotify(regHandle);
             Application.Current.Shutdown(0);
