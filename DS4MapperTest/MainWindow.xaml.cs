@@ -1994,7 +1994,6 @@ namespace DS4MapperTest
             if (await SwitchProfileAsync(currentDeviceItem, newIndex))
             {
                 HideNewProfilePanel();
-                profilesOverlay.Visibility = Visibility.Collapsed;
             }
         }
 

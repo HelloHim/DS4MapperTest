@@ -1468,7 +1468,7 @@
                                             Style="{StaticResource JsmccPrimaryButtonStyle}"/>
                                 </StackPanel>
                                 <TextBlock x:Name="deleteActiveProfileWarningText"
-                                           Text="Switch to a different profile before deleting this one."
+                                           Text="You can't delete the active profile. Load a different one first."
                                            Foreground="{DynamicResource JsmccDangerTextBrush}"
                                            TextWrapping="Wrap"
                                            TextAlignment="Right"
