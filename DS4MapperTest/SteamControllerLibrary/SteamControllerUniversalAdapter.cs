@@ -53,6 +53,45 @@ namespace DS4MapperTest.SteamControllerLibrary
         }
     }
 
+    internal sealed class SteamControllerReaderStateSource : ISteamControllerNativeStateSource
+    {
+        private readonly SteamControllerDevice device;
+        private readonly DeviceReaderBase reader;
+
+        public string SessionId => string.IsNullOrWhiteSpace(DevicePath)
+            ? RuntimeHelpers.GetHashCode(device).ToString()
+            : DevicePath;
+        public string DisplayName => string.IsNullOrWhiteSpace(device.DevTypeStr)
+            ? "Steam Controller"
+            : device.DevTypeStr;
+        public string DevicePath => device.HidDevice?.DevicePath ?? string.Empty;
+        public string SerialNumber => device.Serial ?? string.Empty;
+        public ushort? VendorId => device.HidDevice == null ? null : (ushort?)device.HidDevice.Attributes.VendorId;
+        public ushort? ProductId => device.HidDevice == null ? null : (ushort?)device.HidDevice.Attributes.ProductId;
+        public bool IsConnected => device.Synced;
+        public bool OwnsReader => true;
+
+        public SteamControllerReaderStateSource(SteamControllerDevice device)
+        {
+            this.device = device ?? throw new ArgumentNullException(nameof(device));
+            reader = device.ConType == SteamControllerDevice.ConnectionType.Bluetooth &&
+                device is SteamControllerBTDevice bluetoothDevice
+                    ? new SteamControllerBTReader(bluetoothDevice)
+                    : new SteamControllerReader(device);
+            reader.StartUpdate();
+        }
+
+        public SteamControllerState ReadState()
+        {
+            return device.CurrentState;
+        }
+
+        public void Dispose()
+        {
+            reader.StopUpdate();
+        }
+    }
+
     internal sealed class SteamControllerUniversalController : IUniversalController
     {
         private readonly ISteamControllerNativeStateSource source;
