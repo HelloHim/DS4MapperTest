@@ -786,6 +786,57 @@ namespace DS4MapperTest
             {
                 currentDeviceItem.ResyncProfileIndex(activeIndex, reloadProfile: false);
             }
+
+            ResyncOtherDeviceProfileIndexes();
+        }
+
+        // Every other connected device that shares this profile list (same
+        // InputDeviceType) keeps its own cached ProfileIndex - a numeric
+        // position into ProfileListCol. Deleting, renaming or moving a
+        // profile/folder mutates that shared list for everyone, but only
+        // currentDeviceItem's index gets corrected above. Left alone, a
+        // sibling device's stale index silently ends up pointing at whatever
+        // profile now occupies that position - often another profile in the
+        // same folder, since entries are sorted by folder then name - the
+        // next time that device becomes current.
+        private void ResyncOtherDeviceProfileIndexes()
+        {
+            if (currentDeviceItem == null) return;
+
+            BackendManager manager = (App.Current as App).Manager;
+            ProfileList sharedList = currentDeviceItem.ProfileListHolder;
+
+            foreach (DeviceListItem other in controlListVM.ControllerList)
+            {
+                if (other == currentDeviceItem || !ReferenceEquals(other.ProfileListHolder, sharedList))
+                {
+                    continue;
+                }
+
+                if (!manager.MapperDict.TryGetValue(other.Device.Index, out Mapper otherMapper))
+                {
+                    continue;
+                }
+
+                string otherActivePath = otherMapper.ProfileFile;
+                if (string.IsNullOrEmpty(otherActivePath))
+                {
+                    continue;
+                }
+
+                var profileList = other.DevProfileList;
+                int activeIndex = profileList
+                    .Select((profile, index) => new { profile, index })
+                    .Where(item => string.Equals(item.profile.ProfilePath, otherActivePath, StringComparison.OrdinalIgnoreCase))
+                    .Select(item => item.index)
+                    .DefaultIfEmpty(-1)
+                    .First();
+
+                if (activeIndex >= 0 && activeIndex != other.ProfileIndex)
+                {
+                    other.ResyncProfileIndex(activeIndex, reloadProfile: false);
+                }
+            }
         }
 
         private void RefreshActionSetCombo()
