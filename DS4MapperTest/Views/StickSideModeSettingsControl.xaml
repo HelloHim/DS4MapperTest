@@ -1315,7 +1315,7 @@
                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                               Value="{Binding FlickTimeExponent, UpdateSourceTrigger=LostFocus}"/>
                         </Grid>
-                        <TextBlock Text="Flick Time is always the duration of a 180ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° flick. At 0, every angle uses it; at 1, smaller flicks take proportionally less time."
+                        <TextBlock Text="Flick Time is always the duration of a 180&#176; flick. At 0, every angle uses it; at 1, smaller flicks take proportionally less time."
                                    Style="{StaticResource JsmccMutedText}"
                                    TextWrapping="Wrap"
                                    Margin="0,4,0,0"/>
