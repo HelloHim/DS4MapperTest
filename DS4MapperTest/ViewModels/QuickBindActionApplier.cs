@@ -108,8 +108,31 @@ namespace DS4MapperTest.ViewModels
                 data.Prepare(OutputActionData.ActionType.Empty, 0);
                 data.OutputCodeStr = OutputActionData.ActionType.Empty.ToString();
 
+                DisableTurboIfUnbound(ctx.Func);
+
                 FaceButtonBindingItem.MarkFunctionsChanged(ctx.Action);
             });
+        }
+
+        // Turbo only makes sense while a bind still has an action, so clearing
+        // the last remaining output should turn turbo back off too, otherwise
+        // it stays silently enabled on an now-empty bind.
+        private static void DisableTurboIfUnbound(ActionFunc func)
+        {
+            foreach (OutputActionData output in func.OutputActions)
+            {
+                if (output.OutputType != OutputActionData.ActionType.Empty) return;
+            }
+
+            switch (func)
+            {
+                case NormalPressFunc normalPress:
+                    normalPress.TurboEnabled = false;
+                    break;
+                case HoldPressFunc holdPress:
+                    holdPress.TurboEnabled = false;
+                    break;
+            }
         }
 
         // Whole-function quick bind keeps the old simple workflow by replacing the
