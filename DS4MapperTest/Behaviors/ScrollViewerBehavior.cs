@@ -117,16 +117,14 @@ namespace DS4MapperTest.Behaviors
 
             tabControl.Dispatcher.BeginInvoke(new Action(() =>
             {
-                // Reset both the page-level ScrollViewer that contains this tab
-                // control and any scroll viewers belonging to the selected tab.
-                for (DependencyObject current = tabControl; current != null;
-                    current = GetParent(current))
-                {
-                    if (current is ScrollViewer scrollViewer)
-                    {
-                        scrollViewer.ScrollToTop();
-                    }
-                }
+                // Reset only the nearest enclosing ScrollViewer, not every
+                // ancestor - a TabControl nested inside a settings panel
+                // (eg. the cog button's advanced binding editor) can sit
+                // inside more than one ScrollViewer, and resetting outer
+                // ones too would yank the whole page back to the top for
+                // what the user sees as a local tab switch.
+                ScrollViewer nearest = FindScrollViewer(GetParent(tabControl));
+                nearest?.ScrollToTop();
 
                 ResetDescendantScrollViewers(selectedTab);
             }), DispatcherPriority.Loaded);
