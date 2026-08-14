@@ -17,8 +17,11 @@ namespace DS4MapperTest.Universal.Editor
             Session = session ?? throw new ArgumentNullException(nameof(session));
             this.index = index;
             deviceType = session.Mapper.DeviceType;
+            deviceOptions = UniversalControllerDeviceOptionsStore.LoadOptions(
+                session.Controller,
+                deviceType);
             devTypeStr = session.Controller.DisplayInfo.DisplayName;
-            serial = session.Controller.Identity.DeviceIdentity.BestEffortPersistentKey;
+            serial = UniversalControllerDeviceOptionsStore.BuildControllerKey(session.Controller);
             if (session.Controller.BatteryPercent.HasValue)
             {
                 battery = (uint)session.Controller.BatteryPercent.Value;
@@ -27,6 +30,7 @@ namespace DS4MapperTest.Universal.Editor
             {
                 serial = session.BackendSessionId;
             }
+            synced = session.Controller.ConnectionState == UniversalControllerConnectionState.Connected;
         }
 
         public UniversalMapperSession Session { get; }

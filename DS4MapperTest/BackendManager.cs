@@ -691,7 +691,17 @@ namespace DS4MapperTest
 
         public void RefreshControllerVisibilityState()
         {
-            hidHideVisibilityManager.Reconcile(controllerList.Where(device => device != null));
+            IEnumerable<UniversalControllerVisibilityTarget> universalTargets =
+                universalMappingRuntime?.Sessions
+                    .Select(session => UniversalControllerDeviceOptionsStore.CreateVisibilityTarget(
+                        session.Controller,
+                        session.Mapper.DeviceType))
+                    .Where(target => target != null) ??
+                Enumerable.Empty<UniversalControllerVisibilityTarget>();
+
+            hidHideVisibilityManager.Reconcile(
+                controllerList.Where(device => device != null),
+                universalTargets);
         }
 
         public void ShutDown()

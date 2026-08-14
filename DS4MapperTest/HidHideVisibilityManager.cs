@@ -1,4 +1,5 @@
 using DS4MapperTest.SteamControllerLibrary;
+using DS4MapperTest.Universal;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -39,7 +40,9 @@ namespace DS4MapperTest
             !string.IsNullOrWhiteSpace(cliPath) &&
             File.Exists(cliPath);
 
-        public void Reconcile(IEnumerable<InputDeviceBase> devices)
+        public void Reconcile(
+            IEnumerable<InputDeviceBase> devices,
+            IEnumerable<UniversalControllerVisibilityTarget> universalDevices = null)
         {
             lock (syncRoot)
             {
@@ -49,9 +52,14 @@ namespace DS4MapperTest
                 }
 
                 IEnumerable<InputDeviceBase> deviceEnumerable = devices ?? Enumerable.Empty<InputDeviceBase>();
+                IEnumerable<UniversalControllerVisibilityTarget> universalEnumerable =
+                    universalDevices ?? Enumerable.Empty<UniversalControllerVisibilityTarget>();
                 bool anyWantsHiding = deviceEnumerable.Any(device =>
                     device?.Synced == true &&
-                    device.DeviceOptions?.HidePhysicalController == true);
+                    device.DeviceOptions?.HidePhysicalController == true) ||
+                    universalEnumerable.Any(device =>
+                        device?.Synced == true &&
+                        device.Options?.HidePhysicalController == true);
 
                 if (!anyWantsHiding && sessionHiddenDevices.Count == 0)
                 {
@@ -65,7 +73,7 @@ namespace DS4MapperTest
                 try
                 {
                     HashSet<string> desiredHiddenDevices =
-                        ResolveDesiredHiddenDevices(deviceEnumerable);
+                        ResolveDesiredHiddenDevices(deviceEnumerable, universalEnumerable);
                     HashSet<string> currentHiddenDevices = GetHiddenDevices();
 
                     if (desiredHiddenDevices.Count > 0)
@@ -156,7 +164,9 @@ namespace DS4MapperTest
             }
         }
 
-        private HashSet<string> ResolveDesiredHiddenDevices(IEnumerable<InputDeviceBase> devices)
+        private HashSet<string> ResolveDesiredHiddenDevices(
+            IEnumerable<InputDeviceBase> devices,
+            IEnumerable<UniversalControllerVisibilityTarget> universalDevices)
         {
             HashSet<string> desired = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             HidHideDeviceInventory inventory = GetDeviceInventory();
@@ -166,6 +176,21 @@ namespace DS4MapperTest
                 if (device?.Synced != true ||
                     device.DeviceOptions == null ||
                     !device.DeviceOptions.HidePhysicalController)
+                {
+                    continue;
+                }
+
+                foreach (string devicePath in ResolveHideTargets(device, inventory))
+                {
+                    desired.Add(devicePath);
+                }
+            }
+
+            foreach (UniversalControllerVisibilityTarget device in universalDevices)
+            {
+                if (device?.Synced != true ||
+                    device.Options == null ||
+                    !device.Options.HidePhysicalController)
                 {
                     continue;
                 }
@@ -188,6 +213,42 @@ namespace DS4MapperTest
                 yield break;
             }
 
+            foreach (string target in ExpandHideTarget(deviceInstancePath, inventory))
+            {
+                yield return target;
+            }
+        }
+
+        private IEnumerable<string> ResolveHideTargets(
+            UniversalControllerVisibilityTarget device,
+            HidHideDeviceInventory inventory)
+        {
+            string deviceInstancePath = ResolveCurrentDeviceInstancePath(device.Identity);
+            if (!string.IsNullOrEmpty(deviceInstancePath))
+            {
+                foreach (string target in ExpandHideTarget(deviceInstancePath, inventory))
+                {
+                    yield return target;
+                }
+
+                yield break;
+            }
+
+            foreach (HidHideCliDevice entry in inventory.FindByVendorProduct(
+                device.Identity?.VendorId,
+                device.Identity?.ProductId))
+            {
+                foreach (string target in ExpandHideTarget(entry.DeviceInstancePath, inventory))
+                {
+                    yield return target;
+                }
+            }
+        }
+
+        private IEnumerable<string> ExpandHideTarget(
+            string deviceInstancePath,
+            HidHideDeviceInventory inventory)
+        {
             HidHideCliDevice entry = inventory.Find(deviceInstancePath);
             if (entry == null)
             {
@@ -212,7 +273,7 @@ namespace DS4MapperTest
             yield return entry.DeviceInstancePath;
         }
 
-        private string ResolveCurrentDeviceInstancePath(InputDeviceBase device)
+        private static string ResolveCurrentDeviceInstancePath(InputDeviceBase device)
         {
             string devicePath = device switch
             {
@@ -221,6 +282,18 @@ namespace DS4MapperTest
             };
 
             if (string.IsNullOrEmpty(devicePath))
+            {
+                return string.Empty;
+            }
+
+            return Util.GetInstanceIdFromDevicePath(devicePath);
+        }
+
+        internal static string ResolveCurrentDeviceInstancePath(UniversalDeviceIdentity identity)
+        {
+            string devicePath = identity?.DevicePath;
+            if (string.IsNullOrWhiteSpace(devicePath) ||
+                devicePath.StartsWith("xinput", StringComparison.OrdinalIgnoreCase))
             {
                 return string.Empty;
             }
@@ -380,6 +453,23 @@ namespace DS4MapperTest
             public IEnumerable<HidHideCliDevice> FindByBaseContainer(string baseContainerPath)
             {
                 return byBaseContainer[baseContainerPath ?? string.Empty];
+            }
+
+            public IEnumerable<HidHideCliDevice> FindByVendorProduct(
+                ushort? vendorId,
+                ushort? productId)
+            {
+                if (!vendorId.HasValue || !productId.HasValue)
+                {
+                    return Enumerable.Empty<HidHideCliDevice>();
+                }
+
+                string vid = $"VID_{vendorId.Value:X4}";
+                string pid = $"PID_{productId.Value:X4}";
+                return byInstancePath.Values.Where(device =>
+                    device.Present &&
+                    device.DeviceInstancePath?.IndexOf(vid, StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    device.DeviceInstancePath?.IndexOf(pid, StringComparison.OrdinalIgnoreCase) >= 0);
             }
         }
 
