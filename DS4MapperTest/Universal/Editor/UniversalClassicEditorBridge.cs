@@ -40,8 +40,8 @@ namespace DS4MapperTest.Universal.Editor
 
     public sealed class UniversalClassicProfileEntry : ProfileEntity
     {
-        public UniversalClassicProfileEntry(string path, UniversalProfile profile)
-            : base(path, profile?.DisplayName ?? string.Empty, InputDeviceType.None, ProfileList.DEFAULT_PROFILE_FOLDER)
+        public UniversalClassicProfileEntry(string path, UniversalProfile profile, string folderName)
+            : base(path, profile?.DisplayName ?? string.Empty, InputDeviceType.None, folderName)
         {
             ProfileId = profile?.ProfileId ?? Guid.Empty;
         }
@@ -69,11 +69,124 @@ namespace DS4MapperTest.Universal.Editor
         public void Refresh()
         {
             profiles.Clear();
+            folders.Clear();
+
+            foreach (string folder in store.EnumerateFolders())
+            {
+                InsertFolderName(folder);
+            }
+
             foreach (UniversalProfileStoreEntry entry in store.EnumerateProfiles()
                 .Where(item => item.Loaded)
-                .OrderBy(item => item.Profile.DisplayName, StringComparer.OrdinalIgnoreCase))
+                .OrderBy(item => store.GetFolderName(item.Path), new UniversalFolderNameComparer())
+                .ThenBy(item => item.Profile.DisplayName, StringComparer.OrdinalIgnoreCase))
             {
-                profiles.Add(new UniversalClassicProfileEntry(entry.Path, entry.Profile));
+                profiles.Add(new UniversalClassicProfileEntry(entry.Path, entry.Profile, store.GetFolderName(entry.Path)));
+            }
+        }
+
+        public bool FolderExists(string folderName)
+        {
+            return folders.Any(item => string.Equals(item, folderName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public bool CreateFolder(string folderName)
+        {
+            if (!store.CreateFolder(folderName)) return false;
+            InsertFolderName(folderName);
+            return true;
+        }
+
+        public bool RenameFolder(string oldFolderName, string newFolderName)
+        {
+            if (!store.RenameFolder(oldFolderName, newFolderName)) return false;
+
+            int folderIndex = folders.IndexOf(oldFolderName);
+            if (folderIndex >= 0)
+            {
+                folders.RemoveAt(folderIndex);
+            }
+
+            foreach (ProfileEntity profile in profiles.Where(profile =>
+                string.Equals(profile.FolderName, oldFolderName, StringComparison.OrdinalIgnoreCase)))
+            {
+                profile.UpdatePath(System.IO.Path.Combine(store.GetFolderPath(newFolderName), System.IO.Path.GetFileName(profile.ProfilePath)));
+                profile.FolderName = newFolderName;
+            }
+
+            InsertFolderName(newFolderName);
+            SortProfiles();
+            return true;
+        }
+
+        public bool DeleteFolder(string folderName)
+        {
+            if (!store.DeleteFolder(folderName)) return false;
+            folders.Remove(folderName);
+            return true;
+        }
+
+        public bool MoveProfile(ProfileEntity profile, string folderName)
+        {
+            if (profile == null) return false;
+            if (!store.MoveProfile(profile.ProfilePath, folderName, out string newProfilePath)) return false;
+
+            if (!FolderExists(folderName))
+            {
+                InsertFolderName(folderName);
+            }
+
+            profile.UpdatePath(newProfilePath);
+            profile.FolderName = folderName;
+            SortProfiles();
+            return true;
+        }
+
+        private void InsertFolderName(string folderName)
+        {
+            if (string.IsNullOrWhiteSpace(folderName) || FolderExists(folderName)) return;
+
+            int insertIndex = folders
+                .TakeWhile(item => new UniversalFolderNameComparer().Compare(item, folderName) <= 0)
+                .Count();
+            folders.Insert(insertIndex, folderName);
+        }
+
+        private void SortProfiles()
+        {
+            List<ProfileEntity> sorted = profiles
+                .OrderBy(item => item.FolderName, new UniversalFolderNameComparer())
+                .ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase)
+                .ToList();
+
+            profiles.Clear();
+            foreach (ProfileEntity profile in sorted)
+            {
+                profiles.Add(profile);
+            }
+        }
+
+        private sealed class UniversalFolderNameComparer : IComparer<string>
+        {
+            public int Compare(string x, string y)
+            {
+                if (string.Equals(x, y, StringComparison.OrdinalIgnoreCase)) return 0;
+
+                int leftRank = GetFolderSortRank(x);
+                int rightRank = GetFolderSortRank(y);
+                if (leftRank != rightRank)
+                {
+                    return leftRank.CompareTo(rightRank);
+                }
+
+                return StringComparer.CurrentCultureIgnoreCase.Compare(x, y);
+            }
+
+            private static int GetFolderSortRank(string folderName)
+            {
+                if (string.Equals(folderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return 0;
+                if (string.Equals(folderName, ProfileList.VALORANT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return 1;
+                return 2;
             }
         }
     }

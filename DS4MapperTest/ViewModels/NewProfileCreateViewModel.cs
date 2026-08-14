@@ -18,6 +18,8 @@ namespace DS4MapperTest.ViewModels
         public Mapper Mapper => mapper;
 
         private BackendManager manager;
+        private readonly ObservableCollection<string> customProfileFolders;
+        private readonly Func<string, string> customFolderPathResolver;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -60,9 +62,10 @@ namespace DS4MapperTest.ViewModels
         }
 
         public ObservableCollection<string> ProfileFolders =>
-            manager.DeviceProfileListDict.TryGetValue(mapper.DeviceType, out ProfileList profileList)
+            customProfileFolders ??
+            (manager.DeviceProfileListDict.TryGetValue(mapper.DeviceType, out ProfileList profileList)
                 ? profileList.ProfileFolderCol
-                : new ObservableCollection<string> { ProfileList.DEFAULT_PROFILE_FOLDER };
+                : new ObservableCollection<string> { ProfileList.DEFAULT_PROFILE_FOLDER });
 
         private string selectedFolderName;
         public string SelectedFolderName
@@ -72,9 +75,7 @@ namespace DS4MapperTest.ViewModels
             {
                 if (selectedFolderName == value) return;
                 selectedFolderName = value;
-                profileFolder = manager.DeviceProfileListDict.TryGetValue(mapper.DeviceType, out ProfileList profileList)
-                    ? profileList.GetFolderPath(selectedFolderName)
-                    : ApplicationDataPathResolver.ResolveDefault().UniversalProfilesPath;
+                profileFolder = ResolveFolderPath(selectedFolderName);
                 RaisePropertyChanged(nameof(SelectedFolderName));
                 RaisePropertyChanged(nameof(ProfileFolder));
                 RaisePropertyChanged(nameof(ProfilePath));
@@ -165,17 +166,28 @@ namespace DS4MapperTest.ViewModels
         public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
         public bool HasErrors => errors.Count > 0;
 
-        public NewProfileCreateViewModel(Mapper mapper, BackendManager manager)
+        public NewProfileCreateViewModel(Mapper mapper, BackendManager manager,
+            ObservableCollection<string> customProfileFolders = null,
+            Func<string, string> customFolderPathResolver = null)
         {
             this.mapper = mapper;
             this.manager = manager;
+            this.customProfileFolders = customProfileFolders;
+            this.customFolderPathResolver = customFolderPathResolver;
 
             // Profiles are stored per device type (DS4, DualSense, etc.), so the
             // folder for the currently active controller is always a sensible
             // default. The manage-profiles panel that hosts this view model can
             // only be opened while a controller is connected, so DeviceType is
             // guaranteed to be valid here.
-            if (manager.DeviceProfileListDict.TryGetValue(mapper.DeviceType, out ProfileList profileList))
+            if (customProfileFolders != null)
+            {
+                selectedFolderName = customProfileFolders.Contains(ProfileList.DEFAULT_PROFILE_FOLDER)
+                    ? ProfileList.DEFAULT_PROFILE_FOLDER
+                    : customProfileFolders.FirstOrDefault() ?? ProfileList.DEFAULT_PROFILE_FOLDER;
+                profileFolder = ResolveFolderPath(selectedFolderName);
+            }
+            else if (manager.DeviceProfileListDict.TryGetValue(mapper.DeviceType, out ProfileList profileList))
             {
                 selectedFolderName = profileList.FolderExists(ProfileList.VALORANT_PROFILE_FOLDER)
                     ? ProfileList.VALORANT_PROFILE_FOLDER
@@ -187,6 +199,18 @@ namespace DS4MapperTest.ViewModels
                 selectedFolderName = ProfileList.DEFAULT_PROFILE_FOLDER;
                 profileFolder = ApplicationDataPathResolver.ResolveDefault().UniversalProfilesPath;
             }
+        }
+
+        private string ResolveFolderPath(string folderName)
+        {
+            if (customFolderPathResolver != null)
+            {
+                return customFolderPathResolver(folderName);
+            }
+
+            return manager.DeviceProfileListDict.TryGetValue(mapper.DeviceType, out ProfileList profileList)
+                ? profileList.GetFolderPath(folderName)
+                : ApplicationDataPathResolver.ResolveDefault().UniversalProfilesPath;
         }
 
         public bool CreateProfile()
