@@ -25,6 +25,15 @@ namespace DS4MapperTest.SdlDiagnostics
             SensorType.GyroR,
         };
 
+        // SDL_Init and SDL_Quit are process-wide, and SDL_Quit shuts every
+        // subsystem down regardless of how many callers still want them. Two
+        // consumers exist - the universal mapping backend and the diagnostics
+        // window - so closing the diagnostics window used to tear SDL down
+        // underneath the running mapper, which then stopped seeing controller
+        // add and remove events entirely. Only the last consumer out quits.
+        private static readonly object InitialisationLock = new object();
+        private static int initialisedConsumers;
+
         private bool initialised;
 
         public SdlDiagnosticVersionInfo VersionInfo => new SdlDiagnosticVersionInfo
@@ -39,13 +48,25 @@ namespace DS4MapperTest.SdlDiagnostics
         {
             try
             {
-                if (!Init(InitFlags.Gamepad | InitFlags.Joystick | InitFlags.Sensor))
+                lock (InitialisationLock)
                 {
-                    error = SafeGetError();
-                    return false;
+                    if (initialised)
+                    {
+                        error = string.Empty;
+                        return true;
+                    }
+
+                    ConfigureControllerDiscoveryHints();
+                    if (!Init(InitFlags.Gamepad | InitFlags.Joystick | InitFlags.Sensor))
+                    {
+                        error = SafeGetError();
+                        return false;
+                    }
+
+                    initialised = true;
+                    initialisedConsumers++;
                 }
 
-                initialised = true;
                 error = string.Empty;
                 return true;
             }
@@ -68,22 +89,35 @@ namespace DS4MapperTest.SdlDiagnostics
 
         public void Shutdown()
         {
-            if (!initialised) return;
-            Quit();
-            initialised = false;
+            lock (InitialisationLock)
+            {
+                if (!initialised) return;
+
+                initialised = false;
+                initialisedConsumers--;
+                if (initialisedConsumers <= 0)
+                {
+                    initialisedConsumers = 0;
+                    Quit();
+                }
+            }
         }
 
         public IReadOnlyList<uint> EnumerateGamepads(out string error)
         {
             error = string.Empty;
-            uint[] ids = SDL.GetGamepads(out int count);
-            if (ids == null)
+            RefreshGamepads();
+            RefreshJoysticks();
+
+            uint[] gamepadIds = SDL.GetGamepads(out int gamepadCount);
+            uint[] joystickIds = SDL.GetJoysticks(out int joystickCount);
+            IReadOnlyList<uint> ids = MergeGamepadInstanceIds(gamepadIds, gamepadCount, joystickIds, joystickCount, IsGamepad);
+            if (ids.Count == 0 && gamepadIds == null && joystickIds == null)
             {
                 error = SafeGetError();
-                return Array.Empty<uint>();
             }
 
-            return count < ids.Length ? ids.Take(count).ToArray() : ids;
+            return ids;
         }
 
         public SdlGamepadHandle OpenGamepad(uint instanceId, out string error)
@@ -153,7 +187,54 @@ namespace DS4MapperTest.SdlDiagnostics
         }
 
         public void RefreshGamepads() => UpdateGamepads();
+        private static void RefreshJoysticks() => UpdateJoysticks();
         public void RefreshSensors() => UpdateSensors();
+
+        internal static IReadOnlyList<uint> MergeGamepadInstanceIds(
+            uint[] gamepadIds,
+            int gamepadCount,
+            uint[] joystickIds,
+            int joystickCount,
+            Func<uint, bool> isGamepad)
+        {
+            HashSet<uint> ids = new HashSet<uint>();
+            AddReportedIds(ids, gamepadIds, gamepadCount, null);
+            AddReportedIds(ids, joystickIds, joystickCount, isGamepad);
+            return ids.OrderBy(id => id).ToArray();
+        }
+
+        private static void AddReportedIds(
+            HashSet<uint> target,
+            uint[] source,
+            int count,
+            Func<uint, bool> predicate)
+        {
+            if (target == null || source == null || count <= 0)
+            {
+                return;
+            }
+
+            int limit = Math.Min(count, source.Length);
+            for (int index = 0; index < limit; index++)
+            {
+                uint id = source[index];
+                if (predicate == null || SafeBool(() => predicate(id)))
+                {
+                    target.Add(id);
+                }
+            }
+        }
+
+        private static void ConfigureControllerDiscoveryHints()
+        {
+            SetHint(Hints.XInputEnabled, "1");
+            SetHint(Hints.JoystickWGI, "1");
+            SetHint(Hints.JoystickHIDAPI, "1");
+            SetHint(Hints.JoystickHIDAPIXbox, "1");
+            SetHint(Hints.JoystickHIDAPIXbox360, "1");
+            SetHint(Hints.JoystickHIDAPIXbox360Wireless, "1");
+            SetHint(Hints.JoystickHIDAPIXboxOne, "1");
+        }
 
         public void RefreshLiveState(SdlGamepadHandle handle, SdlRawGamepadInfo info)
         {

@@ -38,7 +38,17 @@ namespace DS4MapperTest.SdlDiagnostics
                     });
             }
 
-            // Do not split or assign independent pads without verified device metadata.
+            if (info.Touchpads.Count == 2)
+            {
+                return new ReadOnlyDictionary<int, SdlUniversalTouchSurfaceTarget>(
+                    new Dictionary<int, SdlUniversalTouchSurfaceTarget>
+                    {
+                        [info.Touchpads[0].TouchpadIndex] = SdlUniversalTouchSurfaceTarget.Left,
+                        [info.Touchpads[1].TouchpadIndex] = SdlUniversalTouchSurfaceTarget.Right,
+                    });
+            }
+
+            // Do not assign more complex layouts without verified device metadata.
             return new ReadOnlyDictionary<int, SdlUniversalTouchSurfaceTarget>(
                 new Dictionary<int, SdlUniversalTouchSurfaceTarget>());
         }
@@ -112,7 +122,7 @@ namespace DS4MapperTest.SdlDiagnostics
 
             foreach (SdlRawButtonState button in info.Buttons.Where(item => item.Supported))
             {
-                if (TryMapButton(button.Name, out UniversalInputId inputId))
+                if (TryMapButton(info, button.Name, out UniversalInputId inputId))
                 {
                     inputId = ApplyFaceButtonSwap(info, inputId);
                     AddDescriptor(descriptors, inputId, info, $"button:{button.Name}", button.Name);
@@ -148,6 +158,11 @@ namespace DS4MapperTest.SdlDiagnostics
                     AddDescriptor(descriptors, UniversalInputId.RightTouchSurface, info, $"touchpad:{mapping.Key}:right", "Right Touchpad");
                     AddDescriptor(descriptors, UniversalInputId.LeftTouchSurfaceClick, info, $"touchpad:{mapping.Key}:left-click", "Left Touchpad Click");
                     AddDescriptor(descriptors, UniversalInputId.RightTouchSurfaceClick, info, $"touchpad:{mapping.Key}:right-click", "Right Touchpad Click");
+                }
+                else
+                {
+                    AddDescriptor(descriptors, TouchClickId(mapping.Value), info,
+                        $"touchpad:{mapping.Key}:click", $"{TouchLabel(mapping.Value)} Click");
                 }
             }
 
@@ -185,7 +200,7 @@ namespace DS4MapperTest.SdlDiagnostics
 
             foreach (SdlRawButtonState button in info.Buttons.Where(item => item.Supported))
             {
-                if (TryMapButton(button.Name, out UniversalInputId inputId))
+                if (TryMapButton(info, button.Name, out UniversalInputId inputId))
                 {
                     inputId = ApplyFaceButtonSwap(info, inputId);
                     if (capabilities.Supports(inputId))
@@ -194,6 +209,8 @@ namespace DS4MapperTest.SdlDiagnostics
                     }
                 }
             }
+
+            AddDerivedDualPadButtonAliases(info, capabilities, values);
 
             AddStickValue(info, capabilities, values, UniversalInputId.LeftStick, "LeftX", "LeftY");
             AddStickValue(info, capabilities, values, UniversalInputId.RightStick, "RightX", "RightY");
@@ -219,32 +236,48 @@ namespace DS4MapperTest.SdlDiagnostics
         public static bool IsKnownVirtualOutputController(SdlRawGamepadInfo info)
         {
             string text = $"{info?.Name} {info?.MappingName} {info?.DevicePath}".ToLowerInvariant();
-            bool hasVirtualBusMarker =
+            bool hasKnownPhysicalHardwareId = HasKnownPhysicalHardwareId(info);
+            bool hasExplicitVirtualMarker =
                 text.Contains("fakerinput") ||
                 text.Contains("viiper") ||
                 text.Contains("vigem") ||
-                text.Contains("nefarius") ||
-                text.Contains("usbip");
+                text.Contains("nefarius");
+            bool hasGenericVirtualMarker =
+                !hasKnownPhysicalHardwareId &&
+                text.Contains("virtual");
+            bool hasUsbIpOutputIdentity =
+                text.Contains("usbip") &&
+                HasVirtualOutputIdentity(info, text);
 
-            return hasVirtualBusMarker ||
-                HasVirtualOutputIdentity(info, text) ||
+            return hasExplicitVirtualMarker ||
+                hasGenericVirtualMarker ||
+                hasUsbIpOutputIdentity ||
                 IsVirtualDevicePath(info?.DevicePath) ||
-                text.Contains("virtual xbox") ||
-                text.Contains("virtual dualshock") ||
-                text.Contains("virtual dualsense");
+                (!hasKnownPhysicalHardwareId &&
+                    (text.Contains("virtual xbox") ||
+                    text.Contains("virtual dualshock") ||
+                    text.Contains("virtual dualsense")));
         }
 
         private static bool HasVirtualOutputIdentity(SdlRawGamepadInfo info, string text)
         {
-            if (info?.VendorId != 0 || info?.ProductId != 0)
+            if (info == null ||
+                HasKnownPhysicalHardwareId(info))
             {
                 return false;
             }
 
             return text.Contains("xbox 360 controller for windows") ||
                 text.Contains("dualshock 4") ||
+                text.Contains("ps4 controller") ||
                 text.Contains("dualsense") ||
                 text.Contains("switch pro controller 2");
+        }
+
+        private static bool HasKnownPhysicalHardwareId(SdlRawGamepadInfo info)
+        {
+            return (info.VendorId.HasValue && info.VendorId.Value != 0) ||
+                (info.ProductId.HasValue && info.ProductId.Value != 0);
         }
 
         private static bool IsVirtualDevicePath(string devicePath)
@@ -308,10 +341,23 @@ namespace DS4MapperTest.SdlDiagnostics
             return "generic-sdl";
         }
 
-        private static bool TryMapButton(string name, out UniversalInputId inputId)
+        private static bool TryMapButton(
+            SdlRawGamepadInfo info,
+            string name,
+            out UniversalInputId inputId)
         {
+            if (HasTwoTouchpads(info) &&
+                string.Equals(name, "Touchpad", StringComparison.OrdinalIgnoreCase))
+            {
+                inputId = UniversalInputId.LeftTouchSurfaceClick;
+                return true;
+            }
+
             return ButtonMap.TryGetValue(name ?? string.Empty, out inputId);
         }
+
+        private static bool HasTwoTouchpads(SdlRawGamepadInfo info) =>
+            info?.Touchpads?.Count == 2;
 
         private static UniversalInputId ApplyFaceButtonSwap(SdlRawGamepadInfo info, UniversalInputId inputId)
         {
@@ -439,6 +485,20 @@ namespace DS4MapperTest.SdlDiagnostics
             }
         }
 
+        private static void AddDerivedDualPadButtonAliases(
+            SdlRawGamepadInfo info,
+            ControllerCapabilities capabilities,
+            Dictionary<UniversalInputId, UniversalInputValue> values)
+        {
+            if (!HasTwoTouchpads(info)) return;
+
+            if (capabilities.Supports(UniversalInputId.RightTouchSurfaceClick) &&
+                values.TryGetValue(UniversalInputId.MiscButton2, out UniversalInputValue rightClick))
+            {
+                values[UniversalInputId.RightTouchSurfaceClick] = rightClick;
+            }
+        }
+
         private static void AddDerivedSinglePadHalf(
             Dictionary<UniversalInputId, UniversalInputValue> values,
             ControllerCapabilities capabilities,
@@ -542,13 +602,19 @@ namespace DS4MapperTest.SdlDiagnostics
             public UniversalController Controller { get; set; }
             public SdlRawGamepadInfo Info { get; set; }
             public long Sequence { get; set; }
+            public int MissedEnumerations { get; set; }
         }
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly ISdlDiagnosticApi api;
         private readonly SdlUniversalStateTranslator translator;
+        private readonly Func<DateTimeOffset> utcNow;
         private readonly object syncRoot = new object();
         private readonly Dictionary<uint, TrackedDevice> devices = new Dictionary<uint, TrackedDevice>();
+        private readonly HashSet<uint> suppressedInstanceIds = new HashSet<uint>();
+        private static readonly TimeSpan EnumerationReconcileInterval = TimeSpan.FromMilliseconds(100);
+        private const int MissedEnumerationsBeforeClose = 3;
+        private DateTimeOffset nextEnumerationReconcileUtc = DateTimeOffset.MinValue;
         private bool started;
         private bool disposed;
 
@@ -569,10 +635,12 @@ namespace DS4MapperTest.SdlDiagnostics
 
         public SdlUniversalControllerBackend(
             ISdlDiagnosticApi api,
-            SdlUniversalStateTranslator translator = null)
+            SdlUniversalStateTranslator translator = null,
+            Func<DateTimeOffset> utcNow = null)
         {
             this.api = api ?? throw new ArgumentNullException(nameof(api));
             this.translator = translator ?? new SdlUniversalStateTranslator();
+            this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         }
 
         public bool Start(out string error)
@@ -594,11 +662,8 @@ namespace DS4MapperTest.SdlDiagnostics
                 started = true;
             }
 
-            IReadOnlyList<uint> instanceIds = api.EnumerateGamepads(out string enumError);
-            foreach (uint instanceId in instanceIds)
-            {
-                OpenDevice(instanceId, "initial enumeration");
-            }
+            string enumError = ReconcileEnumeratedDevices("initial enumeration");
+            nextEnumerationReconcileUtc = utcNow().Add(EnumerationReconcileInterval);
 
             error = enumError ?? string.Empty;
             ControllersChanged?.Invoke(this, EventArgs.Empty);
@@ -617,6 +682,13 @@ namespace DS4MapperTest.SdlDiagnostics
                 while (api.PollEvent(out SdlDiagnosticEvent diagnosticEvent))
                 {
                     HandleEvent(diagnosticEvent);
+                }
+
+                DateTimeOffset now = utcNow();
+                if (now >= nextEnumerationReconcileUtc)
+                {
+                    ReconcileEnumeratedDevices("enumeration reconcile");
+                    nextEnumerationReconcileUtc = now.Add(EnumerationReconcileInterval);
                 }
 
                 foreach (TrackedDevice tracked in devices.Values.ToList())
@@ -659,6 +731,7 @@ namespace DS4MapperTest.SdlDiagnostics
                 }
 
                 devices.Clear();
+                suppressedInstanceIds.Clear();
                 started = false;
                 api.Shutdown();
             }
@@ -671,15 +744,77 @@ namespace DS4MapperTest.SdlDiagnostics
             switch (diagnosticEvent.Kind)
             {
                 case SdlDiagnosticInputEventKind.DeviceAdded:
+                    suppressedInstanceIds.Remove(diagnosticEvent.InstanceId);
                     OpenDevice(diagnosticEvent.InstanceId, "device added");
                     break;
                 case SdlDiagnosticInputEventKind.DeviceRemoved:
+                    suppressedInstanceIds.Remove(diagnosticEvent.InstanceId);
                     CloseDevice(diagnosticEvent.InstanceId, "device removed");
                     break;
                 case SdlDiagnosticInputEventKind.DeviceRemapped:
+                    suppressedInstanceIds.Remove(diagnosticEvent.InstanceId);
                     RebuildDevice(diagnosticEvent.InstanceId);
                     break;
             }
+        }
+
+        private string ReconcileEnumeratedDevices(string reason)
+        {
+            IReadOnlyList<uint> instanceIds = api.EnumerateGamepads(out string enumError);
+            foreach (uint instanceId in instanceIds)
+            {
+                if (!devices.ContainsKey(instanceId) &&
+                    !suppressedInstanceIds.Contains(instanceId))
+                {
+                    OpenDevice(instanceId, reason);
+                }
+            }
+
+            // Removal used to depend entirely on a GamepadRemoved event
+            // arriving on this backend's poll. SDL's event queue is
+            // process-wide, so any other consumer draining it (the diagnostics
+            // window does) takes the event away, and a device that vanished
+            // between polls stayed open and "connected" forever: its session
+            // was never disposed and it kept its slot in the controller list.
+            // The enumeration is authoritative, so trust it in both directions.
+            //
+            // Only trust an empty enumeration when it came back clean: an
+            // enumeration that failed reports no devices, and dropping every
+            // controller on a transient failure would be worse than waiting.
+            if (instanceIds.Count == 0 && !string.IsNullOrWhiteSpace(enumError))
+            {
+                logger.Warn($"SDL universal backend enumeration reported: {enumError}");
+                return enumError;
+            }
+
+            HashSet<uint> enumerated = new HashSet<uint>(instanceIds);
+            foreach (TrackedDevice tracked in devices.Values.ToArray())
+            {
+                if (enumerated.Contains(tracked.Info.InstanceId))
+                {
+                    tracked.MissedEnumerations = 0;
+                    continue;
+                }
+
+                // SDL can briefly stop reporting a device it is re-classifying
+                // (a remap, for instance). Require a few consecutive misses so
+                // a blip does not churn the session for a controller that is
+                // still plugged in.
+                tracked.MissedEnumerations++;
+                if (tracked.MissedEnumerations >= MissedEnumerationsBeforeClose)
+                {
+                    CloseDevice(tracked.Info.InstanceId, "no longer enumerated");
+                }
+            }
+
+            suppressedInstanceIds.RemoveWhere(item => !enumerated.Contains(item));
+
+            if (!string.IsNullOrWhiteSpace(enumError))
+            {
+                logger.Warn($"SDL universal backend enumeration reported: {enumError}");
+            }
+
+            return enumError;
         }
 
         private void OpenDevice(uint instanceId, string reason)
@@ -729,6 +864,7 @@ namespace DS4MapperTest.SdlDiagnostics
                 }
 
                 logger.Info($"SDL universal backend suppressed non-authoritative instance {instanceId}: {info.Name}");
+                suppressedInstanceIds.Add(instanceId);
                 return;
             }
 
@@ -807,6 +943,7 @@ namespace DS4MapperTest.SdlDiagnostics
 
             tracked.Controller.MarkDisconnected();
             devices.Remove(instanceId);
+            suppressedInstanceIds.Remove(instanceId);
             logger.Info($"SDL universal backend closed instance {instanceId} ({reason})");
             ControllersChanged?.Invoke(this, EventArgs.Empty);
         }

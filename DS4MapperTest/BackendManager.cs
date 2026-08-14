@@ -73,6 +73,7 @@ namespace DS4MapperTest
         private readonly MouseOutputRoutingController mouseOutputRoutingController;
         public MouseOutputRoutingController MouseOutputRoutingController =>
             mouseOutputRoutingController;
+        private SteamControllerUniversalBackend steamControllerUniversalBackend;
 
         // Phase-2 physical-mouse forwarding. Owned here (not by the WPF UI)
         // so it starts/stops with the backend service regardless of which
@@ -83,6 +84,7 @@ namespace DS4MapperTest
         private readonly HidHideVisibilityManager hidHideVisibilityManager;
         private UniversalMappingRuntime universalMappingRuntime;
         private Thread universalMappingThread;
+        private Thread nativeSteamControllerDiscoveryThread;
         private volatile bool stopUniversalMappingThread;
         public UniversalMappingRuntime UniversalMappingRuntime => universalMappingRuntime;
 
@@ -361,21 +363,10 @@ namespace DS4MapperTest
                 mouseOutputDispatcher);
             LogDebug($"Physical mouse forwarding: {physicalMouseService.Status}");
 
-            Thread temper = new Thread(() =>
-            {
-                //enumerator.FindControllers();
-                testEnumerator.FindControllers();
-                testEnumerator.ClearRemovedDevicesReferences();
-            });
-            temper.IsBackground = true;
-            temper.Priority = ThreadPriority.Normal;
-            temper.Name = "HID Device Opener";
-            temper.Start();
-            temper.Join();
-
             StartUniversalMappingRuntime();
-
             isRunning = true;
+            StartNativeSteamControllerDiscovery();
+
             changingService = false;
             mouseOutputRoutingController.SetServiceRunning(true);
             ServiceStarted?.Invoke(this, EventArgs.Empty);
@@ -436,9 +427,12 @@ namespace DS4MapperTest
                     .Where(source => source.Family == InputDeviceType.SteamController)
                     .ToArray();
 
+            steamControllerUniversalBackend =
+                new SteamControllerUniversalBackend(CreateSteamControllerSources());
+
             List<IUniversalControllerBackend> backends = new List<IUniversalControllerBackend>
             {
-                new SteamControllerUniversalBackend(CreateSteamControllerSources()),
+                steamControllerUniversalBackend,
                 new SdlUniversalControllerBackend(new Sdl3NativeDiagnosticApi()),
             };
 
@@ -476,6 +470,41 @@ namespace DS4MapperTest
                 Name = "Universal Mapper Runtime",
             };
             universalMappingThread.Start();
+        }
+
+        private void StartNativeSteamControllerDiscovery()
+        {
+            nativeSteamControllerDiscoveryThread = new Thread(() =>
+            {
+                try
+                {
+                    // This HID scan is only needed for the original 2015 Steam
+                    // Controller native adapter. SDL3 owns all modern controllers,
+                    // so keep SDL startup and the UI device list off this path.
+                    testEnumerator.FindControllers();
+                    if (!isRunning)
+                    {
+                        return;
+                    }
+
+                    steamControllerUniversalBackend?.RefreshSources(CreateSteamControllerSources());
+                    universalMappingRuntime?.Refresh();
+                    LogDebug($"Native HID discovery found {testEnumerator.GetKnownDevices().Count()} known controller(s).");
+                }
+                catch (Exception ex)
+                {
+                    logger.Warn(ex, "Native Steam Controller discovery failed.");
+                    LogDebug($"Native Steam Controller discovery failed: {ex.Message}", warning: true);
+                }
+                finally
+                {
+                    testEnumerator.ClearRemovedDevicesReferences();
+                }
+            });
+            nativeSteamControllerDiscoveryThread.IsBackground = true;
+            nativeSteamControllerDiscoveryThread.Priority = ThreadPriority.BelowNormal;
+            nativeSteamControllerDiscoveryThread.Name = "Native Steam Controller HID Discovery";
+            nativeSteamControllerDiscoveryThread.Start();
         }
 
         private static void PruneNonSteamControllerDevMigrations(UniversalProfileStore store)
@@ -570,6 +599,15 @@ namespace DS4MapperTest
             physicalMouseService.Stop();
 
             PreServiceStop?.Invoke(this, EventArgs.Empty);
+
+            if (nativeSteamControllerDiscoveryThread != null &&
+                nativeSteamControllerDiscoveryThread.IsAlive &&
+                Thread.CurrentThread != nativeSteamControllerDiscoveryThread)
+            {
+                nativeSteamControllerDiscoveryThread.Join(TimeSpan.FromSeconds(2));
+            }
+
+            nativeSteamControllerDiscoveryThread = null;
 
             stopUniversalMappingThread = true;
             if (universalMappingThread != null &&
@@ -667,6 +705,9 @@ namespace DS4MapperTest
             if (isRunning)
             {
                 using WriteLocker locker = new WriteLocker(_hotplugLock);
+                testEnumerator.FindControllers();
+                steamControllerUniversalBackend?.RefreshSources(CreateSteamControllerSources());
+                LogDebug($"Native HID discovery found {testEnumerator.GetKnownDevices().Count()} known controller(s) after hotplug.");
                 universalMappingRuntime?.Refresh();
             }
         }
