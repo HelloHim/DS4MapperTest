@@ -3728,12 +3728,15 @@ namespace DS4MapperTest.ViewModels
     public sealed class PhysicalControllerVisibilityViewModel : INotifyPropertyChanged, IDisposable
     {
         private readonly InputDeviceBase device;
+        private readonly UniversalMapper universalMapper;
         private readonly ControllerOptionsStore options;
         private readonly AppGlobalData appGlobal;
+        private readonly bool hasPossibleHidHideTarget;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public bool IsAvailable => appGlobal?.hidHideInstalled == true;
+        public bool IsAvailable => appGlobal?.hidHideInstalled == true &&
+            hasPossibleHidHideTarget;
 
         public bool Enabled
         {
@@ -3745,20 +3748,53 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
-        public string Description => IsAvailable
-            ? "Temporarily hides this physical controller from other apps while the remapper is running. This is an app-level setting and is not tied to any profile. You may need to restart the game."
-            : "Install HidHide to hide this controller from other apps while the remapper is running. This is an app-level setting and is not tied to any profile. This setting is unavailable because HidHide is not installed.";
+        public string Description
+        {
+            get
+            {
+                if (appGlobal?.hidHideInstalled != true)
+                {
+                    return "Install HidHide to hide this controller from other apps while the remapper is running. This is an app-level setting and is not tied to any profile. This setting is unavailable because HidHide is not installed.";
+                }
+
+                if (!hasPossibleHidHideTarget)
+                {
+                    return "SDL has not exposed a physical device path or VID/PID for this controller, so HidHide cannot identify the physical device to hide. This is an app-level setting and is not tied to any profile.";
+                }
+
+                return "Temporarily hides this physical controller from other apps while the remapper is running. This is an app-level setting and is not tied to any profile. You may need to restart the game.";
+            }
+        }
 
         private PhysicalControllerVisibilityViewModel(InputDeviceBase device, AppGlobalData appGlobal)
         {
             this.device = device;
             this.appGlobal = appGlobal;
             options = device.DeviceOptions;
+            hasPossibleHidHideTarget = true;
+            options.HidePhysicalControllerChanged += HidePhysicalControllerChanged;
+        }
+
+        private PhysicalControllerVisibilityViewModel(UniversalMapper mapper)
+        {
+            universalMapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            appGlobal = AppGlobalDataSingleton.Instance;
+            options = UniversalControllerDeviceOptionsStore.LoadOptions(
+                universalMapper.Controller,
+                universalMapper.DeviceType);
+            hasPossibleHidHideTarget =
+                UniversalControllerDeviceOptionsStore.HasPossibleHidHideTarget(
+                    universalMapper.Controller.Identity?.DeviceIdentity);
             options.HidePhysicalControllerChanged += HidePhysicalControllerChanged;
         }
 
         public static PhysicalControllerVisibilityViewModel Create(Mapper mapper)
         {
+            if (mapper is UniversalMapper universalMapper)
+            {
+                return new PhysicalControllerVisibilityViewModel(universalMapper);
+            }
+
             if (mapper?.BaseDevice?.DeviceOptions == null)
             {
                 return null;
@@ -3769,7 +3805,20 @@ namespace DS4MapperTest.ViewModels
 
         private void HidePhysicalControllerChanged(object sender, EventArgs e)
         {
-            AppGlobalDataSingleton.Instance.SaveControllerDeviceSettings(device, device.DeviceOptions);
+            if (universalMapper != null)
+            {
+                UniversalControllerDeviceOptionsStore.SaveOptions(
+                    universalMapper.Controller,
+                    universalMapper.DeviceType,
+                    options);
+            }
+            else
+            {
+                AppGlobalDataSingleton.Instance.SaveControllerDeviceSettings(
+                    device,
+                    device.DeviceOptions);
+            }
+
             (System.Windows.Application.Current as App)?.Manager?.RefreshControllerVisibilityState();
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Enabled)));
         }
