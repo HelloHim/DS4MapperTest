@@ -33,6 +33,7 @@ namespace DS4MapperTest.Views
         private int pendingMouseCode;
         private MouseWheelCodes pendingWheelCode;
         private Window subscribedWindow;
+        private Window captureWindow;
 
         public QuickBindControl()
         {
@@ -56,6 +57,8 @@ namespace DS4MapperTest.Views
 
         private void QuickBindControl_Unloaded(object sender, RoutedEventArgs e)
         {
+            UnsubscribeKeyboardCapture();
+
             if (subscribedWindow != null)
             {
                 subscribedWindow.Deactivated -= Window_Deactivated;
@@ -116,6 +119,8 @@ namespace DS4MapperTest.Views
 
             BindButton.Content = "Press a key…";
             BindButton.ToolTip = $"Bind {Target.RowLabel} — {Target.SlotLabel}\nPress a key or mouse button. Esc to cancel";
+            SubscribeKeyboardCapture();
+
             BindButton.SetResourceReference(Control.BorderBrushProperty, "JsmccAccentBrush");
             BindButton.BorderThickness = new Thickness(2);
 
@@ -129,6 +134,8 @@ namespace DS4MapperTest.Views
         private void EndListening()
         {
             listening = false;
+
+            UnsubscribeKeyboardCapture();
 
             if (Mouse.Captured == this)
             {
@@ -146,6 +153,32 @@ namespace DS4MapperTest.Views
             QuickBindCaptureService.NotifyEnded(this);
         }
 
+        private void SubscribeKeyboardCapture()
+        {
+            UnsubscribeKeyboardCapture();
+
+            captureWindow = Window.GetWindow(this);
+            captureWindow?.AddHandler(
+                Keyboard.PreviewKeyDownEvent,
+                new KeyEventHandler(CaptureWindow_PreviewKeyDown),
+                true);
+        }
+
+        private void UnsubscribeKeyboardCapture()
+        {
+            if (captureWindow == null) return;
+
+            captureWindow.RemoveHandler(
+                Keyboard.PreviewKeyDownEvent,
+                new KeyEventHandler(CaptureWindow_PreviewKeyDown));
+            captureWindow = null;
+        }
+
+        private void CaptureWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            HandlePreviewKeyDown(e);
+        }
+
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             if (!listening)
@@ -153,6 +186,14 @@ namespace DS4MapperTest.Views
                 base.OnPreviewKeyDown(e);
                 return;
             }
+
+            HandlePreviewKeyDown(e);
+        }
+
+        private void HandlePreviewKeyDown(KeyEventArgs e)
+        {
+            if (!listening) return;
+            if (e.Handled) return;
 
             e.Handled = true;
             if (e.IsRepeat) return;

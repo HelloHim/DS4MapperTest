@@ -299,6 +299,97 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void ClassicProfileListBridgeListsUniversalProfileFolders()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                store.CreateFolder("Aim");
+                store.SaveNamed(CreateProfile("Desktop"), store.GetNamedProfilePath("Desktop", ProfileList.DEFAULT_PROFILE_FOLDER));
+                store.SaveNamed(CreateProfile("Valorant"), store.GetNamedProfilePath("Valorant", "Aim"));
+
+                UniversalClassicProfileList list = new UniversalClassicProfileList(store);
+                list.Refresh();
+
+                CollectionAssert.Contains(list.Folders.ToArray(), ProfileList.DEFAULT_PROFILE_FOLDER);
+                CollectionAssert.Contains(list.Folders.ToArray(), "Aim");
+                Assert.AreEqual("Aim", list.Profiles.Single(item => item.Name == "Valorant").FolderName);
+            }
+        }
+
+        [TestMethod]
+        public void ClassicProfileListBridgeMovesUniversalProfileBetweenFolders()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile profile = CreateProfile("Move Me");
+                store.SaveNamed(profile, store.GetNamedProfilePath(profile.DisplayName, ProfileList.DEFAULT_PROFILE_FOLDER));
+                UniversalClassicProfileList list = new UniversalClassicProfileList(store);
+
+                ProfileEntity entry = list.Profiles.Single(item => item.Name == "Move Me");
+                bool moved = list.MoveProfile(entry, "Arcade");
+
+                Assert.IsTrue(moved);
+                Assert.AreEqual("Arcade", entry.FolderName);
+                StringAssert.Contains(entry.ProfilePath, $"{Path.DirectorySeparatorChar}Arcade{Path.DirectorySeparatorChar}");
+                Assert.IsTrue(File.Exists(entry.ProfilePath));
+                Assert.AreEqual(entry.ProfilePath, store.FindProfilePath(profile.ProfileId));
+            }
+        }
+
+        [TestMethod]
+        public void DeleteFolderRemovesEmptyLeftoverSubdirectories()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                store.CreateFolder("Retired");
+                Directory.CreateDirectory(Path.Combine(store.GetFolderPath("Retired"), "Default"));
+                Directory.CreateDirectory(Path.Combine(store.GetFolderPath("Retired"), "VALORANT"));
+
+                Assert.IsTrue(store.DeleteFolder("Retired"));
+                Assert.IsFalse(Directory.Exists(store.GetFolderPath("Retired")));
+            }
+        }
+
+        [TestMethod]
+        public void DeleteFolderReportsUnrecognisedLeftoverFiles()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                store.CreateFolder("Retired");
+                string strayFolder = Path.Combine(store.GetFolderPath("Retired"), "Default");
+                Directory.CreateDirectory(strayFolder);
+                File.WriteAllText(Path.Combine(strayFolder, "Default - XInput.json"), "{}");
+
+                IOException error = ExpectException<IOException>(() => store.DeleteFolder("Retired"));
+
+                StringAssert.Contains(error.Message, "Default - XInput.json");
+                Assert.IsTrue(Directory.Exists(store.GetFolderPath("Retired")));
+            }
+        }
+
+        [TestMethod]
+        public void DeleteFolderKeepsProfilesStoredInSubdirectories()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                store.CreateFolder("Retired");
+                string nested = Path.Combine(store.GetFolderPath("Retired"), "Nested");
+                Directory.CreateDirectory(nested);
+                File.WriteAllText(
+                    Path.Combine(nested, $"{Guid.NewGuid():D}.universal-profile.json"),
+                    "{}");
+
+                Assert.IsFalse(store.DeleteFolder("Retired"));
+                Assert.IsTrue(Directory.Exists(nested));
+            }
+        }
+
+        [TestMethod]
         public void FailedSavePreservesPreviousFile()
         {
             using (TempProfileDirectory temp = new TempProfileDirectory())

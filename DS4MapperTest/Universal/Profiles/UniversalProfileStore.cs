@@ -60,6 +60,158 @@ namespace DS4MapperTest.Universal.Profiles
             return Path.Combine(rootPath, BuildSafeFileName(displayName));
         }
 
+        public string GetNamedProfilePath(string displayName, string folderName)
+        {
+            return Path.Combine(GetFolderPath(folderName), BuildSafeFileName(displayName));
+        }
+
+        public string GetFolderPath(string folderName)
+        {
+            string cleanName = NormalizeFolderName(folderName);
+            if (string.IsNullOrWhiteSpace(cleanName))
+            {
+                cleanName = ProfileList.DEFAULT_PROFILE_FOLDER;
+            }
+
+            if (cleanName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
+                cleanName.Contains(Path.DirectorySeparatorChar) ||
+                cleanName.Contains(Path.AltDirectorySeparatorChar) ||
+                cleanName == "." ||
+                cleanName == "..")
+            {
+                throw new ArgumentException("Folder name contains invalid characters.", nameof(folderName));
+            }
+
+            return EnsurePathInsideRoot(Path.Combine(rootPath, cleanName));
+        }
+
+        public string GetFolderName(string profilePath)
+        {
+            string fullPath = EnsurePathInsideRoot(profilePath);
+            string folderPath = Path.GetDirectoryName(fullPath);
+            if (string.Equals(folderPath, rootPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return ProfileList.DEFAULT_PROFILE_FOLDER;
+            }
+
+            return Path.GetFileName(folderPath);
+        }
+
+        public void EnsureStandardFolders()
+        {
+            Directory.CreateDirectory(rootPath);
+            Directory.CreateDirectory(GetFolderPath(ProfileList.DEFAULT_PROFILE_FOLDER));
+            Directory.CreateDirectory(GetFolderPath(ProfileList.VALORANT_PROFILE_FOLDER));
+        }
+
+        public IReadOnlyList<string> EnumerateFolders()
+        {
+            EnsureStandardFolders();
+            return Directory.EnumerateDirectories(rootPath, "*", SearchOption.TopDirectoryOnly)
+                .Select(Path.GetFileName)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .OrderBy(name => name, new UniversalProfileFolderNameComparer())
+                .ToList();
+        }
+
+        public bool FolderExists(string folderName)
+        {
+            return Directory.Exists(GetFolderPath(folderName));
+        }
+
+        public bool CreateFolder(string folderName)
+        {
+            string cleanName = NormalizeFolderName(folderName);
+            if (string.IsNullOrWhiteSpace(cleanName) || FolderExists(cleanName))
+            {
+                return false;
+            }
+
+            Directory.CreateDirectory(GetFolderPath(cleanName));
+            return true;
+        }
+
+        public bool RenameFolder(string oldFolderName, string newFolderName)
+        {
+            string cleanName = NormalizeFolderName(newFolderName);
+            if (string.IsNullOrWhiteSpace(oldFolderName) ||
+                string.IsNullOrWhiteSpace(cleanName) ||
+                string.Equals(oldFolderName, cleanName, StringComparison.OrdinalIgnoreCase) ||
+                FolderExists(cleanName))
+            {
+                return false;
+            }
+
+            Directory.Move(GetFolderPath(oldFolderName), GetFolderPath(cleanName));
+            return true;
+        }
+
+        public bool DeleteFolder(string folderName)
+        {
+            if (string.IsNullOrWhiteSpace(folderName) ||
+                string.Equals(folderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            string folderPath = GetFolderPath(folderName);
+            if (!Directory.Exists(folderPath)) return false;
+
+            // Scan the whole subtree, not just the top level: a recursive delete
+            // below would otherwise silently destroy a profile sitting in a
+            // nested directory.
+            if (Directory.EnumerateFiles(folderPath, $"*{ProfileFileExtension}", SearchOption.AllDirectories).Any())
+            {
+                return false;
+            }
+
+            // A plain Directory.Delete fails with "The directory is not empty"
+            // whenever the folder still holds anything the browser does not
+            // list. Empty leftover subdirectories are safe to remove with the
+            // folder; unrecognised files are the user's, so name them instead
+            // of deleting them behind their back.
+            string strayFile = Directory
+                .EnumerateFiles(folderPath, "*", SearchOption.AllDirectories)
+                .FirstOrDefault();
+            if (strayFile != null)
+            {
+                throw new IOException(
+                    $"\"{folderName}\" still contains files that are not universal profiles, " +
+                    $"starting with \"{Path.GetFileName(strayFile)}\". Move or remove them first.");
+            }
+
+            Directory.Delete(folderPath, recursive: true);
+            return true;
+        }
+
+        public bool MoveProfile(string profilePath, string folderName, out string newProfilePath)
+        {
+            newProfilePath = null;
+            string sourcePath = EnsurePathInsideRoot(profilePath);
+            string cleanFolderName = NormalizeFolderName(folderName);
+            if (string.IsNullOrWhiteSpace(cleanFolderName))
+            {
+                return false;
+            }
+
+            string destinationFolder = GetFolderPath(cleanFolderName);
+            Directory.CreateDirectory(destinationFolder);
+            string destinationPath = Path.Combine(destinationFolder, Path.GetFileName(sourcePath));
+            if (string.Equals(sourcePath, destinationPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (File.Exists(destinationPath))
+            {
+                return false;
+            }
+
+            File.Move(sourcePath, destinationPath);
+            newProfilePath = destinationPath;
+            return true;
+        }
+
         public string ResolveRelativeProfilePath(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
@@ -102,7 +254,9 @@ namespace DS4MapperTest.Universal.Profiles
             if (profile == null) throw new ArgumentNullException(nameof(profile));
 
             Directory.CreateDirectory(rootPath);
-            string targetPath = GetNamedProfilePath(profile.DisplayName);
+            string targetPath = string.IsNullOrWhiteSpace(previousPath)
+                ? GetNamedProfilePath(profile.DisplayName)
+                : Path.Combine(Path.GetDirectoryName(EnsurePathInsideRoot(previousPath)), BuildSafeFileName(profile.DisplayName));
             UniversalProfileStoreEntry collision = EnumerateProfiles().FirstOrDefault(item =>
                 item.Loaded &&
                 item.Profile.ProfileId != profile.ProfileId &&
@@ -159,6 +313,7 @@ namespace DS4MapperTest.Universal.Profiles
             string json = UniversalProfileSerializer.Serialize(profile);
             Directory.CreateDirectory(rootPath);
             targetPath = EnsurePathInsideRoot(targetPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
             string tempPath = Path.Combine(rootPath, $".{profile.ProfileId:D}.{Guid.NewGuid():N}{TempExtension}");
             try
             {
@@ -211,7 +366,7 @@ namespace DS4MapperTest.Universal.Profiles
             }
 
             List<UniversalProfileStoreEntry> entries = new List<UniversalProfileStoreEntry>();
-            foreach (string file in Directory.EnumerateFiles(rootPath, $"*{ProfileFileExtension}", SearchOption.TopDirectoryOnly)
+            foreach (string file in Directory.EnumerateFiles(rootPath, $"*{ProfileFileExtension}", SearchOption.AllDirectories)
                 .Where(file => !file.EndsWith(TempExtension, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(file => file, StringComparer.OrdinalIgnoreCase))
             {
@@ -284,6 +439,35 @@ namespace DS4MapperTest.Universal.Profiles
             }
 
             return baseName + ProfileFileExtension;
+        }
+
+        private static string NormalizeFolderName(string folderName)
+        {
+            return (folderName ?? string.Empty).Trim();
+        }
+
+        private sealed class UniversalProfileFolderNameComparer : IComparer<string>
+        {
+            public int Compare(string x, string y)
+            {
+                if (string.Equals(x, y, StringComparison.OrdinalIgnoreCase)) return 0;
+
+                int leftRank = GetFolderSortRank(x);
+                int rightRank = GetFolderSortRank(y);
+                if (leftRank != rightRank)
+                {
+                    return leftRank.CompareTo(rightRank);
+                }
+
+                return StringComparer.CurrentCultureIgnoreCase.Compare(x, y);
+            }
+
+            private static int GetFolderSortRank(string folderName)
+            {
+                if (string.Equals(folderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return 0;
+                if (string.Equals(folderName, ProfileList.VALORANT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)) return 1;
+                return 2;
+            }
         }
 
         private string EnsurePathInsideRoot(string path)

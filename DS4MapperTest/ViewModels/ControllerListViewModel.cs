@@ -466,6 +466,11 @@ namespace DS4MapperTest.ViewModels
             get => profileListHolder;
         }
 
+        public UniversalClassicProfileList UniversalProfileListHolder
+        {
+            get => universalProfileListHolder;
+        }
+
         //private EditProfileCommand editProfCommand;
         //public EditProfileCommand EditProfCommand => editProfCommand;
 

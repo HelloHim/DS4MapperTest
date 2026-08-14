@@ -1461,6 +1461,13 @@ namespace DS4MapperTest
             }
 
             ApplyProfileListSelection(selectedListBox, clickedEntry);
+
+            // Handling the click here stops ListBoxItem's own mouse-down
+            // handling, which is what normally moves keyboard focus into the
+            // row. Without focus the list counts as inactive and WPF paints the
+            // muted grey unfocused-selection brush instead of the accent blue,
+            // so the picked profile stops looking picked. Take focus explicitly.
+            item.Focus();
             e.Handled = true;
         }
 
@@ -1658,12 +1665,6 @@ namespace DS4MapperTest
         private void ManageFoldersBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null) return;
-            if (currentDeviceItem.IsUniversal)
-            {
-                MessageBox.Show("Universal profiles are managed in one shared profile list.",
-                    "Manage Folders", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
 
             if (manageFoldersPanel.Visibility == Visibility.Visible)
             {
@@ -1698,7 +1699,13 @@ namespace DS4MapperTest
             BackendManager manager = (App.Current as App).Manager;
             Mapper mapper = editorTestVM.DeviceMapper;
 
-            overlayNewProfileVM = new NewProfileCreateViewModel(mapper, manager);
+            overlayNewProfileVM = currentDeviceItem.IsUniversal
+                ? new NewProfileCreateViewModel(
+                    mapper,
+                    manager,
+                    currentDeviceItem.ProfileFolders,
+                    universalProfileStore.GetFolderPath)
+                : new NewProfileCreateViewModel(mapper, manager);
             newProfilePanel.DataContext = overlayNewProfileVM;
             newProfilePanel.Visibility = Visibility.Visible;
         }
@@ -1768,7 +1775,7 @@ namespace DS4MapperTest
                 UniversalProfileEditorSaveResult result = coordinator.SaveProfile(
                     profile,
                     activeControllerId,
-                    universalProfileStore.GetNamedProfilePath(profile.DisplayName));
+                    universalProfileStore.GetNamedProfilePath(profile.DisplayName, overlayNewProfileVM.SelectedFolderName));
                 if (!result.Success)
                 {
                     MessageBox.Show(string.Join("\n", result.Issues.Select(issue => issue.Message)),
@@ -1832,21 +1839,32 @@ namespace DS4MapperTest
         private void CreateFolderBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null) return;
-            if (currentDeviceItem.IsUniversal) return;
 
             string folderName = newFolderNameBox.Text?.Trim();
             if (!ValidateFolderName(folderName, "Create Folder")) return;
 
-            ProfileList profileList = currentDeviceItem.ProfileListHolder;
-            if (profileList.FolderExists(folderName))
+            if (CurrentProfileFolderExists(folderName))
             {
                 MessageBox.Show("A folder with this name already exists.", "Create Folder",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            profileList.CreateFolder(folderName);
+            if (currentDeviceItem.IsUniversal)
+            {
+                currentDeviceItem.UniversalProfileListHolder?.CreateFolder(folderName);
+            }
+            else
+            {
+                currentDeviceItem.ProfileListHolder.CreateFolder(folderName);
+            }
+
             newFolderNameBox.Text = string.Empty;
+            if (currentDeviceItem.IsUniversal)
+            {
+                RefreshUniversalProfileLists();
+            }
+
             RefreshProfileCombo();
             RefreshProfileList();
         }
@@ -1854,7 +1872,6 @@ namespace DS4MapperTest
         private void RenameFolderBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null || folderManageComboBox.SelectedItem is not string oldFolderName) return;
-            if (currentDeviceItem.IsUniversal) return;
 
             string newFolderName = folderRenameBox.Text?.Trim();
             if (!ValidateFolderName(newFolderName, "Rename Folder")) return;
@@ -1866,8 +1883,7 @@ namespace DS4MapperTest
                 return;
             }
 
-            ProfileList profileList = currentDeviceItem.ProfileListHolder;
-            if (profileList.FolderExists(newFolderName))
+            if (CurrentProfileFolderExists(newFolderName))
             {
                 MessageBox.Show("A folder with this name already exists.", "Rename Folder",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -1876,9 +1892,18 @@ namespace DS4MapperTest
 
             try
             {
-                profileList.RenameFolder(oldFolderName, newFolderName);
+                if (currentDeviceItem.IsUniversal)
+                {
+                    currentDeviceItem.UniversalProfileListHolder?.RenameFolder(oldFolderName, newFolderName);
+                    RefreshUniversalProfileLists();
+                }
+                else
+                {
+                    currentDeviceItem.ProfileListHolder.RenameFolder(oldFolderName, newFolderName);
+                }
+
                 RefreshProfileCombo();
-                RefreshProfileList();
+                RefreshProfileList(newFolderName);
             }
             catch (Exception ex)
             {
@@ -1890,7 +1915,6 @@ namespace DS4MapperTest
         private void DeleteFolderBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null || folderManageComboBox.SelectedItem is not string folderName) return;
-            if (currentDeviceItem.IsUniversal) return;
 
             if (string.Equals(folderName, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase))
             {
@@ -1899,7 +1923,6 @@ namespace DS4MapperTest
                 return;
             }
 
-            ProfileList profileList = currentDeviceItem.ProfileListHolder;
             if (currentDeviceItem.DevProfileList.Any(p => string.Equals(p.FolderName, folderName, StringComparison.OrdinalIgnoreCase)))
             {
                 MessageBox.Show("Move or delete the profiles in this folder first.", "Delete Folder",
@@ -1915,15 +1938,38 @@ namespace DS4MapperTest
 
             try
             {
-                profileList.DeleteFolder(folderName);
+                bool deleted = currentDeviceItem.IsUniversal
+                    ? currentDeviceItem.UniversalProfileListHolder?.DeleteFolder(folderName) == true
+                    : currentDeviceItem.ProfileListHolder.DeleteFolder(folderName);
+
+                if (currentDeviceItem.IsUniversal)
+                {
+                    RefreshUniversalProfileLists();
+                }
+
                 RefreshProfileCombo();
                 RefreshProfileList();
+
+                if (!deleted)
+                {
+                    MessageBox.Show("This folder still holds profiles. Move or delete them first.",
+                        "Delete Folder", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Failed to delete folder:\n{ex.Message}", "Delete Folder",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private bool CurrentProfileFolderExists(string folderName)
+        {
+            if (currentDeviceItem == null) return false;
+
+            return currentDeviceItem.IsUniversal
+                ? currentDeviceItem.UniversalProfileListHolder?.FolderExists(folderName) == true
+                : currentDeviceItem.ProfileListHolder.FolderExists(folderName);
         }
 
         private void FolderManageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -2056,7 +2102,6 @@ namespace DS4MapperTest
         private void SelectedProfileFolderComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (suppressSelectedProfileFolderCombo || currentDeviceItem == null || selectedListEntry == null) return;
-            if (currentDeviceItem.IsUniversal) return;
 
             string folderName = selectedProfileFolderComboBox.SelectedItem as string;
             if (string.IsNullOrWhiteSpace(folderName) ||
@@ -2065,10 +2110,12 @@ namespace DS4MapperTest
                 return;
             }
 
-            ProfileList profileList = currentDeviceItem.ProfileListHolder;
             try
             {
-                if (!profileList.MoveProfile(selectedListEntry.Entity, folderName))
+                bool moved = currentDeviceItem.IsUniversal
+                    ? currentDeviceItem.UniversalProfileListHolder?.MoveProfile(selectedListEntry.Entity, folderName) == true
+                    : currentDeviceItem.ProfileListHolder.MoveProfile(selectedListEntry.Entity, folderName);
+                if (!moved)
                 {
                     MessageBox.Show("A profile with this filename already exists in that folder.", "Move Profile",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -2083,8 +2130,13 @@ namespace DS4MapperTest
                     appGlobal.activeProfiles[currentDeviceItem.Device.Index] = selectedListEntry.Entity.ProfilePath;
                 }
 
+                if (currentDeviceItem.IsUniversal)
+                {
+                    RefreshUniversalProfileLists();
+                }
+
                 RefreshProfileCombo();
-                RefreshProfileList();
+                RefreshProfileList(folderName, selectedListEntry.ProfilePath);
             }
             catch (Exception ex)
             {
