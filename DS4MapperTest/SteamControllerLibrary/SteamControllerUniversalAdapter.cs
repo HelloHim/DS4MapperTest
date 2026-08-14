@@ -300,18 +300,17 @@ namespace DS4MapperTest.SteamControllerLibrary
 
     internal sealed class SteamControllerUniversalBackend : IUniversalControllerBackend
     {
-        private readonly List<SteamControllerUniversalController> controllers;
+        private readonly Dictionary<string, SteamControllerUniversalController> controllers =
+            new Dictionary<string, SteamControllerUniversalController>(StringComparer.OrdinalIgnoreCase);
 
         public string BackendName => UniversalControllerBackendIds.SteamControllerNative;
         public IReadOnlyList<IUniversalController> Controllers =>
-            new ReadOnlyCollection<IUniversalController>(controllers.Cast<IUniversalController>().ToArray());
+            new ReadOnlyCollection<IUniversalController>(controllers.Values.Cast<IUniversalController>().ToArray());
         public event EventHandler ControllersChanged;
 
         public SteamControllerUniversalBackend(IEnumerable<ISteamControllerNativeStateSource> sources)
         {
-            controllers = (sources ?? Enumerable.Empty<ISteamControllerNativeStateSource>())
-                .Select(source => new SteamControllerUniversalController(source))
-                .ToList();
+            AddOrReplaceSources(sources);
         }
 
         public bool Start(out string error)
@@ -321,9 +320,17 @@ namespace DS4MapperTest.SteamControllerLibrary
             return true;
         }
 
+        public void RefreshSources(IEnumerable<ISteamControllerNativeStateSource> sources)
+        {
+            if (AddOrReplaceSources(sources))
+            {
+                ControllersChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         public void Refresh()
         {
-            foreach (SteamControllerUniversalController controller in controllers)
+            foreach (SteamControllerUniversalController controller in controllers.Values)
             {
                 controller.Refresh();
             }
@@ -333,7 +340,7 @@ namespace DS4MapperTest.SteamControllerLibrary
 
         public void Stop()
         {
-            foreach (SteamControllerUniversalController controller in controllers)
+            foreach (SteamControllerUniversalController controller in controllers.Values)
             {
                 controller.Refresh();
             }
@@ -341,10 +348,40 @@ namespace DS4MapperTest.SteamControllerLibrary
 
         public void Dispose()
         {
-            foreach (SteamControllerUniversalController controller in controllers)
+            foreach (SteamControllerUniversalController controller in controllers.Values)
             {
                 controller.Dispose();
             }
+
+            controllers.Clear();
+        }
+
+        private bool AddOrReplaceSources(IEnumerable<ISteamControllerNativeStateSource> sources)
+        {
+            bool changed = false;
+            foreach (ISteamControllerNativeStateSource source in sources ?? Enumerable.Empty<ISteamControllerNativeStateSource>())
+            {
+                if (source == null) continue;
+
+                string sessionId = source.SessionId ?? string.Empty;
+                if (controllers.TryGetValue(sessionId, out SteamControllerUniversalController existing))
+                {
+                    existing.Refresh();
+                    if (existing.ConnectionState == UniversalControllerConnectionState.Connected)
+                    {
+                        source.Dispose();
+                        continue;
+                    }
+
+                    existing.Dispose();
+                    controllers.Remove(sessionId);
+                }
+
+                controllers[sessionId] = new SteamControllerUniversalController(source, ownsSource: true);
+                changed = true;
+            }
+
+            return changed;
         }
     }
 }

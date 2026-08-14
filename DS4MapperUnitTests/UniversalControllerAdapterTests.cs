@@ -341,20 +341,46 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void SdlTwoTouchpadsRequireVerifiedPolicyForLeftAndRight()
+        public void SdlTwoTouchpadsMapDirectlyToLeftAndRight()
         {
             SdlRawGamepadInfo info = CreateSdlDevice();
-            info.Touchpads.Add(new SdlRawTouchpadState { TouchpadIndex = 0 });
-            info.Touchpads.Add(new SdlRawTouchpadState { TouchpadIndex = 1 });
+            info.Buttons.Add(new SdlRawButtonState { Name = "Touchpad", Supported = true, Pressed = true });
+            info.Buttons.Add(new SdlRawButtonState { Name = "Misc2", Supported = true, Pressed = true });
+            info.Touchpads.Add(new SdlRawTouchpadState
+            {
+                TouchpadIndex = 0,
+                Fingers = new List<SdlRawTouchFingerState>
+                {
+                    new SdlRawTouchFingerState { FingerIndex = 0, Active = true, X = 0.1f, Y = 0.2f },
+                },
+            });
+            info.Touchpads.Add(new SdlRawTouchpadState
+            {
+                TouchpadIndex = 1,
+                Fingers = new List<SdlRawTouchFingerState>
+                {
+                    new SdlRawTouchFingerState { FingerIndex = 1, Active = true, X = 0.8f, Y = 0.9f },
+                },
+            });
 
-            ControllerCapabilities defaultCapabilities = new SdlUniversalStateTranslator().CreateCapabilities(info);
-            Assert.IsFalse(defaultCapabilities.Supports(UniversalInputId.LeftTouchSurface));
-            Assert.IsFalse(defaultCapabilities.Supports(UniversalInputId.RightTouchSurface));
+            SdlUniversalStateTranslator translator = new SdlUniversalStateTranslator();
+            ControllerCapabilities capabilities = translator.CreateCapabilities(info);
+            UniversalControllerStateSnapshot state = translator.CreateState(
+                info,
+                capabilities,
+                true,
+                1,
+                DateTimeOffset.UtcNow);
 
-            ControllerCapabilities verifiedCapabilities =
-                new SdlUniversalStateTranslator(new VerifiedDualTouchpadPolicy()).CreateCapabilities(info);
-            Assert.IsTrue(verifiedCapabilities.Supports(UniversalInputId.LeftTouchSurface));
-            Assert.IsTrue(verifiedCapabilities.Supports(UniversalInputId.RightTouchSurface));
+            Assert.IsTrue(capabilities.Supports(UniversalInputId.LeftTouchSurface));
+            Assert.IsTrue(capabilities.Supports(UniversalInputId.RightTouchSurface));
+            Assert.IsTrue(capabilities.Supports(UniversalInputId.LeftTouchSurfaceClick));
+            Assert.IsTrue(capabilities.Supports(UniversalInputId.RightTouchSurfaceClick));
+            Assert.IsFalse(capabilities.Supports(UniversalInputId.PrimaryTouchSurface));
+            Assert.AreEqual(0.1, state.Values[UniversalInputId.LeftTouchSurface].Contacts[0].X, 0.0001);
+            Assert.AreEqual(0.8, state.Values[UniversalInputId.RightTouchSurface].Contacts[0].X, 0.0001);
+            Assert.IsTrue(state.Values[UniversalInputId.LeftTouchSurfaceClick].Pressed);
+            Assert.IsTrue(state.Values[UniversalInputId.RightTouchSurfaceClick].Pressed);
         }
 
         [TestMethod]
@@ -391,6 +417,23 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void SdlSteamControllerTritonIsNotSuppressed()
+        {
+            const ushort steamControllerTritonProductId = 0x1304;
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            api.AddDevice(CreateSdlDevice(
+                88,
+                OriginalSteamControllerIdentity.ValveVendorId,
+                steamControllerTritonProductId));
+            using SdlUniversalControllerBackend backend = new SdlUniversalControllerBackend(api);
+
+            Assert.IsTrue(backend.Start(out string error), error);
+
+            Assert.AreEqual(1, backend.Controllers.Count);
+            Assert.AreEqual(0, api.ClosedInstances.Count);
+        }
+
+        [TestMethod]
         public void SdlBackendHandlesDuplicateAddRemovalAndServiceDisposal()
         {
             FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
@@ -407,6 +450,98 @@ namespace DS4MapperUnitTests
             backend.Refresh();
             Assert.AreEqual(0, backend.Controllers.Count);
             Assert.AreEqual(1, api.ClosedInstances.Count);
+        }
+
+        [TestMethod]
+        public void SdlBackendReconcilesDelayedEnumeration()
+        {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            using SdlUniversalControllerBackend backend =
+                new SdlUniversalControllerBackend(api, utcNow: () => now);
+            Assert.IsTrue(backend.Start(out string error), error);
+            Assert.AreEqual(0, backend.Controllers.Count);
+
+            api.AddDevice(CreateSdlDevice(94));
+            now = now.AddMilliseconds(100);
+            backend.Refresh();
+
+            Assert.AreEqual(1, backend.Controllers.Count);
+            Assert.AreEqual("94", backend.Controllers[0].Identity.BackendSessionId);
+        }
+
+        [TestMethod]
+        public void SdlBackendClosesDevicesThatStopBeingEnumerated()
+        {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            api.AddDevice(CreateSdlDevice(96));
+            using SdlUniversalControllerBackend backend =
+                new SdlUniversalControllerBackend(api, utcNow: () => now);
+            Assert.IsTrue(backend.Start(out string error), error);
+            Assert.AreEqual(1, backend.Controllers.Count);
+
+            // The removal event never arrives: another consumer of SDL's
+            // process-wide queue took it.
+            api.RemoveDevice(96);
+
+            for (int reconcile = 0; reconcile < 3; reconcile++)
+            {
+                now = now.AddMilliseconds(100);
+                backend.Refresh();
+            }
+
+            Assert.AreEqual(0, backend.Controllers.Count);
+            CollectionAssert.AreEqual(new uint[] { 96 }, api.ClosedInstances.ToArray());
+        }
+
+        [TestMethod]
+        public void SdlBackendKeepsDevicesMissingFromASingleEnumeration()
+        {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            api.AddDevice(CreateSdlDevice(97));
+            using SdlUniversalControllerBackend backend =
+                new SdlUniversalControllerBackend(api, utcNow: () => now);
+            Assert.IsTrue(backend.Start(out string error), error);
+
+            api.RemoveDevice(97);
+            now = now.AddMilliseconds(100);
+            backend.Refresh();
+
+            Assert.AreEqual(1, backend.Controllers.Count);
+
+            api.AddDevice(CreateSdlDevice(97));
+            now = now.AddMilliseconds(100);
+            backend.Refresh();
+            now = now.AddMilliseconds(100);
+            backend.Refresh();
+            now = now.AddMilliseconds(100);
+            backend.Refresh();
+
+            Assert.AreEqual(1, backend.Controllers.Count);
+            Assert.AreEqual(0, api.ClosedInstances.Count);
+        }
+
+        [TestMethod]
+        public void SdlBackendKeepsDevicesWhenEnumerationFails()
+        {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            api.AddDevice(CreateSdlDevice(98));
+            using SdlUniversalControllerBackend backend =
+                new SdlUniversalControllerBackend(api, utcNow: () => now);
+            Assert.IsTrue(backend.Start(out string error), error);
+
+            api.EnumerationError = "enumeration unavailable";
+            for (int reconcile = 0; reconcile < 5; reconcile++)
+            {
+                now = now.AddMilliseconds(100);
+                backend.Refresh();
+            }
+
+            Assert.AreEqual(1, backend.Controllers.Count);
+            Assert.AreEqual(0, api.ClosedInstances.Count);
         }
 
         [TestMethod]
@@ -576,6 +711,96 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void UsbIpPathAloneDoesNotSuppressRealController()
+        {
+            SdlRawGamepadInfo info = CreateSdlDevice();
+            info.Name = "DualSense Wireless Controller";
+            info.MappingName = "ps5";
+            info.DevicePath = @"usbip\remote\physical-dualsense";
+
+            Assert.IsFalse(SdlUniversalStateTranslator.IsKnownVirtualOutputController(info));
+            Assert.IsFalse(new SdlUniversalStateTranslator().ShouldSuppressForNativeSteamController(info));
+        }
+
+        [TestMethod]
+        public void PhysicalXboxWithVirtualPathIsNotSuppressed()
+        {
+            SdlRawGamepadInfo info = CreateSdlDevice(vendorId: 0x045E, productId: 0x0B13);
+            info.Name = "Xbox Wireless Controller";
+            info.MappingName = "Xbox One";
+            info.DevicePath = @"hid\vid_045e&pid_0b13\virtual-interface";
+
+            Assert.IsFalse(SdlUniversalStateTranslator.IsKnownVirtualOutputController(info));
+            Assert.IsFalse(new SdlUniversalStateTranslator().ShouldSuppressForNativeSteamController(info));
+        }
+
+        [TestMethod]
+        public void ExplicitVirtualOutputMarkerStillSuppressesHardwareIds()
+        {
+            SdlRawGamepadInfo info = CreateSdlDevice(vendorId: 0x045E, productId: 0x028E);
+            info.Name = "Xbox 360 Controller for Windows";
+            info.MappingName = "xinput";
+            info.DevicePath = @"hid\fakerinput\slot-1";
+
+            Assert.IsTrue(SdlUniversalStateTranslator.IsKnownVirtualOutputController(info));
+            Assert.IsTrue(new SdlUniversalStateTranslator().ShouldSuppressForNativeSteamController(info));
+        }
+
+        [TestMethod]
+        public void SdlEnumerationIncludesJoystickGamepads()
+        {
+            IReadOnlyList<uint> ids = Sdl3NativeDiagnosticApi.MergeGamepadInstanceIds(
+                new uint[] { 5 },
+                1,
+                new uint[] { 7, 9, 5 },
+                3,
+                id => id != 9);
+
+            CollectionAssert.AreEqual(new uint[] { 5, 7 }, ids.ToArray());
+        }
+
+        [TestMethod]
+        public void UsbIpOutputIdentityStillSuppressesVirtualController()
+        {
+            SdlRawGamepadInfo info = CreateSdlDevice(vendorId: 0, productId: 0);
+            info.Name = "PS4 Controller";
+            info.MappingName = "ps4";
+            info.DevicePath = @"usbip\shared\slot-1";
+
+            Assert.IsTrue(SdlUniversalStateTranslator.IsKnownVirtualOutputController(info));
+        }
+
+        [TestMethod]
+        public void SteamNativeBackendAddsHotpluggedSources()
+        {
+            FakeSteamStateSource first = new FakeSteamStateSource
+            {
+                SessionId = "steam-one",
+                Connected = true,
+                State = new SteamControllerState(),
+            };
+            using SteamControllerUniversalBackend backend =
+                new SteamControllerUniversalBackend(new[] { first });
+            Assert.IsTrue(backend.Start(out string error), error);
+            Assert.AreEqual(1, backend.Controllers.Count);
+
+            FakeSteamStateSource second = new FakeSteamStateSource
+            {
+                SessionId = "steam-two",
+                DevicePath = @"hid\vid_28de&pid_1102&mi_02",
+                Connected = true,
+                State = new SteamControllerState(),
+            };
+
+            backend.RefreshSources(new[] { second });
+
+            Assert.AreEqual(2, backend.Controllers.Count);
+            Assert.IsTrue(backend.Controllers.Any(item =>
+                item.Identity.BackendSessionId == "steam-two" &&
+                item.ConnectionState == UniversalControllerConnectionState.Connected));
+        }
+
+        [TestMethod]
         public void UnknownIdentityFieldsRemainUnknown()
         {
             UniversalDeviceIdentity identity = new UniversalDeviceIdentity("sdl3", "42");
@@ -643,18 +868,6 @@ namespace DS4MapperUnitTests
                     }));
         }
 
-        private sealed class VerifiedDualTouchpadPolicy : ISdlTouchpadMappingPolicy
-        {
-            public IReadOnlyDictionary<int, SdlUniversalTouchSurfaceTarget> MapTouchpads(SdlRawGamepadInfo info)
-            {
-                return new Dictionary<int, SdlUniversalTouchSurfaceTarget>
-                {
-                    [0] = SdlUniversalTouchSurfaceTarget.Left,
-                    [1] = SdlUniversalTouchSurfaceTarget.Right,
-                };
-            }
-        }
-
         private sealed class FakeSteamStateSource : ISteamControllerNativeStateSource
         {
             public string SessionId { get; set; } = "steam-session";
@@ -685,11 +898,22 @@ namespace DS4MapperUnitTests
             public Dictionary<uint, int> OpenCount { get; } = new Dictionary<uint, int>();
             public List<uint> ClosedInstances { get; } = new List<uint>();
 
+            public string EnumerationError { get; set; } = string.Empty;
+
             public void AddDevice(SdlRawGamepadInfo info) => devices[info.InstanceId] = info;
+            public void RemoveDevice(uint instanceId) => devices.Remove(instanceId);
             public void QueueEvent(SdlDiagnosticEvent diagnosticEvent) => events.Enqueue(diagnosticEvent);
             public bool Initialise(out string error) { error = string.Empty; return true; }
             public void Shutdown() { }
-            public IReadOnlyList<uint> EnumerateGamepads(out string error) { error = string.Empty; return devices.Keys.ToList(); }
+
+            public IReadOnlyList<uint> EnumerateGamepads(out string error)
+            {
+                error = EnumerationError;
+                return string.IsNullOrEmpty(EnumerationError)
+                    ? devices.Keys.ToList()
+                    : new List<uint>();
+            }
+
             public SdlRawGamepadInfo QueryGamepadInfo(uint instanceId, SdlGamepadHandle handle) => devices[instanceId].Clone();
 
             public SdlGamepadHandle OpenGamepad(uint instanceId, out string error)
