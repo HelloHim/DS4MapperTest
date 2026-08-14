@@ -625,24 +625,21 @@ namespace DS4MapperTest
 
         private void ControllerList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add && currentDeviceItem == null)
+            Dispatcher.BeginInvoke((Action)ReconcileDeviceSelectionAfterListChange);
+        }
+
+        private void ReconcileDeviceSelectionAfterListChange()
+        {
+            if (currentDeviceItem != null &&
+                !controlListVM.ControllerList.Contains(currentDeviceItem))
             {
-                DeviceListItem item = e.NewItems[0] as DeviceListItem;
-                Dispatcher.BeginInvoke((Action)(() =>
-                {
-                    if (currentDeviceItem == null)
-                    {
-                        LoadProfileForDevice(item);
-                    }
-                }));
+                HandleCurrentDeviceRemoved();
             }
-            else if (e.Action == NotifyCollectionChangedAction.Remove)
+
+            if (currentDeviceItem == null &&
+                controlListVM.ControllerList.Count == 1)
             {
-                DeviceListItem removed = e.OldItems?[0] as DeviceListItem;
-                if (removed != null && removed == currentDeviceItem)
-                {
-                    Dispatcher.BeginInvoke((Action)(() => HandleCurrentDeviceRemoved()));
-                }
+                LoadProfileForDevice(controlListVM.ControllerList[0]);
             }
         }
 

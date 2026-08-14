@@ -419,6 +419,11 @@ namespace DS4MapperTest.Universal.Mapping
             if (action.OutputsNativeGyro) PopulateStateGyro(ref frame);
             else ClearStateGyro();
             action.Prepare(this, ref frame);
+            if (action.OutputsNativeGyro && !action.active)
+            {
+                ClearStateGyro();
+            }
+
             if (action.active) action.Event(this);
         }
 

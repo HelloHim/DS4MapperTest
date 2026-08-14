@@ -181,6 +181,16 @@ namespace DS4MapperTest.Views
                         return propControl;
                     }
                 case GyroPassthruAction:
+                    {
+                        GyroPassthruPropControl propControl = new GyroPassthruPropControl();
+                        propControl.ShowActionSelect = ShowActionSelect;
+                        propControl.ShowActionSettings = ShowActionSettings;
+                        propControl.ShowNameSettings = ShowNameSettings;
+                        propControl.ShowActivationSettings = ShowActivationSettings;
+                        propControl.PostInit(item.Mapper, item.MappedAction);
+                        propControl.ActionTypeIndexChanged += (s, ind) => HandleActionTypeChanged(host, item, ind);
+                        return propControl;
+                    }
                 case GyroNoMapAction:
                 default:
                     {

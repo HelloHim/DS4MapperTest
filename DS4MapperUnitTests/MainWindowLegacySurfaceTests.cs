@@ -79,6 +79,16 @@ namespace DS4MapperUnitTests
                 "The classic nav rail must be reachable again in the non-compact layout.");
         }
 
+        [TestMethod]
+        public void DeviceListAutoSelectsSoleDeviceAfterRefresh()
+        {
+            string codeBehind = ReadSourceFile("DS4MapperTest", "MainWindow.xaml.cs");
+
+            StringAssert.Contains(codeBehind, "ReconcileDeviceSelectionAfterListChange");
+            StringAssert.Contains(codeBehind, "controlListVM.ControllerList.Count == 1");
+            StringAssert.Contains(codeBehind, "LoadProfileForDevice(controlListVM.ControllerList[0])");
+        }
+
         private static void AssertElementOpeningTagDoesNotContain(string xaml, string elementName, string prohibited)
         {
             int nameIndex = xaml.IndexOf($"x:Name=\"{elementName}\"", StringComparison.Ordinal);
