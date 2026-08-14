@@ -12175,11 +12175,88 @@ namespace DS4MapperTest
 
     public class GyroPassthruActionSerializer : MapActionSerializer
     {
+        public class GyroPassthruSettings
+        {
+            private GyroPassthruAction action;
+
+            [JsonConverter(typeof(TriggerButtonsConverter))]
+            public JoypadActionCodes[] TriggerButtons
+            {
+                get => action.passthruParams.gyroTriggerButtons;
+                set
+                {
+                    action.passthruParams.gyroTriggerButtons = value ?? Array.Empty<JoypadActionCodes>();
+                    TriggerButtonsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler TriggerButtonsChanged;
+            public bool ShouldSerializeTriggerButtons() =>
+                action.ChangedProperties.Contains(GyroPassthruAction.PropertyKeyStrings.TRIGGER_BUTTONS);
+
+            public bool TriggerActivates
+            {
+                get => action.passthruParams.triggerActivates;
+                set
+                {
+                    action.passthruParams.triggerActivates = value;
+                    TriggerActivatesChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler TriggerActivatesChanged;
+            public bool ShouldSerializeTriggerActivates() =>
+                action.ChangedProperties.Contains(GyroPassthruAction.PropertyKeyStrings.TRIGGER_ACTIVATE);
+
+            public int ActivationHoldMs
+            {
+                get => action.passthruParams.activationHoldMs;
+                set
+                {
+                    action.passthruParams.activationHoldMs = Math.Clamp(value, 0, 60000);
+                    ActivationHoldMsChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler ActivationHoldMsChanged;
+            public bool ShouldSerializeActivationHoldMs() =>
+                action.ChangedProperties.Contains(GyroPassthruAction.PropertyKeyStrings.ACTIVATION_HOLD_MS);
+
+            public GyroActionsUtils.GyroTriggerEvalCond EvalCond
+            {
+                get => action.passthruParams.andCond
+                    ? GyroActionsUtils.GyroTriggerEvalCond.And
+                    : GyroActionsUtils.GyroTriggerEvalCond.Or;
+                set
+                {
+                    action.passthruParams.andCond =
+                        value == GyroActionsUtils.GyroTriggerEvalCond.And;
+                    EvalCondChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler EvalCondChanged;
+            public bool ShouldSerializeEvalCond() =>
+                action.ChangedProperties.Contains(GyroPassthruAction.PropertyKeyStrings.TRIGGER_EVAL_COND);
+
+            public GyroPassthruSettings(GyroPassthruAction action)
+            {
+                this.action = action;
+            }
+        }
+
         private GyroPassthruAction gyroPassthruAction = new GyroPassthruAction();
+        private GyroPassthruSettings settings;
+        public GyroPassthruSettings Settings => settings;
+
+        public bool ShouldSerializeSettings() =>
+            gyroPassthruAction.ParentAction == null ||
+            gyroPassthruAction.ChangedProperties.Contains(GyroPassthruAction.PropertyKeyStrings.TRIGGER_BUTTONS) ||
+            gyroPassthruAction.ChangedProperties.Contains(GyroPassthruAction.PropertyKeyStrings.TRIGGER_ACTIVATE) ||
+            gyroPassthruAction.ChangedProperties.Contains(GyroPassthruAction.PropertyKeyStrings.ACTIVATION_HOLD_MS) ||
+            gyroPassthruAction.ChangedProperties.Contains(GyroPassthruAction.PropertyKeyStrings.TRIGGER_EVAL_COND);
 
         public GyroPassthruActionSerializer() : base()
         {
             mapAction = gyroPassthruAction;
+            settings = new GyroPassthruSettings(gyroPassthruAction);
+            SubscribeSettings();
         }
 
         public GyroPassthruActionSerializer(ActionLayer tempLayer, MapAction action) :
@@ -12189,7 +12266,43 @@ namespace DS4MapperTest
             {
                 gyroPassthruAction = temp;
                 mapAction = gyroPassthruAction;
+                settings = new GyroPassthruSettings(gyroPassthruAction);
+                SubscribeSettings();
             }
+        }
+
+        private void SubscribeSettings()
+        {
+            NameChanged += GyroPassthruActionSerializer_NameChanged;
+            settings.TriggerButtonsChanged += Settings_TriggerButtonsChanged;
+            settings.TriggerActivatesChanged += Settings_TriggerActivatesChanged;
+            settings.ActivationHoldMsChanged += Settings_ActivationHoldMsChanged;
+            settings.EvalCondChanged += Settings_EvalCondChanged;
+        }
+
+        private void GyroPassthruActionSerializer_NameChanged(object sender, EventArgs e)
+        {
+            gyroPassthruAction.ChangedProperties.Add(GyroPassthruAction.PropertyKeyStrings.NAME);
+        }
+
+        private void Settings_TriggerButtonsChanged(object sender, EventArgs e)
+        {
+            gyroPassthruAction.ChangedProperties.Add(GyroPassthruAction.PropertyKeyStrings.TRIGGER_BUTTONS);
+        }
+
+        private void Settings_TriggerActivatesChanged(object sender, EventArgs e)
+        {
+            gyroPassthruAction.ChangedProperties.Add(GyroPassthruAction.PropertyKeyStrings.TRIGGER_ACTIVATE);
+        }
+
+        private void Settings_ActivationHoldMsChanged(object sender, EventArgs e)
+        {
+            gyroPassthruAction.ChangedProperties.Add(GyroPassthruAction.PropertyKeyStrings.ACTIVATION_HOLD_MS);
+        }
+
+        private void Settings_EvalCondChanged(object sender, EventArgs e)
+        {
+            gyroPassthruAction.ChangedProperties.Add(GyroPassthruAction.PropertyKeyStrings.TRIGGER_EVAL_COND);
         }
     }
 

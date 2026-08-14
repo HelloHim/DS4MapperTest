@@ -1,6 +1,9 @@
 using DS4MapperTest;
+using DS4MapperTest.MapperUtil;
 using DS4MapperTest.GyroActions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using System;
 
 namespace DS4MapperUnitTests
 {
@@ -47,6 +50,57 @@ namespace DS4MapperUnitTests
             Assert.IsTrue(new GyroPassthruAction().OutputsNativeGyro);
             Assert.IsFalse(new GyroNoMapAction().OutputsNativeGyro);
             Assert.IsTrue(new GyroMouse().OutputsNativeGyro);
+        }
+
+        [TestMethod]
+        public void PassthruGyroActivationDefaultsToAlwaysOn()
+        {
+            GyroPassthruAction action = new GyroPassthruAction();
+            GyroEventFrame frame = new GyroEventFrame { timeElapsed = 1.0 / 125.0 };
+
+            action.Prepare(null, ref frame);
+
+            Assert.IsTrue(action.active);
+        }
+
+        [TestMethod]
+        public void PassthruGyroActivationCanDisableOutput()
+        {
+            GyroPassthruAction action = new GyroPassthruAction();
+            action.passthruParams.gyroTriggerButtons = Array.Empty<JoypadActionCodes>();
+            action.passthruParams.triggerActivates = true;
+            GyroEventFrame frame = new GyroEventFrame { timeElapsed = 1.0 / 125.0 };
+
+            action.Prepare(new TestMapper(), ref frame);
+
+            Assert.IsFalse(action.active);
+        }
+
+        [TestMethod]
+        public void PassthruGyroActivationSettingsRoundTrip()
+        {
+            GyroPassthruAction action = new GyroPassthruAction();
+            action.passthruParams.gyroTriggerButtons = new[] { JoypadActionCodes.BtnSouth };
+            action.passthruParams.triggerActivates = false;
+            action.passthruParams.andCond = true;
+            action.passthruParams.activationHoldMs = 150;
+            action.ChangedProperties.Add(GyroPassthruAction.PropertyKeyStrings.TRIGGER_BUTTONS);
+            action.ChangedProperties.Add(GyroPassthruAction.PropertyKeyStrings.TRIGGER_ACTIVATE);
+            action.ChangedProperties.Add(GyroPassthruAction.PropertyKeyStrings.TRIGGER_EVAL_COND);
+            action.ChangedProperties.Add(GyroPassthruAction.PropertyKeyStrings.ACTIVATION_HOLD_MS);
+
+            string json = JsonConvert.SerializeObject(
+                new GyroPassthruActionSerializer(null, action));
+            GyroPassthruActionSerializer serializer = new GyroPassthruActionSerializer();
+            JsonConvert.PopulateObject(json, serializer);
+            GyroPassthruAction reloaded = (GyroPassthruAction)serializer.MapAction;
+
+            CollectionAssert.AreEqual(
+                new[] { JoypadActionCodes.BtnSouth },
+                reloaded.passthruParams.gyroTriggerButtons);
+            Assert.IsFalse(reloaded.passthruParams.triggerActivates);
+            Assert.IsTrue(reloaded.passthruParams.andCond);
+            Assert.AreEqual(150, reloaded.passthruParams.activationHoldMs);
         }
     }
 }
