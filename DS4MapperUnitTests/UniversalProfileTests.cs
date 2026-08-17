@@ -339,6 +339,94 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void CopiedProfileTakesANewIdAndAFreeName()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile source = CreateProfile("Desktop");
+                source.Migration = new UniversalProfileMigrationProvenance
+                {
+                    SourceFamily = InputDeviceType.DS4.ToString(),
+                    SourceIdentity = "DualShock4/Default/Desktop.json",
+                };
+                store.SaveNamed(source, store.GetNamedProfilePath("Desktop"));
+
+                UniversalProfile copy = UniversalProfileDuplicator.PrepareCopy(
+                    store.LoadFromPath(store.FindProfilePath(source.ProfileId)),
+                    store.EnumerateProfileSummaries());
+                store.SaveNamed(copy, store.GetNamedProfilePath(copy.DisplayName));
+
+                Assert.AreNotEqual(source.ProfileId, copy.ProfileId);
+                Assert.AreEqual("Desktop copy", copy.DisplayName);
+                Assert.IsNull(copy.Migration);
+                Assert.AreEqual(2, store.EnumerateProfileSummaries().Count(item => item.Loaded));
+                Assert.AreNotEqual(
+                    store.FindProfilePath(source.ProfileId),
+                    store.FindProfilePath(copy.ProfileId));
+            }
+        }
+
+        [TestMethod]
+        public void RepeatedCopiesNumberThemselvesInsteadOfColliding()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile source = CreateProfile("Desktop");
+                store.SaveNamed(source, store.GetNamedProfilePath("Desktop"));
+
+                for (int round = 0; round < 3; round++)
+                {
+                    UniversalProfile copy = UniversalProfileDuplicator.PrepareCopy(
+                        store.LoadFromPath(store.FindProfilePath(source.ProfileId)),
+                        store.EnumerateProfileSummaries());
+                    store.SaveNamed(copy, store.GetNamedProfilePath(copy.DisplayName));
+                }
+
+                CollectionAssert.AreEquivalent(
+                    new[] { "Desktop", "Desktop copy", "Desktop copy (2)", "Desktop copy (3)" },
+                    store.EnumerateProfileSummaries().Select(item => item.DisplayName).ToArray());
+            }
+        }
+
+        [TestMethod]
+        public void ImportKeepsAFreeProfileIdAndReplacesAClashingOne()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile resident = CreateProfile("Desktop");
+                store.SaveNamed(resident, store.GetNamedProfilePath("Desktop"));
+
+                UniversalProfile freshImport = CreateProfile("Aim");
+                Guid originalId = freshImport.ProfileId;
+                UniversalProfileDuplicator.PrepareImport(freshImport, store.EnumerateProfileSummaries());
+
+                Assert.AreEqual(originalId, freshImport.ProfileId);
+                Assert.AreEqual("Aim", freshImport.DisplayName);
+
+                UniversalProfile clashingImport = CreateProfile("Desktop");
+                clashingImport.ProfileId = resident.ProfileId;
+                UniversalProfileDuplicator.PrepareImport(clashingImport, store.EnumerateProfileSummaries());
+
+                Assert.AreNotEqual(resident.ProfileId, clashingImport.ProfileId);
+                Assert.AreEqual("Desktop (2)", clashingImport.DisplayName);
+            }
+        }
+
+        [TestMethod]
+        public void ImportWithoutANameFallsBackToAPlaceholder()
+        {
+            UniversalProfile imported = CreateProfile("Anything");
+            imported.DisplayName = "   ";
+
+            UniversalProfileDuplicator.PrepareImport(imported, Array.Empty<UniversalProfileSummary>());
+
+            Assert.AreEqual(UniversalProfileDuplicator.DefaultImportName, imported.DisplayName);
+        }
+
+        [TestMethod]
         public void SummariesIdentifyEveryStoredProfileWithoutFullParses()
         {
             using (TempProfileDirectory temp = new TempProfileDirectory())

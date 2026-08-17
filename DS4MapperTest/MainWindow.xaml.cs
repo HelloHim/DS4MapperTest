@@ -2266,6 +2266,12 @@ namespace DS4MapperTest
         {
             if (currentDeviceItem == null || editorTestVM == null) return;
 
+            if (currentDeviceItem.IsUniversal)
+            {
+                CopyActiveUniversalProfile();
+                return;
+            }
+
             Mapper mapper = editorTestVM.DeviceMapper;
             string sourceFile = editorTestVM.ProfileEnt.ProfilePath;
             string profilesDir = Path.GetDirectoryName(sourceFile);
@@ -2302,9 +2308,87 @@ namespace DS4MapperTest
             }
         }
 
+        // Universal profiles are one shared, controller-independent set whose
+        // filenames are owned by the store, so a copy is named and placed by
+        // the store rather than through a Save As picker.
+        private void CopyActiveUniversalProfile()
+        {
+            string sourcePath = editorTestVM.ProfileEnt.ProfilePath;
+
+            try
+            {
+                string folderName = universalProfileStore.GetFolderName(sourcePath);
+                UniversalProfile copy = UniversalProfileDuplicator.PrepareCopy(
+                    universalProfileStore.LoadFromPath(sourcePath),
+                    universalProfileStore.EnumerateProfileSummaries());
+
+                universalProfileStore.SaveNamed(copy,
+                    universalProfileStore.GetNamedProfilePath(copy.DisplayName, folderName));
+
+                RefreshUniversalProfileLists();
+                RefreshProfileCombo();
+                RefreshProfileList(folderName, universalProfileStore.FindProfilePath(copy.ProfileId));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to copy profile:\n{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ImportUniversalProfileFromFile()
+        {
+            string profilesDir = universalProfileStore.RootPath;
+            Directory.CreateDirectory(profilesDir);
+
+            OpenFileDialog dlg = new OpenFileDialog
+            {
+                Title = "Load Profile from File",
+                Filter = $"Universal profiles (*{UniversalProfileStore.ProfileFileExtension})|*{UniversalProfileStore.ProfileFileExtension}|JSON files (*.json)|*.json",
+                InitialDirectory = profilesDir,
+            };
+
+            if (dlg.ShowDialog() != true) return;
+
+            try
+            {
+                string sourcePath = Path.GetFullPath(dlg.FileName);
+                ProfileEntity alreadyListed = currentDeviceItem.DevProfileList.FirstOrDefault(profile =>
+                    string.Equals(profile.ProfilePath, sourcePath, StringComparison.OrdinalIgnoreCase));
+                if (alreadyListed != null)
+                {
+                    RefreshProfileList(alreadyListed.FolderName, alreadyListed.ProfilePath);
+                    return;
+                }
+
+                UniversalProfile imported = UniversalProfileDuplicator.PrepareImport(
+                    UniversalProfileSerializer.Deserialize(File.ReadAllText(sourcePath)),
+                    universalProfileStore.EnumerateProfileSummaries());
+
+                string folderName = ProfileList.DEFAULT_PROFILE_FOLDER;
+                universalProfileStore.SaveNamed(imported,
+                    universalProfileStore.GetNamedProfilePath(imported.DisplayName, folderName));
+
+                RefreshUniversalProfileLists();
+                RefreshProfileCombo();
+                RefreshProfileList(folderName, universalProfileStore.FindProfilePath(imported.ProfileId));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load profile:\n{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void LoadProfileFileBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null || editorTestVM == null) return;
+
+            if (currentDeviceItem.IsUniversal)
+            {
+                ImportUniversalProfileFromFile();
+                return;
+            }
 
             Mapper mapper = editorTestVM.DeviceMapper;
             BackendManager manager = (App.Current as App).Manager;

@@ -326,15 +326,11 @@ namespace DS4MapperTest.ViewModels
             });
         }
 
+        // Legacy per-device profiles only. Copying a universal profile has to
+        // reassign its profile id and let the store name the file, so it is
+        // handled by the universal copy path rather than a raw file copy.
         public void DuplicateProfile(DeviceListItem item, string inputFile, string outputFile)
         {
-            if (item?.IsUniversal == true)
-            {
-                File.Copy(inputFile, outputFile);
-                universalProfiles.Refresh();
-                return;
-            }
-
             // Copy file as is
             File.Copy(inputFile, outputFile);
 
