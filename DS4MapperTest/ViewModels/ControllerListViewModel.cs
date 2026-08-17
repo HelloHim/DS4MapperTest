@@ -175,6 +175,11 @@ namespace DS4MapperTest.ViewModels
             RefreshUniversalControllers();
         }
 
+        // Reconciles the list against the live sessions in place. Rebuilding it
+        // from scratch replaced the item the editor was working from, so any
+        // controller connecting or disconnecting - including one the user was
+        // not editing - looked to the window like the current device had gone
+        // away, and it tore the editor down and discarded unsaved edits.
         private void RefreshUniversalControllers()
         {
             UniversalMappingRuntime runtime = backendManager.UniversalMappingRuntime;
@@ -186,23 +191,73 @@ namespace DS4MapperTest.ViewModels
 
             using (WriteLocker locker = new WriteLocker(_colListLocker))
             {
-                controllerList.Clear();
+                ReconcileUniversalDeviceList(controllerList, runtime.Sessions, CreateUniversalDeviceItem);
+
                 controllerDict.Clear();
-                int i = 0;
-                foreach (UniversalMapperSession session in runtime.Sessions)
+                for (int index = 0; index < controllerList.Count; index++)
                 {
-                    DeviceListItem devItem = new DeviceListItem(session, i, universalProfiles);
-                    string activePath = session.ActiveProfile != null
-                        ? universalStore.FindProfilePath(session.ActiveProfile.ProfileId)
-                        : string.Empty;
-                    devItem.PostInit(activePath);
-                    devItem.ProfileIndexChanged += DevItem_ProfileIndexChanged;
-                    devItem.EditProfileRequested += DevItem_EditProfileRequested;
-                    controllerList.Add(devItem);
-                    controllerDict[i] = devItem;
-                    i++;
+                    controllerDict[index] = controllerList[index];
                 }
             }
+        }
+
+        private DeviceListItem CreateUniversalDeviceItem(UniversalMapperSession session, int itemIndex)
+        {
+            DeviceListItem devItem = new DeviceListItem(session, itemIndex, universalProfiles);
+            string activePath = session.ActiveProfile != null
+                ? universalStore.FindProfilePath(session.ActiveProfile.ProfileId)
+                : string.Empty;
+            devItem.PostInit(activePath);
+            devItem.ProfileIndexChanged += DevItem_ProfileIndexChanged;
+            devItem.EditProfileRequested += DevItem_EditProfileRequested;
+            return devItem;
+        }
+
+        internal static void ReconcileUniversalDeviceList(
+            ObservableCollection<DeviceListItem> controllerList,
+            IReadOnlyList<UniversalMapperSession> sessions,
+            Func<UniversalMapperSession, int, DeviceListItem> createItem)
+        {
+            HashSet<Guid> liveControllerIds = sessions
+                .Where(session => !session.IsDisposed)
+                .Select(session => session.LogicalControllerId)
+                .ToHashSet();
+
+            for (int index = controllerList.Count - 1; index >= 0; index--)
+            {
+                UniversalMapperSession existingSession = controllerList[index].UniversalSession;
+                if (existingSession == null ||
+                    !liveControllerIds.Contains(existingSession.LogicalControllerId))
+                {
+                    controllerList.RemoveAt(index);
+                }
+            }
+
+            foreach (UniversalMapperSession session in sessions)
+            {
+                if (session.IsDisposed) continue;
+                if (controllerList.Any(item =>
+                    item.UniversalSession?.LogicalControllerId == session.LogicalControllerId))
+                {
+                    continue;
+                }
+
+                controllerList.Add(createItem(session, NextFreeItemIndex(controllerList)));
+            }
+        }
+
+        // Item indexes stay with an item for its whole life, so a new item has
+        // to take a slot no surviving item is already using rather than the
+        // current list length.
+        private static int NextFreeItemIndex(ObservableCollection<DeviceListItem> controllerList)
+        {
+            int candidate = 0;
+            while (controllerList.Any(item => item.ItemIndex == candidate))
+            {
+                candidate++;
+            }
+
+            return candidate;
         }
 
         public void RefreshUniversalProfileLists()
@@ -518,14 +573,20 @@ namespace DS4MapperTest.ViewModels
             }
 
             int? percent = universalSession.Controller.BatteryPercent;
-            batteryKnown = percent.HasValue;
+            bool nextBatteryKnown = percent.HasValue;
             uint nextBattery = percent.HasValue ? (uint)percent.Value : uint.MaxValue;
+
+            // Polled ten times a second. Announcing a reading that has not
+            // moved re-renders the device combo for nothing, so only notify
+            // when the displayed text would actually differ.
             if (device.Battery != nextBattery)
             {
+                // Device_BatteryChanged recomputes batteryKnown from this.
                 device.Battery = nextBattery;
             }
-            else
+            else if (batteryKnown != nextBatteryKnown)
             {
+                batteryKnown = nextBatteryKnown;
                 RaisePropertyChanged(nameof(Battery));
                 RaisePropertyChanged(nameof(DisplayNameWithBattery));
                 BatteryChanged?.Invoke(this, EventArgs.Empty);
