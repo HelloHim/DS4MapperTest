@@ -273,6 +273,7 @@ namespace DS4MapperTest.Universal
 
         private void RefreshControllerList()
         {
+            bool changed;
             lock (syncRoot)
             {
                 IUniversalController[] candidates = backends
@@ -284,11 +285,20 @@ namespace DS4MapperTest.Universal
                     .GroupBy(controller => $"{controller.Identity.BackendName}|{controller.Identity.BackendSessionId}")
                     .Select(group => group.First());
 
-                controllers = new ReadOnlyCollection<IUniversalController>(
-                    UniversalBackendArbitrator.SelectAuthoritativeControllers(unique).ToArray());
+                IUniversalController[] next =
+                    UniversalBackendArbitrator.SelectAuthoritativeControllers(unique).ToArray();
+                changed = !next.Select(item => item.Identity.LogicalControllerId)
+                    .SequenceEqual(controllers.Select(item => item.Identity.LogicalControllerId));
+                controllers = new ReadOnlyCollection<IUniversalController>(next);
             }
 
-            ControllersChanged?.Invoke(this, EventArgs.Empty);
+            // This runs on every mapping tick. Announcing a change that did not
+            // happen made every listener redo its reconciliation work hundreds
+            // of times a second for nothing.
+            if (changed)
+            {
+                ControllersChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         private void ThrowIfDisposed()
