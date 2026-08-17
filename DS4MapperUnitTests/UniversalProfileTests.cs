@@ -339,6 +339,91 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void SummariesIdentifyEveryStoredProfileWithoutFullParses()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile first = CreateProfile("Desktop");
+                UniversalProfile second = CreateProfile("Aim");
+                store.SaveNamed(first, store.GetNamedProfilePath("Desktop", ProfileList.DEFAULT_PROFILE_FOLDER));
+                store.SaveNamed(second, store.GetNamedProfilePath("Aim", ProfileList.DEFAULT_PROFILE_FOLDER));
+
+                var summaries = store.EnumerateProfileSummaries();
+
+                CollectionAssert.AreEquivalent(
+                    new[] { "Desktop", "Aim" },
+                    summaries.Where(item => item.Loaded).Select(item => item.DisplayName).ToArray());
+                CollectionAssert.AreEquivalent(
+                    new[] { first.ProfileId, second.ProfileId },
+                    summaries.Where(item => item.Loaded).Select(item => item.ProfileId).ToArray());
+            }
+        }
+
+        [TestMethod]
+        public void SummaryOfAnUnreadableProfileIsReportedAsNotLoaded()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                store.SaveNamed(CreateProfile("Good"), store.GetNamedProfilePath("Good"));
+                File.WriteAllText(Path.Combine(temp.Path, $"{Guid.NewGuid():D}.universal-profile.json"), "{ nope");
+
+                var summaries = store.EnumerateProfileSummaries();
+
+                Assert.AreEqual(2, summaries.Count);
+                Assert.AreEqual(1, summaries.Count(item => item.Loaded));
+                Assert.AreEqual("Good", summaries.Single(item => item.Loaded).DisplayName);
+            }
+        }
+
+        [TestMethod]
+        public void SummariesFollowRenamesAndDeletesOfTheSameFile()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile profile = CreateProfile("Before");
+                store.SaveNamed(profile, store.GetNamedProfilePath("Before"));
+
+                Assert.AreEqual("Before", store.EnumerateProfileSummaries().Single().DisplayName);
+
+                // Rewrite the same path so a stale cache entry would be reused
+                // if modification time were not part of the cache key.
+                profile.DisplayName = "After";
+                store.SaveNamed(profile, store.GetNamedProfilePath("Before"));
+
+                Assert.AreEqual("After", store.EnumerateProfileSummaries().Single().DisplayName);
+                Assert.AreEqual(
+                    store.FindProfilePath(profile.ProfileId),
+                    store.EnumerateProfileSummaries().Single().Path);
+
+                store.Delete(store.FindProfilePath(profile.ProfileId));
+                Assert.AreEqual(0, store.EnumerateProfileSummaries().Count);
+            }
+        }
+
+        [TestMethod]
+        public void SummaryExposesMigrationSourceFamily()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile profile = CreateProfile("Migrated");
+                profile.Migration = new UniversalProfileMigrationProvenance
+                {
+                    SourceFamily = InputDeviceType.SteamController.ToString(),
+                    SourceIdentity = "SteamController/Default/sample.json",
+                };
+                store.Save(profile);
+
+                Assert.AreEqual(
+                    InputDeviceType.SteamController.ToString(),
+                    store.EnumerateProfileSummaries().Single().MigrationSourceFamily);
+            }
+        }
+
+        [TestMethod]
         public void DeleteFolderRemovesEmptyLeftoverSubdirectories()
         {
             using (TempProfileDirectory temp = new TempProfileDirectory())

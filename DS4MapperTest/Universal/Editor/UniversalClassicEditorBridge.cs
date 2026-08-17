@@ -40,10 +40,10 @@ namespace DS4MapperTest.Universal.Editor
 
     public sealed class UniversalClassicProfileEntry : ProfileEntity
     {
-        public UniversalClassicProfileEntry(string path, UniversalProfile profile, string folderName)
-            : base(path, profile?.DisplayName ?? string.Empty, InputDeviceType.None, folderName)
+        public UniversalClassicProfileEntry(string path, UniversalProfileSummary summary, string folderName)
+            : base(path, summary?.DisplayName ?? string.Empty, InputDeviceType.None, folderName)
         {
-            ProfileId = profile?.ProfileId ?? Guid.Empty;
+            ProfileId = summary?.ProfileId ?? Guid.Empty;
         }
 
         public Guid ProfileId { get; }
@@ -76,12 +76,12 @@ namespace DS4MapperTest.Universal.Editor
                 InsertFolderName(folder);
             }
 
-            foreach (UniversalProfileStoreEntry entry in store.EnumerateProfiles()
+            foreach (UniversalProfileSummary entry in store.EnumerateProfileSummaries()
                 .Where(item => item.Loaded)
                 .OrderBy(item => store.GetFolderName(item.Path), new UniversalFolderNameComparer())
-                .ThenBy(item => item.Profile.DisplayName, StringComparer.OrdinalIgnoreCase))
+                .ThenBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase))
             {
-                profiles.Add(new UniversalClassicProfileEntry(entry.Path, entry.Profile, store.GetFolderName(entry.Path)));
+                profiles.Add(new UniversalClassicProfileEntry(entry.Path, entry, store.GetFolderName(entry.Path)));
             }
         }
 
