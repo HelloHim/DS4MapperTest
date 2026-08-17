@@ -396,8 +396,39 @@ namespace DS4MapperUnitTests
 
             Assert.IsTrue(capabilities.Supports(UniversalInputId.Gyroscope));
             Assert.IsFalse(capabilities.Supports(UniversalInputId.Accelerometer));
-            Assert.AreEqual(1.0, state.Values[UniversalInputId.Gyroscope].Vector3.X, 0.0001);
+            Assert.AreEqual(-1.0, state.Values[UniversalInputId.Gyroscope].Vector3.X, 0.0001);
             Assert.IsFalse(state.Values.ContainsKey(UniversalInputId.Accelerometer));
+        }
+
+        [TestMethod]
+        public void SdlGyroIsPublishedInTheMapperSense()
+        {
+            // SDL reports a positive gyro X while the pad is pitched up, a
+            // positive Y while it is turned left and a positive Z while it is
+            // rolled anti-clockwise. Gyro mouse needs the opposite sense on all
+            // three: it feeds yaw to mouse X and pitch to mouse Y, and mouse Y
+            // grows downwards, so aiming right has to give a positive yaw and
+            // aiming up a negative pitch.
+            SdlRawGamepadInfo info = CreateSdlDevice();
+            info.Sensors.Add(new SdlRawSensorState { Name = "Gyro", Supported = true, Enabled = true, EnableAttempted = true, EnableSucceeded = true, Values = new[] { 1f, 2f, 3f }, Units = "radians/s" });
+            info.Sensors.Add(new SdlRawSensorState { Name = "Accel", Supported = true, Enabled = true, EnableAttempted = true, EnableSucceeded = true, Values = new[] { 4f, 5f, 6f }, Units = "m/s^2" });
+
+            SdlUniversalStateTranslator translator = new SdlUniversalStateTranslator();
+            ControllerCapabilities capabilities = translator.CreateCapabilities(info);
+            UniversalControllerStateSnapshot state = translator.CreateState(info, capabilities, true, 1, DateTimeOffset.UtcNow);
+
+            UniversalVector3 gyro = state.Values[UniversalInputId.Gyroscope].Vector3;
+            Assert.AreEqual(-1.0, gyro.X, 0.0001);
+            Assert.AreEqual(-2.0, gyro.Y, 0.0001);
+            Assert.AreEqual(-3.0, gyro.Z, 0.0001);
+
+            // The accelerometer differs by frame rather than by sense: the
+            // mapper's X and Y point left and down against SDL's right and up,
+            // while Z agrees.
+            UniversalVector3 accel = state.Values[UniversalInputId.Accelerometer].Vector3;
+            Assert.AreEqual(-4.0, accel.X, 0.0001);
+            Assert.AreEqual(-5.0, accel.Y, 0.0001);
+            Assert.AreEqual(6.0, accel.Z, 0.0001);
         }
 
         [TestMethod]

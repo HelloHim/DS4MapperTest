@@ -39,6 +39,17 @@ namespace DS4MapperTest.Universal.Mapping
         public override DeviceReaderBase BaseReader => null;
         public InputDeviceType DeviceTypeOverride { get; private set; }
         public override InputDeviceType DeviceType => DeviceTypeOverride;
+
+        // The native Steam Controller backend feeds this mapper a frame its own
+        // reader already built, so that one keeps its family's convention.
+        // Everything else arrives through SDL, which normalises every
+        // controller it supports into one frame regardless of the hardware, so
+        // the family the device was identified as says nothing about how its
+        // sensors are oriented.
+        public override InputDeviceType GyroSensorConventionDeviceType =>
+            Controller.Identity.BackendName == UniversalControllerBackendIds.SteamControllerNative
+                ? DeviceTypeOverride
+                : SdlSensorConvention.FrameDeviceType;
         public GyroCalibrationStatus GyroCalibrationStatus => gyroCalibration.Status;
 
         public void RequestGyroCalibration()

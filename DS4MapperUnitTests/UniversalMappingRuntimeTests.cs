@@ -307,6 +307,42 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void SdlSourcedMapperReportsTheSdlSensorConvention()
+        {
+            // SDL hands every controller it supports the same normalised sensor
+            // frame, so the family the device was identified as says nothing
+            // about how its sensors are oriented. Picking the conversion by
+            // that family is what inverted gyro on SDL controllers.
+            using UniversalMapperSession session = CreateSession("sdl-sensors");
+
+            Assert.AreEqual(
+                SdlSensorConvention.FrameDeviceType,
+                session.Mapper.GyroSensorConventionDeviceType);
+        }
+
+        [TestMethod]
+        public void NativeSteamControllerMapperKeepsItsOwnSensorConvention()
+        {
+            UniversalController controller = CreateController(
+                UniversalControllerBackendIds.SteamControllerNative,
+                "native-sensors",
+                true,
+                Capabilities(UniversalInputId.FaceButtonSouth));
+            using UniversalMapperSession session = new UniversalMapperSession(
+                controller,
+                CreateProfile("native", Binding(UniversalInputId.FaceButtonSouth, 1)),
+                new RecordingVirtualKeyboard(),
+                CreateMapping());
+
+            // This one is fed a frame its own reader built, so it keeps the
+            // Steam Controller conversion.
+            Assert.AreEqual(InputDeviceType.SteamController, session.Mapper.DeviceType);
+            Assert.AreEqual(
+                InputDeviceType.SteamController,
+                session.Mapper.GyroSensorConventionDeviceType);
+        }
+
+        [TestMethod]
         public void DeviceListKeepsItsItemsWhenAnotherControllerConnects()
         {
             // The editor works from the DeviceListItem it was handed. Replacing
