@@ -229,6 +229,12 @@ namespace DS4MapperTest
         }
 
         public virtual InputDeviceType DeviceType => InputDeviceType.None;
+
+        // Which device family's sensor convention this mapper's GyroEventFrame
+        // is expressed in. For a mapper reading its own hardware that is simply
+        // the hardware it reads, but a universal mapper fed by SDL gets one
+        // normalised frame whatever the controller is, so the two can differ.
+        public virtual InputDeviceType GyroSensorConventionDeviceType => DeviceType;
         public virtual double GetNormalisedTriggerPosition(
             TriggerSensitivityModifierTrigger trigger) => 0.0;
         public abstract DeviceReaderBase BaseReader
@@ -2929,7 +2935,7 @@ namespace DS4MapperTest
         // there is no existing hook to mirror here.
         public void PopulateStateGyro(ref GyroEventFrame frame)
         {
-            GyroMotionAxisAdapter.ToDualShock4OutputSpace(DeviceType,
+            GyroMotionAxisAdapter.ToDualShock4OutputSpace(GyroSensorConventionDeviceType,
                 frame.GyroYaw, frame.GyroPitch, frame.GyroRoll,
                 frame.AccelX, frame.AccelY, frame.AccelZ,
                 out intermediateState.GyroYaw, out intermediateState.GyroPitch, out intermediateState.GyroRoll,
@@ -2942,7 +2948,7 @@ namespace DS4MapperTest
             // Each device family reports its sensors in its own convention, so
             // the conversion is selected per family. DeviceType is already the
             // discriminator every mapper subclass overrides.
-            GyroMotionAxisAdapter.ToMotionSpace(DeviceType,
+            GyroMotionAxisAdapter.ToMotionSpace(GyroSensorConventionDeviceType,
                 frame.AngGyroYaw, frame.AngGyroPitch, frame.AngGyroRoll,
                 frame.AccelXG, frame.AccelYG, frame.AccelZG,
                 out double gmGyroX, out double gmGyroY, out double gmGyroZ,

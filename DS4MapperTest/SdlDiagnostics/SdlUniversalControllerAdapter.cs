@@ -558,9 +558,18 @@ namespace DS4MapperTest.SdlDiagnostics
             double x = sensorValues.Length > 0 ? sensorValues[0] : 0;
             double y = sensorValues.Length > 1 ? sensorValues[1] : 0;
             double z = sensorValues.Length > 2 ? sensorValues[2] : 0;
+
+            // SDL reports sensors in its own frame, which is not the one the
+            // mapper's gyro frame is defined in. See SdlSensorConvention.
             values[inputId] = inputId == UniversalInputId.Gyroscope
-                ? UniversalInputValue.Gyroscope(x, y, z)
-                : UniversalInputValue.Accelerometer(x, y, z);
+                ? UniversalInputValue.Gyroscope(
+                    SdlSensorConvention.GyroPitchToFrame(x),
+                    SdlSensorConvention.GyroYawToFrame(y),
+                    SdlSensorConvention.GyroRollToFrame(z))
+                : UniversalInputValue.Accelerometer(
+                    SdlSensorConvention.AccelXToFrame(x),
+                    SdlSensorConvention.AccelYToFrame(y),
+                    SdlSensorConvention.AccelZToFrame(z));
         }
 
         private static UniversalInputId TouchSurfaceId(SdlUniversalTouchSurfaceTarget target)
