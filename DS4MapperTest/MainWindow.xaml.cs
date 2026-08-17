@@ -2237,8 +2237,13 @@ namespace DS4MapperTest
         {
             if (resetDefaultProfilesPanel == null || folderManageComboBox == null) return;
 
+            // Resetting bundled defaults rewrites the legacy per-device profile
+            // files, which a universal controller does not use, so the button
+            // did nothing at all when it was shown for one. Keep it hidden
+            // rather than offering an action that cannot happen.
             string selectedFolder = folderManageComboBox.SelectedItem as string;
             resetDefaultProfilesPanel.Visibility =
+                currentDeviceItem?.IsUniversal != true &&
                 string.Equals(selectedFolder, ProfileList.DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase)
                     ? Visibility.Visible
                     : Visibility.Collapsed;
