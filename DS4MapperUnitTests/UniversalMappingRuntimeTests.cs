@@ -2,10 +2,12 @@ using DS4MapperTest;
 using DS4MapperTest.Universal;
 using DS4MapperTest.Universal.Mapping;
 using DS4MapperTest.Universal.Profiles;
+using DS4MapperTest.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace DS4MapperUnitTests
@@ -302,6 +304,100 @@ namespace DS4MapperUnitTests
             session.SwitchProfile(CreateProfile("new", Binding(UniversalInputId.FaceButtonEast, 1)));
 
             Assert.AreEqual(0, TestMapper.KeyReferenceCountDict.Count);
+        }
+
+        [TestMethod]
+        public void DeviceListKeepsItsItemsWhenAnotherControllerConnects()
+        {
+            // The editor works from the DeviceListItem it was handed. Replacing
+            // that item reads to the window as the current device disconnecting,
+            // which tears the editor down and drops unsaved edits, so an
+            // unrelated hotplug must leave the existing items alone.
+            using UniversalMapperSession first = CreateSession("first");
+            using UniversalMapperSession second = CreateSession("second");
+            ObservableCollection<DeviceListItem> list = new ObservableCollection<DeviceListItem>();
+
+            ControllerListViewModel.ReconcileUniversalDeviceList(
+                list, new[] { first }, CreateDeviceListItem);
+            DeviceListItem firstItem = list.Single();
+
+            ControllerListViewModel.ReconcileUniversalDeviceList(
+                list, new[] { first, second }, CreateDeviceListItem);
+
+            Assert.AreEqual(2, list.Count);
+            Assert.AreSame(firstItem, list[0]);
+            Assert.AreEqual(second.LogicalControllerId, list[1].UniversalSession.LogicalControllerId);
+        }
+
+        [TestMethod]
+        public void DeviceListDropsItemsForSessionsThatWentAway()
+        {
+            using UniversalMapperSession first = CreateSession("first");
+            using UniversalMapperSession second = CreateSession("second");
+            ObservableCollection<DeviceListItem> list = new ObservableCollection<DeviceListItem>();
+
+            ControllerListViewModel.ReconcileUniversalDeviceList(
+                list, new[] { first, second }, CreateDeviceListItem);
+            DeviceListItem secondItem = list[1];
+
+            ControllerListViewModel.ReconcileUniversalDeviceList(
+                list, new[] { second }, CreateDeviceListItem);
+
+            Assert.AreSame(secondItem, list.Single());
+        }
+
+        [TestMethod]
+        public void DeviceListGivesAReplacementItemAFreeIndex()
+        {
+            using UniversalMapperSession first = CreateSession("first");
+            using UniversalMapperSession second = CreateSession("second");
+            using UniversalMapperSession third = CreateSession("third");
+            ObservableCollection<DeviceListItem> list = new ObservableCollection<DeviceListItem>();
+
+            ControllerListViewModel.ReconcileUniversalDeviceList(
+                list, new[] { first, second }, CreateDeviceListItem);
+            ControllerListViewModel.ReconcileUniversalDeviceList(
+                list, new[] { second }, CreateDeviceListItem);
+            ControllerListViewModel.ReconcileUniversalDeviceList(
+                list, new[] { second, third }, CreateDeviceListItem);
+
+            CollectionAssert.AreEquivalent(
+                new[] { 1, 0 },
+                list.Select(item => item.ItemIndex).ToArray());
+            Assert.AreEqual(2, list.Select(item => item.ItemIndex).Distinct().Count());
+        }
+
+        [TestMethod]
+        public void DeviceListIgnoresDisposedSessions()
+        {
+            UniversalMapperSession session = CreateSession("gone");
+            ObservableCollection<DeviceListItem> list = new ObservableCollection<DeviceListItem>();
+
+            session.Dispose();
+            ControllerListViewModel.ReconcileUniversalDeviceList(
+                list, new[] { session }, CreateDeviceListItem);
+
+            Assert.AreEqual(0, list.Count);
+        }
+
+        private static DeviceListItem CreateDeviceListItem(UniversalMapperSession session, int itemIndex)
+        {
+            return new DeviceListItem(session, itemIndex, null);
+        }
+
+        private static UniversalMapperSession CreateSession(string backendSessionId)
+        {
+            UniversalController controller = CreateController(
+                UniversalControllerBackendIds.Sdl3,
+                backendSessionId,
+                false,
+                Capabilities(UniversalInputId.FaceButtonSouth));
+
+            return new UniversalMapperSession(
+                controller,
+                CreateProfile(backendSessionId, Binding(UniversalInputId.FaceButtonSouth, 1)),
+                new RecordingVirtualKeyboard(),
+                CreateMapping());
         }
 
         [TestMethod]

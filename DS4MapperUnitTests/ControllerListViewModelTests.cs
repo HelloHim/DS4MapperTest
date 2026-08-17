@@ -19,6 +19,24 @@ namespace DS4MapperUnitTests
             Assert.AreEqual("Test Controller  67%", item.ToString());
         }
 
+        [TestMethod]
+        public void BatteryChangeIsAnnouncedOnlyWhenTheReadingMoves()
+        {
+            FakeInputDevice device = new FakeInputDevice("Test Controller");
+            device.Battery = 67;
+            DeviceListItem item = new DeviceListItem(device, 0, null);
+
+            int announcements = 0;
+            item.BatteryChanged += (_, _) => announcements++;
+
+            device.Battery = 67;
+            Assert.AreEqual(0, announcements);
+
+            device.Battery = 66;
+            Assert.AreEqual(1, announcements);
+            Assert.AreEqual("66%", item.Battery);
+        }
+
         private sealed class FakeInputDevice : InputDeviceBase
         {
             public FakeInputDevice(string name)
