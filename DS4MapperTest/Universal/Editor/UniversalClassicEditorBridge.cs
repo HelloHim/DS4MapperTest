@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Windows.Data;
 
 namespace DS4MapperTest.Universal.Editor
 {
@@ -52,6 +53,13 @@ namespace DS4MapperTest.Universal.Editor
     public sealed class UniversalClassicProfileList
     {
         private readonly UniversalProfileStore store;
+        // Both collections are bound straight into the window (the folder list
+        // is a ComboBox ItemsSource on the new-profile panel) and Refresh runs
+        // from the universal mapping thread whenever sessions change, so WPF
+        // needs to be told how to serialise access from a non-UI thread.
+        // Without this a controller connecting while that panel is open throws
+        // out of the mapping loop instead of updating the list.
+        private readonly object collectionLock = new object();
         private readonly ObservableCollection<ProfileEntity> profiles =
             new ObservableCollection<ProfileEntity>();
         private readonly ObservableCollection<string> folders =
@@ -60,6 +68,8 @@ namespace DS4MapperTest.Universal.Editor
         public UniversalClassicProfileList(UniversalProfileStore store)
         {
             this.store = store ?? throw new ArgumentNullException(nameof(store));
+            BindingOperations.EnableCollectionSynchronization(profiles, collectionLock);
+            BindingOperations.EnableCollectionSynchronization(folders, collectionLock);
             Refresh();
         }
 
@@ -68,32 +78,49 @@ namespace DS4MapperTest.Universal.Editor
 
         public void Refresh()
         {
-            profiles.Clear();
-            folders.Clear();
-
-            foreach (string folder in store.EnumerateFolders())
-            {
-                InsertFolderName(folder);
-            }
-
-            foreach (UniversalProfileSummary entry in store.EnumerateProfileSummaries()
+            // Read the store before touching the bound collections so the UI
+            // never sees an empty list while the disk scan is in progress.
+            List<string> folderNames = store.EnumerateFolders().ToList();
+            List<UniversalProfileSummary> entries = store.EnumerateProfileSummaries()
                 .Where(item => item.Loaded)
                 .OrderBy(item => store.GetFolderName(item.Path), new UniversalFolderNameComparer())
-                .ThenBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase))
+                .ThenBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            lock (collectionLock)
             {
-                profiles.Add(new UniversalClassicProfileEntry(entry.Path, entry, store.GetFolderName(entry.Path)));
+                profiles.Clear();
+                folders.Clear();
+
+                foreach (string folder in folderNames)
+                {
+                    InsertFolderName(folder);
+                }
+
+                foreach (UniversalProfileSummary entry in entries)
+                {
+                    profiles.Add(new UniversalClassicProfileEntry(entry.Path, entry, store.GetFolderName(entry.Path)));
+                }
             }
         }
 
         public bool FolderExists(string folderName)
         {
-            return folders.Any(item => string.Equals(item, folderName, StringComparison.OrdinalIgnoreCase));
+            lock (collectionLock)
+            {
+                return folders.Any(item => string.Equals(item, folderName, StringComparison.OrdinalIgnoreCase));
+            }
         }
 
         public bool CreateFolder(string folderName)
         {
             if (!store.CreateFolder(folderName)) return false;
-            InsertFolderName(folderName);
+
+            lock (collectionLock)
+            {
+                InsertFolderName(folderName);
+            }
+
             return true;
         }
 
@@ -101,28 +128,37 @@ namespace DS4MapperTest.Universal.Editor
         {
             if (!store.RenameFolder(oldFolderName, newFolderName)) return false;
 
-            int folderIndex = folders.IndexOf(oldFolderName);
-            if (folderIndex >= 0)
+            lock (collectionLock)
             {
-                folders.RemoveAt(folderIndex);
+                int folderIndex = folders.IndexOf(oldFolderName);
+                if (folderIndex >= 0)
+                {
+                    folders.RemoveAt(folderIndex);
+                }
+
+                foreach (ProfileEntity profile in profiles.Where(profile =>
+                    string.Equals(profile.FolderName, oldFolderName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    profile.UpdatePath(System.IO.Path.Combine(store.GetFolderPath(newFolderName), System.IO.Path.GetFileName(profile.ProfilePath)));
+                    profile.FolderName = newFolderName;
+                }
+
+                InsertFolderName(newFolderName);
+                SortProfiles();
             }
 
-            foreach (ProfileEntity profile in profiles.Where(profile =>
-                string.Equals(profile.FolderName, oldFolderName, StringComparison.OrdinalIgnoreCase)))
-            {
-                profile.UpdatePath(System.IO.Path.Combine(store.GetFolderPath(newFolderName), System.IO.Path.GetFileName(profile.ProfilePath)));
-                profile.FolderName = newFolderName;
-            }
-
-            InsertFolderName(newFolderName);
-            SortProfiles();
             return true;
         }
 
         public bool DeleteFolder(string folderName)
         {
             if (!store.DeleteFolder(folderName)) return false;
-            folders.Remove(folderName);
+
+            lock (collectionLock)
+            {
+                folders.Remove(folderName);
+            }
+
             return true;
         }
 
@@ -131,20 +167,25 @@ namespace DS4MapperTest.Universal.Editor
             if (profile == null) return false;
             if (!store.MoveProfile(profile.ProfilePath, folderName, out string newProfilePath)) return false;
 
-            if (!FolderExists(folderName))
+            lock (collectionLock)
             {
                 InsertFolderName(folderName);
+                profile.UpdatePath(newProfilePath);
+                profile.FolderName = folderName;
+                SortProfiles();
             }
 
-            profile.UpdatePath(newProfilePath);
-            profile.FolderName = folderName;
-            SortProfiles();
             return true;
         }
 
+        // Callers hold collectionLock.
         private void InsertFolderName(string folderName)
         {
-            if (string.IsNullOrWhiteSpace(folderName) || FolderExists(folderName)) return;
+            if (string.IsNullOrWhiteSpace(folderName) ||
+                folders.Any(item => string.Equals(item, folderName, StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
 
             int insertIndex = folders
                 .TakeWhile(item => new UniversalFolderNameComparer().Compare(item, folderName) <= 0)
@@ -152,6 +193,7 @@ namespace DS4MapperTest.Universal.Editor
             folders.Insert(insertIndex, folderName);
         }
 
+        // Callers hold collectionLock.
         private void SortProfiles()
         {
             List<ProfileEntity> sorted = profiles

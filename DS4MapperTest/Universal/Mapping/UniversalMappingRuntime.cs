@@ -75,6 +75,12 @@ namespace DS4MapperTest.Universal.Mapping
         private readonly VirtualKBMMapping outputMapping;
         private readonly MouseOutputDispatcher mouseOutputDispatcher;
         private readonly nuint viiperServerHandle;
+        // Reconciliation runs on the mapping thread while the editor switches
+        // profiles and reads the session list from the UI thread, so every
+        // touch of this dictionary is serialised. Session work itself happens
+        // outside this lock: a session takes its own lock, and taking them in
+        // the other order would be a deadlock waiting to happen.
+        private readonly object sessionsLock = new object();
         private readonly Dictionary<Guid, UniversalMapperSession> sessions =
             new Dictionary<Guid, UniversalMapperSession>();
         private bool started;
@@ -101,8 +107,16 @@ namespace DS4MapperTest.Universal.Mapping
             this.controllerManager.ControllersChanged += ControllerManager_ControllersChanged;
         }
 
-        public IReadOnlyList<UniversalMapperSession> Sessions =>
-            new ReadOnlyCollection<UniversalMapperSession>(sessions.Values.ToArray());
+        public IReadOnlyList<UniversalMapperSession> Sessions
+        {
+            get
+            {
+                lock (sessionsLock)
+                {
+                    return new ReadOnlyCollection<UniversalMapperSession>(sessions.Values.ToArray());
+                }
+            }
+        }
 
         public UniversalControllerManager ControllerManager => controllerManager;
 
@@ -133,7 +147,7 @@ namespace DS4MapperTest.Universal.Mapping
 
             controllerManager.Refresh();
             ReconcileSessions();
-            foreach (UniversalMapperSession session in sessions.Values.ToArray())
+            foreach (UniversalMapperSession session in Sessions)
             {
                 try
                 {
@@ -149,20 +163,37 @@ namespace DS4MapperTest.Universal.Mapping
         public void SwitchProfile(Guid logicalControllerId, UniversalProfile profile)
         {
             ThrowIfDisposed();
-            if (sessions.TryGetValue(logicalControllerId, out UniversalMapperSession session))
+            UniversalMapperSession session;
+            lock (sessionsLock)
+            {
+                if (!sessions.TryGetValue(logicalControllerId, out session)) return;
+            }
+
+            try
             {
                 session.SwitchProfile(profile);
+            }
+            catch (ObjectDisposedException)
+            {
+                // The controller disconnected between the lookup and the
+                // switch. There is nothing left to switch a profile on.
             }
         }
 
         public void Stop()
         {
-            foreach (UniversalMapperSession session in sessions.Values.ToArray())
+            UniversalMapperSession[] stopping;
+            lock (sessionsLock)
+            {
+                stopping = sessions.Values.ToArray();
+                sessions.Clear();
+            }
+
+            foreach (UniversalMapperSession session in stopping)
             {
                 session.Dispose();
             }
 
-            sessions.Clear();
             controllerManager.Stop();
             started = false;
         }
@@ -235,18 +266,32 @@ namespace DS4MapperTest.Universal.Mapping
                 .Select(item => item.Identity.LogicalControllerId)
                 .ToHashSet();
 
-            foreach (Guid staleId in sessions.Keys.Where(item => !connectedIds.Contains(item)).ToArray())
+            List<UniversalMapperSession> removed = new List<UniversalMapperSession>();
+            List<Guid> missing = new List<Guid>();
+            lock (sessionsLock)
             {
-                sessions[staleId].Dispose();
-                sessions.Remove(staleId);
-                changed = true;
-                logger.Info($"Disposed universal mapper session {staleId} after controller removal.");
+                foreach (Guid staleId in sessions.Keys.Where(item => !connectedIds.Contains(item)).ToArray())
+                {
+                    removed.Add(sessions[staleId]);
+                    sessions.Remove(staleId);
+                    changed = true;
+                    logger.Info($"Disposed universal mapper session {staleId} after controller removal.");
+                }
+
+                missing.AddRange(connectedIds.Where(item => !sessions.ContainsKey(item)));
+            }
+
+            // Disposing takes a session's own lock, so do it outside this
+            // runtime's lock to keep the two always acquired in one order.
+            foreach (UniversalMapperSession session in removed)
+            {
+                session.Dispose();
             }
 
             foreach (IUniversalController controller in authoritative)
             {
                 Guid logicalId = controller.Identity.LogicalControllerId;
-                if (sessions.ContainsKey(logicalId)) continue;
+                if (!missing.Contains(logicalId)) continue;
 
                 UniversalProfile profile = profileSelector.SelectProfile(controller);
                 if (profile == null)
@@ -257,13 +302,27 @@ namespace DS4MapperTest.Universal.Mapping
 
                 try
                 {
-                    sessions.Add(logicalId, new UniversalMapperSession(
+                    UniversalMapperSession session = new UniversalMapperSession(
                         controller,
                         profile,
                         outputHandler,
                         outputMapping,
                         mouseOutputDispatcher,
-                        viiperServerHandle));
+                        viiperServerHandle);
+
+                    bool added;
+                    lock (sessionsLock)
+                    {
+                        added = sessions.TryAdd(logicalId, session);
+                    }
+
+                    if (!added)
+                    {
+                        // Another reconcile beat this one to the controller.
+                        session.Dispose();
+                        continue;
+                    }
+
                     changed = true;
                     logger.Info($"Created universal mapper session {logicalId} from backend {controller.Identity.BackendName}.");
                 }

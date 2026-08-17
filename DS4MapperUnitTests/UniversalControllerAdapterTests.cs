@@ -699,6 +699,36 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void ManagerAnnouncesAChangeOnlyWhenTheControllerSetMoves()
+        {
+            UniversalController first = (UniversalController)CreateController(
+                UniversalControllerBackendIds.Sdl3, "first", false);
+            UniversalController second = (UniversalController)CreateController(
+                UniversalControllerBackendIds.Sdl3, "second", false);
+            FakeUniversalBackend backend = new FakeUniversalBackend(first, second);
+            using UniversalControllerManager manager = new UniversalControllerManager(new[] { backend });
+            manager.Start(out _);
+
+            int announcements = 0;
+            manager.ControllersChanged += (_, _) => announcements++;
+
+            // Refresh runs on every mapping tick; a settled controller set must
+            // not make every listener redo its reconciliation work.
+            manager.Refresh();
+            manager.Refresh();
+            manager.Refresh();
+            Assert.AreEqual(0, announcements);
+
+            second.MarkDisconnected();
+            manager.Refresh();
+            Assert.AreEqual(1, announcements);
+            Assert.AreEqual(1, manager.Controllers.Count);
+
+            manager.Refresh();
+            Assert.AreEqual(1, announcements);
+        }
+
+        [TestMethod]
         public void KnownVirtualOutputDevicesAreSuppressedBeforeSelection()
         {
             SdlRawGamepadInfo info = CreateSdlDevice(vendorId: 0, productId: 0);
