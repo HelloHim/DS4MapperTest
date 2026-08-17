@@ -2110,6 +2110,11 @@ namespace DS4MapperTest
                 return;
             }
 
+            // Captured before the move: the entity's path is rewritten in place
+            // by MoveProfile, and it is the pre-move path that tells us whether
+            // the profile being moved is the one the editor has open.
+            string previousProfilePath = selectedListEntry.ProfilePath;
+
             try
             {
                 bool moved = currentDeviceItem.IsUniversal
@@ -2123,11 +2128,20 @@ namespace DS4MapperTest
                     return;
                 }
 
-                if (editorTestVM != null && selectedListEntry.Entity == editorTestVM.ProfileEnt)
+                ProfileEntity activeEntity = editorTestVM?.ProfileEnt;
+                if (activeEntity != null &&
+                    string.Equals(activeEntity.ProfilePath, previousProfilePath, StringComparison.OrdinalIgnoreCase))
                 {
+                    string newProfilePath = selectedListEntry.Entity.ProfilePath;
+                    // The editor may be holding a different entity object for
+                    // the same profile, and it is the one a later save reads
+                    // the path from, so it has to follow the file too.
+                    activeEntity.UpdatePath(newProfilePath);
+                    activeEntity.FolderName = folderName;
+
                     Mapper mapper = editorTestVM.DeviceMapper;
-                    mapper.ProfileFile = selectedListEntry.Entity.ProfilePath;
-                    appGlobal.activeProfiles[currentDeviceItem.Device.Index] = selectedListEntry.Entity.ProfilePath;
+                    mapper.ProfileFile = newProfilePath;
+                    appGlobal.activeProfiles[currentDeviceItem.Device.Index] = newProfilePath;
                 }
 
                 if (currentDeviceItem.IsUniversal)

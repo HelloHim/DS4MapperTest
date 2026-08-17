@@ -318,6 +318,51 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void ClassicProfileListBridgeKeepsEntitiesAcrossRefreshes()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile profile = CreateProfile("Held");
+                store.SaveNamed(profile, store.GetNamedProfilePath("Held", ProfileList.DEFAULT_PROFILE_FOLDER));
+                UniversalClassicProfileList list = new UniversalClassicProfileList(store);
+
+                // The editor holds on to the entity for the profile it has
+                // open, so a refresh must update that entity rather than
+                // replace it and leave the editor pointing at a stale path.
+                ProfileEntity held = list.Profiles.Single();
+                list.MoveProfile(held, "Arcade");
+                list.Refresh();
+
+                Assert.AreSame(held, list.Profiles.Single());
+                Assert.AreEqual("Arcade", held.FolderName);
+                Assert.AreEqual(store.FindProfilePath(profile.ProfileId), held.ProfilePath);
+            }
+        }
+
+        [TestMethod]
+        public void ClassicProfileListBridgeUpdatesHeldEntityAfterARename()
+        {
+            using (TempProfileDirectory temp = new TempProfileDirectory())
+            {
+                UniversalProfileStore store = new UniversalProfileStore(temp.Path);
+                UniversalProfile profile = CreateProfile("Before");
+                store.SaveNamed(profile, store.GetNamedProfilePath("Before", ProfileList.DEFAULT_PROFILE_FOLDER));
+                UniversalClassicProfileList list = new UniversalClassicProfileList(store);
+                ProfileEntity held = list.Profiles.Single();
+
+                profile.DisplayName = "After";
+                store.SaveNamed(profile, held.ProfilePath);
+                list.Refresh();
+
+                Assert.AreSame(held, list.Profiles.Single());
+                Assert.AreEqual("After", held.Name);
+                Assert.AreEqual(store.FindProfilePath(profile.ProfileId), held.ProfilePath);
+                Assert.IsTrue(File.Exists(held.ProfilePath));
+            }
+        }
+
+        [TestMethod]
         public void ClassicProfileListBridgeMovesUniversalProfileBetweenFolders()
         {
             using (TempProfileDirectory temp = new TempProfileDirectory())
