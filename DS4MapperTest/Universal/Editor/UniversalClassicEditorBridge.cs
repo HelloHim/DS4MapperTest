@@ -89,6 +89,18 @@ namespace DS4MapperTest.Universal.Editor
 
             lock (collectionLock)
             {
+                // ProfileEntity exists to be held on to: the editor keeps the
+                // entity for the profile it is working on, and ProfileEntity
+                // has UpdatePath precisely so a rename or move can be applied
+                // without replacing it. Handing out fresh instances on every
+                // refresh left the editor holding an orphan whose path stopped
+                // tracking the file, so a later save wrote to the old location.
+                Dictionary<Guid, UniversalClassicProfileEntry> reusable = profiles
+                    .OfType<UniversalClassicProfileEntry>()
+                    .Where(item => item.ProfileId != Guid.Empty)
+                    .GroupBy(item => item.ProfileId)
+                    .ToDictionary(group => group.Key, group => group.First());
+
                 profiles.Clear();
                 folders.Clear();
 
@@ -99,7 +111,18 @@ namespace DS4MapperTest.Universal.Editor
 
                 foreach (UniversalProfileSummary entry in entries)
                 {
-                    profiles.Add(new UniversalClassicProfileEntry(entry.Path, entry, store.GetFolderName(entry.Path)));
+                    string folderName = store.GetFolderName(entry.Path);
+                    if (reusable.TryGetValue(entry.ProfileId, out UniversalClassicProfileEntry existing))
+                    {
+                        existing.UpdatePath(entry.Path);
+                        existing.Name = entry.DisplayName;
+                        existing.FolderName = folderName;
+                        profiles.Add(existing);
+                    }
+                    else
+                    {
+                        profiles.Add(new UniversalClassicProfileEntry(entry.Path, entry, folderName));
+                    }
                 }
             }
         }
