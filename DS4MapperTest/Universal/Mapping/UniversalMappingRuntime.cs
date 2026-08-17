@@ -238,7 +238,8 @@ namespace DS4MapperTest.Universal.Mapping
                     if (report.Status == ProfileMigrationStatus.Failed ||
                         report.Status == ProfileMigrationStatus.Conflict)
                     {
-                        logger.Warn($"Universal profile migration {report.Status}: {report.SourceFamily}/{report.SourceIdentity}");
+                        // SourceIdentity already starts with the family name.
+                        logger.Warn($"Universal profile migration {report.Status}: {report.SourceIdentity}");
                     }
                 }
             }
