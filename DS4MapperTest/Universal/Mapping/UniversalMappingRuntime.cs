@@ -16,6 +16,7 @@ namespace DS4MapperTest.Universal.Mapping
 
     public sealed class UniversalProfileStoreSelector : IUniversalProfileSelector
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly UniversalProfileStore store;
         private readonly Guid? preferredProfileId;
 
@@ -27,21 +28,39 @@ namespace DS4MapperTest.Universal.Mapping
 
         public UniversalProfile SelectProfile(IUniversalController controller)
         {
-            IReadOnlyList<UniversalProfileStoreEntry> profiles = store.EnumerateProfiles();
+            // Choosing from summaries keeps a controller connecting from
+            // parsing every profile in the store; only the winner is loaded.
+            IReadOnlyList<UniversalProfileSummary> profiles = store.EnumerateProfileSummaries();
             if (preferredProfileId.HasValue)
             {
-                UniversalProfileStoreEntry preferred = profiles.FirstOrDefault(item =>
-                    item.Loaded && item.Profile.ProfileId == preferredProfileId.Value);
-                if (preferred != null) return preferred.Profile.Clone();
+                UniversalProfileSummary preferred = profiles.FirstOrDefault(item =>
+                    item.Loaded && item.ProfileId == preferredProfileId.Value);
+                if (preferred != null) return LoadOrNull(preferred);
             }
 
-            return profiles
+            foreach (UniversalProfileSummary candidate in profiles
                 .Where(item => item.Loaded)
-                .Select(item => item.Profile)
                 .OrderBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(item => item.ProfileId)
-                .FirstOrDefault()
-                ?.Clone();
+                .ThenBy(item => item.ProfileId))
+            {
+                UniversalProfile loaded = LoadOrNull(candidate);
+                if (loaded != null) return loaded;
+            }
+
+            return null;
+        }
+
+        private UniversalProfile LoadOrNull(UniversalProfileSummary summary)
+        {
+            try
+            {
+                return store.LoadFromPath(summary.Path);
+            }
+            catch (Exception ex)
+            {
+                logger.Warn(ex, $"Skipping unreadable universal profile {summary.Path}.");
+                return null;
+            }
         }
     }
 

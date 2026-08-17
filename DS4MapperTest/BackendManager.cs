@@ -514,14 +514,14 @@ namespace DS4MapperTest
                 return;
             }
 
-            foreach (UniversalProfileStoreEntry entry in store.EnumerateProfiles())
+            foreach (UniversalProfileSummary entry in store.EnumerateProfileSummaries())
             {
-                if (!entry.Loaded || entry.Profile?.Migration == null)
+                if (!entry.Loaded || string.IsNullOrEmpty(entry.MigrationSourceFamily))
                 {
                     continue;
                 }
 
-                if (string.Equals(entry.Profile.Migration.SourceFamily,
+                if (string.Equals(entry.MigrationSourceFamily,
                     InputDeviceType.SteamController.ToString(), StringComparison.Ordinal))
                 {
                     continue;

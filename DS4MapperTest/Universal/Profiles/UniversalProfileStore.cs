@@ -208,6 +208,7 @@ namespace DS4MapperTest.Universal.Profiles
             }
 
             File.Move(sourcePath, destinationPath);
+            UniversalProfileSummaryReader.Invalidate(sourcePath);
             newProfilePath = destinationPath;
             return true;
         }
@@ -257,10 +258,10 @@ namespace DS4MapperTest.Universal.Profiles
             string targetPath = string.IsNullOrWhiteSpace(previousPath)
                 ? GetNamedProfilePath(profile.DisplayName)
                 : Path.Combine(Path.GetDirectoryName(EnsurePathInsideRoot(previousPath)), BuildSafeFileName(profile.DisplayName));
-            UniversalProfileStoreEntry collision = EnumerateProfiles().FirstOrDefault(item =>
+            UniversalProfileSummary collision = EnumerateProfileSummaries().FirstOrDefault(item =>
                 item.Loaded &&
-                item.Profile.ProfileId != profile.ProfileId &&
-                (string.Equals(item.Profile.DisplayName, profile.DisplayName, StringComparison.OrdinalIgnoreCase) ||
+                item.ProfileId != profile.ProfileId &&
+                (string.Equals(item.DisplayName, profile.DisplayName, StringComparison.OrdinalIgnoreCase) ||
                  string.Equals(Path.GetFileName(item.Path), Path.GetFileName(targetPath), StringComparison.OrdinalIgnoreCase)));
             if (collision != null)
             {
@@ -274,6 +275,7 @@ namespace DS4MapperTest.Universal.Profiles
                 File.Exists(previousPath))
             {
                 File.Delete(previousPath);
+                UniversalProfileSummaryReader.Invalidate(Path.GetFullPath(previousPath));
             }
         }
 
@@ -283,6 +285,7 @@ namespace DS4MapperTest.Universal.Profiles
             if (File.Exists(fullPath))
             {
                 File.Delete(fullPath);
+                UniversalProfileSummaryReader.Invalidate(fullPath);
             }
         }
 
@@ -296,8 +299,8 @@ namespace DS4MapperTest.Universal.Profiles
             string legacyPath = GetProfilePath(profileId);
             if (File.Exists(legacyPath)) return legacyPath;
 
-            return EnumerateProfiles()
-                .FirstOrDefault(item => item.Loaded && item.Profile.ProfileId == profileId)
+            return EnumerateProfileSummaries()
+                .FirstOrDefault(item => item.Loaded && item.ProfileId == profileId)
                 ?.Path;
         }
 
@@ -333,6 +336,8 @@ namespace DS4MapperTest.Universal.Profiles
                 {
                     File.Move(tempPath, targetPath);
                 }
+
+                UniversalProfileSummaryReader.Invalidate(targetPath);
             }
             finally
             {
@@ -360,15 +365,8 @@ namespace DS4MapperTest.Universal.Profiles
 
         public IReadOnlyList<UniversalProfileStoreEntry> EnumerateProfiles()
         {
-            if (!Directory.Exists(rootPath))
-            {
-                return Array.Empty<UniversalProfileStoreEntry>();
-            }
-
             List<UniversalProfileStoreEntry> entries = new List<UniversalProfileStoreEntry>();
-            foreach (string file in Directory.EnumerateFiles(rootPath, $"*{ProfileFileExtension}", SearchOption.AllDirectories)
-                .Where(file => !file.EndsWith(TempExtension, StringComparison.OrdinalIgnoreCase))
-                .OrderBy(file => file, StringComparer.OrdinalIgnoreCase))
+            foreach (string file in EnumerateProfileFiles())
             {
                 try
                 {
@@ -381,6 +379,34 @@ namespace DS4MapperTest.Universal.Profiles
             }
 
             return entries;
+        }
+
+        // Identity-only listing. Prefer this over EnumerateProfiles wherever the
+        // caller only needs names, ids or paths: it costs a header read per file
+        // instead of a full parse and validation pass, and repeats are served
+        // from a modification-time keyed cache.
+        public IReadOnlyList<UniversalProfileSummary> EnumerateProfileSummaries()
+        {
+            List<UniversalProfileSummary> summaries = new List<UniversalProfileSummary>();
+            foreach (string file in EnumerateProfileFiles())
+            {
+                summaries.Add(UniversalProfileSummaryReader.Read(file));
+            }
+
+            return summaries;
+        }
+
+        private IEnumerable<string> EnumerateProfileFiles()
+        {
+            if (!Directory.Exists(rootPath))
+            {
+                return Array.Empty<string>();
+            }
+
+            return Directory.EnumerateFiles(rootPath, $"*{ProfileFileExtension}", SearchOption.AllDirectories)
+                .Where(file => !file.EndsWith(TempExtension, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(file => file, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
         }
 
         private static string EnsureTrailingSeparator(string path)
