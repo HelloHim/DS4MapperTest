@@ -53,6 +53,34 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void NativeGyroOutputMarksVirtualPadStateDirty()
+        {
+            TestMapper mapper = new TestMapper();
+            GyroEventFrame frame = new GyroEventFrame
+            {
+                GyroYaw = 11,
+                GyroPitch = 22,
+                GyroRoll = 33,
+                AccelX = 44,
+                AccelY = 55,
+                AccelZ = 66,
+                timeElapsed = 1.0 / 125.0,
+            };
+
+            Assert.IsFalse(mapper.IntermediateStateRef.Dirty,
+                "A fresh intermediate state should start clean.");
+
+            mapper.PopulateStateGyro(ref frame);
+
+            // The virtual pad report is submitted only while the intermediate
+            // state is dirty. A profile binding nothing but gyro to the pad has
+            // no other way to raise that flag, so it must be raised here or the
+            // virtual controller never reports at all.
+            Assert.IsTrue(mapper.IntermediateStateRef.Dirty);
+            Assert.AreNotEqual((short)0, mapper.IntermediateStateRef.GyroYaw);
+        }
+
+        [TestMethod]
         public void PassthruGyroActivationDefaultsToAlwaysOn()
         {
             GyroPassthruAction action = new GyroPassthruAction();
