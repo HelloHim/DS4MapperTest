@@ -39,16 +39,6 @@ namespace DS4MapperTest.Universal.Editor
             this.reloadHook = reloadHook;
         }
 
-        public UniversalProfileEditorSaveResult Save(
-            UniversalProfileEditorModel model,
-            Guid? logicalControllerIdToReload = null)
-        {
-            if (model == null) throw new ArgumentNullException(nameof(model));
-
-            UniversalProfile candidate = model.BuildUpdatedProfile();
-            return SaveProfile(candidate, logicalControllerIdToReload);
-        }
-
         public UniversalProfileEditorSaveResult SaveProfile(
             UniversalProfile candidate,
             Guid? logicalControllerIdToReload = null,

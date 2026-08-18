@@ -10,7 +10,6 @@ namespace DS4MapperTest.Universal
         public const string Sdl3 = "sdl3";
         public const string SteamControllerNative = "steam-controller-native";
         public const string DiagnosticObserver = "diagnostic-observer";
-        public const string OfflineActionContentEditor = "offline-action-content-editor";
     }
 
     public enum UniversalControllerConnectionState
