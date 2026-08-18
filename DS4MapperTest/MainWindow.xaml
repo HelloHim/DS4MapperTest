@@ -6,6 +6,7 @@
         xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:views="clr-namespace:DS4MapperTest.Views"
         xmlns:converters="clr-namespace:DS4MapperTest.Converters"
+        xmlns:behaviors="clr-namespace:DS4MapperTest.Behaviors"
         mc:Ignorable="d"
         Title="DS4MapperTest"
         Height="720" Width="1100"
@@ -796,7 +797,8 @@
                                            Style="{StaticResource JsmccBodyText}"
                                            Margin="0,0,0,12"/>
 
-                                <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
+                                <TabControl Style="{StaticResource JsmccPillTabControlStyle}"
+                                            behaviors:ScrollViewerBehavior.ResetScrollOnSelection="True">
                                     <TabItem Header="Gyro Behaviour">
                                         <ScrollViewer VerticalScrollBarVisibility="Auto"
                                                       HorizontalScrollBarVisibility="Disabled"
@@ -842,7 +844,8 @@
                                            Style="{StaticResource JsmccBodyText}"
                                            Margin="0,0,0,12"/>
 
-                                <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
+                                <TabControl Style="{StaticResource JsmccPillTabControlStyle}"
+                                            behaviors:ScrollViewerBehavior.ResetScrollOnSelection="True">
                                     <TabItem Header="Face">
                                         <views:FaceKeybindsControl/>
                                     </TabItem>
@@ -888,7 +891,8 @@
                                            Style="{StaticResource JsmccBodyText}"
                                            Margin="0,0,0,12"/>
 
-                                <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
+                                <TabControl Style="{StaticResource JsmccPillTabControlStyle}"
+                                            behaviors:ScrollViewerBehavior.ResetScrollOnSelection="True">
                                     <TabItem Header="Touch Bindings">
                                         <views:SticksTouchBindingsControl/>
                                     </TabItem>

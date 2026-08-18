@@ -42,6 +42,12 @@ namespace DS4MapperTest.Behaviors
         public static void SetScrollComboBoxDropDownOnWheel(DependencyObject obj, bool value) =>
             obj.SetValue(ScrollComboBoxDropDownOnWheelProperty, value);
 
+        // Opt-in per TabControl rather than set on the shared pill tab style:
+        // switching a page's top-level section is a navigation change and should
+        // start at the top, but the same style is reused for tab strips nested
+        // inside a page (eg. the cog button's advanced binding editor), where
+        // scrolling the page away from what the user just clicked is never
+        // wanted.
         public static readonly DependencyProperty ResetScrollOnSelectionProperty =
             DependencyProperty.RegisterAttached(
                 "ResetScrollOnSelection",

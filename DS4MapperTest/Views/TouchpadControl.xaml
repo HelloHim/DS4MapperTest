@@ -6,6 +6,7 @@
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:views="clr-namespace:DS4MapperTest.Views"
              xmlns:converters="clr-namespace:DS4MapperTest.Converters"
+             xmlns:behaviors="clr-namespace:DS4MapperTest.Behaviors"
              mc:Ignorable="d"
              d:DesignHeight="560"
              d:DesignWidth="860">
@@ -290,7 +291,8 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
                   CanContentScroll="False">
-        <TabControl x:Name="TabControlRoot" Style="{StaticResource JsmccPillTabControlStyle}">
+        <TabControl x:Name="TabControlRoot" Style="{StaticResource JsmccPillTabControlStyle}"
+                    behaviors:ScrollViewerBehavior.ResetScrollOnSelection="True">
             <TabItem Header="Touch Bindings">
                 <StackPanel>
                     <views:SharedButtonKeybindsControl

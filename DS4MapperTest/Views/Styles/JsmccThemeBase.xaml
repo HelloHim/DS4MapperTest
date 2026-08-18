@@ -258,7 +258,6 @@
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="ItemContainerStyle" Value="{StaticResource JsmccPillTabItemStyle}"/>
-        <Setter Property="behaviors:ScrollViewerBehavior.ResetScrollOnSelection" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabControl">
