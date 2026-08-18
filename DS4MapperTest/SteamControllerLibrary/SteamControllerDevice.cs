@@ -10,6 +10,9 @@ namespace DS4MapperTest.SteamControllerLibrary
 {
     public class SteamControllerDevice : InputDeviceBase
     {
+        public const int STEAM_DONGLE_CONTROLLER_PRODUCT_ID = 0x1142;
+        public const int STEAM_BT_CONTROLLER_PRODUCT_ID = 0x1106;
+
         public static class SCPacketType
         {
             public const byte PT_INPUT = 0x01;
@@ -202,13 +205,12 @@ namespace DS4MapperTest.SteamControllerLibrary
             // Initially assume a USB connection
             ConnectionType result = ConnectionType.USB;
             if (device.Attributes.ProductId ==
-                SteamControllerEnumerator.STEAM_DONGLE_CONTROLLER_PRODUCT_ID)
-            //if (device.Attributes.ProductId == 0x1142)
+                STEAM_DONGLE_CONTROLLER_PRODUCT_ID)
             {
                 result = ConnectionType.SCDongle;
             }
             else if (device.Attributes.ProductId ==
-                SteamControllerEnumerator.STEAM_BT_CONTROLLER_PRODUCT_ID)
+                STEAM_BT_CONTROLLER_PRODUCT_ID)
             {
                 result = ConnectionType.Bluetooth;
             }

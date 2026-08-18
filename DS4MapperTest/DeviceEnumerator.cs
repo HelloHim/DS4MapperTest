@@ -1,19 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using HidLibrary;
-using DS4MapperTest.DS4Library;
 using System.Runtime.InteropServices;
 using static DS4MapperTest.VidPidMeta;
-using DS4MapperTest.SwitchProLibrary;
-using DS4MapperTest.DualSense;
-using DS4MapperTest.JoyConLibrary;
 using DS4MapperTest.SteamControllerLibrary;
-using DS4MapperTest.InputDevices.EightBitDoLibrary;
-using DS4MapperTest.InputDevices.SteamControllerTritonLibrary;
 
 namespace DS4MapperTest
 {
@@ -53,30 +47,19 @@ namespace DS4MapperTest
         }
     }
 
+    // Modern controllers (DS4, DualSense, Switch Pro, Joy-Con, Steam
+    // Controller 2026/Triton, 8BitDo Ultimate 2 Wireless) are owned entirely
+    // by the SDL3 universal backend, which does its own device discovery
+    // independent of this HID-based enumerator. The original 2015 Steam
+    // Controller is the one family that still needs its own native HID
+    // identification here, since it backs SteamControllerUniversalAdapter's
+    // native reader rather than going through SDL3.
     public class DeviceEnumerator
     {
-        private const int SONY_VID = 0x054C;
-        private const int SONY_DS4_V1_PID = 0x05C4;
-        private const int SONY_DS4_V2_PID = 0x09CC;
-        private const int SONY_DUALSENSE_PID = 0x0CE6;
-        private const int SONY_DUALSENSE_EDGE_PID = 0x0DF2;
-
-        private const int NINTENDO_VENDOR_ID = 0x57e;
-        private const int SWITCH_PRO_PRODUCT_ID = 0x2009;
-        private const int JOYCON_L_PRODUCT_ID = 0x2006;
-        private const int JOYCON_R_PRODUCT_ID = 0x2007;
-        private const int JOYCON_CHARGING_GRIP_PRODUCT_ID = 0x200E;
-
         private const int STEAM_CONTROLLER_VENDOR_ID = 0x28DE;
         private const int STEAM_CONTROLLER_PRODUCT_ID = 0x1102;
         private const int STEAM_DONGLE_CONTROLLER_PRODUCT_ID = 0x1142;
         private const int STEAM_BT_CONTROLLER_PRODUCT_ID = 0x1106;
-        private const int TRITON_PROTEUS_PID = SteamControllerTritonDevice.PROTEUS_DONGLE_PID;
-        private const int TRITON_NEREID_PID = SteamControllerTritonDevice.NEREID_DONGLE_PID;
-        private const int TRITON_BLE_PID = SteamControllerTritonDevice.BLE_PID;
-
-        private const int EIGHTBITDO_VID = 0x2DC8;
-        private const int EIGHTBITDO_ULTIMATE_2_WIRELESS_PID = 0x6012;
 
         internal delegate bool HidDeviceCheckHandler(HidDevice device, VidPidMeta meta);
 
@@ -87,43 +70,16 @@ namespace DS4MapperTest
         private Dictionary<InputDeviceBase, string> revFoundKnownDevices;
         private Dictionary<string, InputDeviceBase> newKnownDevices;
         private Dictionary<string, InputDeviceBase> removedKnownDevices;
-        //private Dictionary<string, HidDeviceCheckHandler> vidPidDelDict;
         private Dictionary<string, VidPidMeta> vidPidMetaDict;
 
         private VidPidMeta[] knownDevicesMeta = new VidPidMeta[]
         {
-            new VidPidMeta(SONY_VID, SONY_DS4_V1_PID, "DS4 v.1", InputDeviceType.DS4,
-                VidPidMeta.UsedConnectionBus.HID),
-            new VidPidMeta(SONY_VID, SONY_DS4_V2_PID, "DS4 v.2", InputDeviceType.DS4,
-                VidPidMeta.UsedConnectionBus.HID),
-            new VidPidMeta(SONY_VID, SONY_DUALSENSE_PID, "DualSense", InputDeviceType.DualSense,
-                VidPidMeta.UsedConnectionBus.HID),
-            new VidPidMeta(SONY_VID, SONY_DUALSENSE_EDGE_PID, "DualSense Edge", InputDeviceType.DualSense,
-                VidPidMeta.UsedConnectionBus.HID),
-            new VidPidMeta(NINTENDO_VENDOR_ID, SWITCH_PRO_PRODUCT_ID, "Switch Pro", InputDeviceType.SwitchPro,
-                VidPidMeta.UsedConnectionBus.HID),
-            new VidPidMeta(NINTENDO_VENDOR_ID, JOYCON_L_PRODUCT_ID, "JoyCon L", InputDeviceType.JoyCon,
-                VidPidMeta.UsedConnectionBus.HID),
-            new VidPidMeta(NINTENDO_VENDOR_ID, JOYCON_R_PRODUCT_ID, "JoyCon R", InputDeviceType.JoyCon,
-                VidPidMeta.UsedConnectionBus.HID),
-            new VidPidMeta(NINTENDO_VENDOR_ID, JOYCON_CHARGING_GRIP_PRODUCT_ID, "JoyCon Charging Grip", InputDeviceType.JoyCon,
-                VidPidMeta.UsedConnectionBus.HID),
             new VidPidMeta(STEAM_CONTROLLER_VENDOR_ID, STEAM_CONTROLLER_PRODUCT_ID, "Steam Controller", InputDeviceType.SteamController,
                 VidPidMeta.UsedConnectionBus.HID),
             new VidPidMeta(STEAM_CONTROLLER_VENDOR_ID, STEAM_DONGLE_CONTROLLER_PRODUCT_ID, "Steam Controller", InputDeviceType.SteamController,
                 VidPidMeta.UsedConnectionBus.HID),
             new VidPidMeta(STEAM_CONTROLLER_VENDOR_ID, STEAM_BT_CONTROLLER_PRODUCT_ID, "Steam Controller", InputDeviceType.SteamController,
                 VidPidMeta.UsedConnectionBus.HID),
-            new VidPidMeta(STEAM_CONTROLLER_VENDOR_ID, SteamControllerTritonDevice.TRITON_WIRED_PID, "Steam Controller 2026 USB", InputDeviceType.SteamControllerTriton,
-                VidPidMeta.UsedConnectionBus.HID),
-            
-            // TODO: Hide for now. Assume Proteus is the new dongle type and just target that for now
-            new VidPidMeta(STEAM_CONTROLLER_VENDOR_ID, TRITON_PROTEUS_PID, "Steam Controller 2026", InputDeviceType.SteamControllerTriton,
-                VidPidMeta.UsedConnectionBus.HID),
-            new VidPidMeta(STEAM_CONTROLLER_VENDOR_ID, TRITON_BLE_PID, "Steam Controller 2026 BLE", InputDeviceType.SteamControllerTriton,
-                VidPidMeta.UsedConnectionBus.HID),
-            new VidPidMeta(EIGHTBITDO_VID, EIGHTBITDO_ULTIMATE_2_WIRELESS_PID, "8BitDo Ultimate 2 Wireless BT Controller", InputDeviceType.EightBitDoUltimate2Wireless,
-                VidPidMeta.UsedConnectionBus.HID)
         };
 
         public DeviceEnumerator()
@@ -133,56 +89,15 @@ namespace DS4MapperTest
             revFoundKnownDevices = new Dictionary<InputDeviceBase, string>();
             newKnownDevices = new Dictionary<string, InputDeviceBase>();
             removedKnownDevices = new Dictionary<string, InputDeviceBase>();
-            //vidPidDelDict = new Dictionary<string, HidDeviceCheckHandler>();
             vidPidMetaDict = new Dictionary<string, VidPidMeta>();
             foreach (VidPidMeta meta in knownDevicesMeta)
             {
-                if (meta.inputDevType == InputDeviceType.DS4)
-                {
-                    meta.testDelUnion.hidHandler = DS4DeviceCheckHandler;
-                    vidPidMetaDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta);
-                    //vidPidDelDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta.testDelUnion.hidHandler);
-                }
-                else if (meta.inputDevType == InputDeviceType.DualSense)
-                {
-                    meta.testDelUnion.hidHandler = DualSenseDeviceCheckHandler;
-                    vidPidMetaDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta);
-                    //vidPidDelDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta.testDelUnion.hidHandler);
-                }
-                else if (meta.inputDevType == InputDeviceType.SwitchPro)
-                {
-                    meta.testDelUnion.hidHandler = SwitchProDeviceCheckHandler;
-                    vidPidMetaDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta);
-                    //vidPidDelDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta.testDelUnion.hidHandler);
-                }
-                else if (meta.inputDevType == InputDeviceType.JoyCon)
-                {
-                    meta.testDelUnion.hidHandler = JoyConDeviceCheckHandler;
-                    vidPidMetaDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta);
-                    //vidPidDelDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta.testDelUnion.hidHandler);
-                }
-                else if (meta.inputDevType == InputDeviceType.SteamController)
+                if (meta.inputDevType == InputDeviceType.SteamController)
                 {
                     meta.testDelUnion.hidHandler = SteamControllerDeviceCheckHandler;
                     vidPidMetaDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta);
                 }
-                else if (meta.inputDevType == InputDeviceType.SteamControllerTriton)
-                {
-                    meta.testDelUnion.hidHandler = SteamControllerTritonDeviceCheckHandler;
-                    vidPidMetaDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta);
-                }
-                else if (meta.inputDevType == InputDeviceType.EightBitDoUltimate2Wireless)
-                {
-                    meta.testDelUnion.hidHandler = EightBitDoUlt2WirelessDeviceCheckHandler;
-                    vidPidMetaDict.Add($"VID_{meta.vid}&PID_{meta.pid}", meta);
-                }
             }
-
-            //vidPidDelDict = new Dictionary<string, HidDeviceCheckHandler>()
-            //{
-            //    [$"VID_{SONY_VID}&PID_{SONY_DS4_V1_PID}"] = DS4DeviceCheckHandler,
-            //    [$"VID_{SONY_VID}&PID_{SONY_DS4_V2_PID}"] = DS4DeviceCheckHandler,
-            //};
         }
 
         private bool IsRealDev(HidDevice hDevice)
@@ -195,8 +110,6 @@ namespace DS4MapperTest
         {
             using WriteLocker locker = new WriteLocker(_foundDevlocker);
 
-            //Dictionary<string, InputDeviceBase> previousKnownDevices =
-            //    new Dictionary<string, InputDeviceBase>(foundKnownDevices);
             HashSet<string> previousDevicePaths = new HashSet<string>(foundDevicePaths);
             HashSet<string> currentDevicePaths = new HashSet<string>();
             newKnownDevices.Clear();
@@ -219,8 +132,6 @@ namespace DS4MapperTest
                 {
                     revFoundKnownDevices.Remove(tempDevice);
                     foundDevicePaths.Remove(devicePath);
-
-                    //removedKnownDevices.Add(devicePath, tempDevice);
                 }
             }
 
@@ -235,11 +146,6 @@ namespace DS4MapperTest
 
             foreach (HidDevice hidDev in newHidDevs)
             {
-                //if (foundDevicePaths.Contains(hidDev.DevicePath))
-                //{
-                //    continue;
-                //}
-
                 // Check the cheap VID/PID dictionary lookup before the virtual-device check:
                 // IsRealDev walks the device tree via several SetupDi calls per device, and on
                 // a fresh scan newHidDevs is every HID device on the machine (keyboards, mice,
@@ -255,75 +161,15 @@ namespace DS4MapperTest
 
                     if (hidDev.IsOpen)
                     {
-                        if (value.inputDevType == InputDeviceType.DS4 ||
-                            value.inputDevType == InputDeviceType.DualSense)
-                        {
-                            value.testDelUnion.hidHandler?.Invoke(hidDev, value);
-                        }
-                        else if (value.inputDevType == InputDeviceType.SwitchPro)
-                        {
-                            value.testDelUnion.hidHandler?.Invoke(hidDev, value);
-                        }
-                        else if (value.inputDevType == InputDeviceType.JoyCon)
-                        {
-                            value.testDelUnion.hidHandler?.Invoke(hidDev, value);
-                        }
-                        else if (value.inputDevType == InputDeviceType.SteamController)
-                        {
-                            value.testDelUnion.hidHandler?.Invoke(hidDev, value);
-                        }
-                        else if (value.inputDevType == InputDeviceType.SteamControllerTriton)
-                        {
-                            value.testDelUnion.hidHandler?.Invoke(hidDev, value);
-                        }
-                        else if (value.inputDevType == InputDeviceType.EightBitDoUltimate2Wireless)
+                        if (value.inputDevType == InputDeviceType.SteamController)
                         {
                             value.testDelUnion.hidHandler?.Invoke(hidDev, value);
                         }
                     }
-
-                    //DS4Device tempDev = new DS4Device(hidDev);
-                    //foundDevices.Add(hidDev.DevicePath, tempDev);
-                    //newFoundDevices.Add(hidDev.DevicePath, tempDev);
                 }
 
                 foundDevicePaths.Add(hidDev.DevicePath);
             }
-
-            //foreach(KeyValuePair<string, InputDeviceBase> pair in
-            //    foundKnownDevices.Except(newKnownDevices))
-            //{
-            //    removedKnownDevices.Add(pair.Key, pair.Value);
-            //    foundKnownDevices.Remove(pair.Key);
-            //    revFoundKnownDevices.Remove(pair.Value);
-            //    foundDevicePaths.Remove(pair.Key);
-            //}
-
-            //IEnumerable<HidDevice> hDevices = HidDevices.Enumerate(SONY_VID,
-            //    SONY_DS4_V2_PID, SONY_DS4_V1_PID);
-            //List<HidDevice> tempList = hDevices.ToList();
-            //using (WriteLocker locker = new WriteLocker(_foundDevlocker))
-            //{
-            //    foreach (HidDevice hDevice in tempList)
-            //    {
-            //        if (!hDevice.IsOpen)
-            //        {
-            //            hDevice.OpenDevice(false);
-            //        }
-
-            //        if (foundDevices.ContainsKey(hDevice.DevicePath))
-            //        {
-            //            // Device is known. Skip
-            //            continue;
-            //        }
-
-            //        if (hDevice.IsOpen)
-            //        {
-            //            DS4Device tempDev = new DS4Device(hDevice);
-            //            foundDevices.Add(hDevice.DevicePath, tempDev);
-            //        }
-            //    }
-            //}
         }
 
         public IEnumerable<InputDeviceBase> GetKnownDevices()
@@ -380,70 +226,6 @@ namespace DS4MapperTest
             }
         }
 
-        internal bool DS4DeviceCheckHandler(HidDevice hidDev, VidPidMeta meta)
-        {
-            bool result = false;
-
-            if (meta != null)
-            {
-                DS4Device tempDev = new DS4Device(hidDev, meta.displayName);
-                foundKnownDevices.Add(hidDev.DevicePath, tempDev);
-                revFoundKnownDevices.Add(tempDev, hidDev.DevicePath);
-                newKnownDevices.Add(hidDev.DevicePath, tempDev);
-                result = true;
-            }
-
-            return result;
-        }
-
-        private bool DualSenseDeviceCheckHandler(HidDevice hidDev, VidPidMeta meta)
-        {
-            bool result = false;
-
-            if (meta != null)
-            {
-                DualSenseDevice tempDev = new DualSenseDevice(hidDev, meta.displayName);
-                foundKnownDevices.Add(hidDev.DevicePath, tempDev);
-                revFoundKnownDevices.Add(tempDev, hidDev.DevicePath);
-                newKnownDevices.Add(hidDev.DevicePath, tempDev);
-                result = true;
-            }
-
-            return result;
-        }
-
-        private bool SwitchProDeviceCheckHandler(HidDevice hidDev, VidPidMeta meta)
-        {
-            bool result = false;
-
-            if (meta != null)
-            {
-                SwitchProDevice tempDev = new SwitchProDevice(hidDev, meta.displayName);
-                foundKnownDevices.Add(hidDev.DevicePath, tempDev);
-                revFoundKnownDevices.Add(tempDev, hidDev.DevicePath);
-                newKnownDevices.Add(hidDev.DevicePath, tempDev);
-                result = true;
-            }
-
-            return result;
-        }
-
-        private bool JoyConDeviceCheckHandler(HidDevice hidDev, VidPidMeta meta)
-        {
-            bool result = false;
-
-            if (meta != null)
-            {
-                JoyConDevice tempDev = new JoyConDevice(hidDev, meta.displayName);
-                foundKnownDevices.Add(hidDev.DevicePath, tempDev);
-                revFoundKnownDevices.Add(tempDev, hidDev.DevicePath);
-                newKnownDevices.Add(hidDev.DevicePath, tempDev);
-                result = true;
-            }
-
-            return result;
-        }
-
         private bool SteamControllerDeviceCheckHandler(HidDevice hidDev, VidPidMeta meta)
         {
             bool result = false;
@@ -469,159 +251,6 @@ namespace DS4MapperTest
                     newKnownDevices.Add(hidDev.DevicePath, tempDev);
                     result = true;
                 }
-            }
-
-            return result;
-        }
-
-        private bool SteamControllerTritonDeviceCheckHandler(HidDevice hidDev, VidPidMeta meta)
-        {
-            bool result = false;
-
-            if (meta != null)
-            {
-                if (meta.pid == SteamControllerTritonDevice.TRITON_WIRED_PID)
-                {
-                    // Controller interfaces used for dongles
-                    //if (hidDev.InterfaceNumber >= 2 && hidDev.InterfaceNumber <= 5)
-                    {
-                        SteamControllerTritonDevice tempDev =
-                        new SteamControllerTritonDevice(hidDev, meta.displayName);
-
-                        foundKnownDevices.Add(hidDev.DevicePath, tempDev);
-                        revFoundKnownDevices.Add(tempDev, hidDev.DevicePath);
-                        newKnownDevices.Add(hidDev.DevicePath, tempDev);
-                        result = true;
-                    }
-                }
-                else if (meta.pid == SteamControllerTritonDevice.PROTEUS_DONGLE_PID ||
-                    meta.pid == SteamControllerTritonDevice.NEREID_DONGLE_PID)
-                {
-                    // Controller interfaces used for dongles
-                    //if (hidDev.InterfaceNumber >= 2 && hidDev.InterfaceNumber <= 5)
-                    {
-                        SteamControllerTritonDevice tempDev =
-                        new SteamControllerTritonDevice(hidDev, meta.displayName);
-
-                        foundKnownDevices.Add(hidDev.DevicePath, tempDev);
-                        revFoundKnownDevices.Add(tempDev, hidDev.DevicePath);
-                        newKnownDevices.Add(hidDev.DevicePath, tempDev);
-                        result = true;
-                    }
-                }
-                else if (meta.pid == TRITON_BLE_PID)
-                {
-                    SteamControllerTritonDevice tempDev =
-                        new SteamControllerTritonDevice(hidDev, meta.displayName);
-
-                    foundKnownDevices.Add(hidDev.DevicePath, tempDev);
-                    revFoundKnownDevices.Add(tempDev, hidDev.DevicePath);
-                    newKnownDevices.Add(hidDev.DevicePath, tempDev);
-                    result = true;
-                }
-            }
-
-            return result;
-        }
-
-        private bool EightBitDoUlt2WirelessDeviceCheckHandler(HidDevice hidDev, VidPidMeta meta)
-        {
-            bool result = false;
-
-            if (meta != null)
-            {
-                Ultimate2WirelessDevice tempDev = new Ultimate2WirelessDevice(hidDev, meta.displayName);
-                foundKnownDevices.Add(hidDev.DevicePath, tempDev);
-                revFoundKnownDevices.Add(tempDev, hidDev.DevicePath);
-                newKnownDevices.Add(hidDev.DevicePath, tempDev);
-                result = true;
-            }
-
-            return result;
-        }
-
-        // TODO: Possibly move to BackendManager. Mainly to deal with possible Joined JoyCon
-        // Mapper type in the future
-        public Mapper PrepareDeviceMapper(InputDeviceBase device, AppGlobalData appGlobal)
-        {
-            Mapper result = null;
-            switch (device)
-            {
-                case DS4Device:
-                    {
-                        DS4Device ds4Device = device as DS4Device;
-                        DS4Reader reader = new DS4Reader(ds4Device);
-                        result = new DS4Mapper(ds4Device, reader, appGlobal);
-                    }
-
-                    break;
-                case DualSenseDevice:
-                    {
-                        DualSenseDevice dsDevice = device as DualSenseDevice;
-                        DualSenseReader reader = new DualSenseReader(dsDevice);
-                        result = new DualSenseMapper(dsDevice, reader, appGlobal);
-                    }
-
-                    break;
-                case SwitchProDevice:
-                    {
-                        SwitchProDevice switchDevice = device as SwitchProDevice;
-                        SwitchProReader reader = new SwitchProReader(switchDevice);
-                        result = new SwitchProMapper(switchDevice, reader, appGlobal);
-                    }
-
-                    break;
-                case JoyConDevice:
-                    {
-                        JoyConDevice joyConDevice = device as JoyConDevice;
-                        JoyConReader reader = new JoyConReader(joyConDevice);
-                        result = new JoyConMapper(joyConDevice, reader, appGlobal);
-                    }
-
-                    break;
-                case SteamControllerDevice:
-                    {
-                        SteamControllerDevice steamDevice = device as SteamControllerDevice;
-                        if (steamDevice.ConType != SteamControllerDevice.ConnectionType.Bluetooth)
-                        {
-                            SteamControllerReader reader = new SteamControllerReader(steamDevice);
-                            result = new SteamControllerMapper(steamDevice, reader, appGlobal);
-                        }
-                        else
-                        {
-                            SteamControllerBTDevice btSteamDevice = steamDevice as SteamControllerBTDevice;
-                            SteamControllerBTReader reader = new SteamControllerBTReader(btSteamDevice);
-                            result = new SteamControllerMapper(btSteamDevice, reader, appGlobal);
-                        }
-
-                        break;
-                    }
-                case SteamControllerTritonDevice:
-                    {
-                        SteamControllerTritonDevice steamDevice = device as SteamControllerTritonDevice;
-                        //if (steamDevice.ConType != SteamControllerTritonDevice.ConnectionType.Bluetooth)
-                        {
-                            SteamControllerTritonReader reader = new SteamControllerTritonReader(steamDevice);
-                            result = new SteamControllerTritonMapper(steamDevice, reader, appGlobal);
-                        }
-                        // TODO: Not sure about BLE support
-                        //else
-                        //{
-                        //    SteamControllerTritonBTDevice btSteamDevice = steamDevice as SteamControllerTritonBTDevice;
-                        //    SteamControllerTritonBTReader reader = new SteamControllerTritonBTReader(btSteamDevice);
-                        //    result = new SteamControllerTritonMapper(btSteamDevice, reader, appGlobal);
-                        //}
-
-                        break;
-                    }
-                case Ultimate2WirelessDevice:
-                    {
-                        Ultimate2WirelessDevice ultDevice = device as Ultimate2WirelessDevice;
-                        Ultimate2WirelessReader reader = new Ultimate2WirelessReader(ultDevice);
-                        result = new Ultimate2WirelessMapper(ultDevice, reader, appGlobal);
-                        break;
-                    }
-                default: break;
             }
 
             return result;

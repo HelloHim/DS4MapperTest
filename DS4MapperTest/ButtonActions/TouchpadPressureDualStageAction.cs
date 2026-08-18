@@ -13,7 +13,7 @@ namespace DS4MapperTest.ButtonActions
     // trigger settings users already know. Unlike triggers, the per-frame driver is raw
     // touchpad pressure (0-32767) plus a finger touch flag rather than an analog axis with
     // an optional dedicated click button, so PrepareTouchpadPressure (not Prepare/PrepareAnalog)
-    // is the real entry point used by SteamControllerTritonMapper.
+    // is the real entry point for whichever mapper drives pressure-sensitive touchpad clicks.
     public class TouchpadPressureDualStageAction : ButtonMapAction
     {
         public class PropertyKeyStrings
