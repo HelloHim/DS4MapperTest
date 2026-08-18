@@ -19,11 +19,16 @@ namespace DS4MapperTest.Universal.Mapping
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly UniversalProfileStore store;
         private readonly Guid? preferredProfileId;
+        private readonly IUniversalLastProfileStore lastProfileStore;
 
-        public UniversalProfileStoreSelector(UniversalProfileStore store, Guid? preferredProfileId = null)
+        public UniversalProfileStoreSelector(
+            UniversalProfileStore store,
+            Guid? preferredProfileId = null,
+            IUniversalLastProfileStore lastProfileStore = null)
         {
             this.store = store ?? throw new ArgumentNullException(nameof(store));
             this.preferredProfileId = preferredProfileId;
+            this.lastProfileStore = lastProfileStore;
         }
 
         public UniversalProfile SelectProfile(IUniversalController controller)
@@ -36,6 +41,24 @@ namespace DS4MapperTest.Universal.Mapping
                 UniversalProfileSummary preferred = profiles.FirstOrDefault(item =>
                     item.Loaded && item.ProfileId == preferredProfileId.Value);
                 if (preferred != null) return LoadOrNull(preferred);
+            }
+
+            // What this controller was mapping with when it was last seen beats
+            // the alphabetical fallback below. Without it every launch reset the
+            // controller to whichever profile sorts first, discarding the user's
+            // choice from the previous session.
+            Guid? lastProfileId = lastProfileStore?.GetLastProfileId(controller);
+            if (lastProfileId.HasValue)
+            {
+                UniversalProfileSummary last = profiles.FirstOrDefault(item =>
+                    item.Loaded && item.ProfileId == lastProfileId.Value);
+                UniversalProfile loadedLast = last != null ? LoadOrNull(last) : null;
+                if (loadedLast != null) return loadedLast;
+
+                // A deleted or unreadable profile is not an error worth blocking
+                // the controller over, but it is worth saying why the profile
+                // the user expected did not come back.
+                logger.Info($"Last universal profile {lastProfileId.Value:D} is no longer available; falling back to the first readable profile.");
             }
 
             foreach (UniversalProfileSummary candidate in profiles
@@ -69,6 +92,7 @@ namespace DS4MapperTest.Universal.Mapping
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly UniversalControllerManager controllerManager;
         private readonly IUniversalProfileSelector profileSelector;
+        private readonly IUniversalLastProfileStore lastProfileStore;
         private readonly LegacyProfileMigrator profileMigrator;
         private readonly IEnumerable<LegacyProfileMigrationSource> startupMigrationSources;
         private readonly VirtualKBMBase outputHandler;
@@ -94,10 +118,12 @@ namespace DS4MapperTest.Universal.Mapping
             MouseOutputDispatcher mouseOutputDispatcher = null,
             nuint viiperServerHandle = 0,
             LegacyProfileMigrator profileMigrator = null,
-            IEnumerable<LegacyProfileMigrationSource> startupMigrationSources = null)
+            IEnumerable<LegacyProfileMigrationSource> startupMigrationSources = null,
+            IUniversalLastProfileStore lastProfileStore = null)
         {
             this.controllerManager = controllerManager ?? throw new ArgumentNullException(nameof(controllerManager));
             this.profileSelector = profileSelector ?? throw new ArgumentNullException(nameof(profileSelector));
+            this.lastProfileStore = lastProfileStore;
             this.outputHandler = outputHandler;
             this.outputMapping = outputMapping;
             this.mouseOutputDispatcher = mouseOutputDispatcher;
@@ -177,6 +203,25 @@ namespace DS4MapperTest.Universal.Mapping
             {
                 // The controller disconnected between the lookup and the
                 // switch. There is nothing left to switch a profile on.
+                return;
+            }
+
+            RecordLastProfile(session.Controller, profile);
+        }
+
+        private void RecordLastProfile(IUniversalController controller, UniversalProfile profile)
+        {
+            if (lastProfileStore == null || profile == null || profile.ProfileId == Guid.Empty) return;
+
+            try
+            {
+                lastProfileStore.SetLastProfileId(controller, profile.ProfileId);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                // Losing the record only costs the user the restore on the next
+                // launch; it must never take the running mapper down with it.
+                logger.Warn(ex, "Failed to record the last universal profile for a controller.");
             }
         }
 

@@ -437,15 +437,17 @@ namespace DS4MapperTest
             };
 
             UniversalControllerManager controllerManager = new UniversalControllerManager(backends);
+            UniversalLastProfileStore lastProfileStore = new UniversalLastProfileStore();
             universalMappingRuntime = new UniversalMappingRuntime(
                 controllerManager,
-                new UniversalProfileStoreSelector(store),
+                new UniversalProfileStoreSelector(store, lastProfileStore: lastProfileStore),
                 virtualEventHandler,
                 eventInputMapping,
                 mouseOutputDispatcher,
                 serverHandle,
                 migrator,
-                migrationSources);
+                migrationSources,
+                lastProfileStore);
 
             bool started = universalMappingRuntime.Start();
             foreach (string error in universalMappingRuntime.StartupErrors)
