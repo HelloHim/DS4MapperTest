@@ -378,7 +378,7 @@ namespace DS4MapperTest.GyroActions
         {
             gyroX = -frameAngGyroPitch; // pitch axis -> GM X
             gyroY = -frameAngGyroYaw;   // up axis    -> GM Y
-            gyroZ = frameAngGyroRoll;   // roll axis points forward, so negate
+            gyroZ = frameAngGyroRoll;   // roll axis points forward, so no negation
 
             accelX = -frameAccelXG; // reader negates accel X
             accelY = frameAccelZG;  // accel Z is the up axis
@@ -471,7 +471,7 @@ namespace DS4MapperTest.GyroActions
         {
             gyroX = -frameAngGyroPitch;
             gyroY = -frameAngGyroYaw;
-            gyroZ = frameAngGyroRoll; // roll axis points forward, so negate
+            gyroZ = frameAngGyroRoll; // roll axis points forward, so no negation
 
             accelX = frameAccelYG; // accel Y is the pitch axis
             accelY = frameAccelXG; // accel X is the up axis

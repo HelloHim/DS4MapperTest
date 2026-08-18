@@ -160,13 +160,19 @@ namespace DS4MapperTest.GyroActions
                     grav = accelNorm * -GRAVITY_LENGTH;
                 }
 
-                // Correct the orientation quaternion against the measured gravity direction.
-                Vec gravityDirection = grav.Normalized() * quaternion.Inverse();
+                // Correct the orientation quaternion against the measured gravity
+                // direction. Note the details: GamepadMotion rotates gravity by the
+                // orientation itself (not its inverse), takes the cross product in
+                // the order gravityDirection x down, and applies the correction as a
+                // world-space pre-multiply. Reversing any of the three silently
+                // produces a different orientation, and none of it is caught by the
+                // gravity output because Quaternion never feeds back into Grav.
+                Vec gravityDirection = grav.Normalized() * quaternion;
                 Vec down = new Vec(0.0, -1.0, 0.0);
                 double errorAngle = Math.Acos(Clamp(down.Dot(gravityDirection), -1.0, 1.0));
-                Vec flattened = down.Cross(gravityDirection);
+                Vec flattened = gravityDirection.Cross(down);
                 Quat correctionQuat = Quat.AngleAxis(errorAngle, flattened.x, flattened.y, flattened.z);
-                quaternion = quaternion * correctionQuat;
+                quaternion = correctionQuat * quaternion;
 
                 accel = inAccel + grav;
             }
