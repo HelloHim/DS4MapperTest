@@ -922,6 +922,7 @@ namespace DS4MapperTest.ViewModels
             {
                 ctx.Action.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
                 ctx.Func.OutputActions.RemoveAt(index);
+                QuickBindActionApplier.DisableTurboIfUnbound(ctx.Func);
                 MarkStageChanged(ctx.Action);
             });
 
@@ -1356,6 +1357,7 @@ namespace DS4MapperTest.ViewModels
             {
                 ctx.Action.Release(ctx.Mapper, ignoreReleaseActions: true);
                 ctx.Func.OutputActions.RemoveAt(item.Index);
+                QuickBindActionApplier.DisableTurboIfUnbound(ctx.Func);
                 owner.MarkFunctionChanged();
             });
         }
@@ -1826,6 +1828,7 @@ namespace DS4MapperTest.ViewModels
             {
                 ctx.Action.Release(owner.Owner.DeviceMapper, ignoreReleaseActions: true);
                 ctx.Func.OutputActions.RemoveAt(index);
+                QuickBindActionApplier.DisableTurboIfUnbound(ctx.Func);
                 MarkButtonChanged();
             });
 

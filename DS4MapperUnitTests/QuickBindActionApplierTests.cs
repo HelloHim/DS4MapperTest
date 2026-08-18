@@ -293,6 +293,58 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void ApplyUnbound_ClearingLastOutput_DisablesTurbo()
+        {
+            EditFaceBindingContext ctx = MakeContext(out ActionFunc func);
+            QuickBindActionApplier.ApplyKeyboard(ctx, VirtualKeys.A, "A");
+            ((NormalPressFunc)func).TurboEnabled = true;
+
+            QuickBindActionApplier.ApplyUnbound(ctx);
+
+            Assert.IsFalse(((NormalPressFunc)func).TurboEnabled);
+        }
+
+        [TestMethod]
+        public void ApplyUnbound_RowContext_KeepsTurboWhileAnotherOutputRemains()
+        {
+            EditFaceBindingContext ctx = MakeContext(out ActionFunc func);
+            func.OutputActions.Clear();
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.H));
+            func.OutputActions.Add(new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.J));
+            ((NormalPressFunc)func).TurboEnabled = true;
+
+            QuickBindActionApplier.ApplyUnbound(
+                new EditFaceBindingContext(ctx.Mapper, ctx.Action, func, 0));
+
+            Assert.IsTrue(((NormalPressFunc)func).TurboEnabled);
+        }
+
+        [TestMethod]
+        public void DisableTurboIfUnbound_NoOutputsLeftBound_DisablesTurbo()
+        {
+            NormalPressFunc func = new NormalPressFunc(
+                new OutputActionData(OutputActionData.ActionType.Empty, 0));
+            func.TurboEnabled = true;
+
+            QuickBindActionApplier.DisableTurboIfUnbound(func);
+
+            Assert.IsFalse(func.TurboEnabled);
+        }
+
+        [TestMethod]
+        public void DisableTurboIfUnbound_HoldPressWithBoundOutput_KeepsTurbo()
+        {
+            HoldPressFunc func = new HoldPressFunc();
+            func.OutputActions.Add(
+                new OutputActionData(OutputActionData.ActionType.Keyboard, (int)VirtualKeys.H));
+            func.TurboEnabled = true;
+
+            QuickBindActionApplier.DisableTurboIfUnbound(func);
+
+            Assert.IsTrue(func.TurboEnabled);
+        }
+
+        [TestMethod]
         public void ApplyKeyboard_ReplacingComplexFunc_CollapsesToSingleSlot()
         {
             EditFaceBindingContext ctx = MakeContext(out ActionFunc func);

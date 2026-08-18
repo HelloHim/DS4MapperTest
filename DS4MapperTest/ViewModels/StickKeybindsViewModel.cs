@@ -1236,6 +1236,7 @@ namespace DS4MapperTest.ViewModels
             {
                 ctx.Action.Release(owner.Owner.Owner.DeviceMapper, ignoreReleaseActions: true);
                 ctx.Func.OutputActions.RemoveAt(index);
+                QuickBindActionApplier.DisableTurboIfUnbound(ctx.Func);
                 StickSideViewModel.MarkFunctionsChanged(ctx.Action);
             });
 

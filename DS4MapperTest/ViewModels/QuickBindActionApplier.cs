@@ -115,10 +115,12 @@ namespace DS4MapperTest.ViewModels
         }
 
         // Turbo only makes sense while a bind still has an action, so clearing
-        // the last remaining output should turn turbo back off too, otherwise
-        // it stays silently enabled on an now-empty bind.
-        private static void DisableTurboIfUnbound(ActionFunc func)
+        // or removing the last remaining output should turn turbo back off too,
+        // otherwise it stays silently enabled on an now-empty bind.
+        public static void DisableTurboIfUnbound(ActionFunc func)
         {
+            if (func == null) return;
+
             foreach (OutputActionData output in func.OutputActions)
             {
                 if (output.OutputType != OutputActionData.ActionType.Empty) return;

@@ -882,6 +882,7 @@ namespace DS4MapperTest.ViewModels
             {
                 ctx.Action.Release(owner.ProfileVm.DeviceMapper, ignoreReleaseActions: true);
                 ctx.Func.OutputActions.RemoveAt(index);
+                QuickBindActionApplier.DisableTurboIfUnbound(ctx.Func);
                 DPadDirectionBindingItem.MarkFunctionsChanged(ctx.Action);
             });
 

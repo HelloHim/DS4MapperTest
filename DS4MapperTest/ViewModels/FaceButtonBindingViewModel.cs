@@ -1040,6 +1040,8 @@ namespace DS4MapperTest.ViewModels
                     target.OutputActions.RemoveAt(index);
                 }
 
+                QuickBindActionApplier.DisableTurboIfUnbound(target);
+
                 FaceButtonBindingItem.MarkFunctionsChanged(buttonAction);
             });
 
