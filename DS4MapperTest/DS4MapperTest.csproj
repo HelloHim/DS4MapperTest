@@ -28,12 +28,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <DefineConstants>$(DefineConstants);WIN64;DS4MAPPER_DEV_APPDATA</DefineConstants>
+    <DefineConstants>$(DefineConstants);WIN64</DefineConstants>
     <DebugType>none</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Tests|x64'">
-    <DefineConstants>$(DefineConstants);WIN64;MAKE_TESTS;DS4MAPPER_DEV_APPDATA</DefineConstants>
+    <DefineConstants>$(DefineConstants);WIN64;MAKE_TESTS</DefineConstants>
     <DebugType>none</DebugType>
   </PropertyGroup>
 
