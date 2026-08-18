@@ -2941,6 +2941,14 @@ namespace DS4MapperTest
                 out intermediateState.GyroYaw, out intermediateState.GyroPitch, out intermediateState.GyroRoll,
                 out intermediateState.AccelX, out intermediateState.AccelY, out intermediateState.AccelZ);
 
+            // Sensor motion is the only virtual pad output that changes without a
+            // button, stick or trigger moving, and the report is submitted solely
+            // on the dirty flag. Without this, a profile whose only gamepad-bound
+            // output is gyro never submits a single report: the device enumerates
+            // but streams a permanently neutral state. Physical pads report on
+            // every packet regardless, so mark the state dirty here too.
+            intermediateState.Dirty = true;
+
             // Keep the gravity estimate warm every tick, regardless of whether any
             // gyro action is currently active. JSM does the same: ProcessMotion runs
             // unconditionally in the poll loop, so gravity is already converged the
