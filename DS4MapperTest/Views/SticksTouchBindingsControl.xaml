@@ -21,8 +21,8 @@
                         <Style.Triggers>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding LeftStickKeybinds.HasTouchBindings}" Value="False"/>
-                                    <Condition Binding="{Binding RightStickKeybinds.HasTouchBindings}" Value="False"/>
+                                    <Condition Binding="{Binding LeftStickKeybinds.HasTouchBindingRows}" Value="False"/>
+                                    <Condition Binding="{Binding RightStickKeybinds.HasTouchBindingRows}" Value="False"/>
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="Visibility" Value="Visible"/>
                             </MultiDataTrigger>
@@ -35,9 +35,9 @@
             </Border>
 
             <views:StickSideTouchBindingsControl DataContext="{Binding LeftStickKeybinds}"
-                                                 Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
+                                                 Visibility="{Binding HasTouchBindingRows, Converter={StaticResource BoolToVis}}"/>
             <views:StickSideTouchBindingsControl DataContext="{Binding RightStickKeybinds}"
-                                                 Visibility="{Binding HasBinding, Converter={StaticResource BoolToVis}}"/>
+                                                 Visibility="{Binding HasTouchBindingRows, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

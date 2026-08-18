@@ -57,10 +57,22 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void StickTouchTabUsesCapacitiveTouchAvailability()
         {
+            string mainWindow = ReadSourceFile("DS4MapperTest", "MainWindow.xaml");
+            StringAssert.Contains(mainWindow, "LeftStickKeybinds.HasTouchBindings");
+            StringAssert.Contains(mainWindow, "RightStickKeybinds.HasTouchBindings");
+            StringAssert.Contains(mainWindow, "BasedOn=\"{StaticResource JsmccPillTabItemStyle}\"");
+            StringAssert.Contains(mainWindow, "<Setter Property=\"Opacity\" Value=\"0.48\"/>");
+            Assert.IsFalse(mainWindow.Contains("<Setter Property=\"IsEnabled\" Value=\"False\"/>"),
+                "The stick touch tab should look unavailable but remain selectable.");
+
+            string combinedXaml = ReadSourceFile("DS4MapperTest", "Views", "SticksTouchBindingsControl.xaml");
+            StringAssert.Contains(combinedXaml, "HasTouchBindingRows");
+
             string xaml = ReadSourceFile("DS4MapperTest", "Views", "StickSideTouchBindingsControl.xaml");
 
-            StringAssert.Contains(xaml, "HasTouchBindings");
-            StringAssert.Contains(xaml, "This stick does not report a capacitive touch sensor.");
+            StringAssert.Contains(xaml, "SharedButtonKeybindsControl");
+            StringAssert.Contains(xaml, "ItemsSource=\"{Binding TouchBindingItems}\"");
+            StringAssert.Contains(xaml, "EmptyText=\"{Binding TouchUnavailableMessage}\"");
         }
 
         [TestMethod]

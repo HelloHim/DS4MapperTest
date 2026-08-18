@@ -294,6 +294,9 @@ namespace DS4MapperTest.ViewModels
         public bool HasSupportedTouchpadHardware =>
             IsPlayStationController || IsSteamController;
 
+        public bool HasSupportedGyroHardware =>
+            ControllerSupportsUniversalInput(UniversalInputId.Gyroscope);
+
         public bool HasPaddleControls =>
             ControllerSupportsUniversalInput(UniversalInputId.LeftRearPrimary) ||
             ControllerSupportsUniversalInput(UniversalInputId.RightRearPrimary) ||
@@ -1188,17 +1191,24 @@ namespace DS4MapperTest.ViewModels
                 "Right Stick Click",
                 "Stick click button");
 
+            const string unavailableStickTouchMessage =
+                "The connected controller does not report this capacitive stick touch sensor. This binding is preserved in the profile and becomes editable when compatible hardware is connected.";
+
             leftStickTouchBinding.Clear();
             AddFirstMatchingButtonBinding(leftStickTouchBinding, claimedButtonBindings,
                 new string[] { "LSTouch", "LeftStickTouch" },
                 "LS Touch / Left Stick Touch",
-                "Stick touch sensor");
+                "Stick touch sensor",
+                ControllerSupportsUniversalInput(UniversalInputId.LeftStickTouch),
+                unavailableStickTouchMessage);
 
             rightStickTouchBinding.Clear();
             AddFirstMatchingButtonBinding(rightStickTouchBinding, claimedButtonBindings,
                 new string[] { "RSTouch", "RightStickTouch" },
                 "RS Touch / Right Stick Touch",
-                "Stick touch sensor");
+                "Stick touch sensor",
+                ControllerSupportsUniversalInput(UniversalInputId.RightStickTouch),
+                unavailableStickTouchMessage);
         }
 
         private void PopulateExtraButtonBindings()

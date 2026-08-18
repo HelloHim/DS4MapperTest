@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DS4MapperTest;
+using DS4MapperTest.Universal;
+using DS4MapperTest.Universal.Mapping;
+using DS4MapperTest.Universal.Profiles;
 using DS4MapperTest.ViewModels;
 
 namespace DS4MapperUnitTests
@@ -69,6 +72,19 @@ namespace DS4MapperUnitTests
             AssertTouchpadEligibility(InputDeviceType.None, false, false);
         }
 
+        [TestMethod]
+        public void GyroSidebarEligibilityFollowsUniversalCapabilities()
+        {
+            ProfileEditorTestViewModel noGyro =
+                CreateUniversalEditorVm("No Gyro", UniversalInputId.FaceButtonSouth);
+            ProfileEditorTestViewModel withGyro =
+                CreateUniversalEditorVm("With Gyro", UniversalInputId.FaceButtonSouth,
+                    UniversalInputId.Gyroscope);
+
+            Assert.IsFalse(noGyro.HasSupportedGyroHardware);
+            Assert.IsTrue(withGyro.HasSupportedGyroHardware);
+        }
+
         private void AddButtonBinding(string id, string displayName)
         {
             if (mapper.BindingDict.ContainsKey(id))
@@ -111,6 +127,46 @@ namespace DS4MapperUnitTests
 
             Assert.AreEqual(expectedSupported, vm.HasSupportedTouchpadHardware, $"{deviceType} touchpad tab eligibility.");
             Assert.AreEqual(expectedCenter, vm.HasCenterTouchpad, $"{deviceType} centre touchpad eligibility.");
+        }
+
+        private static ProfileEditorTestViewModel CreateUniversalEditorVm(
+            string profileName,
+            params UniversalInputId[] inputs)
+        {
+            UniversalProfile profile = new UniversalProfile { DisplayName = profileName };
+            UniversalProfileActionSet set = new UniversalProfileActionSet { Index = 0, Name = "Default" };
+            set.Layers.Add(new UniversalProfileActionLayer { Index = 0, Name = "Default" });
+            profile.ActionSets.Add(set);
+
+            ControllerCapabilities capabilities = new ControllerCapabilities(
+                new ControllerDisplayInfo("Synthetic Controller"),
+                inputs.Select(input => new ControllerInputDescriptor(
+                    input,
+                    UniversalInputCatalog.GetMetadata(input).ValueKind,
+                    true,
+                    input.ToString(),
+                    string.Empty,
+                    new ControllerInputSource("test", input.ToString(), input.ToString()))));
+
+            UniversalController controller = new UniversalController(
+                new UniversalControllerIdentity(
+                    Guid.NewGuid(),
+                    UniversalControllerBackendIds.Sdl3,
+                    profileName,
+                    new UniversalDeviceIdentity("test", profileName),
+                    DateTimeOffset.UtcNow),
+                capabilities,
+                new UniversalControllerStateSnapshot(
+                    DateTimeOffset.UtcNow,
+                    1,
+                    true,
+                    new Dictionary<UniversalInputId, UniversalInputValue>()));
+
+            UniversalMapper mapper = new UniversalMapper(controller, profile);
+            return new ProfileEditorTestViewModel(
+                mapper,
+                new ProfileEntity(string.Empty, profileName, InputDeviceType.None),
+                mapper.ActionProfile);
         }
 
         private static FaceButtonBindingItem AssertTouchpadButton(
