@@ -1474,6 +1474,8 @@
 
         <DataTemplate DataType="{x:Type propvm:StickHybridAimPropViewModel}">
             <StackPanel>
+                <shared:CalibrationModeControl DataContext="{Binding Calibration}" Margin="0,0,0,6"/>
+
                 <Border Style="{StaticResource ModeRowBorder}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -1486,7 +1488,8 @@
                         <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                           Value="{Binding DeadZone, UpdateSourceTrigger=LostFocus}"/>
-                        <TextBlock Grid.Column="2" Text="Max Zone" Style="{StaticResource JsmccLabelText}"/>
+                        <TextBlock Grid.Column="2" Text="Max Zone" Style="{StaticResource JsmccLabelText}"
+                                   ToolTip="Deflection at which the stick counts as pinned to the edge. Edge push only engages past this point, so leave a little headroom below 1.00 for sticks that never quite reach their corners."/>
                         <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="1" DecimalPlaces="2" Increment="0.02"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                           Value="{Binding MaxZone, UpdateSourceTrigger=LostFocus}"/>
@@ -1498,19 +1501,46 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Turn Speed" Style="{StaticResource JsmccLabelText}"
+                                   ToolTip="Camera rotation speed while the stick is held at full deflection (the classic aim-stick component). Angle calibration keeps the speed consistent across games and in-game sensitivities."/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <hc:NumericUpDown Minimum="0" Maximum="7200" DecimalPlaces="1" Increment="10"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding DegreesPerSecond, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Text="&#176;/s" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Stick Sensitivity" Style="{StaticResource JsmccLabelText}"
-                                   ToolTip="Deflection-proportional turn rate (the classic aim-stick component)."/>
-                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10000" DecimalPlaces="0" Increment="500"
+                        <TextBlock Grid.Column="0" Text="Mouselike Factor" Style="{StaticResource JsmccLabelText}"
+                                   ToolTip="How far the camera turns for a full sweep of the stick itself, regardless of how long it is held there. This is the mouse-like half of the mode: moving the stick drags the camera the way a mouse would."/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <hc:NumericUpDown Minimum="0" Maximum="3600" DecimalPlaces="1" Increment="10"
+                                              Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                              Value="{Binding MouselikeFactor, UpdateSourceTrigger=LostFocus}"/>
+                            <TextBlock Text="&#176; per full sweep" Style="{StaticResource JsmccMutedText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource ModeRowBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Vertical Scale" Style="{StaticResource JsmccLabelText}"
+                                   ToolTip="Vertical speed relative to horizontal. Applies to both halves of the mode."/>
+                        <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="2" Increment="0.05"
                                           Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding StickSens, UpdateSourceTrigger=LostFocus}"/>
-                        <TextBlock Grid.Column="2" Text="Mouselike Factor" Style="{StaticResource JsmccLabelText}"
-                                   ToolTip="Scales the stick's own frame-to-frame movement directly into mouse movement, like a tiny touchpad."/>
-                        <hc:NumericUpDown Grid.Column="3" Minimum="0" Maximum="10000" DecimalPlaces="0" Increment="100"
-                                          Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                          Value="{Binding MouselikeFactor, UpdateSourceTrigger=LostFocus}"/>
+                                          Value="{Binding VerticalScale, UpdateSourceTrigger=LostFocus}"/>
                     </Grid>
                 </Border>
 

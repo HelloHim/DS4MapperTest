@@ -9029,16 +9029,27 @@ namespace DS4MapperTest
         {
             private StickHybridAim hybridAimAction;
 
-            public int StickSens
+            public double DegreesPerSecond
             {
-                get => hybridAimAction.StickSens;
+                get => hybridAimAction.DegreesPerSecond;
                 set
                 {
-                    hybridAimAction.StickSens = value;
-                    StickSensChanged?.Invoke(this, EventArgs.Empty);
+                    hybridAimAction.DegreesPerSecond = value;
+                    DegreesPerSecondChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler StickSensChanged;
+            public event EventHandler DegreesPerSecondChanged;
+
+            public double VerticalScale
+            {
+                get => hybridAimAction.VerticalScale;
+                set
+                {
+                    hybridAimAction.VerticalScale = value;
+                    VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            public event EventHandler VerticalScaleChanged;
 
             public double MouselikeFactor
             {
@@ -9148,7 +9159,8 @@ namespace DS4MapperTest
             settings = new StickHybridAimSettings(hybridAimAction);
 
             NameChanged += StickHybridAimActionSerializer_NameChanged;
-            settings.StickSensChanged += Settings_StickSensChanged;
+            settings.DegreesPerSecondChanged += Settings_DegreesPerSecondChanged;
+            settings.VerticalScaleChanged += Settings_VerticalScaleChanged;
             settings.MouselikeFactorChanged += Settings_MouselikeFactorChanged;
             settings.DeadZoneChanged += Settings_DeadZoneChanged;
             settings.MaxZoneChanged += Settings_MaxZoneChanged;
@@ -9175,9 +9187,14 @@ namespace DS4MapperTest
             hybridAimAction.ChangedProperties.Add(StickHybridAim.PropertyKeyStrings.NAME);
         }
 
-        private void Settings_StickSensChanged(object sender, EventArgs e)
+        private void Settings_DegreesPerSecondChanged(object sender, EventArgs e)
         {
-            hybridAimAction.ChangedProperties.Add(StickHybridAim.PropertyKeyStrings.STICK_SENS);
+            hybridAimAction.ChangedProperties.Add(StickHybridAim.PropertyKeyStrings.DEGREES_PER_SECOND);
+        }
+
+        private void Settings_VerticalScaleChanged(object sender, EventArgs e)
+        {
+            hybridAimAction.ChangedProperties.Add(StickHybridAim.PropertyKeyStrings.VERTICAL_SCALE);
         }
 
         private void Settings_MouselikeFactorChanged(object sender, EventArgs e)

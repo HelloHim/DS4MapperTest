@@ -63,17 +63,36 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler MaxZoneChanged;
 
-        public int StickSens
+        public double DegreesPerSecond
         {
-            get => action.StickSens;
+            get => action.DegreesPerSecond;
             set
             {
-                action.StickSens = value;
-                StickSensChanged?.Invoke(this, EventArgs.Empty);
+                action.DegreesPerSecond = value;
+                DegreesPerSecondChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler StickSensChanged;
+        public event EventHandler DegreesPerSecondChanged;
+
+        public double VerticalScale
+        {
+            get => action.VerticalScale;
+            set
+            {
+                action.VerticalScale = value;
+                VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler VerticalScaleChanged;
+
+        // The profile-level angle calibration that converts this mode's degree-based
+        // settings into mouse counts. Shared with the Gyro, Flick Stick and Joystick
+        // Mouse panels, and surfaced here through the same CalibrationModeControl.
+        private GyroCalibrationViewModel calibration;
+        public GyroCalibrationViewModel Calibration =>
+            calibration ??= new GyroCalibrationViewModel(mapper);
 
         public double MouselikeFactor
         {
@@ -183,12 +202,19 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler HighlightMaxZoneChanged;
 
-        public bool HighlightStickSens
+        public bool HighlightDegreesPerSecond
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(StickHybridAim.PropertyKeyStrings.STICK_SENS);
+                action.ChangedProperties.Contains(StickHybridAim.PropertyKeyStrings.DEGREES_PER_SECOND);
         }
-        public event EventHandler HighlightStickSensChanged;
+        public event EventHandler HighlightDegreesPerSecondChanged;
+
+        public bool HighlightVerticalScale
+        {
+            get => action.ParentAction == null ||
+                action.ChangedProperties.Contains(StickHybridAim.PropertyKeyStrings.VERTICAL_SCALE);
+        }
+        public event EventHandler HighlightVerticalScaleChanged;
 
         public bool HighlightMouselikeFactor
         {
@@ -235,7 +261,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             NameChanged += StickHybridAimPropViewModel_NameChanged;
             DeadZoneChanged += StickHybridAimPropViewModel_DeadZoneChanged;
             MaxZoneChanged += StickHybridAimPropViewModel_MaxZoneChanged;
-            StickSensChanged += StickHybridAimPropViewModel_StickSensChanged;
+            DegreesPerSecondChanged += StickHybridAimPropViewModel_DegreesPerSecondChanged;
+            VerticalScaleChanged += StickHybridAimPropViewModel_VerticalScaleChanged;
             MouselikeFactorChanged += StickHybridAimPropViewModel_MouselikeFactorChanged;
             EdgePushEnabledChanged += StickHybridAimPropViewModel_EdgePushEnabledChanged;
             ReturnDeadzoneEnabledChanged += StickHybridAimPropViewModel_ReturnDeadzoneEnabledChanged;
@@ -277,15 +304,26 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             HighlightMaxZoneChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void StickHybridAimPropViewModel_StickSensChanged(object sender, EventArgs e)
+        private void StickHybridAimPropViewModel_DegreesPerSecondChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(StickHybridAim.PropertyKeyStrings.STICK_SENS))
+            if (!action.ChangedProperties.Contains(StickHybridAim.PropertyKeyStrings.DEGREES_PER_SECOND))
             {
-                action.ChangedProperties.Add(StickHybridAim.PropertyKeyStrings.STICK_SENS);
+                action.ChangedProperties.Add(StickHybridAim.PropertyKeyStrings.DEGREES_PER_SECOND);
             }
 
-            action.RaiseNotifyPropertyChange(mapper, StickHybridAim.PropertyKeyStrings.STICK_SENS);
-            HighlightStickSensChanged?.Invoke(this, EventArgs.Empty);
+            action.RaiseNotifyPropertyChange(mapper, StickHybridAim.PropertyKeyStrings.DEGREES_PER_SECOND);
+            HighlightDegreesPerSecondChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StickHybridAimPropViewModel_VerticalScaleChanged(object sender, EventArgs e)
+        {
+            if (!action.ChangedProperties.Contains(StickHybridAim.PropertyKeyStrings.VERTICAL_SCALE))
+            {
+                action.ChangedProperties.Add(StickHybridAim.PropertyKeyStrings.VERTICAL_SCALE);
+            }
+
+            action.RaiseNotifyPropertyChange(mapper, StickHybridAim.PropertyKeyStrings.VERTICAL_SCALE);
+            HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void StickHybridAimPropViewModel_MouselikeFactorChanged(object sender, EventArgs e)

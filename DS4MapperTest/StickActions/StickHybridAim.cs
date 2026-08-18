@@ -13,10 +13,20 @@ using System.Diagnostics;
 namespace DS4MapperTest.StickActions
 {
     // Port of JoyShockMapper's HYBRID_AIM stick mode: a deflection-proportional
-    // "turn rate" term (shared math with StickMouse) added to a raw stick-delta
-    // "mouselike" term, with an edge-push sustain while pegged at the outer
-    // deadzone and a return-deadzone that damps output while the stick is
-    // snapping back toward center.
+    // "turn rate" term added to a raw stick-delta "mouselike" term, with an
+    // edge-push sustain while pegged at the outer deadzone and a return-deadzone
+    // that damps output while the stick is snapping back toward center.
+    //
+    // Both terms are authored in degrees of in-game camera rotation and converted
+    // to mouse counts through the profile's angle calibration, exactly like
+    // StickMouse (Joystick Mouse mode) does. JoyShockMapper itself skips its own
+    // calibration factor here and emits raw counts, which is why its STICK_SENS
+    // and MOUSELIKE_FACTOR defaults (360 and 90) are not comparable to the numbers
+    // used by any of its other stick modes. Working in degrees keeps hybrid aim
+    // consistent with the rest of this app and preserves JoyShockMapper's balance
+    // between the two terms: at its defaults a full-deflection stick flick covers
+    // half a second of full-deflection turning, which is what the 360 / 180
+    // defaults below reproduce.
     public class StickHybridAim : StickMapAction
     {
         public class PropertyKeyStrings
@@ -25,7 +35,8 @@ namespace DS4MapperTest.StickActions
             public const string DEAD_ZONE = "DeadZone";
             public const string MAX_ZONE = "MaxZone";
             public const string OUTPUT_CURVE = "OutputCurve";
-            public const string STICK_SENS = "StickSens";
+            public const string DEGREES_PER_SECOND = "DegreesPerSecond";
+            public const string VERTICAL_SCALE = "VerticalScale";
             public const string MOUSELIKE_FACTOR = "MouselikeFactor";
             public const string EDGE_PUSH_ENABLED = "EdgePushEnabled";
             public const string RETURN_DEADZONE_ENABLED = "ReturnDeadzoneEnabled";
@@ -39,7 +50,8 @@ namespace DS4MapperTest.StickActions
             PropertyKeyStrings.DEAD_ZONE,
             PropertyKeyStrings.MAX_ZONE,
             PropertyKeyStrings.OUTPUT_CURVE,
-            PropertyKeyStrings.STICK_SENS,
+            PropertyKeyStrings.DEGREES_PER_SECOND,
+            PropertyKeyStrings.VERTICAL_SCALE,
             PropertyKeyStrings.MOUSELIKE_FACTOR,
             PropertyKeyStrings.EDGE_PUSH_ENABLED,
             PropertyKeyStrings.RETURN_DEADZONE_ENABLED,
@@ -52,19 +64,26 @@ namespace DS4MapperTest.StickActions
         // Matches JoyShockMapper's Stick::SMOOTHING_STEPS.
         private const int SMOOTHING_STEPS = 4;
 
-        private const int MOUSESPEEDFACTOR = 20;
-        private const double MOUSE_VELOCITY_OFFSET = 0.013;
-
-        public const int DefaultStickSens = MouseMotionSettings.DefaultMouseSpeed;
-        public const int MaxStickSens = MouseMotionSettings.MaxMouseSpeed;
-        public const double DefaultMouselikeFactor = 1500.0;
-        public const double MaxMouselikeFactor = 10000.0;
+        public const double DefaultDegreesPerSecond = StickMouse.DefaultDegreesPerSecond;
+        public const double MaxDegreesPerSecond = StickMouse.MaxDegreesPerSecond;
+        public const double DefaultVerticalScale = MouseMotionSettings.DefaultVerticalScale;
+        public const double MaxVerticalScale = MouseMotionSettings.MaxVerticalScale;
+        public const double DefaultMouselikeFactor = 180.0;
+        public const double MaxMouselikeFactor = 3600.0;
         public const double DefaultReturnDeadzoneAngle = 45.0;
         public const double DefaultReturnDeadzoneCutoffAngle = 90.0;
+
+        // JoyShockMapper's own outer deadzone default (its setting is a margin of
+        // 0.1 subtracted from 1.0). Leaving this at 1.0 would put the "pegged at
+        // the edge" test out of reach of a real stick, which disables edge push
+        // and pins smallestMagnitude at 0 for the lifetime of the action.
+        public const double DefaultMaxZone = 0.9;
+        public const double DefaultDeadZone = 0.10;
 
         private StickDeadZone deadMod;
         private MouseMotionSettings motion = new MouseMotionSettings();
 
+        private double degreesPerSecond = DefaultDegreesPerSecond;
         private double mouselikeFactor = DefaultMouselikeFactor;
         private bool edgePushEnabled = true;
         private bool returnDeadzoneEnabled = true;
@@ -93,19 +112,34 @@ namespace DS4MapperTest.StickActions
             set => motion.OutputCurve = value;
         }
 
-        // Deflection-proportional turn-rate speed, expressed in the same units
-        // as StickMouse.MouseSpeed for UI consistency.
-        public int StickSens
+        // Camera rotation speed at full stick deflection for the turn-rate half of
+        // the mode. Same units and calibration path as StickMouse.DegreesPerSecond.
+        public double DegreesPerSecond
         {
-            get => motion.MouseSpeed;
-            set => motion.MouseSpeed = value;
+            get => degreesPerSecond;
+            set => degreesPerSecond = double.IsFinite(value)
+                ? Math.Clamp(value, 0.0, MaxDegreesPerSecond)
+                : DefaultDegreesPerSecond;
         }
 
-        // Scalar applied to the raw per-frame stick delta (JSM's MOUSELIKE_FACTOR).
+        // Vertical speed relative to horizontal. Scales the Y component of every
+        // term, which is how JoyShockMapper's separate X/Y STICK_SENS and
+        // MOUSELIKE_FACTOR pairs are expressed here.
+        public double VerticalScale
+        {
+            get => motion.VerticalScale;
+            set => motion.VerticalScale = value;
+        }
+
+        // Degrees of camera rotation per 1.0 of stick deflection travel: how far
+        // the camera turns when the stick itself is moved, independent of how long
+        // it is held there (JoyShockMapper's MOUSELIKE_FACTOR).
         public double MouselikeFactor
         {
             get => mouselikeFactor;
-            set => mouselikeFactor = Math.Clamp(value, 0.0, MaxMouselikeFactor);
+            set => mouselikeFactor = double.IsFinite(value)
+                ? Math.Clamp(value, 0.0, MaxMouselikeFactor)
+                : DefaultMouselikeFactor;
         }
 
         public bool EdgePushEnabled { get => edgePushEnabled; set => edgePushEnabled = value; }
@@ -126,7 +160,7 @@ namespace DS4MapperTest.StickActions
         public StickHybridAim()
         {
             actionTypeName = ACTION_TYPE_NAME;
-            deadMod = new StickDeadZone(0.10, 1.0, 0.0);
+            deadMod = new StickDeadZone(DefaultDeadZone, DefaultMaxZone, 0.0);
             deadMod.CircleDead = true;
         }
 
@@ -134,7 +168,7 @@ namespace DS4MapperTest.StickActions
         {
             actionTypeName = ACTION_TYPE_NAME;
             this.stickDefinition = stickDefinition;
-            deadMod = new StickDeadZone(0.10, 1.0, 0.0);
+            deadMod = new StickDeadZone(DefaultDeadZone, DefaultMaxZone, 0.0);
             deadMod.CircleDead = true;
         }
 
@@ -147,6 +181,7 @@ namespace DS4MapperTest.StickActions
             this.stickDefinition = new StickDefinition(parentAction.stickDefinition);
             deadMod = new StickDeadZone(parentAction.deadMod);
             motion = new MouseMotionSettings(parentAction.motion);
+            degreesPerSecond = parentAction.degreesPerSecond;
             mouselikeFactor = parentAction.mouselikeFactor;
             edgePushEnabled = parentAction.edgePushEnabled;
             returnDeadzoneEnabled = parentAction.returnDeadzoneEnabled;
@@ -156,11 +191,18 @@ namespace DS4MapperTest.StickActions
 
         // JoyShockMapper's radial() helper: signed projection of vector (vX,vY)
         // onto the direction of (x,y).
+        //
+        // JoyShockMapper guards this with "x != 0 && y != 0", which makes it return
+        // 0 for any stick position sitting exactly on an axis. The projection is
+        // perfectly well defined there, and a straight horizontal or vertical push
+        // is the most common aiming motion there is, so guarding on the vector's
+        // length instead keeps edge push and the return deadzone alive for it.
         private static double Radial(double vX, double vY, double x, double y)
         {
-            if (x != 0.0 && y != 0.0)
+            double length = Math.Sqrt(x * x + y * y);
+            if (length > 0.0)
             {
-                return (vX * x + vY * y) / Math.Sqrt(x * x + y * y);
+                return (vX * x + vY * y) / length;
             }
 
             return 0.0;
@@ -269,37 +311,37 @@ namespace DS4MapperTest.StickActions
                 smallestMagnitude = magnitude;
             }
 
-            // Position term: deflection-proportional turn rate, reusing the same
-            // deadzone/curve/speed pipeline as StickMouse (Joystick Mouse mode).
-            deadMod.CalcOutValues(axisXDir, axisYDir, maxDirX, maxDirY, out double posXNorm, out double posYNorm);
-            if (motion.OutputCurve != StickOutCurve.Curve.Linear && (posXNorm != 0.0 || posYNorm != 0.0))
-            {
-                StickOutCurve.CalcOutValue(motion.OutputCurve, posXNorm, posYNorm, out posXNorm, out posYNorm);
-            }
+            // Both halves of the mode are authored in degrees and converted here
+            // through the profile's angle calibration, so a given setting turns the
+            // camera by the same real amount whatever the game's sensitivity is.
+            double countsPer360 = mapper.ActionProfile.CalibCounts;
+            double countsPerDegree = countsPer360 > 0.0 ? countsPer360 / 360.0 : 0.0;
 
             double timeDelta = mapper.CurrentLatency;
             timeDelta = timeDelta - (mapper.remainderCutoff(timeDelta * 10000.0, 1.0) / 10000.0);
-            int mouseVelocity = motion.MouseSpeed * MOUSESPEEDFACTOR;
-            double mouseOffset = MOUSE_VELOCITY_OFFSET * mouseVelocity;
 
-            double outX = 0.0, outY = 0.0;
-            if (posXNorm != 0.0 || posYNorm != 0.0)
-            {
-                double xSign = posXNorm >= 0.0 ? 1.0 : -1.0;
-                double ySign = posYNorm >= 0.0 ? 1.0 : -1.0;
-                double absXNorm = Math.Abs(posXNorm);
-                double absYNorm = Math.Abs(posYNorm);
-                outX = ((mouseVelocity - mouseOffset) * timeDelta * absXNorm + (mouseOffset * timeDelta)) * xSign;
-                outY = ((mouseVelocity - mouseOffset) * timeDelta * absYNorm + (mouseOffset * timeDelta)) * -ySign;
-            }
+            // Turn-rate term: speed proportional to how far the stick is pushed,
+            // aimed along the stick's own angle so it agrees with the two
+            // stick-delta terms below on diagonals. The output curve stands in for
+            // JoyShockMapper's STICK_POWER exponent.
+            double curvedMagnitude = ApplyCurveScalar(motion.OutputCurve, magnitude);
+            double turnCounts = degreesPerSecond * countsPerDegree * timeDelta * curvedMagnitude;
+            double outX = turnCounts * Math.Cos(angle);
+            double outY = turnCounts * Math.Sin(angle);
 
             // Edge-push (sustained motion while pegged at the outer deadzone) and
             // mouselike (direct stick-delta-as-mouse-delta) terms.
+            double mouselikeCounts = mouselikeFactor * countsPerDegree;
             double curvedSmallestMag = ApplyCurveScalar(motion.OutputCurve, smallestMagnitude);
-            outX += mouselikeFactor * curvedSmallestMag * Math.Cos(angle) * edgePushAmount;
-            outY += mouselikeFactor * curvedSmallestMag * Math.Sin(angle) * edgePushAmount;
-            outX += mouselikeFactor * velocityX;
-            outY += mouselikeFactor * velocityY;
+            outX += mouselikeCounts * curvedSmallestMag * Math.Cos(angle) * edgePushAmount;
+            outY += mouselikeCounts * curvedSmallestMag * Math.Sin(angle) * edgePushAmount;
+            outX += mouselikeCounts * velocityX;
+            outY += mouselikeCounts * velocityY;
+
+            // Applied before the smoothing history is recorded so the return
+            // deadzone measures the angles of the output that is actually emitted,
+            // matching how JoyShockMapper's per-axis sensitivity pairs behave.
+            outY *= motion.VerticalScale;
 
             smoothingCounter = smoothingCounter < SMOOTHING_STEPS - 1 ? smoothingCounter + 1 : 0;
             previousVelocitiesX[smoothingCounter] = velocityX;
@@ -484,8 +526,11 @@ namespace DS4MapperTest.StickActions
                 case PropertyKeyStrings.OUTPUT_CURVE:
                     motion.OutputCurve = tempHybridAction.motion.OutputCurve;
                     break;
-                case PropertyKeyStrings.STICK_SENS:
-                    motion.MouseSpeed = tempHybridAction.motion.MouseSpeed;
+                case PropertyKeyStrings.DEGREES_PER_SECOND:
+                    degreesPerSecond = tempHybridAction.degreesPerSecond;
+                    break;
+                case PropertyKeyStrings.VERTICAL_SCALE:
+                    motion.VerticalScale = tempHybridAction.motion.VerticalScale;
                     break;
                 case PropertyKeyStrings.MOUSELIKE_FACTOR:
                     mouselikeFactor = tempHybridAction.mouselikeFactor;
