@@ -35,6 +35,9 @@ namespace DS4MapperTest
         public const string JOYCON_PROFILE_DIR = "JoyCon";
         public const string EIGHTBITDO_ULT2WIRELESS_PROFILE_DIR = "EightBitDoUlt2Wireless";
         public const string TEMPLATE_PROFILES_DIRNAME = "template_profiles";
+        public const string UNIVERSAL_CONTROLLER_ENTRY_TYPE = "Universal";
+        private const string CONTROLLERS_PROPERTY = "Controllers";
+        private const string LAST_UNIVERSAL_PROFILE_KEY = "LastUniversalProfile";
 
         public const int RESET_WAIT_TIMEOUT = 500; // 500 ms
 
@@ -851,6 +854,115 @@ namespace DS4MapperTest
             string profileRoot = GetDeviceProfileFolderLocation(deviceType);
             string relativePath = Path.GetRelativePath(profileRoot, profilePath);
             return Path.ChangeExtension(relativePath, null);
+        }
+
+        /// <summary>
+        /// Reads the universal profile a controller was last mapping with, or
+        /// an empty string when that controller has never had one recorded.
+        /// </summary>
+        public string GetLastUniversalProfileId(string controllerKey)
+        {
+            if (string.IsNullOrWhiteSpace(controllerKey) ||
+                !File.Exists(controllerConfigsPath))
+            {
+                return string.Empty;
+            }
+
+            using ReadLocker locker = new ReadLocker(_controllerStoreLocker);
+
+            try
+            {
+                JObject rootObj = JObject.Parse(File.ReadAllText(controllerConfigsPath));
+                JObject entry = FindUniversalControllerEntry(rootObj, controllerKey);
+                return entry != null &&
+                    entry.TryGetValue(LAST_UNIVERSAL_PROFILE_KEY, out JToken token) &&
+                    token.Type == JTokenType.String
+                    ? token.Value<string>()
+                    : string.Empty;
+            }
+            catch (JsonException)
+            {
+                return string.Empty;
+            }
+            catch (IOException)
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Records the universal profile a controller is now mapping with so the
+        /// same one comes back the next time that controller connects.
+        /// </summary>
+        public void SetLastUniversalProfileId(string controllerKey, string profileId)
+        {
+            if (string.IsNullOrWhiteSpace(controllerKey) ||
+                string.IsNullOrWhiteSpace(profileId))
+            {
+                return;
+            }
+
+            using WriteLocker locker = new WriteLocker(_controllerStoreLocker);
+
+            JObject rootObj;
+            try
+            {
+                string json = File.Exists(controllerConfigsPath)
+                    ? File.ReadAllText(controllerConfigsPath)
+                    : string.Empty;
+                rootObj = string.IsNullOrWhiteSpace(json)
+                    ? new JObject()
+                    : JObject.Parse(json);
+            }
+            catch (JsonException)
+            {
+                return;
+            }
+            catch (IOException)
+            {
+                return;
+            }
+
+            if (rootObj.SelectToken(CONTROLLERS_PROPERTY) is not JArray controllers)
+            {
+                controllers = new JArray();
+                rootObj[CONTROLLERS_PROPERTY] = controllers;
+            }
+
+            JObject entry = FindUniversalControllerEntry(rootObj, controllerKey);
+            if (entry == null)
+            {
+                entry = new JObject
+                {
+                    ["Mac"] = controllerKey,
+                    ["Type"] = UNIVERSAL_CONTROLLER_ENTRY_TYPE,
+                };
+
+                controllers.Add(entry);
+            }
+
+            if (string.Equals(entry.Value<string>(LAST_UNIVERSAL_PROFILE_KEY), profileId,
+                StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            entry[LAST_UNIVERSAL_PROFILE_KEY] = profileId;
+            AtomicFileWriter.WriteJson(controllerConfigsPath, rootObj);
+        }
+
+        // Universal entries are kept apart from the per-family device option
+        // entries that share this file: one physical controller can be
+        // identified as several families over its life, and the profile it was
+        // last mapping with belongs to the controller, not to a family guess.
+        private static JObject FindUniversalControllerEntry(JObject rootObj, string controllerKey)
+        {
+            return (rootObj.SelectToken(CONTROLLERS_PROPERTY) as JArray)
+                ?.OfType<JObject>()
+                .FirstOrDefault(entry =>
+                    string.Equals(entry.Value<string>("Mac"), controllerKey, StringComparison.Ordinal) &&
+                    string.Equals(entry.Value<string>("Type"), UNIVERSAL_CONTROLLER_ENTRY_TYPE,
+                        StringComparison.Ordinal));
         }
 
         public void CreateBlankProfile(string blankProfilePath, Profile tempProfile)
