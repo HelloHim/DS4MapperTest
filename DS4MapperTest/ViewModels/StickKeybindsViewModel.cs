@@ -70,7 +70,10 @@ namespace DS4MapperTest.ViewModels
         public ObservableCollection<FaceButtonBindingItem> TouchBindingItems =>
             side == "LS" ? owner.LeftStickTouchBinding : owner.RightStickTouchBinding;
 
-        public bool HasTouchBindings => TouchBindingItems.Count > 0;
+        public bool HasTouchBindingRows => TouchBindingItems.Count > 0;
+        public bool HasTouchBindings => TouchBindingItems.Any(item => item.IsAvailable);
+        public string TouchUnavailableMessage =>
+            $"This {SideLabel.ToLowerInvariant()} does not report a capacitive touch sensor.";
 
         public StickBindingItemsTest BindingItem
         {
@@ -164,8 +167,10 @@ namespace DS4MapperTest.ViewModels
 
             OnPropertyChanged(nameof(HasBinding));
             OnPropertyChanged(nameof(ClickBindingItems));
+            OnPropertyChanged(nameof(HasTouchBindingRows));
             OnPropertyChanged(nameof(HasTouchBindings));
             OnPropertyChanged(nameof(TouchBindingItems));
+            OnPropertyChanged(nameof(TouchUnavailableMessage));
         }
 
         private static int ResolveModeIndex(StickMapAction action)

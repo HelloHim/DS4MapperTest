@@ -459,6 +459,13 @@ namespace DS4MapperTest
             {
                 navKeybinds.IsChecked = true;
             }
+
+            if (navGyroSensitivity != null &&
+                editorTestVM?.HasSupportedGyroHardware != true &&
+                navGyroSensitivity.IsChecked == true)
+            {
+                navKeybinds.IsChecked = true;
+            }
         }
 
         private void RefreshUniversalProfileLists()

@@ -198,6 +198,7 @@
                                  GroupName="MainNav"
                                  Content="Gyro &amp; Sensitivity"
                                  Style="{StaticResource JsmccNavButtonStyle}"
+                                 IsEnabled="{Binding HasSupportedGyroHardware, FallbackValue=False}"
                                  IsChecked="True"
                                  Checked="NavRadio_Checked"/>
                     <RadioButton x:Name="navKeybinds"
@@ -922,6 +923,20 @@
 
                                 <TabControl Style="{StaticResource JsmccPillTabControlStyle}">
                                     <TabItem Header="Touch Bindings">
+                                        <TabItem.Style>
+                                            <Style TargetType="TabItem" BasedOn="{StaticResource JsmccPillTabItemStyle}">
+                                                <Setter Property="Opacity" Value="1"/>
+                                                <Style.Triggers>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding LeftStickKeybinds.HasTouchBindings}" Value="False"/>
+                                                            <Condition Binding="{Binding RightStickKeybinds.HasTouchBindings}" Value="False"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter Property="Opacity" Value="0.48"/>
+                                                    </MultiDataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TabItem.Style>
                                         <views:SticksTouchBindingsControl/>
                                     </TabItem>
                                     <TabItem Header="Click Bindings">
