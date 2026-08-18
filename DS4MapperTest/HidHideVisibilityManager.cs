@@ -1,10 +1,4 @@
-using DS4MapperTest.DS4Library;
-using DS4MapperTest.DualSense;
-using DS4MapperTest.InputDevices.EightBitDoLibrary;
-using DS4MapperTest.InputDevices.SteamControllerTritonLibrary;
-using DS4MapperTest.JoyConLibrary;
 using DS4MapperTest.SteamControllerLibrary;
-using DS4MapperTest.SwitchProLibrary;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -222,13 +216,7 @@ namespace DS4MapperTest
         {
             string devicePath = device switch
             {
-                DS4Device ds4 => ds4.HidDevice?.DevicePath,
-                DualSenseDevice dualSense => dualSense.HidDevice?.DevicePath,
-                SwitchProDevice switchPro => switchPro.HidDevice?.DevicePath,
-                JoyConDevice joyCon => joyCon.HidDevice?.DevicePath,
                 SteamControllerDevice steamController => steamController.HidDevice?.DevicePath,
-                SteamControllerTritonDevice steamControllerTriton => steamControllerTriton.HidDevice?.DevicePath,
-                Ultimate2WirelessDevice ultimate2Wireless => ultimate2Wireless.HidDevice?.DevicePath,
                 _ => string.Empty,
             };
 

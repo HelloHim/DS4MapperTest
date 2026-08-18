@@ -72,6 +72,13 @@ namespace DS4MapperTest
         protected const int DS4_STICK_MID = 128;
         protected const int OUTPUT_DS4_RESOLUTION = DS4_STICK_MAX - DS4_STICK_MIN;
 
+        // Touchpad resolution reported by the emulated virtual DS4/DualSense
+        // (VIIPER output), not tied to any physical reader.
+        protected const int DS4_TOUCHPAD_MAX_X = 1920;
+        protected const int DS4_TOUCHPAD_MAX_Y = 942;
+        protected const int DUALSENSE_TOUCHPAD_MAX_X = 1920;
+        protected const int DUALSENSE_TOUCHPAD_MAX_Y = 1079;
+
         protected double absMouseX = 0.0;
         protected double absMouseY = 0.0;
         protected bool absMouseSync;
@@ -2709,11 +2716,11 @@ namespace DS4MapperTest
 
                 ds4State.Triggerl2 = (byte)(intermediateState.LTrigger * 255);
                 ds4State.Triggerr2 = (byte)(intermediateState.RTrigger * 255);
-                ds4State.Touch1x = ScaleTouchAxis(intermediateState.Touch1XNorm, DS4Library.DS4State.TouchInfo.TOUCHPAD_MAX_X);
-                ds4State.Touch1y = ScaleTouchAxis(intermediateState.Touch1YNorm, DS4Library.DS4State.TouchInfo.TOUCHPAD_MAX_Y);
+                ds4State.Touch1x = ScaleTouchAxis(intermediateState.Touch1XNorm, DS4_TOUCHPAD_MAX_X);
+                ds4State.Touch1y = ScaleTouchAxis(intermediateState.Touch1YNorm, DS4_TOUCHPAD_MAX_Y);
                 ds4State.Touch1active = (byte)(intermediateState.Touch1Active ? 1 : 0);
-                ds4State.Touch2x = ScaleTouchAxis(intermediateState.Touch2XNorm, DS4Library.DS4State.TouchInfo.TOUCHPAD_MAX_X);
-                ds4State.Touch2y = ScaleTouchAxis(intermediateState.Touch2YNorm, DS4Library.DS4State.TouchInfo.TOUCHPAD_MAX_Y);
+                ds4State.Touch2x = ScaleTouchAxis(intermediateState.Touch2XNorm, DS4_TOUCHPAD_MAX_X);
+                ds4State.Touch2y = ScaleTouchAxis(intermediateState.Touch2YNorm, DS4_TOUCHPAD_MAX_Y);
                 ds4State.Touch2active = (byte)(intermediateState.Touch2Active ? 1 : 0);
                 ds4State.Gyrox = intermediateState.GyroYaw;
                 ds4State.Gyroy = intermediateState.GyroPitch;
@@ -2794,11 +2801,11 @@ namespace DS4MapperTest
 
                 dualSenseState.L2 = (byte)(intermediateState.LTrigger * 255);
                 dualSenseState.R2 = (byte)(intermediateState.RTrigger * 255);
-                dualSenseState.Touch1X = ScaleTouchAxis(intermediateState.Touch1XNorm, DualSense.DualSenseState.TouchInfo.TOUCHPAD_MAX_X);
-                dualSenseState.Touch1Y = ScaleTouchAxis(intermediateState.Touch1YNorm, DualSense.DualSenseState.TouchInfo.TOUCHPAD_MAX_Y);
+                dualSenseState.Touch1X = ScaleTouchAxis(intermediateState.Touch1XNorm, DUALSENSE_TOUCHPAD_MAX_X);
+                dualSenseState.Touch1Y = ScaleTouchAxis(intermediateState.Touch1YNorm, DUALSENSE_TOUCHPAD_MAX_Y);
                 dualSenseState.Touch1Active = (byte)(intermediateState.Touch1Active ? 1 : 0);
-                dualSenseState.Touch2X = ScaleTouchAxis(intermediateState.Touch2XNorm, DualSense.DualSenseState.TouchInfo.TOUCHPAD_MAX_X);
-                dualSenseState.Touch2Y = ScaleTouchAxis(intermediateState.Touch2YNorm, DualSense.DualSenseState.TouchInfo.TOUCHPAD_MAX_Y);
+                dualSenseState.Touch2X = ScaleTouchAxis(intermediateState.Touch2XNorm, DUALSENSE_TOUCHPAD_MAX_X);
+                dualSenseState.Touch2Y = ScaleTouchAxis(intermediateState.Touch2YNorm, DUALSENSE_TOUCHPAD_MAX_Y);
                 dualSenseState.Touch2Active = (byte)(intermediateState.Touch2Active ? 1 : 0);
 
                 dualSenseState.GyroX = intermediateState.GyroYaw;
@@ -2913,17 +2920,13 @@ namespace DS4MapperTest
         private readonly GyroMotionGravity motionGravity = new GyroMotionGravity();
 
         // No explicit reset call needed: on a genuine physical disconnect,
-        // BackendManager.Device_Removal tears the Mapper down entirely and a
-        // brand new Mapper (and this field) is constructed when the device is
-        // re-enumerated, so motionGravity already starts clean. The only case
-        // where a single Mapper instance is reused across a reconnect-like
-        // event is the Steam Controller/Triton dongle sync cycle
-        // (SteamControllerReader/SteamControllerTritionReader toggling
-        // device.Synced -> BackendManager.Device_SyncedChanged ->
-        // PrepareSyncedInputDevice -> Mapper.Start()); no existing per-device
-        // gyro state (including GyroCalibration, whose own reset only fires
-        // once per reader thread on its first packet) is reset on that path
-        // either, so there is no existing hook to mirror here.
+        // UniversalMappingRuntime disposes the stale UniversalMapperSession
+        // entirely and constructs a brand new one (and this field) when the
+        // controller is re-enumerated, so motionGravity already starts
+        // clean. No existing per-device gyro state (including
+        // GyroCalibration, whose own reset only fires once per reader thread
+        // on its first packet) is reset on any reconnect path either, so
+        // there is no existing hook to mirror here.
         public void PopulateStateGyro(ref GyroEventFrame frame)
         {
             GyroMotionAxisAdapter.ToDualShock4OutputSpace(DeviceType,
