@@ -221,14 +221,14 @@ namespace DS4MapperTest.ViewModels
         public bool HasDoublePress => HasFunc<DoublePressFunc>();
         public bool HasDistancePress => HasFunc<DistanceFunc>();
         public bool HasChordedPress => HasFunc<ChordedPressFunc>();
-        public bool HasSimPress => HasFunc<SimPressFunc>();
+        public bool HasSimultaneousPress => HasFunc<SimultaneousPressFunc>();
         public bool HasStartPress => HasFunc<StartPressFunc>();
         public bool HasReleasePress => HasFunc<ReleaseFunc>();
         public bool CanAddHoldPress => !HasHoldPress;
         public bool CanAddDoublePress => !HasDoublePress;
         public bool CanAddDistancePress => !HasDistancePress;
         public bool CanAddChordedPress => !HasChordedPress;
-        public bool CanAddSimPress => !HasSimPress;
+        public bool CanAddSimultaneousPress => !HasSimultaneousPress;
         public bool CanAddStartPress => !HasStartPress;
         public bool CanAddReleasePress => !HasReleasePress;
 
@@ -277,8 +277,8 @@ namespace DS4MapperTest.ViewModels
                         case ChordedPressFunc:
                             functionItems.Add(new DPadDirectionFuncItem(this, FaceBindingFuncKind.Chorded));
                             break;
-                        case SimPressFunc:
-                            functionItems.Add(new DPadDirectionFuncItem(this, FaceBindingFuncKind.SimPress));
+                        case SimultaneousPressFunc:
+                            functionItems.Add(new DPadDirectionFuncItem(this, FaceBindingFuncKind.SimultaneousPress));
                             break;
                         case StartPressFunc:
                             functionItems.Add(new DPadDirectionFuncItem(this, FaceBindingFuncKind.Start));
@@ -320,8 +320,8 @@ namespace DS4MapperTest.ViewModels
             int index = buttonAction.ActionFuncs.IndexOf(item.Func);
             if (index < 0) return;
 
-            JoypadActionCodes simPressTrigger = item.Func is SimPressFunc simPressFunc ?
-                simPressFunc.TriggerButton : JoypadActionCodes.Empty;
+            JoypadActionCodes simultaneousPressTrigger = item.Func is SimultaneousPressFunc simultaneousPressFunc ?
+                simultaneousPressFunc.TriggerButton : JoypadActionCodes.Empty;
 
             ProfileVm.DeviceMapper.ProcessMappingChangeAction(() =>
             {
@@ -332,9 +332,9 @@ namespace DS4MapperTest.ViewModels
 
             owner.Refresh();
 
-            if (simPressTrigger != JoypadActionCodes.Empty)
+            if (simultaneousPressTrigger != JoypadActionCodes.Empty)
             {
-                ProfileVm.RemoveSimPressMirror(OwnTriggerCode, simPressTrigger);
+                ProfileVm.RemoveSimultaneousPressMirror(OwnTriggerCode, simultaneousPressTrigger);
             }
         }
 
@@ -375,7 +375,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Double => HasDoublePress,
                 FaceBindingFuncKind.Distance => HasDistancePress,
                 FaceBindingFuncKind.Chorded => HasChordedPress,
-                FaceBindingFuncKind.SimPress => HasSimPress,
+                FaceBindingFuncKind.SimultaneousPress => HasSimultaneousPress,
                 FaceBindingFuncKind.Start => HasStartPress,
                 FaceBindingFuncKind.Release => HasReleasePress,
                 _ => false,
@@ -403,7 +403,7 @@ namespace DS4MapperTest.ViewModels
                 }, emptyOutput),
                 FaceBindingFuncKind.Distance => CreateOutputFunc(new DistanceFunc(), emptyOutput),
                 FaceBindingFuncKind.Chorded => CreateOutputFunc(new ChordedPressFunc(), emptyOutput),
-                FaceBindingFuncKind.SimPress => CreateOutputFunc(new SimPressFunc(), emptyOutput),
+                FaceBindingFuncKind.SimultaneousPress => CreateOutputFunc(new SimultaneousPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Start => CreateOutputFunc(new StartPressFunc(), emptyOutput),
                 FaceBindingFuncKind.Release => CreateOutputFunc(new ReleaseFunc(), emptyOutput),
                 _ => null,
@@ -431,14 +431,14 @@ namespace DS4MapperTest.ViewModels
             OnPropertyChanged(nameof(HasDoublePress));
             OnPropertyChanged(nameof(HasDistancePress));
             OnPropertyChanged(nameof(HasChordedPress));
-            OnPropertyChanged(nameof(HasSimPress));
+            OnPropertyChanged(nameof(HasSimultaneousPress));
             OnPropertyChanged(nameof(HasStartPress));
             OnPropertyChanged(nameof(HasReleasePress));
             OnPropertyChanged(nameof(CanAddHoldPress));
             OnPropertyChanged(nameof(CanAddDoublePress));
             OnPropertyChanged(nameof(CanAddDistancePress));
             OnPropertyChanged(nameof(CanAddChordedPress));
-            OnPropertyChanged(nameof(CanAddSimPress));
+            OnPropertyChanged(nameof(CanAddSimultaneousPress));
             OnPropertyChanged(nameof(CanAddStartPress));
             OnPropertyChanged(nameof(CanAddReleasePress));
         }
@@ -475,7 +475,7 @@ namespace DS4MapperTest.ViewModels
         public bool SupportsReleaseOptions => Func is ReleaseFunc;
         public bool SupportsDistanceOptions => Func is DistanceFunc;
         public bool SupportsChordOptions => Func is ChordedPressFunc;
-        public bool SupportsSimPressOptions => Func is SimPressFunc;
+        public bool SupportsSimultaneousPressOptions => Func is SimultaneousPressFunc;
 
         public string DisplayName => Kind switch
         {
@@ -484,7 +484,7 @@ namespace DS4MapperTest.ViewModels
             FaceBindingFuncKind.Double => "Double Press",
             FaceBindingFuncKind.Distance => "Distance",
             FaceBindingFuncKind.Chorded => "Chorded Press",
-            FaceBindingFuncKind.SimPress => "Simultaneous Press",
+            FaceBindingFuncKind.SimultaneousPress => "Simultaneous Press",
             FaceBindingFuncKind.Start => "Start Press",
             FaceBindingFuncKind.Release => "Release Press",
             _ => "Binding",
@@ -784,65 +784,65 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
-        public List<ActionTriggerItem> SimPressTriggerItems =>
+        public List<ActionTriggerItem> SimultaneousPressTriggerItems =>
             ChordedPressFuncUi.BuildTriggerItems(owner.ProfileVm.DeviceMapper);
 
-        public JoypadActionCodes SimPressTrigger
+        public JoypadActionCodes SimultaneousPressTrigger
         {
-            get => Func is SimPressFunc simPress ? simPress.TriggerButton : JoypadActionCodes.Empty;
+            get => Func is SimultaneousPressFunc simultaneousPress ? simultaneousPress.TriggerButton : JoypadActionCodes.Empty;
             set
             {
-                if (Func is not SimPressFunc currentSimPress || currentSimPress.TriggerButton == value) return;
+                if (Func is not SimultaneousPressFunc currentSimultaneousPress || currentSimultaneousPress.TriggerButton == value) return;
 
-                JoypadActionCodes oldTrigger = currentSimPress.TriggerButton;
-                SimPressFunc editedFunc = null;
+                JoypadActionCodes oldTrigger = currentSimultaneousPress.TriggerButton;
+                SimultaneousPressFunc editedFunc = null;
                 owner.ProfileVm.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     ButtonAction editable = owner.ProfileVm.EnsureEditableDPadDirectionAction(owner.Kind);
-                    if (FindFunc(editable, Kind) is SimPressFunc simPress)
+                    if (FindFunc(editable, Kind) is SimultaneousPressFunc simultaneousPress)
                     {
-                        simPress.TriggerButton = value;
-                        editedFunc = simPress;
+                        simultaneousPress.TriggerButton = value;
+                        editedFunc = simultaneousPress;
                     }
                     DPadDirectionBindingItem.MarkFunctionsChanged(editable);
                 });
-                OnPropertyChanged(nameof(SimPressTrigger));
+                OnPropertyChanged(nameof(SimultaneousPressTrigger));
 
                 if (oldTrigger != JoypadActionCodes.Empty && oldTrigger != value)
                 {
-                    owner.ProfileVm.RemoveSimPressMirror(owner.OwnTriggerCode, oldTrigger);
+                    owner.ProfileVm.RemoveSimultaneousPressMirror(owner.OwnTriggerCode, oldTrigger);
                 }
 
                 if (value != JoypadActionCodes.Empty && editedFunc != null)
                 {
-                    owner.ProfileVm.ApplySimPressMirror(owner.OwnTriggerCode, editedFunc);
+                    owner.ProfileVm.ApplySimultaneousPressMirror(owner.OwnTriggerCode, editedFunc);
                 }
             }
         }
 
-        public int SimPressTimeMs
+        public int SimultaneousPressTimeMs
         {
-            get => Func is SimPressFunc simPress ? simPress.SimPressTimeMs : SimPressFunc.DEFAULT_SIM_PRESS_MS;
+            get => Func is SimultaneousPressFunc simultaneousPress ? simultaneousPress.SimultaneousPressTimeMs : SimultaneousPressFunc.DEFAULT_SIM_PRESS_MS;
             set
             {
-                if (Func is not SimPressFunc currentSimPress || currentSimPress.SimPressTimeMs == value) return;
+                if (Func is not SimultaneousPressFunc currentSimultaneousPress || currentSimultaneousPress.SimultaneousPressTimeMs == value) return;
 
-                SimPressFunc editedFunc = null;
+                SimultaneousPressFunc editedFunc = null;
                 owner.ProfileVm.DeviceMapper.ProcessMappingChangeAction(() =>
                 {
                     ButtonAction editable = owner.ProfileVm.EnsureEditableDPadDirectionAction(owner.Kind);
-                    if (FindFunc(editable, Kind) is SimPressFunc simPress)
+                    if (FindFunc(editable, Kind) is SimultaneousPressFunc simultaneousPress)
                     {
-                        simPress.SimPressTimeMs = value;
-                        editedFunc = simPress;
+                        simultaneousPress.SimultaneousPressTimeMs = value;
+                        editedFunc = simultaneousPress;
                     }
                     DPadDirectionBindingItem.MarkFunctionsChanged(editable);
                 });
-                OnPropertyChanged(nameof(SimPressTimeMs));
+                OnPropertyChanged(nameof(SimultaneousPressTimeMs));
 
                 if (editedFunc != null && editedFunc.TriggerButton != JoypadActionCodes.Empty)
                 {
-                    owner.ProfileVm.ApplySimPressMirror(owner.OwnTriggerCode, editedFunc);
+                    owner.ProfileVm.ApplySimultaneousPressMirror(owner.OwnTriggerCode, editedFunc);
                 }
             }
         }
@@ -941,7 +941,7 @@ namespace DS4MapperTest.ViewModels
                 FaceBindingFuncKind.Double => action.ActionFuncs.OfType<DoublePressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Distance => action.ActionFuncs.OfType<DistanceFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Chorded => action.ActionFuncs.OfType<ChordedPressFunc>().FirstOrDefault(),
-                FaceBindingFuncKind.SimPress => action.ActionFuncs.OfType<SimPressFunc>().FirstOrDefault(),
+                FaceBindingFuncKind.SimultaneousPress => action.ActionFuncs.OfType<SimultaneousPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Start => action.ActionFuncs.OfType<StartPressFunc>().FirstOrDefault(),
                 FaceBindingFuncKind.Release => action.ActionFuncs.OfType<ReleaseFunc>().FirstOrDefault(),
                 _ => null,

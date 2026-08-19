@@ -51,9 +51,9 @@ namespace DS4MapperTest.ActionUtil
                         result = temp;
                         break;
                     }
-                case SimPressFunc simPressFunc:
+                case SimultaneousPressFunc simultaneousPressFunc:
                     {
-                        SimPressFunc temp = new SimPressFunc(simPressFunc);
+                        SimultaneousPressFunc temp = new SimultaneousPressFunc(simultaneousPressFunc);
                         result = temp;
                         break;
                     }

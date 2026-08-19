@@ -58,8 +58,8 @@
                                           IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                           Click="ClickAddExtraBindingMenuItem_Click"/>
                                 <MenuItem Header="Simultaneous Press"
-                                          Tag="SimPress"
-                                          IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                          Tag="SimultaneousPress"
+                                          IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimultaneousPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                           Click="ClickAddExtraBindingMenuItem_Click"/>
                                 <MenuItem Header="Start Press"
                                           Tag="Start"
@@ -308,11 +308,11 @@
                                                 CornerRadius="4"
                                                 Padding="6,4"
                                                 Margin="0,0,8,4"
-                                                Visibility="{Binding SupportsSimPressOptions, Converter={StaticResource BoolToVis}}">
+                                                Visibility="{Binding SupportsSimultaneousPressOptions, Converter={StaticResource BoolToVis}}">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="Simultaneous Press Trigger" Style="{StaticResource StickControlLabel}"/>
-                                                <ComboBox ItemsSource="{Binding SimPressTriggerItems}"
-                                                          SelectedValue="{Binding SimPressTrigger, UpdateSourceTrigger=PropertyChanged}"
+                                                <ComboBox ItemsSource="{Binding SimultaneousPressTriggerItems}"
+                                                          SelectedValue="{Binding SimultaneousPressTrigger, UpdateSourceTrigger=PropertyChanged}"
                                                           SelectedValuePath="Code"
                                                           DisplayMemberPath="DisplayName"
                                                           MaxDropDownHeight="240"
@@ -327,7 +327,7 @@
                                                 CornerRadius="4"
                                                 Padding="6,4"
                                                 Margin="0,0,8,4"
-                                                Visibility="{Binding SupportsSimPressOptions, Converter={StaticResource BoolToVis}}">
+                                                Visibility="{Binding SupportsSimultaneousPressOptions, Converter={StaticResource BoolToVis}}">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="Simultaneous Press Time" Style="{StaticResource StickControlLabel}"/>
                                                 <hc:NumericUpDown Minimum="0"
@@ -336,7 +336,7 @@
                                                                   Increment="10"
                                                                   Width="108"
                                                                   Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                                  Value="{Binding SimPressTimeMs, UpdateSourceTrigger=LostFocus}"/>
+                                                                  Value="{Binding SimultaneousPressTimeMs, UpdateSourceTrigger=LostFocus}"/>
                                                 <TextBlock Text="ms"
                                                            Style="{StaticResource JsmccMutedText}"
                                                            Margin="6,0,0,0"

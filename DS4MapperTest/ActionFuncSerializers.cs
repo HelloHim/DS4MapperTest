@@ -632,64 +632,64 @@ namespace DS4MapperTest
         }
     }
 
-    public class SimPressFuncSerializer : ActionFuncSerializer
+    public class SimultaneousPressFuncSerializer : ActionFuncSerializer
     {
-        public class SimPressSettings
+        public class SimultaneousPressSettings
         {
-            private SimPressFunc simPressFunc;
+            private SimultaneousPressFunc simultaneousPressFunc;
 
             [JsonConverter(typeof(StringEnumConverter))]
             public JoypadActionCodes Trigger
             {
-                get => simPressFunc.TriggerButton;
+                get => simultaneousPressFunc.TriggerButton;
                 set
                 {
-                    simPressFunc.TriggerButton = value;
+                    simultaneousPressFunc.TriggerButton = value;
                 }
             }
             public bool ShouldSerializeTrigger()
             {
-                return simPressFunc.TriggerButton != JoypadActionCodes.Empty;
+                return simultaneousPressFunc.TriggerButton != JoypadActionCodes.Empty;
             }
 
-            public int SimPressTimeMs
+            public int SimultaneousPressTimeMs
             {
-                get => simPressFunc.SimPressTimeMs;
-                set => simPressFunc.SimPressTimeMs = value;
+                get => simultaneousPressFunc.SimultaneousPressTimeMs;
+                set => simultaneousPressFunc.SimultaneousPressTimeMs = value;
             }
-            public bool ShouldSerializeSimPressTimeMs()
+            public bool ShouldSerializeSimultaneousPressTimeMs()
             {
-                return simPressFunc.SimPressTimeMs != ActionUtil.SimPressFunc.DEFAULT_SIM_PRESS_MS;
+                return simultaneousPressFunc.SimultaneousPressTimeMs != ActionUtil.SimultaneousPressFunc.DEFAULT_SIM_PRESS_MS;
             }
 
             public bool Interruptable
             {
-                get => simPressFunc.InterruptRegularPress;
-                set => simPressFunc.InterruptRegularPress = value;
+                get => simultaneousPressFunc.InterruptRegularPress;
+                set => simultaneousPressFunc.InterruptRegularPress = value;
             }
-            public bool ShouldSerializeInterruptable() => !simPressFunc.InterruptRegularPress;
+            public bool ShouldSerializeInterruptable() => !simultaneousPressFunc.InterruptRegularPress;
 
             public bool IsDefault()
             {
-                return simPressFunc.TriggerButton == JoypadActionCodes.Empty &&
-                    simPressFunc.SimPressTimeMs == ActionUtil.SimPressFunc.DEFAULT_SIM_PRESS_MS &&
-                    simPressFunc.InterruptRegularPress == true;
+                return simultaneousPressFunc.TriggerButton == JoypadActionCodes.Empty &&
+                    simultaneousPressFunc.SimultaneousPressTimeMs == ActionUtil.SimultaneousPressFunc.DEFAULT_SIM_PRESS_MS &&
+                    simultaneousPressFunc.InterruptRegularPress == true;
             }
 
-            public SimPressSettings(SimPressFunc actionFunc)
+            public SimultaneousPressSettings(SimultaneousPressFunc actionFunc)
             {
-                this.simPressFunc = actionFunc;
+                this.simultaneousPressFunc = actionFunc;
             }
         }
 
-        private const string typeString = "SimPress";
+        private const string typeString = "SimultaneousPress";
 
-        private SimPressFunc simPressFunc = new SimPressFunc();
+        private SimultaneousPressFunc simultaneousPressFunc = new SimultaneousPressFunc();
         [JsonIgnore]
-        public SimPressFunc SimPressFuncInstance { get => simPressFunc; set => simPressFunc = value; }
+        public SimultaneousPressFunc SimultaneousPressFuncInstance { get => simultaneousPressFunc; set => simultaneousPressFunc = value; }
 
-        private SimPressSettings settings;
-        public SimPressSettings Settings
+        private SimultaneousPressSettings settings;
+        public SimultaneousPressSettings Settings
         {
             get => settings;
             set => settings = value;
@@ -699,21 +699,21 @@ namespace DS4MapperTest
             return !settings.IsDefault();
         }
 
-        public SimPressFuncSerializer() : base()
+        public SimultaneousPressFuncSerializer() : base()
         {
             this.type = typeString;
-            actionFunc = simPressFunc;
-            settings = new SimPressSettings(simPressFunc);
+            actionFunc = simultaneousPressFunc;
+            settings = new SimultaneousPressSettings(simultaneousPressFunc);
         }
 
-        public SimPressFuncSerializer(ActionFunc tempFunc) : base(tempFunc)
+        public SimultaneousPressFuncSerializer(ActionFunc tempFunc) : base(tempFunc)
         {
-            if (tempFunc is SimPressFunc temp)
+            if (tempFunc is SimultaneousPressFunc temp)
             {
-                simPressFunc = temp;
+                simultaneousPressFunc = temp;
                 this.type = typeString;
-                actionFunc = simPressFunc;
-                settings = new SimPressSettings(simPressFunc);
+                actionFunc = simultaneousPressFunc;
+                settings = new SimultaneousPressSettings(simultaneousPressFunc);
 
                 PopulateOutputActionData();
             }
@@ -953,11 +953,11 @@ namespace DS4MapperTest
                     chordedInstance.ActionDataSerializers.RemoveAll((item) => item == null);
                     resultInstance = chordedInstance;
                     break;
-                case "SimPress":
-                    SimPressFuncSerializer simPressInstance = new SimPressFuncSerializer();
-                    JsonConvert.PopulateObject(j.ToString(), simPressInstance);
-                    simPressInstance.ActionDataSerializers.RemoveAll((item) => item == null);
-                    resultInstance = simPressInstance;
+                case "SimultaneousPress":
+                    SimultaneousPressFuncSerializer simultaneousPressInstance = new SimultaneousPressFuncSerializer();
+                    JsonConvert.PopulateObject(j.ToString(), simultaneousPressInstance);
+                    simultaneousPressInstance.ActionDataSerializers.RemoveAll((item) => item == null);
+                    resultInstance = simultaneousPressInstance;
                     break;
                 case "Analog":
                     AnalogFuncSerializer analogInstance = new AnalogFuncSerializer();
@@ -1030,10 +1030,10 @@ namespace DS4MapperTest
                     }
 
                     break;
-                case "SimPress":
-                    if (current is SimPressFuncSerializer simPressFuncSerializer)
+                case "SimultaneousPress":
+                    if (current is SimultaneousPressFuncSerializer simultaneousPressFuncSerializer)
                     {
-                        serializer.Serialize(writer, simPressFuncSerializer);
+                        serializer.Serialize(writer, simultaneousPressFuncSerializer);
                     }
 
                     break;

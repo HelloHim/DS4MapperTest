@@ -3,7 +3,7 @@ using DS4MapperTest.MapperUtil;
 
 namespace DS4MapperTest.ActionUtil
 {
-    public class SimPressFunc : ActionFunc
+    public class SimultaneousPressFunc : ActionFunc
     {
         // JoyShockMapper's SIM_PRESS_WINDOW default
         public const int DEFAULT_SIM_PRESS_MS = 50;
@@ -17,8 +17,8 @@ namespace DS4MapperTest.ActionUtil
             set => triggerButton = value;
         }
 
-        private int simPressTimeMs = DEFAULT_SIM_PRESS_MS;
-        public int SimPressTimeMs { get => simPressTimeMs; set => simPressTimeMs = value; }
+        private int simultaneousPressTimeMs = DEFAULT_SIM_PRESS_MS;
+        public int SimultaneousPressTimeMs { get => simultaneousPressTimeMs; set => simultaneousPressTimeMs = value; }
 
         // When enabled, the regular press waits out the window in case the
         // trigger button still arrives, same contract as Hold/Double Press.
@@ -38,16 +38,16 @@ namespace DS4MapperTest.ActionUtil
         private bool waited;
         private bool simMatched;
 
-        public SimPressFunc()
+        public SimultaneousPressFunc()
         {
             InterruptRegularPress = true;
         }
 
-        public SimPressFunc(SimPressFunc srcFunc)
+        public SimultaneousPressFunc(SimultaneousPressFunc srcFunc)
         {
             srcFunc.CopyTo(this);
             triggerButton = srcFunc.triggerButton;
-            simPressTimeMs = srcFunc.simPressTimeMs;
+            simultaneousPressTimeMs = srcFunc.simultaneousPressTimeMs;
             InterruptRegularPress = srcFunc.InterruptRegularPress;
         }
 
@@ -85,7 +85,7 @@ namespace DS4MapperTest.ActionUtil
                     active = true;
                     outputActive = true;
                 }
-                else if (stateData.elapsed.ElapsedMilliseconds >= simPressTimeMs)
+                else if (stateData.elapsed.ElapsedMilliseconds >= simultaneousPressTimeMs)
                 {
                     // Window expired with no matching press; let the regular
                     // press win.

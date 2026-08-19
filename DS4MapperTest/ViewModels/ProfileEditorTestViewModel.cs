@@ -2014,22 +2014,22 @@ namespace DS4MapperTest.ViewModels
         // still set a Sim Press trigger pointing at another button, it just can't be mirrored
         // back onto, the same limit the Chorded Press trigger picker already has. Called from
         // the Sim Press trigger/time/output setters on each binding kind's func item.
-        internal void ApplySimPressMirror(JoypadActionCodes sourceCode, ActionUtil.SimPressFunc sourceFunc)
+        internal void ApplySimultaneousPressMirror(JoypadActionCodes sourceCode, ActionUtil.SimultaneousPressFunc sourceFunc)
         {
             if (sourceFunc == null || sourceCode == JoypadActionCodes.Empty) return;
 
             JoypadActionCodes targetCode = sourceFunc.TriggerButton;
             if (targetCode == JoypadActionCodes.Empty || targetCode == sourceCode) return;
 
-            ButtonAction targetAction = EnsureEditableSimPressMirrorAction(targetCode);
+            ButtonAction targetAction = EnsureEditableSimultaneousPressMirrorAction(targetCode);
             if (targetAction == null) return;
 
-            ActionUtil.SimPressFunc targetFunc = targetAction.ActionFuncs
-                .OfType<ActionUtil.SimPressFunc>().FirstOrDefault();
+            ActionUtil.SimultaneousPressFunc targetFunc = targetAction.ActionFuncs
+                .OfType<ActionUtil.SimultaneousPressFunc>().FirstOrDefault();
             bool isNewFunc = targetFunc == null;
             if (isNewFunc)
             {
-                targetFunc = new ActionUtil.SimPressFunc();
+                targetFunc = new ActionUtil.SimultaneousPressFunc();
             }
 
             mapper.ProcessMappingChangeAction(() =>
@@ -2042,7 +2042,7 @@ namespace DS4MapperTest.ViewModels
                 }
 
                 targetFunc.TriggerButton = sourceCode;
-                targetFunc.SimPressTimeMs = sourceFunc.SimPressTimeMs;
+                targetFunc.SimultaneousPressTimeMs = sourceFunc.SimultaneousPressTimeMs;
                 targetFunc.OutputActions.Clear();
                 foreach (OutputActionData data in sourceFunc.OutputActions)
                 {
@@ -2052,20 +2052,20 @@ namespace DS4MapperTest.ViewModels
                 FaceButtonBindingItem.MarkFunctionsChanged(targetAction);
             });
 
-            RefreshSimPressMirrorTarget(targetCode);
+            RefreshSimultaneousPressMirrorTarget(targetCode);
         }
 
         // Removes a previously-mirrored Sim Press func from the old trigger button when the
         // source button's trigger changes, is cleared, or the binding itself is deleted - but
         // only if that button's Sim Press still points back at the source, so a target the
         // user has since repointed elsewhere independently is left alone.
-        internal void RemoveSimPressMirror(JoypadActionCodes sourceCode, JoypadActionCodes oldTriggerCode)
+        internal void RemoveSimultaneousPressMirror(JoypadActionCodes sourceCode, JoypadActionCodes oldTriggerCode)
         {
             if (sourceCode == JoypadActionCodes.Empty || oldTriggerCode == JoypadActionCodes.Empty) return;
 
-            ButtonAction targetAction = ResolveSimPressMirrorAction(oldTriggerCode);
-            ActionUtil.SimPressFunc targetFunc = targetAction?.ActionFuncs
-                .OfType<ActionUtil.SimPressFunc>().FirstOrDefault();
+            ButtonAction targetAction = ResolveSimultaneousPressMirrorAction(oldTriggerCode);
+            ActionUtil.SimultaneousPressFunc targetFunc = targetAction?.ActionFuncs
+                .OfType<ActionUtil.SimultaneousPressFunc>().FirstOrDefault();
             if (targetFunc == null || targetFunc.TriggerButton != sourceCode) return;
 
             int index = targetAction.ActionFuncs.IndexOf(targetFunc);
@@ -2078,13 +2078,13 @@ namespace DS4MapperTest.ViewModels
                 FaceButtonBindingItem.MarkFunctionsChanged(targetAction);
             });
 
-            RefreshSimPressMirrorTarget(oldTriggerCode);
+            RefreshSimultaneousPressMirrorTarget(oldTriggerCode);
         }
 
-        private ButtonAction EnsureEditableSimPressMirrorAction(JoypadActionCodes code)
+        private ButtonAction EnsureEditableSimultaneousPressMirrorAction(JoypadActionCodes code)
         {
             FaceButtonBindingItem faceItem = FindBindingItemForTriggerCode(code);
-            if (faceItem != null) return faceItem.EnsureEditableHostButtonAction(FaceBindingFuncKind.SimPress);
+            if (faceItem != null) return faceItem.EnsureEditableHostButtonAction(FaceBindingFuncKind.SimultaneousPress);
 
             DPadDirectionKind? dpadKind = DPadDirectionKindForCode(code);
             if (dpadKind.HasValue) return EnsureEditableDPadDirectionAction(dpadKind.Value);
@@ -2095,10 +2095,10 @@ namespace DS4MapperTest.ViewModels
             return null;
         }
 
-        private ButtonAction ResolveSimPressMirrorAction(JoypadActionCodes code)
+        private ButtonAction ResolveSimultaneousPressMirrorAction(JoypadActionCodes code)
         {
             FaceButtonBindingItem faceItem = FindBindingItemForTriggerCode(code);
-            if (faceItem != null) return faceItem.ResolveHostButtonAction(FaceBindingFuncKind.SimPress);
+            if (faceItem != null) return faceItem.ResolveHostButtonAction(FaceBindingFuncKind.SimultaneousPress);
 
             DPadDirectionKind? dpadKind = DPadDirectionKindForCode(code);
             if (dpadKind.HasValue) return PeekDPadDirectionAction(dpadKind.Value);
@@ -2107,7 +2107,7 @@ namespace DS4MapperTest.ViewModels
             return (triggerItem?.MappedAction as TriggerButtonAction)?.EventButton;
         }
 
-        private void RefreshSimPressMirrorTarget(JoypadActionCodes code)
+        private void RefreshSimultaneousPressMirrorTarget(JoypadActionCodes code)
         {
             FaceButtonBindingItem faceItem = FindBindingItemForTriggerCode(code);
             if (faceItem != null)

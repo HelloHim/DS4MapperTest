@@ -203,9 +203,9 @@ namespace DS4MapperTest.ButtonActions
                 {
                     decisionWindowMs = Math.Max(decisionWindowMs, doublePress.DurationMs);
                 }
-                else if (func is SimPressFunc simPress && simPress.InterruptRegularPress)
+                else if (func is SimultaneousPressFunc simultaneousPress && simultaneousPress.InterruptRegularPress)
                 {
-                    decisionWindowMs = Math.Max(decisionWindowMs, simPress.SimPressTimeMs);
+                    decisionWindowMs = Math.Max(decisionWindowMs, simultaneousPress.SimultaneousPressTimeMs);
                 }
             }
 
