@@ -26,8 +26,8 @@ namespace DS4MapperTest.StickActions
             Unprimed,
             Idle,
             Armed,
-            WaitingForCounterTap,
-            CounterTapActive,
+            WaitingForCounterPress,
+            CounterPressActive,
             Suppressed,
         }
 
@@ -141,67 +141,67 @@ namespace DS4MapperTest.StickActions
         }
 
         // New actions default to the CS2 preset (the only tuned/named preset available).
-        private CounterMovementTapLengthPreset tapLengthPreset = CounterMovementTapLengthPreset.CS2;
-        public CounterMovementTapLengthPreset TapLengthPreset
+        private CounterMovementPressLengthPreset pressLengthPreset = CounterMovementPressLengthPreset.CS2;
+        public CounterMovementPressLengthPreset PressLengthPreset
         {
-            get => tapLengthPreset;
-            set => tapLengthPreset = value;
+            get => pressLengthPreset;
+            set => pressLengthPreset = value;
         }
 
-        // All tap-length representation storage and computation (mode, Fixed, Percent,
+        // All press-length representation storage and computation (mode, Fixed, Percent,
         // Minimum, Maximum, the percentage/best-fit maths and the CS2 constants) lives in
         // this one shared object so it exists in exactly one place;
         // TouchpadCounterMovementReleasePress composes the same type rather than duplicating
         // any of it. See its class doc for why synchronisation is never done inside a raw
         // property setter.
-        private readonly CounterTapLengthTiming tapLengthTiming = new CounterTapLengthTiming();
+        private readonly CounterPressLengthTiming pressLengthTiming = new CounterPressLengthTiming();
 
-        public CounterTapLengthMode CounterTapLengthMode
+        public CounterPressLengthMode CounterPressLengthMode
         {
-            get => tapLengthTiming.Mode;
-            set => tapLengthTiming.Mode = value;
+            get => pressLengthTiming.Mode;
+            set => pressLengthTiming.Mode = value;
         }
 
-        public int CounterTapLengthMs
+        public int CounterPressLengthMs
         {
-            get => tapLengthTiming.FixedMs;
-            set => tapLengthTiming.FixedMs = value;
+            get => pressLengthTiming.FixedMs;
+            set => pressLengthTiming.FixedMs = value;
         }
 
-        public int CounterTapLengthVariancePercent
+        public int CounterPressLengthVariancePercent
         {
-            get => tapLengthTiming.VariancePercent;
-            set => tapLengthTiming.VariancePercent = value;
+            get => pressLengthTiming.VariancePercent;
+            set => pressLengthTiming.VariancePercent = value;
         }
 
-        public int CounterTapLengthMinimumMs
+        public int CounterPressLengthMinimumMs
         {
-            get => tapLengthTiming.MinimumMs;
-            set => tapLengthTiming.MinimumMs = value;
+            get => pressLengthTiming.MinimumMs;
+            set => pressLengthTiming.MinimumMs = value;
         }
 
-        public int CounterTapLengthMaximumMs
+        public int CounterPressLengthMaximumMs
         {
-            get => tapLengthTiming.MaximumMs;
-            set => tapLengthTiming.MaximumMs = value;
+            get => pressLengthTiming.MaximumMs;
+            set => pressLengthTiming.MaximumMs = value;
         }
 
         /// <summary>
         /// User-edit entry point for Fixed mode / Wait Variance Percentage mode. See
-        /// CounterTapLengthTiming.ApplyFixedAndPercentage. Only ever called from a
+        /// CounterPressLengthTiming.ApplyFixedAndPercentage. Only ever called from a
         /// ViewModel edit, CS2 preset application or profile migration - never from the
         /// per-report runtime path.
         /// </summary>
-        public void ApplyFixedAndPercentage(int fixedMs, int percent) => tapLengthTiming.ApplyFixedAndPercentage(fixedMs, percent);
+        public void ApplyFixedAndPercentage(int fixedMs, int percent) => pressLengthTiming.ApplyFixedAndPercentage(fixedMs, percent);
 
         /// <summary>
         /// User-edit entry point for Minimum and Maximum mode. See
-        /// CounterTapLengthTiming.ApplyMinimumAndMaximum. Only ever called from a
+        /// CounterPressLengthTiming.ApplyMinimumAndMaximum. Only ever called from a
         /// ViewModel edit or profile migration - never from the per-report runtime path.
         /// </summary>
         public void ApplyMinimumAndMaximum(int minimumMs, int maximumMs)
         {
-            tapLengthTiming.ApplyMinimumAndMaximum(minimumMs, maximumMs);
+            pressLengthTiming.ApplyMinimumAndMaximum(minimumMs, maximumMs);
             NormalizeRanges();
         }
 
@@ -211,39 +211,39 @@ namespace DS4MapperTest.StickActions
         /// the state machine below must only ever consult this, never branch on the mode
         /// itself.
         /// </summary>
-        public (int Minimum, int Maximum) GetEffectiveCounterTapLengthRange() => tapLengthTiming.GetEffectiveRange();
+        public (int Minimum, int Maximum) GetEffectiveCounterPressLengthRange() => pressLengthTiming.GetEffectiveRange();
 
         // All start-delay representation storage and computation (mode, Fixed, Percent,
         // Minimum, Maximum, the percentage/best-fit maths) lives in this one shared object,
-        // mirroring tapLengthTiming above; TouchpadCounterMovementReleasePress composes the
+        // mirroring pressLengthTiming above; TouchpadCounterMovementReleasePress composes the
         // same type rather than duplicating any of it.
-        private readonly CounterTapStartDelayTiming startDelayTiming = new CounterTapStartDelayTiming();
+        private readonly CounterPressStartDelayTiming startDelayTiming = new CounterPressStartDelayTiming();
 
-        public CounterTapStartDelayMode CounterTapStartDelayMode
+        public CounterPressStartDelayMode CounterPressStartDelayMode
         {
             get => startDelayTiming.Mode;
             set => startDelayTiming.Mode = value;
         }
 
-        public int CounterTapStartDelayMs
+        public int CounterPressStartDelayMs
         {
             get => startDelayTiming.FixedMs;
             set => startDelayTiming.FixedMs = value;
         }
 
-        public int CounterTapStartDelayVariancePercent
+        public int CounterPressStartDelayVariancePercent
         {
             get => startDelayTiming.VariancePercent;
             set => startDelayTiming.VariancePercent = value;
         }
 
-        public int CounterTapStartDelayMinimumMs
+        public int CounterPressStartDelayMinimumMs
         {
             get => startDelayTiming.MinimumMs;
             set => startDelayTiming.MinimumMs = value;
         }
 
-        public int CounterTapStartDelayMaximumMs
+        public int CounterPressStartDelayMaximumMs
         {
             get => startDelayTiming.MaximumMs;
             set => startDelayTiming.MaximumMs = value;
@@ -251,14 +251,14 @@ namespace DS4MapperTest.StickActions
 
         /// <summary>
         /// User-edit entry point for Fixed mode / Wait Variance Percentage mode for the start
-        /// delay. See CounterTapStartDelayTiming.ApplyFixedAndPercentage. Only ever called
+        /// delay. See CounterPressStartDelayTiming.ApplyFixedAndPercentage. Only ever called
         /// from a ViewModel edit or profile migration - never from the per-report runtime path.
         /// </summary>
         public void ApplyStartDelayFixedAndPercentage(int fixedMs, int percent) => startDelayTiming.ApplyFixedAndPercentage(fixedMs, percent);
 
         /// <summary>
         /// User-edit entry point for Minimum and Maximum mode for the start delay. See
-        /// CounterTapStartDelayTiming.ApplyMinimumAndMaximum. Only ever called from a
+        /// CounterPressStartDelayTiming.ApplyMinimumAndMaximum. Only ever called from a
         /// ViewModel edit or profile migration - never from the per-report runtime path.
         /// </summary>
         public void ApplyStartDelayMinimumAndMaximum(int minimumMs, int maximumMs)
@@ -269,44 +269,44 @@ namespace DS4MapperTest.StickActions
 
         /// <summary>
         /// Returns the runtime effective Minimum/Maximum for the currently selected start
-        /// delay mode. See GetEffectiveCounterTapLengthRange's class doc: the state machine
+        /// delay mode. See GetEffectiveCounterPressLengthRange's class doc: the state machine
         /// below must only ever consult this, never branch on the mode itself.
         /// </summary>
-        public (int Minimum, int Maximum) GetEffectiveCounterTapStartDelayRange() => startDelayTiming.GetEffectiveRange();
+        public (int Minimum, int Maximum) GetEffectiveCounterPressStartDelayRange() => startDelayTiming.GetEffectiveRange();
 
         /// <summary>
         /// Corrects malformed range combinations (min greater than max, or a start delay
-        /// maximum that could exceed the sampled tap-length window) in place. Cheap enough
+        /// maximum that could exceed the sampled press-length window) in place. Cheap enough
         /// to call on every activation and after every load, so it is never relied on to
         /// run per mapper tick.
         /// </summary>
         public void NormalizeRanges()
         {
-            if (CounterTapLengthMinimumMs > CounterTapLengthMaximumMs)
+            if (CounterPressLengthMinimumMs > CounterPressLengthMaximumMs)
             {
-                CounterTapLengthMaximumMs = CounterTapLengthMinimumMs;
+                CounterPressLengthMaximumMs = CounterPressLengthMinimumMs;
             }
 
-            if (CounterTapStartDelayMinimumMs > CounterTapStartDelayMaximumMs)
+            if (CounterPressStartDelayMinimumMs > CounterPressStartDelayMaximumMs)
             {
-                CounterTapStartDelayMaximumMs = CounterTapStartDelayMinimumMs;
+                CounterPressStartDelayMaximumMs = CounterPressStartDelayMinimumMs;
             }
 
             // The start delay's Minimum/Maximum representation must never be able to sample
-            // longer than the tap-length window can sample short, otherwise
+            // longer than the press-length window can sample short, otherwise
             // actualOppositeHoldMs could go negative. This only constrains the stored
             // Minimum/Maximum representation (also used by Wait Variance Percentage mode,
             // which keeps Minimum/Maximum synchronised); Fixed mode's selected delay is
             // unaffected here and instead relies on actualOppositeHoldMs's own Math.Max(0, ...)
             // clamp below.
-            if (CounterTapStartDelayMaximumMs > CounterTapLengthMinimumMs)
+            if (CounterPressStartDelayMaximumMs > CounterPressLengthMinimumMs)
             {
-                CounterTapStartDelayMaximumMs = CounterTapLengthMinimumMs;
+                CounterPressStartDelayMaximumMs = CounterPressLengthMinimumMs;
             }
 
-            if (CounterTapStartDelayMinimumMs > CounterTapStartDelayMaximumMs)
+            if (CounterPressStartDelayMinimumMs > CounterPressStartDelayMaximumMs)
             {
-                CounterTapStartDelayMinimumMs = CounterTapStartDelayMaximumMs;
+                CounterPressStartDelayMinimumMs = CounterPressStartDelayMaximumMs;
             }
         }
 
@@ -319,16 +319,16 @@ namespace DS4MapperTest.StickActions
         /// </summary>
         public void ApplyCs2Preset()
         {
-            tapLengthTiming.ApplyCs2Preset();
-            tapLengthPreset = CounterMovementTapLengthPreset.CS2;
+            pressLengthTiming.ApplyCs2Preset();
+            pressLengthPreset = CounterMovementPressLengthPreset.CS2;
         }
 
         /// <summary>
-        /// True whenever the current numeric tap-length values happen to equal the CS2
+        /// True whenever the current numeric press-length values happen to equal the CS2
         /// preset's values, regardless of how they got there (the preset dropdown, a direct
         /// edit, migration, or a loaded profile).
         /// </summary>
-        public bool MatchesCs2Values => tapLengthTiming.MatchesCs2Values;
+        public bool MatchesCs2Values => pressLengthTiming.MatchesCs2Values;
 
         /// <summary>
         /// The preset that should actually be displayed, derived purely from the current
@@ -338,8 +338,8 @@ namespace DS4MapperTest.StickActions
         /// and CS2 is entirely defined by its values, so there is never a meaningful
         /// distinction between "custom values that happen to equal 78/90" and "CS2".
         /// </summary>
-        public CounterMovementTapLengthPreset EffectiveTapLengthPreset =>
-            MatchesCs2Values ? CounterMovementTapLengthPreset.CS2 : CounterMovementTapLengthPreset.Custom;
+        public CounterMovementPressLengthPreset EffectivePressLengthPreset =>
+            MatchesCs2Values ? CounterMovementPressLengthPreset.CS2 : CounterMovementPressLengthPreset.Custom;
 
         private CounterMovementReleasePressState state = CounterMovementReleasePressState.Unprimed;
         public CounterMovementReleasePressState State => state;
@@ -365,9 +365,9 @@ namespace DS4MapperTest.StickActions
         private readonly AxisDirButton[] arrowOutputs = new AxisDirButton[13];
 
         // Sampled once per activation in EnterReleasePress, then held for the lifetime of
-        // that activation. Never resampled while WaitingForCounterTap/CounterTapActive or
+        // that activation. Never resampled while WaitingForCounterPress/CounterPressActive or
         // by mapper updates; only a fresh qualifying release samples new values.
-        private int selectedTotalTapWindowMs;
+        private int selectedTotalPressWindowMs;
         private int selectedStartDelayMs;
         private int actualOppositeHoldMs;
 
@@ -487,25 +487,25 @@ namespace DS4MapperTest.StickActions
                     }
                     break;
 
-                case CounterMovementReleasePressState.WaitingForCounterTap:
+                case CounterMovementReleasePressState.WaitingForCounterPress:
                     effectiveDir = ApplySuppression(rawCurrentDir);
                     CheckReengagement(rawCurrentDir, dr, dtValid, ref effectiveDir);
-                    if (state == CounterMovementReleasePressState.WaitingForCounterTap)
+                    if (state == CounterMovementReleasePressState.WaitingForCounterPress)
                     {
                         if (dtValid) releasePressElapsedSeconds += dt;
-                        AdvanceWaitingForCounterTap();
+                        AdvanceWaitingForCounterPress();
                     }
                     break;
 
-                case CounterMovementReleasePressState.CounterTapActive:
+                case CounterMovementReleasePressState.CounterPressActive:
                     effectiveDir = ApplySuppression(rawCurrentDir);
                     CheckReengagement(rawCurrentDir, dr, dtValid, ref effectiveDir);
-                    if (state == CounterMovementReleasePressState.CounterTapActive)
+                    if (state == CounterMovementReleasePressState.CounterPressActive)
                     {
                         if (dtValid) releasePressElapsedSeconds += dt;
-                        if (GetReleasePressElapsedMs() >= selectedTotalTapWindowMs)
+                        if (GetReleasePressElapsedMs() >= selectedTotalPressWindowMs)
                         {
-                            EndCounterTap();
+                            EndCounterPress();
                         }
                     }
                     break;
@@ -602,11 +602,11 @@ namespace DS4MapperTest.StickActions
         }
 
         /// <summary>
-        /// Entered once per qualifying release. Samples the total tap window and start
+        /// Entered once per qualifying release. Samples the total press window and start
         /// delay exactly once here (never resampled for the lifetime of this activation),
         /// subtracts the delay from the window per the class doc, and either begins the
         /// opposite press immediately (delay 0, matching the pre-timing-variance behaviour)
-        /// or moves to WaitingForCounterTap to wait out the delay first.
+        /// or moves to WaitingForCounterPress to wait out the delay first.
         /// </summary>
         private void EnterReleasePress(ReleaseTriggerReason reason)
         {
@@ -646,34 +646,34 @@ namespace DS4MapperTest.StickActions
             }
 
             NormalizeRanges();
-            if (CounterTapLengthMode == CounterTapLengthMode.Fixed)
+            if (CounterPressLengthMode == CounterPressLengthMode.Fixed)
             {
                 // Fixed mode is deterministic: every qualifying activation uses exactly the
                 // fixed duration, so the random provider is never consulted for it at all.
-                selectedTotalTapWindowMs = CounterTapLengthMs;
+                selectedTotalPressWindowMs = CounterPressLengthMs;
             }
             else
             {
-                (int effectiveMinimumMs, int effectiveMaximumMs) = GetEffectiveCounterTapLengthRange();
-                selectedTotalTapWindowMs = randomProvider.NextInclusive(effectiveMinimumMs, effectiveMaximumMs);
+                (int effectiveMinimumMs, int effectiveMaximumMs) = GetEffectiveCounterPressLengthRange();
+                selectedTotalPressWindowMs = randomProvider.NextInclusive(effectiveMinimumMs, effectiveMaximumMs);
             }
 
-            if (CounterTapStartDelayMode == CounterTapStartDelayMode.Fixed)
+            if (CounterPressStartDelayMode == CounterPressStartDelayMode.Fixed)
             {
                 // Fixed mode is deterministic: every qualifying activation uses exactly the
                 // fixed delay, so the random provider is never consulted for it at all.
-                selectedStartDelayMs = CounterTapStartDelayMs;
+                selectedStartDelayMs = CounterPressStartDelayMs;
             }
             else
             {
-                (int effectiveStartDelayMinimumMs, int effectiveStartDelayMaximumMs) = GetEffectiveCounterTapStartDelayRange();
+                (int effectiveStartDelayMinimumMs, int effectiveStartDelayMaximumMs) = GetEffectiveCounterPressStartDelayRange();
                 selectedStartDelayMs = randomProvider.NextInclusive(effectiveStartDelayMinimumMs, effectiveStartDelayMaximumMs);
             }
-            // The start delay is included inside the selected tap-length window, not added
+            // The start delay is included inside the selected press-length window, not added
             // on top of it: the delay is subtracted from the total window to get the actual
             // opposite-direction hold duration, clamped at zero so a delay sampled equal to
             // (or, defensively, slightly above) the window can never go negative.
-            actualOppositeHoldMs = Math.Max(0, selectedTotalTapWindowMs - selectedStartDelayMs);
+            actualOppositeHoldMs = Math.Max(0, selectedTotalPressWindowMs - selectedStartDelayMs);
 
             pendingOppositeComponents = opposite;
             pendingUsesArrowKeys = useArrowKeysForCounterMovementPresses;
@@ -684,28 +684,28 @@ namespace DS4MapperTest.StickActions
 
             if (selectedStartDelayMs <= 0)
             {
-                BeginCounterTapOrSkip();
+                BeginCounterPressOrSkip();
             }
             else
             {
                 pulseOwnedComponents = StickPadAction.DpadDirections.Centered;
-                state = CounterMovementReleasePressState.WaitingForCounterTap;
+                state = CounterMovementReleasePressState.WaitingForCounterPress;
             }
         }
 
-        private void AdvanceWaitingForCounterTap()
+        private void AdvanceWaitingForCounterPress()
         {
             if (GetReleasePressElapsedMs() >= selectedStartDelayMs)
             {
-                BeginCounterTapOrSkip();
+                BeginCounterPressOrSkip();
 
                 // A single huge dt jump (e.g. a resumed-from-background report) could
                 // satisfy both thresholds in the same tick; handle that immediately rather
                 // than waiting for a further tick that may never suppress correctly.
-                if (state == CounterMovementReleasePressState.CounterTapActive &&
-                    GetReleasePressElapsedMs() >= selectedTotalTapWindowMs)
+                if (state == CounterMovementReleasePressState.CounterPressActive &&
+                    GetReleasePressElapsedMs() >= selectedTotalPressWindowMs)
                 {
-                    EndCounterTap();
+                    EndCounterPress();
                 }
             }
         }
@@ -715,7 +715,7 @@ namespace DS4MapperTest.StickActions
         /// (total window entirely consumed by the delay), in which case no key is pressed
         /// at all and the action ends cleanly by moving straight to Suppressed.
         /// </summary>
-        private void BeginCounterTapOrSkip()
+        private void BeginCounterPressOrSkip()
         {
             if (actualOppositeHoldMs <= 0)
             {
@@ -727,10 +727,10 @@ namespace DS4MapperTest.StickActions
 
             pulseOwnedComponents = pendingOppositeComponents;
             pulseUsesArrowKeys = pendingUsesArrowKeys;
-            state = CounterMovementReleasePressState.CounterTapActive;
+            state = CounterMovementReleasePressState.CounterPressActive;
         }
 
-        private void EndCounterTap()
+        private void EndCounterPress()
         {
             MarkPulseForRelease(pulseOwnedComponents);
             pulseOwnedComponents = StickPadAction.DpadDirections.Centered;
@@ -836,7 +836,7 @@ namespace DS4MapperTest.StickActions
             }
             else
             {
-                // Genuinely different direction (this also covers WaitingForCounterTap,
+                // Genuinely different direction (this also covers WaitingForCounterPress,
                 // where pulseOwnedComponents is still empty so touchesPulse can never be
                 // true): abandon this activation entirely, release anything owned so far,
                 // and start fresh tracking of the new push.
@@ -1007,7 +1007,7 @@ namespace DS4MapperTest.StickActions
             latchedZone = StickPadAction.DpadDirections.Centered;
             holdUp = holdDown = holdLeft = holdRight = 0.0;
             hasFiredThisCycle = false;
-            selectedTotalTapWindowMs = 0;
+            selectedTotalPressWindowMs = 0;
             selectedStartDelayMs = 0;
             actualOppositeHoldMs = 0;
             releasePressElapsedSeconds = 0.0;
@@ -1033,7 +1033,7 @@ namespace DS4MapperTest.StickActions
                 "totalWindowMs={14} startDelayMs={15} actualHoldMs={16}",
                 Environment.TickCount64, dt, dtValid, rPhysical, rFiltered, dr, state,
                 rawDir, effectiveDir, latchedZone, peakRadius, suppressedComponents, pulseOwnedComponents,
-                lastTriggerReason, selectedTotalTapWindowMs, selectedStartDelayMs, actualOppositeHoldMs));
+                lastTriggerReason, selectedTotalPressWindowMs, selectedStartDelayMs, actualOppositeHoldMs));
         }
     }
 }

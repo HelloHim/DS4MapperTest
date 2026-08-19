@@ -207,13 +207,13 @@ Increment="1" ToolTip="+ = Clockwise. - = Counter-clockwise" Width="100" Margin=
 
                 <StackPanel Margin="0,8,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="Counter Tap Length (Maximum)" />
-                        <hc:NumericUpDown Minimum="10" Maximum="150" Value="{Binding CounterTapLengthMaximumMs}" DecimalPlaces="0"
+                        <Label Content="Counter Press Length (Maximum)" />
+                        <hc:NumericUpDown Minimum="10" Maximum="150" Value="{Binding CounterPressLengthMaximumMs}" DecimalPlaces="0"
 Increment="1" Width="100" Margin="8,0,0,0">
                             <hc:NumericUpDown.Style>
                                 <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightCounterTapLengthMaximumMs}" Value="False">
+                                        <DataTrigger Binding="{Binding HighlightCounterPressLengthMaximumMs}" Value="False">
                                             <Setter Property="Opacity" Value="0.7" />
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -222,7 +222,7 @@ Increment="1" Width="100" Margin="8,0,0,0">
                         </hc:NumericUpDown>
                         <Label Content="ms" Margin="2,0,0,0" BorderBrush="{x:Null}" />
                     </StackPanel>
-                    <TextBlock Text="The full Counter Tap Length Variance, Counter Tap Start Delay Variance and Counter Tap Length Preset controls are on the Advanced stick settings page; this legacy editor only exposes the maximum tap length."
+                    <TextBlock Text="The full Counter Press Length Variance, Counter Press Start Delay Variance and Counter Press Length Preset controls are on the Advanced stick settings page; this legacy editor only exposes the maximum press length."
                                TextWrapping="Wrap" MaxWidth="500" HorizontalAlignment="Left" Opacity="0.8" Margin="0,4,0,0" />
                 </StackPanel>
 

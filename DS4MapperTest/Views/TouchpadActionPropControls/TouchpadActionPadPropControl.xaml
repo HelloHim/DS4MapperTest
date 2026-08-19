@@ -216,17 +216,17 @@
                                         <ColumnDefinition Width="260"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Counter Tap Length Mode" Style="{StaticResource JsmccLabelText}"/>
+                                    <TextBlock Grid.Column="0" Text="Counter Press Length Mode" Style="{StaticResource JsmccLabelText}"/>
                                     <ComboBox Grid.Column="1"
-                                              ItemsSource="{Binding TapLengthModeItems}"
+                                              ItemsSource="{Binding PressLengthModeItems}"
                                               DisplayMemberPath="DisplayName"
                                               SelectedValuePath="ChoiceValue"
-                                              SelectedValue="{Binding CounterTapLengthMode}"
+                                              SelectedValue="{Binding CounterPressLengthMode}"
                                               Style="{StaticResource JsmccComboBoxStyle}"
                                               HorizontalAlignment="Left"
                                               MinWidth="220"/>
                                 </Grid>
-                                <TextBlock Text="{Binding CounterTapLengthModeDescription}"
+                                <TextBlock Text="{Binding CounterPressLengthModeDescription}"
                                            Style="{StaticResource JsmccMutedText}"
                                            TextWrapping="Wrap"
                                            Margin="0,4,0,0"/>
@@ -239,12 +239,12 @@
                                     <ColumnDefinition Width="260"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Counter Tap Length Preset" Style="{StaticResource JsmccLabelText}"/>
+                                <TextBlock Grid.Column="0" Text="Counter Press Length Preset" Style="{StaticResource JsmccLabelText}"/>
                                 <ComboBox Grid.Column="1"
-                                          ItemsSource="{Binding TapLengthPresetItems}"
+                                          ItemsSource="{Binding PressLengthPresetItems}"
                                           DisplayMemberPath="DisplayName"
                                           SelectedValuePath="ChoiceValue"
-                                          SelectedValue="{Binding TapLengthPreset}"
+                                          SelectedValue="{Binding PressLengthPreset}"
                                           Style="{StaticResource JsmccComboBoxStyle}"
                                           HorizontalAlignment="Left"
                                           MinWidth="150"
@@ -261,10 +261,10 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Counter Tap Length" Style="{StaticResource JsmccLabelText}"/>
+                                    <TextBlock Grid.Column="0" Text="Counter Press Length" Style="{StaticResource JsmccLabelText}"/>
                                     <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
                                                       Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                      Value="{Binding CounterTapLengthMs, UpdateSourceTrigger=LostFocus}"/>
+                                                      Value="{Binding CounterPressLengthMs, UpdateSourceTrigger=LostFocus}"/>
                                     <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                                 </Grid>
                                 <TextBlock Text="Uses the same total duration for every qualifying release."
@@ -283,10 +283,10 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Counter Tap Length" Style="{StaticResource JsmccLabelText}"/>
+                                    <TextBlock Grid.Column="0" Text="Counter Press Length" Style="{StaticResource JsmccLabelText}"/>
                                     <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
                                                       Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                      Value="{Binding CounterTapLengthMs, UpdateSourceTrigger=LostFocus}"/>
+                                                      Value="{Binding CounterPressLengthMs, UpdateSourceTrigger=LostFocus}"/>
                                     <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                                 </Grid>
                                 <Grid>
@@ -298,10 +298,10 @@
                                     <TextBlock Grid.Column="0" Text="Wait Variance Percentage" Style="{StaticResource JsmccLabelText}"/>
                                     <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="0" Increment="1"
                                                       Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                      Value="{Binding CounterTapLengthVariancePercent, UpdateSourceTrigger=LostFocus}"/>
+                                                      Value="{Binding CounterPressLengthVariancePercent, UpdateSourceTrigger=LostFocus}"/>
                                     <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                                 </Grid>
-                                <TextBlock Text="Sets the percentage range below and above the fixed tap length. Final boundaries are rounded down to whole milliseconds."
+                                <TextBlock Text="Sets the percentage range below and above the fixed press length. Final boundaries are rounded down to whole milliseconds."
                                            Style="{StaticResource JsmccMutedText}"
                                            TextWrapping="Wrap"
                                            Margin="0,4,0,0"/>
@@ -321,7 +321,7 @@
                                               Style="{StaticResource JsmccToggleStyle}"
                                               VerticalAlignment="Center"/>
                                 </Grid>
-                                <TextBlock Text="When enabled, sliding into the touchpad deadzone triggers the counter tap without lifting your thumb."
+                                <TextBlock Text="When enabled, sliding into the touchpad deadzone triggers the counter press without lifting your thumb."
                                            Style="{StaticResource JsmccMutedText}"
                                            TextWrapping="Wrap"
                                            Margin="0,4,0,0"/>
@@ -331,7 +331,7 @@
                         <Border Style="{StaticResource ModeRowBorder}"
                                 Visibility="{Binding ShowMinimumAndMaximumModeFields, Converter={StaticResource BoolToVis}}">
                             <StackPanel>
-                                <TextBlock Text="Counter Tap Length Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Counter Press Length Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="170"/>
@@ -344,12 +344,12 @@
                                     <TextBlock Grid.Column="0" Text="Minimum" Style="{StaticResource JsmccLabelText}"/>
                                     <hc:NumericUpDown Grid.Column="1" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
                                                       Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                      Value="{Binding CounterTapLengthMinimumMs, UpdateSourceTrigger=LostFocus}"/>
+                                                      Value="{Binding CounterPressLengthMinimumMs, UpdateSourceTrigger=LostFocus}"/>
                                     <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,12,0" VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="3" Text="Maximum" Style="{StaticResource JsmccLabelText}"/>
                                     <hc:NumericUpDown Grid.Column="4" Minimum="10" Maximum="150" DecimalPlaces="0" Increment="1"
                                                       Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                      Value="{Binding CounterTapLengthMaximumMs, UpdateSourceTrigger=LostFocus}"/>
+                                                      Value="{Binding CounterPressLengthMaximumMs, UpdateSourceTrigger=LostFocus}"/>
                                     <TextBlock Grid.Column="5" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                                 </Grid>
                                 <TextBlock Text="Selects a total duration at random from the specified inclusive range. On each qualifying release, one value is picked at random from this range and used as the complete window for that release."
@@ -368,17 +368,17 @@
                                                 <ColumnDefinition Width="260"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="Counter Tap Start Delay Mode" Style="{StaticResource JsmccLabelText}"/>
+                                            <TextBlock Grid.Column="0" Text="Counter Press Start Delay Mode" Style="{StaticResource JsmccLabelText}"/>
                                             <ComboBox Grid.Column="1"
                                                       ItemsSource="{Binding StartDelayModeItems}"
                                                       DisplayMemberPath="DisplayName"
                                                       SelectedValuePath="ChoiceValue"
-                                                      SelectedValue="{Binding CounterTapStartDelayMode}"
+                                                      SelectedValue="{Binding CounterPressStartDelayMode}"
                                                       Style="{StaticResource JsmccComboBoxStyle}"
                                                       HorizontalAlignment="Left"
                                                       MinWidth="220"/>
                                         </Grid>
-                                        <TextBlock Text="{Binding CounterTapStartDelayModeDescription}"
+                                        <TextBlock Text="{Binding CounterPressStartDelayModeDescription}"
                                                    Style="{StaticResource JsmccMutedText}"
                                                    TextWrapping="Wrap"
                                                    Margin="0,4,0,0"/>
@@ -394,10 +394,10 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="Counter Tap Start Delay" Style="{StaticResource JsmccLabelText}"/>
+                                            <TextBlock Grid.Column="0" Text="Counter Press Start Delay" Style="{StaticResource JsmccLabelText}"/>
                                             <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="150" DecimalPlaces="0" Increment="1"
                                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                              Value="{Binding CounterTapStartDelayMs, UpdateSourceTrigger=LostFocus}"/>
+                                                              Value="{Binding CounterPressStartDelayMs, UpdateSourceTrigger=LostFocus}"/>
                                             <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                                         </Grid>
                                         <TextBlock Text="Sets a fixed neutral delay before the generated opposite press begins."
@@ -416,10 +416,10 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="Counter Tap Start Delay" Style="{StaticResource JsmccLabelText}"/>
+                                            <TextBlock Grid.Column="0" Text="Counter Press Start Delay" Style="{StaticResource JsmccLabelText}"/>
                                             <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="150" DecimalPlaces="0" Increment="1"
                                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                              Value="{Binding CounterTapStartDelayMs, UpdateSourceTrigger=LostFocus}"/>
+                                                              Value="{Binding CounterPressStartDelayMs, UpdateSourceTrigger=LostFocus}"/>
                                             <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                                         </Grid>
                                         <Grid>
@@ -431,7 +431,7 @@
                                             <TextBlock Grid.Column="0" Text="Wait Variance Percentage" Style="{StaticResource JsmccLabelText}"/>
                                             <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="100" DecimalPlaces="0" Increment="1"
                                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                              Value="{Binding CounterTapStartDelayVariancePercent, UpdateSourceTrigger=LostFocus}"/>
+                                                              Value="{Binding CounterPressStartDelayVariancePercent, UpdateSourceTrigger=LostFocus}"/>
                                             <TextBlock Grid.Column="2" Text="%" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                                         </Grid>
                                         <TextBlock Text="Sets the percentage range below and above the fixed start delay. Final boundaries are rounded down to whole milliseconds."
@@ -444,7 +444,7 @@
                                 <Border Style="{StaticResource ModeRowBorder}"
                                         Visibility="{Binding ShowStartDelayMinimumAndMaximumModeFields, Converter={StaticResource BoolToVis}}">
                                     <StackPanel>
-                                        <TextBlock Text="Counter Tap Start Delay Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
+                                        <TextBlock Text="Counter Press Start Delay Variance" Style="{StaticResource JsmccLabelText}" Margin="0,0,0,4"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="170"/>
@@ -457,15 +457,15 @@
                                             <TextBlock Grid.Column="0" Text="Minimum" Style="{StaticResource JsmccLabelText}"/>
                                             <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="150" DecimalPlaces="0" Increment="1"
                                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                              Value="{Binding CounterTapStartDelayMinimumMs, UpdateSourceTrigger=LostFocus}"/>
+                                                              Value="{Binding CounterPressStartDelayMinimumMs, UpdateSourceTrigger=LostFocus}"/>
                                             <TextBlock Grid.Column="2" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,12,0" VerticalAlignment="Center"/>
                                             <TextBlock Grid.Column="3" Text="Maximum" Style="{StaticResource JsmccLabelText}"/>
                                             <hc:NumericUpDown Grid.Column="4" Minimum="0" Maximum="150" DecimalPlaces="0" Increment="1"
                                                               Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
-                                                              Value="{Binding CounterTapStartDelayMaximumMs, UpdateSourceTrigger=LostFocus}"/>
+                                                              Value="{Binding CounterPressStartDelayMaximumMs, UpdateSourceTrigger=LostFocus}"/>
                                             <TextBlock Grid.Column="5" Text="ms" Style="{StaticResource JsmccLabelText}" Margin="6,0,0,0" VerticalAlignment="Center"/>
                                         </Grid>
-                                        <TextBlock Text="Sets the minimum and maximum neutral delay before the generated opposite press begins. The start delay is included within the selected tap-length window above: it is subtracted from the opposite-direction hold time, so the complete action never runs longer than the selected duration."
+                                        <TextBlock Text="Sets the minimum and maximum neutral delay before the generated opposite press begins. The start delay is included within the selected press-length window above: it is subtracted from the opposite-direction hold time, so the complete action never runs longer than the selected duration."
                                                    Style="{StaticResource JsmccMutedText}"
                                                    TextWrapping="Wrap"
                                                    Margin="0,4,0,0"/>

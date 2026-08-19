@@ -3,14 +3,14 @@ using DS4MapperTest.TouchpadActions;
 
 namespace DS4MapperUnitTests
 {
-    // Covers the three Counter Tap Length timing modes (Fixed, Wait Variance Percentage,
-    // Minimum and Maximum): defaults, the percentage/best-fit maths in CounterTapLengthTiming,
+    // Covers the three Counter Press Length timing modes (Fixed, Wait Variance Percentage,
+    // Minimum and Maximum): defaults, the percentage/best-fit maths in CounterPressLengthTiming,
     // CS2 preset behaviour, mode switching and the mode-aware effective range used at runtime.
     // CounterMovementReleasePressProcessor (stick D-Pad/Analog Emulation) and TouchpadCounterMovementReleasePress
-    // (touchpad) both compose the same CounterTapLengthTiming, so both are exercised here to
+    // (touchpad) both compose the same CounterPressLengthTiming, so both are exercised here to
     // confirm neither duplicated nor diverged from the shared implementation.
     [TestClass]
-    public class CounterTapLengthModeTests
+    public class CounterPressLengthModeTests
     {
         // --- Defaults ---------------------------------------------------------------
 
@@ -20,12 +20,12 @@ namespace DS4MapperUnitTests
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
 
             Assert.IsFalse(processor.Enabled);
-            Assert.AreEqual(CounterTapLengthMode.WaitVariancePercentage, processor.CounterTapLengthMode);
-            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, processor.EffectiveTapLengthPreset);
-            Assert.AreEqual(84, processor.CounterTapLengthMs);
-            Assert.AreEqual(7, processor.CounterTapLengthVariancePercent);
-            Assert.AreEqual(78, processor.CounterTapLengthMinimumMs);
-            Assert.AreEqual(90, processor.CounterTapLengthMaximumMs);
+            Assert.AreEqual(CounterPressLengthMode.WaitVariancePercentage, processor.CounterPressLengthMode);
+            Assert.AreEqual(CounterMovementPressLengthPreset.CS2, processor.EffectivePressLengthPreset);
+            Assert.AreEqual(84, processor.CounterPressLengthMs);
+            Assert.AreEqual(7, processor.CounterPressLengthVariancePercent);
+            Assert.AreEqual(78, processor.CounterPressLengthMinimumMs);
+            Assert.AreEqual(90, processor.CounterPressLengthMaximumMs);
         }
 
         [TestMethod]
@@ -34,12 +34,12 @@ namespace DS4MapperUnitTests
             TouchpadCounterMovementReleasePress releasePress = new TouchpadCounterMovementReleasePress();
 
             Assert.IsFalse(releasePress.Enabled);
-            Assert.AreEqual(CounterTapLengthMode.WaitVariancePercentage, releasePress.CounterTapLengthMode);
-            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, releasePress.EffectiveTapLengthPreset);
-            Assert.AreEqual(84, releasePress.CounterTapLengthMs);
-            Assert.AreEqual(7, releasePress.CounterTapLengthVariancePercent);
-            Assert.AreEqual(78, releasePress.CounterTapLengthMinimumMs);
-            Assert.AreEqual(90, releasePress.CounterTapLengthMaximumMs);
+            Assert.AreEqual(CounterPressLengthMode.WaitVariancePercentage, releasePress.CounterPressLengthMode);
+            Assert.AreEqual(CounterMovementPressLengthPreset.CS2, releasePress.EffectivePressLengthPreset);
+            Assert.AreEqual(84, releasePress.CounterPressLengthMs);
+            Assert.AreEqual(7, releasePress.CounterPressLengthVariancePercent);
+            Assert.AreEqual(78, releasePress.CounterPressLengthMinimumMs);
+            Assert.AreEqual(90, releasePress.CounterPressLengthMaximumMs);
         }
 
         [TestMethod]
@@ -48,11 +48,11 @@ namespace DS4MapperUnitTests
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
             processor.Enabled = true;
 
-            Assert.AreEqual(CounterTapLengthMode.WaitVariancePercentage, processor.CounterTapLengthMode);
-            Assert.AreEqual(84, processor.CounterTapLengthMs);
-            Assert.AreEqual(7, processor.CounterTapLengthVariancePercent);
-            Assert.AreEqual(78, processor.CounterTapLengthMinimumMs);
-            Assert.AreEqual(90, processor.CounterTapLengthMaximumMs);
+            Assert.AreEqual(CounterPressLengthMode.WaitVariancePercentage, processor.CounterPressLengthMode);
+            Assert.AreEqual(84, processor.CounterPressLengthMs);
+            Assert.AreEqual(7, processor.CounterPressLengthVariancePercent);
+            Assert.AreEqual(78, processor.CounterPressLengthMinimumMs);
+            Assert.AreEqual(90, processor.CounterPressLengthMaximumMs);
         }
 
         // --- Fixed mode ---------------------------------------------------------------
@@ -61,10 +61,10 @@ namespace DS4MapperUnitTests
         public void FixedMode_EffectiveRangeIsExactlyTheFixedValue()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.CounterTapLengthMode = CounterTapLengthMode.Fixed;
+            processor.CounterPressLengthMode = CounterPressLengthMode.Fixed;
             processor.ApplyFixedAndPercentage(100, 20);
 
-            var (minimum, maximum) = processor.GetEffectiveCounterTapLengthRange();
+            var (minimum, maximum) = processor.GetEffectiveCounterPressLengthRange();
             Assert.AreEqual(100, minimum);
             Assert.AreEqual(100, maximum);
         }
@@ -73,15 +73,15 @@ namespace DS4MapperUnitTests
         public void FixedMode_EditingFixedPreservesStoredPercentageAndSyncsHiddenRange()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.CounterTapLengthMode = CounterTapLengthMode.Fixed;
+            processor.CounterPressLengthMode = CounterPressLengthMode.Fixed;
             processor.ApplyFixedAndPercentage(100, 20);
 
-            Assert.AreEqual(20, processor.CounterTapLengthVariancePercent);
-            Assert.AreEqual(80, processor.CounterTapLengthMinimumMs);
-            Assert.AreEqual(120, processor.CounterTapLengthMaximumMs);
+            Assert.AreEqual(20, processor.CounterPressLengthVariancePercent);
+            Assert.AreEqual(80, processor.CounterPressLengthMinimumMs);
+            Assert.AreEqual(120, processor.CounterPressLengthMaximumMs);
 
             // Runtime in Fixed mode still uses exactly 100ms despite the synchronised range.
-            var (minimum, maximum) = processor.GetEffectiveCounterTapLengthRange();
+            var (minimum, maximum) = processor.GetEffectiveCounterPressLengthRange();
             Assert.AreEqual(100, minimum);
             Assert.AreEqual(100, maximum);
         }
@@ -90,10 +90,10 @@ namespace DS4MapperUnitTests
         public void FixedMode_ZeroDurationCompletesSafely()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.CounterTapLengthMode = CounterTapLengthMode.Fixed;
+            processor.CounterPressLengthMode = CounterPressLengthMode.Fixed;
             processor.ApplyFixedAndPercentage(10, 0); // 10ms is the field floor
 
-            var (minimum, maximum) = processor.GetEffectiveCounterTapLengthRange();
+            var (minimum, maximum) = processor.GetEffectiveCounterPressLengthRange();
             Assert.AreEqual(10, minimum);
             Assert.AreEqual(10, maximum);
         }
@@ -106,7 +106,7 @@ namespace DS4MapperUnitTests
         [DataRow(100, 10, 90, 110)]
         public void ComputePercentageRange_MatchesExpectedFloorBoundaries(int fixedMs, int percent, int expectedMin, int expectedMax)
         {
-            var (minimum, maximum) = CounterTapLengthTiming.ComputePercentageRange(fixedMs, percent);
+            var (minimum, maximum) = CounterPressLengthTiming.ComputePercentageRange(fixedMs, percent);
             Assert.AreEqual(expectedMin, minimum);
             Assert.AreEqual(expectedMax, maximum);
         }
@@ -115,7 +115,7 @@ namespace DS4MapperUnitTests
         public void ComputePercentageRange_UsesFloorNotRound()
         {
             // 99 * 1.10 = 108.9 -> floor 108, not rounded to 109.
-            var (minimum, maximum) = CounterTapLengthTiming.ComputePercentageRange(99, 10);
+            var (minimum, maximum) = CounterPressLengthTiming.ComputePercentageRange(99, 10);
             Assert.AreEqual(89, minimum); // 99 * 0.90 = 89.1 -> floor 89
             Assert.AreEqual(108, maximum);
         }
@@ -123,7 +123,7 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void ComputePercentageRange_HundredPercentNeverNegative()
         {
-            var (minimum, maximum) = CounterTapLengthTiming.ComputePercentageRange(50, 100);
+            var (minimum, maximum) = CounterPressLengthTiming.ComputePercentageRange(50, 100);
             Assert.AreEqual(0, minimum);
             Assert.AreEqual(100, maximum);
             Assert.IsTrue(minimum >= 0);
@@ -133,10 +133,10 @@ namespace DS4MapperUnitTests
         public void WaitVariancePercentageMode_EffectiveRangeMatchesComputedBoundaries()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.CounterTapLengthMode = CounterTapLengthMode.WaitVariancePercentage;
+            processor.CounterPressLengthMode = CounterPressLengthMode.WaitVariancePercentage;
             processor.ApplyFixedAndPercentage(84, 7);
 
-            var (minimum, maximum) = processor.GetEffectiveCounterTapLengthRange();
+            var (minimum, maximum) = processor.GetEffectiveCounterPressLengthRange();
             Assert.AreEqual(78, minimum);
             Assert.AreEqual(89, maximum);
         }
@@ -144,14 +144,14 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void WaitVariancePercentageMode_EditingFixedChangesPresetToCustomViaViewModelConvention()
         {
-            // The processor itself never touches TapLengthPreset from a numeric edit (that is
+            // The processor itself never touches PressLengthPreset from a numeric edit (that is
             // the ViewModel's responsibility, mirroring the pre-existing Minimum/Maximum
             // behaviour); confirm the processor's own preset field is unaffected here and the
             // ViewModel-level contract is exercised separately by the ViewModel tests.
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
             processor.ApplyFixedAndPercentage(90, 15);
-            Assert.AreEqual(90, processor.CounterTapLengthMs);
-            Assert.AreEqual(15, processor.CounterTapLengthVariancePercent);
+            Assert.AreEqual(90, processor.CounterPressLengthMs);
+            Assert.AreEqual(15, processor.CounterPressLengthVariancePercent);
         }
 
         [TestMethod]
@@ -160,8 +160,8 @@ namespace DS4MapperUnitTests
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
             processor.ApplyFixedAndPercentage(100, 0);
 
-            Assert.AreEqual(100, processor.CounterTapLengthMinimumMs);
-            Assert.AreEqual(100, processor.CounterTapLengthMaximumMs);
+            Assert.AreEqual(100, processor.CounterPressLengthMinimumMs);
+            Assert.AreEqual(100, processor.CounterPressLengthMaximumMs);
         }
 
         // --- Minimum and Maximum mode ---------------------------------------------------
@@ -170,10 +170,10 @@ namespace DS4MapperUnitTests
         public void MinimumAndMaximumMode_EffectiveRangeMatchesStoredRangeDirectly()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.CounterTapLengthMode = CounterTapLengthMode.MinimumAndMaximum;
+            processor.CounterPressLengthMode = CounterPressLengthMode.MinimumAndMaximum;
             processor.ApplyMinimumAndMaximum(60, 130);
 
-            var (minimum, maximum) = processor.GetEffectiveCounterTapLengthRange();
+            var (minimum, maximum) = processor.GetEffectiveCounterPressLengthRange();
             Assert.AreEqual(60, minimum);
             Assert.AreEqual(130, maximum);
         }
@@ -184,7 +184,7 @@ namespace DS4MapperUnitTests
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
             processor.ApplyMinimumAndMaximum(130, 60);
 
-            Assert.IsTrue(processor.CounterTapLengthMinimumMs <= processor.CounterTapLengthMaximumMs);
+            Assert.IsTrue(processor.CounterPressLengthMinimumMs <= processor.CounterPressLengthMaximumMs);
         }
 
         // --- Best-fit conversion (Minimum/Maximum -> Fixed/Percentage) ------------------
@@ -192,7 +192,7 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void BestFit_78To90_ProducesCs2FixedAndPercentage()
         {
-            var (fixedMs, percent) = CounterTapLengthTiming.BestFitFixedAndPercentage(78, 90);
+            var (fixedMs, percent) = CounterPressLengthTiming.BestFitFixedAndPercentage(78, 90);
             Assert.AreEqual(84, fixedMs);
             Assert.AreEqual(7, percent);
         }
@@ -200,7 +200,7 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void BestFit_EqualMinimumAndMaximum_ProducesZeroPercent()
         {
-            var (fixedMs, percent) = CounterTapLengthTiming.BestFitFixedAndPercentage(100, 100);
+            var (fixedMs, percent) = CounterPressLengthTiming.BestFitFixedAndPercentage(100, 100);
             Assert.AreEqual(100, fixedMs);
             Assert.AreEqual(0, percent);
         }
@@ -208,8 +208,8 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void BestFit_ReconstructsRequestedRangeWithinFieldPrecision()
         {
-            var (fixedMs, percent) = CounterTapLengthTiming.BestFitFixedAndPercentage(80, 120);
-            var (reconstructedMin, reconstructedMax) = CounterTapLengthTiming.ComputePercentageRange(fixedMs, percent);
+            var (fixedMs, percent) = CounterPressLengthTiming.BestFitFixedAndPercentage(80, 120);
+            var (reconstructedMin, reconstructedMax) = CounterPressLengthTiming.ComputePercentageRange(fixedMs, percent);
 
             // The best-fit search always finds the closest achievable reconstruction; for an
             // odd-width range that may not be an exact match, but it must never be wildly off.
@@ -220,16 +220,16 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void BestFit_IsDeterministicAcrossRepeatedCalls()
         {
-            var first = CounterTapLengthTiming.BestFitFixedAndPercentage(80, 120);
-            var second = CounterTapLengthTiming.BestFitFixedAndPercentage(80, 120);
+            var first = CounterPressLengthTiming.BestFitFixedAndPercentage(80, 120);
+            var second = CounterPressLengthTiming.BestFitFixedAndPercentage(80, 120);
             Assert.AreEqual(first, second);
         }
 
         [TestMethod]
         public void BestFit_InvertedInputStillProducesOrderedResult()
         {
-            var forward = CounterTapLengthTiming.BestFitFixedAndPercentage(78, 90);
-            var reversed = CounterTapLengthTiming.BestFitFixedAndPercentage(90, 78);
+            var forward = CounterPressLengthTiming.BestFitFixedAndPercentage(78, 90);
+            var reversed = CounterPressLengthTiming.BestFitFixedAndPercentage(90, 78);
             Assert.AreEqual(forward, reversed);
         }
 
@@ -239,9 +239,9 @@ namespace DS4MapperUnitTests
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
             processor.ApplyMinimumAndMaximum(78, 90);
 
-            var (expectedFixed, expectedPercent) = CounterTapLengthTiming.BestFitFixedAndPercentage(78, 90);
-            Assert.AreEqual(expectedFixed, processor.CounterTapLengthMs);
-            Assert.AreEqual(expectedPercent, processor.CounterTapLengthVariancePercent);
+            var (expectedFixed, expectedPercent) = CounterPressLengthTiming.BestFitFixedAndPercentage(78, 90);
+            Assert.AreEqual(expectedFixed, processor.CounterPressLengthMs);
+            Assert.AreEqual(expectedPercent, processor.CounterPressLengthVariancePercent);
         }
 
         // --- CS2 preset ------------------------------------------------------------------
@@ -254,35 +254,35 @@ namespace DS4MapperUnitTests
 
             processor.ApplyCs2Preset();
 
-            Assert.AreEqual(84, processor.CounterTapLengthMs);
-            Assert.AreEqual(7, processor.CounterTapLengthVariancePercent);
-            Assert.AreEqual(78, processor.CounterTapLengthMinimumMs);
-            Assert.AreEqual(90, processor.CounterTapLengthMaximumMs);
-            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, processor.TapLengthPreset);
+            Assert.AreEqual(84, processor.CounterPressLengthMs);
+            Assert.AreEqual(7, processor.CounterPressLengthVariancePercent);
+            Assert.AreEqual(78, processor.CounterPressLengthMinimumMs);
+            Assert.AreEqual(90, processor.CounterPressLengthMaximumMs);
+            Assert.AreEqual(CounterMovementPressLengthPreset.CS2, processor.PressLengthPreset);
         }
 
         [TestMethod]
         public void ApplyCs2Preset_DoesNotChangeSelectedMode()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.CounterTapLengthMode = CounterTapLengthMode.MinimumAndMaximum;
+            processor.CounterPressLengthMode = CounterPressLengthMode.MinimumAndMaximum;
 
             processor.ApplyCs2Preset();
 
-            Assert.AreEqual(CounterTapLengthMode.MinimumAndMaximum, processor.CounterTapLengthMode);
+            Assert.AreEqual(CounterPressLengthMode.MinimumAndMaximum, processor.CounterPressLengthMode);
         }
 
         [TestMethod]
-        [DataRow(CounterTapLengthMode.Fixed, 84, 84)]
-        [DataRow(CounterTapLengthMode.WaitVariancePercentage, 78, 90)]
-        [DataRow(CounterTapLengthMode.MinimumAndMaximum, 78, 90)]
-        public void Cs2Preset_ProducesExpectedRuntimeRangePerMode(CounterTapLengthMode mode, int expectedMin, int expectedMax)
+        [DataRow(CounterPressLengthMode.Fixed, 84, 84)]
+        [DataRow(CounterPressLengthMode.WaitVariancePercentage, 78, 90)]
+        [DataRow(CounterPressLengthMode.MinimumAndMaximum, 78, 90)]
+        public void Cs2Preset_ProducesExpectedRuntimeRangePerMode(CounterPressLengthMode mode, int expectedMin, int expectedMax)
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.CounterTapLengthMode = mode;
+            processor.CounterPressLengthMode = mode;
             processor.ApplyCs2Preset();
 
-            var (minimum, maximum) = processor.GetEffectiveCounterTapLengthRange();
+            var (minimum, maximum) = processor.GetEffectiveCounterPressLengthRange();
             Assert.AreEqual(expectedMin, minimum);
             Assert.AreEqual(expectedMax, maximum);
         }
@@ -297,40 +297,40 @@ namespace DS4MapperUnitTests
 
             for (int i = 0; i < 5; i++)
             {
-                processor.CounterTapLengthMode = CounterTapLengthMode.Fixed;
-                processor.CounterTapLengthMode = CounterTapLengthMode.MinimumAndMaximum;
-                processor.CounterTapLengthMode = CounterTapLengthMode.WaitVariancePercentage;
+                processor.CounterPressLengthMode = CounterPressLengthMode.Fixed;
+                processor.CounterPressLengthMode = CounterPressLengthMode.MinimumAndMaximum;
+                processor.CounterPressLengthMode = CounterPressLengthMode.WaitVariancePercentage;
             }
 
-            Assert.AreEqual(84, processor.CounterTapLengthMs);
-            Assert.AreEqual(7, processor.CounterTapLengthVariancePercent);
-            Assert.AreEqual(78, processor.CounterTapLengthMinimumMs);
-            Assert.AreEqual(90, processor.CounterTapLengthMaximumMs);
+            Assert.AreEqual(84, processor.CounterPressLengthMs);
+            Assert.AreEqual(7, processor.CounterPressLengthVariancePercent);
+            Assert.AreEqual(78, processor.CounterPressLengthMinimumMs);
+            Assert.AreEqual(90, processor.CounterPressLengthMaximumMs);
         }
 
         [TestMethod]
         public void SwitchingModeAloneDoesNotChangePreset()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, processor.EffectiveTapLengthPreset);
+            Assert.AreEqual(CounterMovementPressLengthPreset.CS2, processor.EffectivePressLengthPreset);
 
-            processor.CounterTapLengthMode = CounterTapLengthMode.Fixed;
-            processor.CounterTapLengthMode = CounterTapLengthMode.MinimumAndMaximum;
+            processor.CounterPressLengthMode = CounterPressLengthMode.Fixed;
+            processor.CounterPressLengthMode = CounterPressLengthMode.MinimumAndMaximum;
 
-            Assert.AreEqual(CounterMovementTapLengthPreset.CS2, processor.EffectiveTapLengthPreset);
+            Assert.AreEqual(CounterMovementPressLengthPreset.CS2, processor.EffectivePressLengthPreset);
         }
 
         [TestMethod]
         public void MinimumAndMaximumToWaitVariancePercentage_ShowsBestFitValues()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.CounterTapLengthMode = CounterTapLengthMode.MinimumAndMaximum;
+            processor.CounterPressLengthMode = CounterPressLengthMode.MinimumAndMaximum;
             processor.ApplyMinimumAndMaximum(78, 90);
 
-            processor.CounterTapLengthMode = CounterTapLengthMode.WaitVariancePercentage;
+            processor.CounterPressLengthMode = CounterPressLengthMode.WaitVariancePercentage;
 
-            Assert.AreEqual(84, processor.CounterTapLengthMs);
-            Assert.AreEqual(7, processor.CounterTapLengthVariancePercent);
+            Assert.AreEqual(84, processor.CounterPressLengthMs);
+            Assert.AreEqual(7, processor.CounterPressLengthVariancePercent);
         }
 
         [TestMethod]
@@ -339,10 +339,10 @@ namespace DS4MapperUnitTests
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
             processor.ApplyFixedAndPercentage(84, 7);
 
-            processor.CounterTapLengthMode = CounterTapLengthMode.MinimumAndMaximum;
+            processor.CounterPressLengthMode = CounterPressLengthMode.MinimumAndMaximum;
 
-            Assert.AreEqual(78, processor.CounterTapLengthMinimumMs);
-            Assert.AreEqual(89, processor.CounterTapLengthMaximumMs);
+            Assert.AreEqual(78, processor.CounterPressLengthMinimumMs);
+            Assert.AreEqual(89, processor.CounterPressLengthMaximumMs);
         }
     }
 }

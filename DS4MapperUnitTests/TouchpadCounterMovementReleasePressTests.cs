@@ -190,7 +190,7 @@ namespace DS4MapperUnitTests
             Assert.IsTrue(KeyDown(VK_D));
 
             Lift(mapper);
-            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.CounterTapActive, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.CounterPressActive, padAction.CounterMovementReleasePress.State);
             Assert.IsFalse(KeyDown(VK_D));
             Assert.IsTrue(KeyDown(VK_A));
 
@@ -218,7 +218,7 @@ namespace DS4MapperUnitTests
             HoldRight(mapper, 10);
             Lift(mapper);
 
-            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.CounterTapActive, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.CounterPressActive, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_A));
         }
 
@@ -230,7 +230,7 @@ namespace DS4MapperUnitTests
             HoldUpRight(mapper, 20);
             Lift(mapper);
 
-            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.CounterTapActive, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(TouchpadCounterMovementReleasePress.PressState.CounterPressActive, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_S));
             Assert.IsTrue(KeyDown(VK_A));
 
@@ -373,8 +373,8 @@ namespace DS4MapperUnitTests
             string json = JsonConvert.SerializeObject(new TouchpadActionPadSerializer(null, padAction));
             JObject parsed = JObject.Parse(json);
             Assert.AreEqual(true, parsed["Settings"]?["CounterMovementReleasePressEnabled"]?.Value<bool>());
-            Assert.AreEqual(77, parsed["Settings"]?["CounterTapLengthMinimumMs"]?.Value<int>());
-            Assert.AreEqual(77, parsed["Settings"]?["CounterTapLengthMaximumMs"]?.Value<int>());
+            Assert.AreEqual(77, parsed["Settings"]?["CounterPressLengthMinimumMs"]?.Value<int>());
+            Assert.AreEqual(77, parsed["Settings"]?["CounterPressLengthMaximumMs"]?.Value<int>());
             Assert.AreEqual(123, parsed["Settings"]?["CounterMovementMinimumHoldMs"]?.Value<int>());
 
             TouchpadActionPad parent = new TouchpadActionPad();

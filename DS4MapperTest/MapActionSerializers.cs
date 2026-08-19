@@ -1831,172 +1831,172 @@ namespace DS4MapperTest
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             }
 
-            public string CounterMovementTapLengthPreset
+            public string CounterMovementPressLengthPreset
             {
-                get => touchActionPadAction.CounterMovementReleasePress.TapLengthPreset.ToString();
+                get => touchActionPadAction.CounterMovementReleasePress.PressLengthPreset.ToString();
                 set
                 {
-                    if (Enum.TryParse(value, out DS4MapperTest.StickActions.CounterMovementTapLengthPreset temp))
+                    if (Enum.TryParse(value, out DS4MapperTest.StickActions.CounterMovementPressLengthPreset temp))
                     {
-                        touchActionPadAction.CounterMovementReleasePress.TapLengthPreset = temp;
-                        CounterMovementTapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                        touchActionPadAction.CounterMovementReleasePress.PressLengthPreset = temp;
+                        CounterMovementPressLengthPresetChanged?.Invoke(this, EventArgs.Empty);
                     }
                 }
             }
-            public event EventHandler CounterMovementTapLengthPresetChanged;
-            public bool ShouldSerializeCounterMovementTapLengthPreset()
+            public event EventHandler CounterMovementPressLengthPresetChanged;
+            public bool ShouldSerializeCounterMovementPressLengthPreset()
             {
-                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
             }
 
             [JsonConverter(typeof(StringEnumConverter))]
-            public CounterTapLengthMode CounterTapLengthMode
+            public CounterPressLengthMode CounterPressLengthMode
             {
-                get => touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMode;
+                get => touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMode;
                 set
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMode = value;
-                    CounterTapLengthModeChanged?.Invoke(this, EventArgs.Empty);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMode = value;
+                    CounterPressLengthModeChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthModeChanged;
-            public bool ShouldSerializeCounterTapLengthMode()
+            public event EventHandler CounterPressLengthModeChanged;
+            public bool ShouldSerializeCounterPressLengthMode()
             {
-                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
             }
 
-            public int CounterTapLengthMs
+            public int CounterPressLengthMs
             {
-                get => touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMs;
+                get => touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMs;
                 set
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMs = value;
-                    CounterTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMs = value;
+                    CounterPressLengthMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthMsChanged;
-            public bool ShouldSerializeCounterTapLengthMs()
+            public event EventHandler CounterPressLengthMsChanged;
+            public bool ShouldSerializeCounterPressLengthMs()
             {
-                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
             }
 
-            public int CounterTapLengthVariancePercent
+            public int CounterPressLengthVariancePercent
             {
-                get => touchActionPadAction.CounterMovementReleasePress.CounterTapLengthVariancePercent;
+                get => touchActionPadAction.CounterMovementReleasePress.CounterPressLengthVariancePercent;
                 set
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthVariancePercent = value;
-                    CounterTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthVariancePercent = value;
+                    CounterPressLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthVariancePercentChanged;
-            public bool ShouldSerializeCounterTapLengthVariancePercent()
+            public event EventHandler CounterPressLengthVariancePercentChanged;
+            public bool ShouldSerializeCounterPressLengthVariancePercent()
             {
-                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
             }
 
-            public int CounterTapLengthMinimumMs
+            public int CounterPressLengthMinimumMs
             {
-                get => touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMinimumMs;
+                get => touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMinimumMs;
                 set
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMinimumMs = value;
-                    CounterTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMinimumMs = value;
+                    CounterPressLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthMinimumMsChanged;
-            public bool ShouldSerializeCounterTapLengthMinimumMs()
+            public event EventHandler CounterPressLengthMinimumMsChanged;
+            public bool ShouldSerializeCounterPressLengthMinimumMs()
             {
-                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
             }
 
-            public int CounterTapLengthMaximumMs
+            public int CounterPressLengthMaximumMs
             {
-                get => touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMaximumMs;
+                get => touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMaximumMs;
                 set
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMaximumMs = value;
-                    CounterTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMaximumMs = value;
+                    CounterPressLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthMaximumMsChanged;
-            public bool ShouldSerializeCounterTapLengthMaximumMs()
+            public event EventHandler CounterPressLengthMaximumMsChanged;
+            public bool ShouldSerializeCounterPressLengthMaximumMs()
             {
-                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+                return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
             }
 
             [JsonConverter(typeof(StringEnumConverter))]
-            public CounterTapStartDelayMode CounterTapStartDelayMode
+            public CounterPressStartDelayMode CounterPressStartDelayMode
             {
-                get => touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMode;
+                get => touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMode;
                 set
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMode = value;
-                    CounterTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMode = value;
+                    CounterPressStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayModeChanged;
-            public bool ShouldSerializeCounterTapStartDelayMode()
+            public event EventHandler CounterPressStartDelayModeChanged;
+            public bool ShouldSerializeCounterPressStartDelayMode()
             {
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
             }
 
-            public int CounterTapStartDelayMs
+            public int CounterPressStartDelayMs
             {
-                get => touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMs;
+                get => touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMs;
                 set
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMs = value;
-                    CounterTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMs = value;
+                    CounterPressStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayMsChanged;
-            public bool ShouldSerializeCounterTapStartDelayMs()
+            public event EventHandler CounterPressStartDelayMsChanged;
+            public bool ShouldSerializeCounterPressStartDelayMs()
             {
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
             }
 
-            public int CounterTapStartDelayVariancePercent
+            public int CounterPressStartDelayVariancePercent
             {
-                get => touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayVariancePercent;
+                get => touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayVariancePercent;
                 set
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayVariancePercent = value;
-                    CounterTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayVariancePercent = value;
+                    CounterPressStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayVariancePercentChanged;
-            public bool ShouldSerializeCounterTapStartDelayVariancePercent()
+            public event EventHandler CounterPressStartDelayVariancePercentChanged;
+            public bool ShouldSerializeCounterPressStartDelayVariancePercent()
             {
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
             }
 
-            public int CounterTapStartDelayMinimumMs
+            public int CounterPressStartDelayMinimumMs
             {
-                get => touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMinimumMs;
+                get => touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMinimumMs;
                 set
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMinimumMs = value;
-                    CounterTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMinimumMs = value;
+                    CounterPressStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayMinimumMsChanged;
-            public bool ShouldSerializeCounterTapStartDelayMinimumMs()
+            public event EventHandler CounterPressStartDelayMinimumMsChanged;
+            public bool ShouldSerializeCounterPressStartDelayMinimumMs()
             {
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
             }
 
-            public int CounterTapStartDelayMaximumMs
+            public int CounterPressStartDelayMaximumMs
             {
-                get => touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMaximumMs;
+                get => touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMaximumMs;
                 set
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMaximumMs = value;
-                    CounterTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMaximumMs = value;
+                    CounterPressStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayMaximumMsChanged;
-            public bool ShouldSerializeCounterTapStartDelayMaximumMs()
+            public event EventHandler CounterPressStartDelayMaximumMsChanged;
+            public bool ShouldSerializeCounterPressStartDelayMaximumMs()
             {
                 return touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
             }
@@ -2124,17 +2124,17 @@ namespace DS4MapperTest
             settings.OuterRingDeadZoneChanged += Settings_OuterRingDeadZoneChanged;
             settings.OuterRingRangeChanged += Settings_OuterRingRangeChanged;
             settings.CounterMovementReleasePressEnabledChanged += Settings_CounterMovementReleasePressEnabledChanged;
-            settings.CounterMovementTapLengthPresetChanged += Settings_CounterMovementTapLengthPresetChanged;
-            settings.CounterTapLengthModeChanged += Settings_CounterTapLengthModeChanged;
-            settings.CounterTapLengthMsChanged += Settings_CounterTapLengthMsChanged;
-            settings.CounterTapLengthVariancePercentChanged += Settings_CounterTapLengthVariancePercentChanged;
-            settings.CounterTapLengthMinimumMsChanged += Settings_CounterTapLengthMinimumMsChanged;
-            settings.CounterTapLengthMaximumMsChanged += Settings_CounterTapLengthMaximumMsChanged;
-            settings.CounterTapStartDelayModeChanged += Settings_CounterTapStartDelayModeChanged;
-            settings.CounterTapStartDelayMsChanged += Settings_CounterTapStartDelayMsChanged;
-            settings.CounterTapStartDelayVariancePercentChanged += Settings_CounterTapStartDelayVariancePercentChanged;
-            settings.CounterTapStartDelayMinimumMsChanged += Settings_CounterTapStartDelayMinimumMsChanged;
-            settings.CounterTapStartDelayMaximumMsChanged += Settings_CounterTapStartDelayMaximumMsChanged;
+            settings.CounterMovementPressLengthPresetChanged += Settings_CounterMovementPressLengthPresetChanged;
+            settings.CounterPressLengthModeChanged += Settings_CounterPressLengthModeChanged;
+            settings.CounterPressLengthMsChanged += Settings_CounterPressLengthMsChanged;
+            settings.CounterPressLengthVariancePercentChanged += Settings_CounterPressLengthVariancePercentChanged;
+            settings.CounterPressLengthMinimumMsChanged += Settings_CounterPressLengthMinimumMsChanged;
+            settings.CounterPressLengthMaximumMsChanged += Settings_CounterPressLengthMaximumMsChanged;
+            settings.CounterPressStartDelayModeChanged += Settings_CounterPressStartDelayModeChanged;
+            settings.CounterPressStartDelayMsChanged += Settings_CounterPressStartDelayMsChanged;
+            settings.CounterPressStartDelayVariancePercentChanged += Settings_CounterPressStartDelayVariancePercentChanged;
+            settings.CounterPressStartDelayMinimumMsChanged += Settings_CounterPressStartDelayMinimumMsChanged;
+            settings.CounterPressStartDelayMaximumMsChanged += Settings_CounterPressStartDelayMaximumMsChanged;
             settings.CounterMovementDeadZoneReleaseEnabledChanged += Settings_CounterMovementDeadZoneReleaseEnabledChanged;
             settings.CounterMovementMinimumHoldMsChanged += Settings_CounterMovementMinimumHoldMsChanged;
         }
@@ -2144,57 +2144,57 @@ namespace DS4MapperTest
             touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
         }
 
-        private void Settings_CounterMovementTapLengthPresetChanged(object sender, EventArgs e)
+        private void Settings_CounterMovementPressLengthPresetChanged(object sender, EventArgs e)
         {
-            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
         }
 
-        private void Settings_CounterTapLengthModeChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthModeChanged(object sender, EventArgs e)
         {
-            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
         }
 
-        private void Settings_CounterTapLengthMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthMsChanged(object sender, EventArgs e)
         {
-            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
         }
 
-        private void Settings_CounterTapLengthVariancePercentChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthVariancePercentChanged(object sender, EventArgs e)
         {
-            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
         }
 
-        private void Settings_CounterTapLengthMinimumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthMinimumMsChanged(object sender, EventArgs e)
         {
-            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
         }
 
-        private void Settings_CounterTapLengthMaximumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthMaximumMsChanged(object sender, EventArgs e)
         {
-            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
         }
 
-        private void Settings_CounterTapStartDelayModeChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayModeChanged(object sender, EventArgs e)
         {
             touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
         }
 
-        private void Settings_CounterTapStartDelayMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayMsChanged(object sender, EventArgs e)
         {
             touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
         }
 
-        private void Settings_CounterTapStartDelayVariancePercentChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayVariancePercentChanged(object sender, EventArgs e)
         {
             touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
         }
 
-        private void Settings_CounterTapStartDelayMinimumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayMinimumMsChanged(object sender, EventArgs e)
         {
             touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
         }
 
-        private void Settings_CounterTapStartDelayMaximumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayMaximumMsChanged(object sender, EventArgs e)
         {
             touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
         }
@@ -2430,7 +2430,7 @@ namespace DS4MapperTest
             MigrateLegacyCounterMovementReleasePressFields();
         }
 
-        // Migrates up to three profile generations for the tap-length representation:
+        // Migrates up to three profile generations for the press-length representation:
         // (a) current profiles that already have an explicit Minimum/Maximum range but no
         //     Mode field (saved before timing modes existed) migrate to Minimum and Maximum
         //     mode, deriving the best-fit Fixed/Percent representation from that range;
@@ -2447,88 +2447,88 @@ namespace DS4MapperTest
                 touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             }
 
-            bool modeFieldPresent = touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+            bool modeFieldPresent = touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
 
             if (settings.LegacyBrakeDurationMs.HasValue)
             {
                 int legacyDuration = DigitalReleasePressPulse.ClampReleasePressDurationMs(settings.LegacyBrakeDurationMs.Value);
 
-                if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS))
+                if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS))
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMinimumMs = legacyDuration;
-                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMinimumMs = legacyDuration;
+                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
                 }
 
-                if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS))
+                if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS))
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMaximumMs = legacyDuration;
-                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMaximumMs = legacyDuration;
+                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
                 }
 
-                if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS))
+                if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS))
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMs = legacyDuration;
-                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMs = legacyDuration;
+                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
                 }
 
-                if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT))
+                if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT))
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthVariancePercent = 0;
-                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthVariancePercent = 0;
+                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
                 }
 
                 if (!modeFieldPresent)
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMode = CounterTapLengthMode.Fixed;
-                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMode = CounterPressLengthMode.Fixed;
+                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
                 }
 
                 if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS))
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMinimumMs = 0;
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMinimumMs = 0;
                     touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
                 }
 
                 if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS))
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMaximumMs = 0;
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMaximumMs = 0;
                     touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
                 }
 
                 if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE))
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMode = CounterTapStartDelayMode.Fixed;
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMode = CounterPressStartDelayMode.Fixed;
                     touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
                 }
 
                 if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS))
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayMs = 0;
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayMs = 0;
                     touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
                 }
 
                 if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT))
                 {
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapStartDelayVariancePercent = 0;
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressStartDelayVariancePercent = 0;
                     touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
                 }
 
-                if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET))
+                if (!touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET))
                 {
-                    touchActionPadAction.CounterMovementReleasePress.TapLengthPreset =
-                        DS4MapperTest.StickActions.CounterMovementTapLengthPreset.Custom;
-                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+                    touchActionPadAction.CounterMovementReleasePress.PressLengthPreset =
+                        DS4MapperTest.StickActions.CounterMovementPressLengthPreset.Custom;
+                    touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
                 }
             }
             else if (!modeFieldPresent &&
-                (touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS) ||
-                 touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS)))
+                (touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS) ||
+                 touchActionPadAction.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS)))
             {
-                touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMode = CounterTapLengthMode.MinimumAndMaximum;
-                touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+                touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMode = CounterPressLengthMode.MinimumAndMaximum;
+                touchActionPadAction.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
                 touchActionPadAction.CounterMovementReleasePress.ApplyMinimumAndMaximum(
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMinimumMs,
-                    touchActionPadAction.CounterMovementReleasePress.CounterTapLengthMaximumMs);
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMinimumMs,
+                    touchActionPadAction.CounterMovementReleasePress.CounterPressLengthMaximumMs);
             }
 
             touchActionPadAction.CounterMovementReleasePress.NormalizeRanges();
@@ -6900,172 +6900,172 @@ namespace DS4MapperTest
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS);
             }
 
-            public string CounterMovementTapLengthPreset
+            public string CounterMovementPressLengthPreset
             {
-                get => padAction.CounterMovementReleasePress.TapLengthPreset.ToString();
+                get => padAction.CounterMovementReleasePress.PressLengthPreset.ToString();
                 set
                 {
-                    if (Enum.TryParse(value, out DS4MapperTest.StickActions.CounterMovementTapLengthPreset temp))
+                    if (Enum.TryParse(value, out DS4MapperTest.StickActions.CounterMovementPressLengthPreset temp))
                     {
-                        padAction.CounterMovementReleasePress.TapLengthPreset = temp;
-                        CounterMovementTapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                        padAction.CounterMovementReleasePress.PressLengthPreset = temp;
+                        CounterMovementPressLengthPresetChanged?.Invoke(this, EventArgs.Empty);
                     }
                 }
             }
-            public event EventHandler CounterMovementTapLengthPresetChanged;
-            public bool ShouldSerializeCounterMovementTapLengthPreset()
+            public event EventHandler CounterMovementPressLengthPresetChanged;
+            public bool ShouldSerializeCounterMovementPressLengthPreset()
             {
-                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
             }
 
             [JsonConverter(typeof(StringEnumConverter))]
-            public CounterTapLengthMode CounterTapLengthMode
+            public CounterPressLengthMode CounterPressLengthMode
             {
-                get => padAction.CounterMovementReleasePress.CounterTapLengthMode;
+                get => padAction.CounterMovementReleasePress.CounterPressLengthMode;
                 set
                 {
-                    padAction.CounterMovementReleasePress.CounterTapLengthMode = value;
-                    CounterTapLengthModeChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.CounterPressLengthMode = value;
+                    CounterPressLengthModeChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthModeChanged;
-            public bool ShouldSerializeCounterTapLengthMode()
+            public event EventHandler CounterPressLengthModeChanged;
+            public bool ShouldSerializeCounterPressLengthMode()
             {
-                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
             }
 
-            public int CounterTapLengthMs
+            public int CounterPressLengthMs
             {
-                get => padAction.CounterMovementReleasePress.CounterTapLengthMs;
+                get => padAction.CounterMovementReleasePress.CounterPressLengthMs;
                 set
                 {
-                    padAction.CounterMovementReleasePress.CounterTapLengthMs = value;
-                    CounterTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.CounterPressLengthMs = value;
+                    CounterPressLengthMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthMsChanged;
-            public bool ShouldSerializeCounterTapLengthMs()
+            public event EventHandler CounterPressLengthMsChanged;
+            public bool ShouldSerializeCounterPressLengthMs()
             {
-                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
             }
 
-            public int CounterTapLengthVariancePercent
+            public int CounterPressLengthVariancePercent
             {
-                get => padAction.CounterMovementReleasePress.CounterTapLengthVariancePercent;
+                get => padAction.CounterMovementReleasePress.CounterPressLengthVariancePercent;
                 set
                 {
-                    padAction.CounterMovementReleasePress.CounterTapLengthVariancePercent = value;
-                    CounterTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.CounterPressLengthVariancePercent = value;
+                    CounterPressLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthVariancePercentChanged;
-            public bool ShouldSerializeCounterTapLengthVariancePercent()
+            public event EventHandler CounterPressLengthVariancePercentChanged;
+            public bool ShouldSerializeCounterPressLengthVariancePercent()
             {
-                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
             }
 
-            public int CounterTapLengthMinimumMs
+            public int CounterPressLengthMinimumMs
             {
-                get => padAction.CounterMovementReleasePress.CounterTapLengthMinimumMs;
+                get => padAction.CounterMovementReleasePress.CounterPressLengthMinimumMs;
                 set
                 {
-                    padAction.CounterMovementReleasePress.CounterTapLengthMinimumMs = value;
-                    CounterTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.CounterPressLengthMinimumMs = value;
+                    CounterPressLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthMinimumMsChanged;
-            public bool ShouldSerializeCounterTapLengthMinimumMs()
+            public event EventHandler CounterPressLengthMinimumMsChanged;
+            public bool ShouldSerializeCounterPressLengthMinimumMs()
             {
-                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
             }
 
-            public int CounterTapLengthMaximumMs
+            public int CounterPressLengthMaximumMs
             {
-                get => padAction.CounterMovementReleasePress.CounterTapLengthMaximumMs;
+                get => padAction.CounterMovementReleasePress.CounterPressLengthMaximumMs;
                 set
                 {
-                    padAction.CounterMovementReleasePress.CounterTapLengthMaximumMs = value;
-                    CounterTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.CounterPressLengthMaximumMs = value;
+                    CounterPressLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthMaximumMsChanged;
-            public bool ShouldSerializeCounterTapLengthMaximumMs()
+            public event EventHandler CounterPressLengthMaximumMsChanged;
+            public bool ShouldSerializeCounterPressLengthMaximumMs()
             {
-                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+                return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
             }
 
             [JsonConverter(typeof(StringEnumConverter))]
-            public CounterTapStartDelayMode CounterTapStartDelayMode
+            public CounterPressStartDelayMode CounterPressStartDelayMode
             {
-                get => padAction.CounterMovementReleasePress.CounterTapStartDelayMode;
+                get => padAction.CounterMovementReleasePress.CounterPressStartDelayMode;
                 set
                 {
-                    padAction.CounterMovementReleasePress.CounterTapStartDelayMode = value;
-                    CounterTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.CounterPressStartDelayMode = value;
+                    CounterPressStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayModeChanged;
-            public bool ShouldSerializeCounterTapStartDelayMode()
+            public event EventHandler CounterPressStartDelayModeChanged;
+            public bool ShouldSerializeCounterPressStartDelayMode()
             {
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
             }
 
-            public int CounterTapStartDelayMs
+            public int CounterPressStartDelayMs
             {
-                get => padAction.CounterMovementReleasePress.CounterTapStartDelayMs;
+                get => padAction.CounterMovementReleasePress.CounterPressStartDelayMs;
                 set
                 {
-                    padAction.CounterMovementReleasePress.CounterTapStartDelayMs = value;
-                    CounterTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.CounterPressStartDelayMs = value;
+                    CounterPressStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayMsChanged;
-            public bool ShouldSerializeCounterTapStartDelayMs()
+            public event EventHandler CounterPressStartDelayMsChanged;
+            public bool ShouldSerializeCounterPressStartDelayMs()
             {
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
             }
 
-            public int CounterTapStartDelayVariancePercent
+            public int CounterPressStartDelayVariancePercent
             {
-                get => padAction.CounterMovementReleasePress.CounterTapStartDelayVariancePercent;
+                get => padAction.CounterMovementReleasePress.CounterPressStartDelayVariancePercent;
                 set
                 {
-                    padAction.CounterMovementReleasePress.CounterTapStartDelayVariancePercent = value;
-                    CounterTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.CounterPressStartDelayVariancePercent = value;
+                    CounterPressStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayVariancePercentChanged;
-            public bool ShouldSerializeCounterTapStartDelayVariancePercent()
+            public event EventHandler CounterPressStartDelayVariancePercentChanged;
+            public bool ShouldSerializeCounterPressStartDelayVariancePercent()
             {
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
             }
 
-            public int CounterTapStartDelayMinimumMs
+            public int CounterPressStartDelayMinimumMs
             {
-                get => padAction.CounterMovementReleasePress.CounterTapStartDelayMinimumMs;
+                get => padAction.CounterMovementReleasePress.CounterPressStartDelayMinimumMs;
                 set
                 {
-                    padAction.CounterMovementReleasePress.CounterTapStartDelayMinimumMs = value;
-                    CounterTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.CounterPressStartDelayMinimumMs = value;
+                    CounterPressStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayMinimumMsChanged;
-            public bool ShouldSerializeCounterTapStartDelayMinimumMs()
+            public event EventHandler CounterPressStartDelayMinimumMsChanged;
+            public bool ShouldSerializeCounterPressStartDelayMinimumMs()
             {
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
             }
 
-            public int CounterTapStartDelayMaximumMs
+            public int CounterPressStartDelayMaximumMs
             {
-                get => padAction.CounterMovementReleasePress.CounterTapStartDelayMaximumMs;
+                get => padAction.CounterMovementReleasePress.CounterPressStartDelayMaximumMs;
                 set
                 {
-                    padAction.CounterMovementReleasePress.CounterTapStartDelayMaximumMs = value;
-                    CounterTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                    padAction.CounterMovementReleasePress.CounterPressStartDelayMaximumMs = value;
+                    CounterPressStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayMaximumMsChanged;
-            public bool ShouldSerializeCounterTapStartDelayMaximumMs()
+            public event EventHandler CounterPressStartDelayMaximumMsChanged;
+            public bool ShouldSerializeCounterPressStartDelayMaximumMs()
             {
                 return padAction.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
             }
@@ -7239,17 +7239,17 @@ namespace DS4MapperTest
             settings.DiagonalRangeChanged += Settings_DiagonalRangeChanged;
             settings.CounterMovementReleasePressEnabledChanged += Settings_CounterMovementReleasePressEnabledChanged;
             settings.UseArrowKeysForCounterMovementPressesChanged += Settings_UseArrowKeysForCounterMovementPressesChanged;
-            settings.CounterMovementTapLengthPresetChanged += Settings_CounterMovementTapLengthPresetChanged;
-            settings.CounterTapLengthModeChanged += Settings_CounterTapLengthModeChanged;
-            settings.CounterTapLengthMsChanged += Settings_CounterTapLengthMsChanged;
-            settings.CounterTapLengthVariancePercentChanged += Settings_CounterTapLengthVariancePercentChanged;
-            settings.CounterTapLengthMinimumMsChanged += Settings_CounterTapLengthMinimumMsChanged;
-            settings.CounterTapLengthMaximumMsChanged += Settings_CounterTapLengthMaximumMsChanged;
-            settings.CounterTapStartDelayModeChanged += Settings_CounterTapStartDelayModeChanged;
-            settings.CounterTapStartDelayMsChanged += Settings_CounterTapStartDelayMsChanged;
-            settings.CounterTapStartDelayVariancePercentChanged += Settings_CounterTapStartDelayVariancePercentChanged;
-            settings.CounterTapStartDelayMinimumMsChanged += Settings_CounterTapStartDelayMinimumMsChanged;
-            settings.CounterTapStartDelayMaximumMsChanged += Settings_CounterTapStartDelayMaximumMsChanged;
+            settings.CounterMovementPressLengthPresetChanged += Settings_CounterMovementPressLengthPresetChanged;
+            settings.CounterPressLengthModeChanged += Settings_CounterPressLengthModeChanged;
+            settings.CounterPressLengthMsChanged += Settings_CounterPressLengthMsChanged;
+            settings.CounterPressLengthVariancePercentChanged += Settings_CounterPressLengthVariancePercentChanged;
+            settings.CounterPressLengthMinimumMsChanged += Settings_CounterPressLengthMinimumMsChanged;
+            settings.CounterPressLengthMaximumMsChanged += Settings_CounterPressLengthMaximumMsChanged;
+            settings.CounterPressStartDelayModeChanged += Settings_CounterPressStartDelayModeChanged;
+            settings.CounterPressStartDelayMsChanged += Settings_CounterPressStartDelayMsChanged;
+            settings.CounterPressStartDelayVariancePercentChanged += Settings_CounterPressStartDelayVariancePercentChanged;
+            settings.CounterPressStartDelayMinimumMsChanged += Settings_CounterPressStartDelayMinimumMsChanged;
+            settings.CounterPressStartDelayMaximumMsChanged += Settings_CounterPressStartDelayMaximumMsChanged;
             settings.CounterMovementMinimumHoldMsChanged += Settings_CounterMovementMinimumHoldMsChanged;
             settings.RequiredStickDeflectionThresholdChanged += Settings_RequiredStickDeflectionThresholdChanged;
         }
@@ -7264,57 +7264,57 @@ namespace DS4MapperTest
             stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS);
         }
 
-        private void Settings_CounterMovementTapLengthPresetChanged(object sender, EventArgs e)
+        private void Settings_CounterMovementPressLengthPresetChanged(object sender, EventArgs e)
         {
-            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
         }
 
-        private void Settings_CounterTapLengthModeChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthModeChanged(object sender, EventArgs e)
         {
-            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
         }
 
-        private void Settings_CounterTapLengthMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthMsChanged(object sender, EventArgs e)
         {
-            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
         }
 
-        private void Settings_CounterTapLengthVariancePercentChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthVariancePercentChanged(object sender, EventArgs e)
         {
-            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
         }
 
-        private void Settings_CounterTapLengthMinimumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthMinimumMsChanged(object sender, EventArgs e)
         {
-            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
         }
 
-        private void Settings_CounterTapLengthMaximumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthMaximumMsChanged(object sender, EventArgs e)
         {
-            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
         }
 
-        private void Settings_CounterTapStartDelayModeChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayModeChanged(object sender, EventArgs e)
         {
             stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
         }
 
-        private void Settings_CounterTapStartDelayMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayMsChanged(object sender, EventArgs e)
         {
             stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
         }
 
-        private void Settings_CounterTapStartDelayVariancePercentChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayVariancePercentChanged(object sender, EventArgs e)
         {
             stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
         }
 
-        private void Settings_CounterTapStartDelayMinimumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayMinimumMsChanged(object sender, EventArgs e)
         {
             stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
         }
 
-        private void Settings_CounterTapStartDelayMaximumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayMaximumMsChanged(object sender, EventArgs e)
         {
             stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
         }
@@ -7542,7 +7542,7 @@ namespace DS4MapperTest
 
         // Legacy "Digital Release Brake" profile migration: pre-rename profiles only ever
         // wrote BrakeEnabled/BrakeDurationMs. Applied here (after the whole object has
-        // deserialized) using the old immediate-start semantics, i.e. the migrated tap
+        // deserialized) using the old immediate-start semantics, i.e. the migrated press
         // length window becomes min == max == the old single duration, with a 0-0ms start
         // delay so the generated press still begins immediately, matching pre-rename
         // behaviour exactly. Runs only for whichever new-named fields this same profile did
@@ -7559,87 +7559,87 @@ namespace DS4MapperTest
                 stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             }
 
-            bool modeFieldPresent = stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+            bool modeFieldPresent = stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
 
             if (settings.LegacyBrakeDurationMs.HasValue)
             {
                 int legacyDuration = DigitalReleasePressPulse.ClampReleasePressDurationMs(settings.LegacyBrakeDurationMs.Value);
 
-                if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS))
+                if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS))
                 {
-                    stickPadAct.CounterMovementReleasePress.CounterTapLengthMinimumMs = legacyDuration;
-                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+                    stickPadAct.CounterMovementReleasePress.CounterPressLengthMinimumMs = legacyDuration;
+                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
                 }
 
-                if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS))
+                if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS))
                 {
-                    stickPadAct.CounterMovementReleasePress.CounterTapLengthMaximumMs = legacyDuration;
-                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+                    stickPadAct.CounterMovementReleasePress.CounterPressLengthMaximumMs = legacyDuration;
+                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
                 }
 
-                if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS))
+                if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS))
                 {
-                    stickPadAct.CounterMovementReleasePress.CounterTapLengthMs = legacyDuration;
-                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+                    stickPadAct.CounterMovementReleasePress.CounterPressLengthMs = legacyDuration;
+                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
                 }
 
-                if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT))
+                if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT))
                 {
-                    stickPadAct.CounterMovementReleasePress.CounterTapLengthVariancePercent = 0;
-                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+                    stickPadAct.CounterMovementReleasePress.CounterPressLengthVariancePercent = 0;
+                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
                 }
 
                 if (!modeFieldPresent)
                 {
-                    stickPadAct.CounterMovementReleasePress.CounterTapLengthMode = CounterTapLengthMode.Fixed;
-                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+                    stickPadAct.CounterMovementReleasePress.CounterPressLengthMode = CounterPressLengthMode.Fixed;
+                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
                 }
 
                 if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS))
                 {
-                    stickPadAct.CounterMovementReleasePress.CounterTapStartDelayMinimumMs = 0;
+                    stickPadAct.CounterMovementReleasePress.CounterPressStartDelayMinimumMs = 0;
                     stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
                 }
 
                 if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS))
                 {
-                    stickPadAct.CounterMovementReleasePress.CounterTapStartDelayMaximumMs = 0;
+                    stickPadAct.CounterMovementReleasePress.CounterPressStartDelayMaximumMs = 0;
                     stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
                 }
 
                 if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE))
                 {
-                    stickPadAct.CounterMovementReleasePress.CounterTapStartDelayMode = CounterTapStartDelayMode.Fixed;
+                    stickPadAct.CounterMovementReleasePress.CounterPressStartDelayMode = CounterPressStartDelayMode.Fixed;
                     stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
                 }
 
                 if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS))
                 {
-                    stickPadAct.CounterMovementReleasePress.CounterTapStartDelayMs = 0;
+                    stickPadAct.CounterMovementReleasePress.CounterPressStartDelayMs = 0;
                     stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
                 }
 
                 if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT))
                 {
-                    stickPadAct.CounterMovementReleasePress.CounterTapStartDelayVariancePercent = 0;
+                    stickPadAct.CounterMovementReleasePress.CounterPressStartDelayVariancePercent = 0;
                     stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
                 }
 
-                if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET))
+                if (!stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET))
                 {
-                    stickPadAct.CounterMovementReleasePress.TapLengthPreset = DS4MapperTest.StickActions.CounterMovementTapLengthPreset.Custom;
-                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+                    stickPadAct.CounterMovementReleasePress.PressLengthPreset = DS4MapperTest.StickActions.CounterMovementPressLengthPreset.Custom;
+                    stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
                 }
             }
             else if (!modeFieldPresent &&
-                (stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS) ||
-                 stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS)))
+                (stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS) ||
+                 stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS)))
             {
-                stickPadAct.CounterMovementReleasePress.CounterTapLengthMode = CounterTapLengthMode.MinimumAndMaximum;
-                stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+                stickPadAct.CounterMovementReleasePress.CounterPressLengthMode = CounterPressLengthMode.MinimumAndMaximum;
+                stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
                 stickPadAct.CounterMovementReleasePress.ApplyMinimumAndMaximum(
-                    stickPadAct.CounterMovementReleasePress.CounterTapLengthMinimumMs,
-                    stickPadAct.CounterMovementReleasePress.CounterTapLengthMaximumMs);
+                    stickPadAct.CounterMovementReleasePress.CounterPressLengthMinimumMs,
+                    stickPadAct.CounterMovementReleasePress.CounterPressLengthMaximumMs);
             }
 
             stickPadAct.CounterMovementReleasePress.NormalizeRanges();
@@ -7927,172 +7927,172 @@ namespace DS4MapperTest
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS);
             }
 
-            public string CounterMovementTapLengthPreset
+            public string CounterMovementPressLengthPreset
             {
-                get => analogAction.CounterMovementReleasePress.TapLengthPreset.ToString();
+                get => analogAction.CounterMovementReleasePress.PressLengthPreset.ToString();
                 set
                 {
-                    if (Enum.TryParse(value, out DS4MapperTest.StickActions.CounterMovementTapLengthPreset temp))
+                    if (Enum.TryParse(value, out DS4MapperTest.StickActions.CounterMovementPressLengthPreset temp))
                     {
-                        analogAction.CounterMovementReleasePress.TapLengthPreset = temp;
-                        CounterMovementTapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                        analogAction.CounterMovementReleasePress.PressLengthPreset = temp;
+                        CounterMovementPressLengthPresetChanged?.Invoke(this, EventArgs.Empty);
                     }
                 }
             }
-            public event EventHandler CounterMovementTapLengthPresetChanged;
-            public bool ShouldSerializeCounterMovementTapLengthPreset()
+            public event EventHandler CounterMovementPressLengthPresetChanged;
+            public bool ShouldSerializeCounterMovementPressLengthPreset()
             {
-                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
             }
 
             [JsonConverter(typeof(StringEnumConverter))]
-            public CounterTapLengthMode CounterTapLengthMode
+            public CounterPressLengthMode CounterPressLengthMode
             {
-                get => analogAction.CounterMovementReleasePress.CounterTapLengthMode;
+                get => analogAction.CounterMovementReleasePress.CounterPressLengthMode;
                 set
                 {
-                    analogAction.CounterMovementReleasePress.CounterTapLengthMode = value;
-                    CounterTapLengthModeChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.CounterPressLengthMode = value;
+                    CounterPressLengthModeChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthModeChanged;
-            public bool ShouldSerializeCounterTapLengthMode()
+            public event EventHandler CounterPressLengthModeChanged;
+            public bool ShouldSerializeCounterPressLengthMode()
             {
-                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
             }
 
-            public int CounterTapLengthMs
+            public int CounterPressLengthMs
             {
-                get => analogAction.CounterMovementReleasePress.CounterTapLengthMs;
+                get => analogAction.CounterMovementReleasePress.CounterPressLengthMs;
                 set
                 {
-                    analogAction.CounterMovementReleasePress.CounterTapLengthMs = value;
-                    CounterTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.CounterPressLengthMs = value;
+                    CounterPressLengthMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthMsChanged;
-            public bool ShouldSerializeCounterTapLengthMs()
+            public event EventHandler CounterPressLengthMsChanged;
+            public bool ShouldSerializeCounterPressLengthMs()
             {
-                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
             }
 
-            public int CounterTapLengthVariancePercent
+            public int CounterPressLengthVariancePercent
             {
-                get => analogAction.CounterMovementReleasePress.CounterTapLengthVariancePercent;
+                get => analogAction.CounterMovementReleasePress.CounterPressLengthVariancePercent;
                 set
                 {
-                    analogAction.CounterMovementReleasePress.CounterTapLengthVariancePercent = value;
-                    CounterTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.CounterPressLengthVariancePercent = value;
+                    CounterPressLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthVariancePercentChanged;
-            public bool ShouldSerializeCounterTapLengthVariancePercent()
+            public event EventHandler CounterPressLengthVariancePercentChanged;
+            public bool ShouldSerializeCounterPressLengthVariancePercent()
             {
-                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
             }
 
-            public int CounterTapLengthMinimumMs
+            public int CounterPressLengthMinimumMs
             {
-                get => analogAction.CounterMovementReleasePress.CounterTapLengthMinimumMs;
+                get => analogAction.CounterMovementReleasePress.CounterPressLengthMinimumMs;
                 set
                 {
-                    analogAction.CounterMovementReleasePress.CounterTapLengthMinimumMs = value;
-                    CounterTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.CounterPressLengthMinimumMs = value;
+                    CounterPressLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthMinimumMsChanged;
-            public bool ShouldSerializeCounterTapLengthMinimumMs()
+            public event EventHandler CounterPressLengthMinimumMsChanged;
+            public bool ShouldSerializeCounterPressLengthMinimumMs()
             {
-                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
             }
 
-            public int CounterTapLengthMaximumMs
+            public int CounterPressLengthMaximumMs
             {
-                get => analogAction.CounterMovementReleasePress.CounterTapLengthMaximumMs;
+                get => analogAction.CounterMovementReleasePress.CounterPressLengthMaximumMs;
                 set
                 {
-                    analogAction.CounterMovementReleasePress.CounterTapLengthMaximumMs = value;
-                    CounterTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.CounterPressLengthMaximumMs = value;
+                    CounterPressLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapLengthMaximumMsChanged;
-            public bool ShouldSerializeCounterTapLengthMaximumMs()
+            public event EventHandler CounterPressLengthMaximumMsChanged;
+            public bool ShouldSerializeCounterPressLengthMaximumMs()
             {
-                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+                return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
             }
 
             [JsonConverter(typeof(StringEnumConverter))]
-            public CounterTapStartDelayMode CounterTapStartDelayMode
+            public CounterPressStartDelayMode CounterPressStartDelayMode
             {
-                get => analogAction.CounterMovementReleasePress.CounterTapStartDelayMode;
+                get => analogAction.CounterMovementReleasePress.CounterPressStartDelayMode;
                 set
                 {
-                    analogAction.CounterMovementReleasePress.CounterTapStartDelayMode = value;
-                    CounterTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.CounterPressStartDelayMode = value;
+                    CounterPressStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayModeChanged;
-            public bool ShouldSerializeCounterTapStartDelayMode()
+            public event EventHandler CounterPressStartDelayModeChanged;
+            public bool ShouldSerializeCounterPressStartDelayMode()
             {
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
             }
 
-            public int CounterTapStartDelayMs
+            public int CounterPressStartDelayMs
             {
-                get => analogAction.CounterMovementReleasePress.CounterTapStartDelayMs;
+                get => analogAction.CounterMovementReleasePress.CounterPressStartDelayMs;
                 set
                 {
-                    analogAction.CounterMovementReleasePress.CounterTapStartDelayMs = value;
-                    CounterTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.CounterPressStartDelayMs = value;
+                    CounterPressStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayMsChanged;
-            public bool ShouldSerializeCounterTapStartDelayMs()
+            public event EventHandler CounterPressStartDelayMsChanged;
+            public bool ShouldSerializeCounterPressStartDelayMs()
             {
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
             }
 
-            public int CounterTapStartDelayVariancePercent
+            public int CounterPressStartDelayVariancePercent
             {
-                get => analogAction.CounterMovementReleasePress.CounterTapStartDelayVariancePercent;
+                get => analogAction.CounterMovementReleasePress.CounterPressStartDelayVariancePercent;
                 set
                 {
-                    analogAction.CounterMovementReleasePress.CounterTapStartDelayVariancePercent = value;
-                    CounterTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.CounterPressStartDelayVariancePercent = value;
+                    CounterPressStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayVariancePercentChanged;
-            public bool ShouldSerializeCounterTapStartDelayVariancePercent()
+            public event EventHandler CounterPressStartDelayVariancePercentChanged;
+            public bool ShouldSerializeCounterPressStartDelayVariancePercent()
             {
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
             }
 
-            public int CounterTapStartDelayMinimumMs
+            public int CounterPressStartDelayMinimumMs
             {
-                get => analogAction.CounterMovementReleasePress.CounterTapStartDelayMinimumMs;
+                get => analogAction.CounterMovementReleasePress.CounterPressStartDelayMinimumMs;
                 set
                 {
-                    analogAction.CounterMovementReleasePress.CounterTapStartDelayMinimumMs = value;
-                    CounterTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.CounterPressStartDelayMinimumMs = value;
+                    CounterPressStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayMinimumMsChanged;
-            public bool ShouldSerializeCounterTapStartDelayMinimumMs()
+            public event EventHandler CounterPressStartDelayMinimumMsChanged;
+            public bool ShouldSerializeCounterPressStartDelayMinimumMs()
             {
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
             }
 
-            public int CounterTapStartDelayMaximumMs
+            public int CounterPressStartDelayMaximumMs
             {
-                get => analogAction.CounterMovementReleasePress.CounterTapStartDelayMaximumMs;
+                get => analogAction.CounterMovementReleasePress.CounterPressStartDelayMaximumMs;
                 set
                 {
-                    analogAction.CounterMovementReleasePress.CounterTapStartDelayMaximumMs = value;
-                    CounterTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                    analogAction.CounterMovementReleasePress.CounterPressStartDelayMaximumMs = value;
+                    CounterPressStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler CounterTapStartDelayMaximumMsChanged;
-            public bool ShouldSerializeCounterTapStartDelayMaximumMs()
+            public event EventHandler CounterPressStartDelayMaximumMsChanged;
+            public bool ShouldSerializeCounterPressStartDelayMaximumMs()
             {
                 return analogAction.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
             }
@@ -8207,17 +8207,17 @@ namespace DS4MapperTest
             settings.FullSpeedThresholdPercentChanged += Settings_FullSpeedThresholdPercentChanged;
             settings.CounterMovementReleasePressEnabledChanged += Settings_CounterMovementReleasePressEnabledChanged;
             settings.UseArrowKeysForCounterMovementPressesChanged += Settings_UseArrowKeysForCounterMovementPressesChanged;
-            settings.CounterMovementTapLengthPresetChanged += Settings_CounterMovementTapLengthPresetChanged;
-            settings.CounterTapLengthModeChanged += Settings_CounterTapLengthModeChanged;
-            settings.CounterTapLengthMsChanged += Settings_CounterTapLengthMsChanged;
-            settings.CounterTapLengthVariancePercentChanged += Settings_CounterTapLengthVariancePercentChanged;
-            settings.CounterTapLengthMinimumMsChanged += Settings_CounterTapLengthMinimumMsChanged;
-            settings.CounterTapLengthMaximumMsChanged += Settings_CounterTapLengthMaximumMsChanged;
-            settings.CounterTapStartDelayModeChanged += Settings_CounterTapStartDelayModeChanged;
-            settings.CounterTapStartDelayMsChanged += Settings_CounterTapStartDelayMsChanged;
-            settings.CounterTapStartDelayVariancePercentChanged += Settings_CounterTapStartDelayVariancePercentChanged;
-            settings.CounterTapStartDelayMinimumMsChanged += Settings_CounterTapStartDelayMinimumMsChanged;
-            settings.CounterTapStartDelayMaximumMsChanged += Settings_CounterTapStartDelayMaximumMsChanged;
+            settings.CounterMovementPressLengthPresetChanged += Settings_CounterMovementPressLengthPresetChanged;
+            settings.CounterPressLengthModeChanged += Settings_CounterPressLengthModeChanged;
+            settings.CounterPressLengthMsChanged += Settings_CounterPressLengthMsChanged;
+            settings.CounterPressLengthVariancePercentChanged += Settings_CounterPressLengthVariancePercentChanged;
+            settings.CounterPressLengthMinimumMsChanged += Settings_CounterPressLengthMinimumMsChanged;
+            settings.CounterPressLengthMaximumMsChanged += Settings_CounterPressLengthMaximumMsChanged;
+            settings.CounterPressStartDelayModeChanged += Settings_CounterPressStartDelayModeChanged;
+            settings.CounterPressStartDelayMsChanged += Settings_CounterPressStartDelayMsChanged;
+            settings.CounterPressStartDelayVariancePercentChanged += Settings_CounterPressStartDelayVariancePercentChanged;
+            settings.CounterPressStartDelayMinimumMsChanged += Settings_CounterPressStartDelayMinimumMsChanged;
+            settings.CounterPressStartDelayMaximumMsChanged += Settings_CounterPressStartDelayMaximumMsChanged;
             settings.CounterMovementMinimumHoldMsChanged += Settings_CounterMovementMinimumHoldMsChanged;
             settings.RequiredStickDeflectionThresholdChanged += Settings_RequiredStickDeflectionThresholdChanged;
         }
@@ -8232,57 +8232,57 @@ namespace DS4MapperTest
             analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS);
         }
 
-        private void Settings_CounterMovementTapLengthPresetChanged(object sender, EventArgs e)
+        private void Settings_CounterMovementPressLengthPresetChanged(object sender, EventArgs e)
         {
-            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
         }
 
-        private void Settings_CounterTapLengthModeChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthModeChanged(object sender, EventArgs e)
         {
-            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
         }
 
-        private void Settings_CounterTapLengthMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthMsChanged(object sender, EventArgs e)
         {
-            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
         }
 
-        private void Settings_CounterTapLengthVariancePercentChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthVariancePercentChanged(object sender, EventArgs e)
         {
-            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
         }
 
-        private void Settings_CounterTapLengthMinimumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthMinimumMsChanged(object sender, EventArgs e)
         {
-            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
         }
 
-        private void Settings_CounterTapLengthMaximumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressLengthMaximumMsChanged(object sender, EventArgs e)
         {
-            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+            analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
         }
 
-        private void Settings_CounterTapStartDelayModeChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayModeChanged(object sender, EventArgs e)
         {
             analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
         }
 
-        private void Settings_CounterTapStartDelayMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayMsChanged(object sender, EventArgs e)
         {
             analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
         }
 
-        private void Settings_CounterTapStartDelayVariancePercentChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayVariancePercentChanged(object sender, EventArgs e)
         {
             analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
         }
 
-        private void Settings_CounterTapStartDelayMinimumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayMinimumMsChanged(object sender, EventArgs e)
         {
             analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
         }
 
-        private void Settings_CounterTapStartDelayMaximumMsChanged(object sender, EventArgs e)
+        private void Settings_CounterPressStartDelayMaximumMsChanged(object sender, EventArgs e)
         {
             analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
         }
@@ -8459,87 +8459,87 @@ namespace DS4MapperTest
                 analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             }
 
-            bool modeFieldPresent = analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+            bool modeFieldPresent = analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
 
             if (settings.LegacyBrakeDurationMs.HasValue)
             {
                 int legacyDuration = DigitalReleasePressPulse.ClampReleasePressDurationMs(settings.LegacyBrakeDurationMs.Value);
 
-                if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS))
+                if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS))
                 {
-                    analogAct.CounterMovementReleasePress.CounterTapLengthMinimumMs = legacyDuration;
-                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+                    analogAct.CounterMovementReleasePress.CounterPressLengthMinimumMs = legacyDuration;
+                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
                 }
 
-                if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS))
+                if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS))
                 {
-                    analogAct.CounterMovementReleasePress.CounterTapLengthMaximumMs = legacyDuration;
-                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+                    analogAct.CounterMovementReleasePress.CounterPressLengthMaximumMs = legacyDuration;
+                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
                 }
 
-                if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS))
+                if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS))
                 {
-                    analogAct.CounterMovementReleasePress.CounterTapLengthMs = legacyDuration;
-                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+                    analogAct.CounterMovementReleasePress.CounterPressLengthMs = legacyDuration;
+                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
                 }
 
-                if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT))
+                if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT))
                 {
-                    analogAct.CounterMovementReleasePress.CounterTapLengthVariancePercent = 0;
-                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+                    analogAct.CounterMovementReleasePress.CounterPressLengthVariancePercent = 0;
+                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
                 }
 
                 if (!modeFieldPresent)
                 {
-                    analogAct.CounterMovementReleasePress.CounterTapLengthMode = CounterTapLengthMode.Fixed;
-                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+                    analogAct.CounterMovementReleasePress.CounterPressLengthMode = CounterPressLengthMode.Fixed;
+                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
                 }
 
                 if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS))
                 {
-                    analogAct.CounterMovementReleasePress.CounterTapStartDelayMinimumMs = 0;
+                    analogAct.CounterMovementReleasePress.CounterPressStartDelayMinimumMs = 0;
                     analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
                 }
 
                 if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS))
                 {
-                    analogAct.CounterMovementReleasePress.CounterTapStartDelayMaximumMs = 0;
+                    analogAct.CounterMovementReleasePress.CounterPressStartDelayMaximumMs = 0;
                     analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
                 }
 
                 if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE))
                 {
-                    analogAct.CounterMovementReleasePress.CounterTapStartDelayMode = CounterTapStartDelayMode.Fixed;
+                    analogAct.CounterMovementReleasePress.CounterPressStartDelayMode = CounterPressStartDelayMode.Fixed;
                     analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
                 }
 
                 if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS))
                 {
-                    analogAct.CounterMovementReleasePress.CounterTapStartDelayMs = 0;
+                    analogAct.CounterMovementReleasePress.CounterPressStartDelayMs = 0;
                     analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
                 }
 
                 if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT))
                 {
-                    analogAct.CounterMovementReleasePress.CounterTapStartDelayVariancePercent = 0;
+                    analogAct.CounterMovementReleasePress.CounterPressStartDelayVariancePercent = 0;
                     analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
                 }
 
-                if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET))
+                if (!analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET))
                 {
-                    analogAct.CounterMovementReleasePress.TapLengthPreset = DS4MapperTest.StickActions.CounterMovementTapLengthPreset.Custom;
-                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+                    analogAct.CounterMovementReleasePress.PressLengthPreset = DS4MapperTest.StickActions.CounterMovementPressLengthPreset.Custom;
+                    analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
                 }
             }
             else if (!modeFieldPresent &&
-                (analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS) ||
-                 analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS)))
+                (analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS) ||
+                 analogAct.ChangedProperties.Contains(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS)))
             {
-                analogAct.CounterMovementReleasePress.CounterTapLengthMode = CounterTapLengthMode.MinimumAndMaximum;
-                analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+                analogAct.CounterMovementReleasePress.CounterPressLengthMode = CounterPressLengthMode.MinimumAndMaximum;
+                analogAct.ChangedProperties.Add(StickAnalogEmulationAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
                 analogAct.CounterMovementReleasePress.ApplyMinimumAndMaximum(
-                    analogAct.CounterMovementReleasePress.CounterTapLengthMinimumMs,
-                    analogAct.CounterMovementReleasePress.CounterTapLengthMaximumMs);
+                    analogAct.CounterMovementReleasePress.CounterPressLengthMinimumMs,
+                    analogAct.CounterMovementReleasePress.CounterPressLengthMaximumMs);
             }
 
             analogAct.CounterMovementReleasePress.NormalizeRanges();

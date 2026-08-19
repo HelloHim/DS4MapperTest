@@ -140,20 +140,20 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 if (value)
                 {
                     // Enabling always lands on Time Variance (%) mode and the CS2
-                    // preset, so turning this on never surfaces stale/legacy tap-length
+                    // preset, so turning this on never surfaces stale/legacy press-length
                     // values or a stale mode as an unexpected "Custom".
-                    action.CounterMovementReleasePress.CounterTapLengthMode = DS4MapperTest.StickActions.CounterTapLengthMode.WaitVariancePercentage;
+                    action.CounterMovementReleasePress.CounterPressLengthMode = DS4MapperTest.StickActions.CounterPressLengthMode.WaitVariancePercentage;
                     action.CounterMovementReleasePress.ApplyCs2Preset();
-                    CounterTapLengthModeChanged?.Invoke(this, EventArgs.Empty);
-                    CounterTapLengthModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
+                    CounterPressLengthModeChanged?.Invoke(this, EventArgs.Empty);
+                    CounterPressLengthModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
                     ShowFixedModeFieldsChanged?.Invoke(this, EventArgs.Empty);
                     ShowWaitVariancePercentageModeFieldsChanged?.Invoke(this, EventArgs.Empty);
                     ShowMinimumAndMaximumModeFieldsChanged?.Invoke(this, EventArgs.Empty);
-                    TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
-                    CounterTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
-                    CounterTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
-                    CounterTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
-                    CounterTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                    PressLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                    CounterPressLengthMsChanged?.Invoke(this, EventArgs.Empty);
+                    CounterPressLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                    CounterPressLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                    CounterPressLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 }
 
                 CounterMovementReleasePressEnabledChanged?.Invoke(this, EventArgs.Empty);
@@ -162,291 +162,291 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler CounterMovementReleasePressEnabledChanged;
 
-        private List<EnumChoiceSelection<CounterTapLengthMode>> tapLengthModeItems =
-            new List<EnumChoiceSelection<CounterTapLengthMode>>()
+        private List<EnumChoiceSelection<CounterPressLengthMode>> pressLengthModeItems =
+            new List<EnumChoiceSelection<CounterPressLengthMode>>()
             {
-                new EnumChoiceSelection<CounterTapLengthMode>("Fixed", CounterTapLengthMode.Fixed),
-                new EnumChoiceSelection<CounterTapLengthMode>("Time Variance (%)", CounterTapLengthMode.WaitVariancePercentage),
-                new EnumChoiceSelection<CounterTapLengthMode>("Time Variance (Range)", CounterTapLengthMode.MinimumAndMaximum),
+                new EnumChoiceSelection<CounterPressLengthMode>("Fixed", CounterPressLengthMode.Fixed),
+                new EnumChoiceSelection<CounterPressLengthMode>("Time Variance (%)", CounterPressLengthMode.WaitVariancePercentage),
+                new EnumChoiceSelection<CounterPressLengthMode>("Time Variance (Range)", CounterPressLengthMode.MinimumAndMaximum),
             };
-        public List<EnumChoiceSelection<CounterTapLengthMode>> TapLengthModeItems => tapLengthModeItems;
+        public List<EnumChoiceSelection<CounterPressLengthMode>> PressLengthModeItems => pressLengthModeItems;
 
-        public CounterTapLengthMode CounterTapLengthMode
+        public CounterPressLengthMode CounterPressLengthMode
         {
-            get => action.CounterMovementReleasePress.CounterTapLengthMode;
+            get => action.CounterMovementReleasePress.CounterPressLengthMode;
             set
             {
-                if (action.CounterMovementReleasePress.CounterTapLengthMode == value) return;
-                action.CounterMovementReleasePress.CounterTapLengthMode = value;
-                CounterTapLengthModeChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
+                if (action.CounterMovementReleasePress.CounterPressLengthMode == value) return;
+                action.CounterMovementReleasePress.CounterPressLengthMode = value;
+                CounterPressLengthModeChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
                 ShowFixedModeFieldsChanged?.Invoke(this, EventArgs.Empty);
                 ShowWaitVariancePercentageModeFieldsChanged?.Invoke(this, EventArgs.Empty);
                 ShowMinimumAndMaximumModeFieldsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler CounterTapLengthModeChanged;
+        public event EventHandler CounterPressLengthModeChanged;
 
         // Short, visible description of the currently selected mode, shown directly under the
         // mode dropdown rather than only on hover.
-        public string CounterTapLengthModeDescription
+        public string CounterPressLengthModeDescription
         {
             get
             {
-                switch (action.CounterMovementReleasePress.CounterTapLengthMode)
+                switch (action.CounterMovementReleasePress.CounterPressLengthMode)
                 {
-                    case DS4MapperTest.StickActions.CounterTapLengthMode.Fixed:
+                    case DS4MapperTest.StickActions.CounterPressLengthMode.Fixed:
                         return "Uses the same total duration for every qualifying release.";
-                    case DS4MapperTest.StickActions.CounterTapLengthMode.WaitVariancePercentage:
+                    case DS4MapperTest.StickActions.CounterPressLengthMode.WaitVariancePercentage:
                         return "Varies the total duration below and above the fixed value by the selected percentage.";
                     default:
                         return "Selects a total duration at random from the specified inclusive range.";
                 }
             }
         }
-        public event EventHandler CounterTapLengthModeDescriptionChanged;
+        public event EventHandler CounterPressLengthModeDescriptionChanged;
 
         public bool ShowFixedModeFields =>
-            action.CounterMovementReleasePress.CounterTapLengthMode == DS4MapperTest.StickActions.CounterTapLengthMode.Fixed;
+            action.CounterMovementReleasePress.CounterPressLengthMode == DS4MapperTest.StickActions.CounterPressLengthMode.Fixed;
         public event EventHandler ShowFixedModeFieldsChanged;
 
         public bool ShowWaitVariancePercentageModeFields =>
-            action.CounterMovementReleasePress.CounterTapLengthMode == DS4MapperTest.StickActions.CounterTapLengthMode.WaitVariancePercentage;
+            action.CounterMovementReleasePress.CounterPressLengthMode == DS4MapperTest.StickActions.CounterPressLengthMode.WaitVariancePercentage;
         public event EventHandler ShowWaitVariancePercentageModeFieldsChanged;
 
         public bool ShowMinimumAndMaximumModeFields =>
-            action.CounterMovementReleasePress.CounterTapLengthMode == DS4MapperTest.StickActions.CounterTapLengthMode.MinimumAndMaximum;
+            action.CounterMovementReleasePress.CounterPressLengthMode == DS4MapperTest.StickActions.CounterPressLengthMode.MinimumAndMaximum;
         public event EventHandler ShowMinimumAndMaximumModeFieldsChanged;
 
-        private List<EnumChoiceSelection<CounterMovementTapLengthPreset>> tapLengthPresetItems =
-            new List<EnumChoiceSelection<CounterMovementTapLengthPreset>>()
+        private List<EnumChoiceSelection<CounterMovementPressLengthPreset>> pressLengthPresetItems =
+            new List<EnumChoiceSelection<CounterMovementPressLengthPreset>>()
             {
-                new EnumChoiceSelection<CounterMovementTapLengthPreset>("Custom", CounterMovementTapLengthPreset.Custom),
-                new EnumChoiceSelection<CounterMovementTapLengthPreset>("CS2", CounterMovementTapLengthPreset.CS2),
+                new EnumChoiceSelection<CounterMovementPressLengthPreset>("Custom", CounterMovementPressLengthPreset.Custom),
+                new EnumChoiceSelection<CounterMovementPressLengthPreset>("CS2", CounterMovementPressLengthPreset.CS2),
             };
-        public List<EnumChoiceSelection<CounterMovementTapLengthPreset>> TapLengthPresetItems => tapLengthPresetItems;
+        public List<EnumChoiceSelection<CounterMovementPressLengthPreset>> PressLengthPresetItems => pressLengthPresetItems;
 
-        public CounterMovementTapLengthPreset TapLengthPreset
+        public CounterMovementPressLengthPreset PressLengthPreset
         {
-            get => action.CounterMovementReleasePress.EffectiveTapLengthPreset;
+            get => action.CounterMovementReleasePress.EffectivePressLengthPreset;
             set
             {
-                if (action.CounterMovementReleasePress.EffectiveTapLengthPreset == value) return;
+                if (action.CounterMovementReleasePress.EffectivePressLengthPreset == value) return;
 
-                if (value == CounterMovementTapLengthPreset.CS2)
+                if (value == CounterMovementPressLengthPreset.CS2)
                 {
                     action.CounterMovementReleasePress.ApplyCs2Preset();
                 }
                 else
                 {
-                    action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
+                    action.CounterMovementReleasePress.PressLengthPreset = CounterMovementPressLengthPreset.Custom;
                 }
 
-                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                PressLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler TapLengthPresetChanged;
+        public event EventHandler PressLengthPresetChanged;
 
-        public int CounterTapLengthMs
+        public int CounterPressLengthMs
         {
-            get => action.CounterMovementReleasePress.CounterTapLengthMs;
+            get => action.CounterMovementReleasePress.CounterPressLengthMs;
             set
             {
-                if (action.CounterMovementReleasePress.CounterTapLengthMs == value) return;
-                action.CounterMovementReleasePress.ApplyFixedAndPercentage(value, action.CounterMovementReleasePress.CounterTapLengthVariancePercent);
-                action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
-                CounterTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
-                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                if (action.CounterMovementReleasePress.CounterPressLengthMs == value) return;
+                action.CounterMovementReleasePress.ApplyFixedAndPercentage(value, action.CounterMovementReleasePress.CounterPressLengthVariancePercent);
+                action.CounterMovementReleasePress.PressLengthPreset = CounterMovementPressLengthPreset.Custom;
+                CounterPressLengthMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                PressLengthPresetChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler CounterTapLengthMsChanged;
+        public event EventHandler CounterPressLengthMsChanged;
 
-        public int CounterTapLengthVariancePercent
+        public int CounterPressLengthVariancePercent
         {
-            get => action.CounterMovementReleasePress.CounterTapLengthVariancePercent;
+            get => action.CounterMovementReleasePress.CounterPressLengthVariancePercent;
             set
             {
-                if (action.CounterMovementReleasePress.CounterTapLengthVariancePercent == value) return;
-                action.CounterMovementReleasePress.ApplyFixedAndPercentage(action.CounterMovementReleasePress.CounterTapLengthMs, value);
-                action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
-                CounterTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
-                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                if (action.CounterMovementReleasePress.CounterPressLengthVariancePercent == value) return;
+                action.CounterMovementReleasePress.ApplyFixedAndPercentage(action.CounterMovementReleasePress.CounterPressLengthMs, value);
+                action.CounterMovementReleasePress.PressLengthPreset = CounterMovementPressLengthPreset.Custom;
+                CounterPressLengthMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                PressLengthPresetChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler CounterTapLengthVariancePercentChanged;
+        public event EventHandler CounterPressLengthVariancePercentChanged;
 
-        public int CounterTapLengthMinimumMs
+        public int CounterPressLengthMinimumMs
         {
-            get => action.CounterMovementReleasePress.CounterTapLengthMinimumMs;
+            get => action.CounterMovementReleasePress.CounterPressLengthMinimumMs;
             set
             {
-                if (action.CounterMovementReleasePress.CounterTapLengthMinimumMs == value) return;
-                action.CounterMovementReleasePress.ApplyMinimumAndMaximum(value, action.CounterMovementReleasePress.CounterTapLengthMaximumMs);
-                action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
-                CounterTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
-                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                if (action.CounterMovementReleasePress.CounterPressLengthMinimumMs == value) return;
+                action.CounterMovementReleasePress.ApplyMinimumAndMaximum(value, action.CounterMovementReleasePress.CounterPressLengthMaximumMs);
+                action.CounterMovementReleasePress.PressLengthPreset = CounterMovementPressLengthPreset.Custom;
+                CounterPressLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                PressLengthPresetChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler CounterTapLengthMinimumMsChanged;
+        public event EventHandler CounterPressLengthMinimumMsChanged;
 
-        public int CounterTapLengthMaximumMs
+        public int CounterPressLengthMaximumMs
         {
-            get => action.CounterMovementReleasePress.CounterTapLengthMaximumMs;
+            get => action.CounterMovementReleasePress.CounterPressLengthMaximumMs;
             set
             {
-                if (action.CounterMovementReleasePress.CounterTapLengthMaximumMs == value) return;
-                action.CounterMovementReleasePress.ApplyMinimumAndMaximum(action.CounterMovementReleasePress.CounterTapLengthMinimumMs, value);
-                action.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
-                CounterTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
-                TapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+                if (action.CounterMovementReleasePress.CounterPressLengthMaximumMs == value) return;
+                action.CounterMovementReleasePress.ApplyMinimumAndMaximum(action.CounterMovementReleasePress.CounterPressLengthMinimumMs, value);
+                action.CounterMovementReleasePress.PressLengthPreset = CounterMovementPressLengthPreset.Custom;
+                CounterPressLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                PressLengthPresetChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler CounterTapLengthMaximumMsChanged;
+        public event EventHandler CounterPressLengthMaximumMsChanged;
 
-        private List<EnumChoiceSelection<CounterTapStartDelayMode>> startDelayModeItems =
-            new List<EnumChoiceSelection<CounterTapStartDelayMode>>()
+        private List<EnumChoiceSelection<CounterPressStartDelayMode>> startDelayModeItems =
+            new List<EnumChoiceSelection<CounterPressStartDelayMode>>()
             {
-                new EnumChoiceSelection<CounterTapStartDelayMode>("Fixed", CounterTapStartDelayMode.Fixed),
-                new EnumChoiceSelection<CounterTapStartDelayMode>("Time Variance (%)", CounterTapStartDelayMode.WaitVariancePercentage),
-                new EnumChoiceSelection<CounterTapStartDelayMode>("Time Variance (Range)", CounterTapStartDelayMode.MinimumAndMaximum),
+                new EnumChoiceSelection<CounterPressStartDelayMode>("Fixed", CounterPressStartDelayMode.Fixed),
+                new EnumChoiceSelection<CounterPressStartDelayMode>("Time Variance (%)", CounterPressStartDelayMode.WaitVariancePercentage),
+                new EnumChoiceSelection<CounterPressStartDelayMode>("Time Variance (Range)", CounterPressStartDelayMode.MinimumAndMaximum),
             };
-        public List<EnumChoiceSelection<CounterTapStartDelayMode>> StartDelayModeItems => startDelayModeItems;
+        public List<EnumChoiceSelection<CounterPressStartDelayMode>> StartDelayModeItems => startDelayModeItems;
 
-        public CounterTapStartDelayMode CounterTapStartDelayMode
+        public CounterPressStartDelayMode CounterPressStartDelayMode
         {
-            get => action.CounterMovementReleasePress.CounterTapStartDelayMode;
+            get => action.CounterMovementReleasePress.CounterPressStartDelayMode;
             set
             {
-                if (action.CounterMovementReleasePress.CounterTapStartDelayMode == value) return;
-                action.CounterMovementReleasePress.CounterTapStartDelayMode = value;
-                CounterTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
+                if (action.CounterMovementReleasePress.CounterPressStartDelayMode == value) return;
+                action.CounterMovementReleasePress.CounterPressStartDelayMode = value;
+                CounterPressStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayModeDescriptionChanged?.Invoke(this, EventArgs.Empty);
                 ShowStartDelayFixedModeFieldsChanged?.Invoke(this, EventArgs.Empty);
                 ShowStartDelayWaitVariancePercentageModeFieldsChanged?.Invoke(this, EventArgs.Empty);
                 ShowStartDelayMinimumAndMaximumModeFieldsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler CounterTapStartDelayModeChanged;
+        public event EventHandler CounterPressStartDelayModeChanged;
 
-        public string CounterTapStartDelayModeDescription
+        public string CounterPressStartDelayModeDescription
         {
             get
             {
-                switch (action.CounterMovementReleasePress.CounterTapStartDelayMode)
+                switch (action.CounterMovementReleasePress.CounterPressStartDelayMode)
                 {
-                    case CounterTapStartDelayMode.Fixed:
+                    case CounterPressStartDelayMode.Fixed:
                         return "Uses the same neutral delay before every generated opposite press.";
-                    case CounterTapStartDelayMode.WaitVariancePercentage:
+                    case CounterPressStartDelayMode.WaitVariancePercentage:
                         return "Varies the neutral delay below and above the fixed value by the selected percentage.";
                     default:
                         return "Selects a neutral delay at random from the specified inclusive range.";
                 }
             }
         }
-        public event EventHandler CounterTapStartDelayModeDescriptionChanged;
+        public event EventHandler CounterPressStartDelayModeDescriptionChanged;
 
         public bool ShowStartDelayFixedModeFields =>
-            action.CounterMovementReleasePress.CounterTapStartDelayMode == CounterTapStartDelayMode.Fixed;
+            action.CounterMovementReleasePress.CounterPressStartDelayMode == CounterPressStartDelayMode.Fixed;
         public event EventHandler ShowStartDelayFixedModeFieldsChanged;
 
         public bool ShowStartDelayWaitVariancePercentageModeFields =>
-            action.CounterMovementReleasePress.CounterTapStartDelayMode == CounterTapStartDelayMode.WaitVariancePercentage;
+            action.CounterMovementReleasePress.CounterPressStartDelayMode == CounterPressStartDelayMode.WaitVariancePercentage;
         public event EventHandler ShowStartDelayWaitVariancePercentageModeFieldsChanged;
 
         public bool ShowStartDelayMinimumAndMaximumModeFields =>
-            action.CounterMovementReleasePress.CounterTapStartDelayMode == CounterTapStartDelayMode.MinimumAndMaximum;
+            action.CounterMovementReleasePress.CounterPressStartDelayMode == CounterPressStartDelayMode.MinimumAndMaximum;
         public event EventHandler ShowStartDelayMinimumAndMaximumModeFieldsChanged;
 
-        public int CounterTapStartDelayMs
+        public int CounterPressStartDelayMs
         {
-            get => action.CounterMovementReleasePress.CounterTapStartDelayMs;
+            get => action.CounterMovementReleasePress.CounterPressStartDelayMs;
             set
             {
-                if (action.CounterMovementReleasePress.CounterTapStartDelayMs == value) return;
-                action.CounterMovementReleasePress.ApplyStartDelayFixedAndPercentage(value, action.CounterMovementReleasePress.CounterTapStartDelayVariancePercent);
+                if (action.CounterMovementReleasePress.CounterPressStartDelayMs == value) return;
+                action.CounterMovementReleasePress.ApplyStartDelayFixedAndPercentage(value, action.CounterMovementReleasePress.CounterPressStartDelayVariancePercent);
                 action.CounterMovementReleasePress.NormalizeRanges();
-                CounterTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler CounterTapStartDelayMsChanged;
+        public event EventHandler CounterPressStartDelayMsChanged;
 
-        public int CounterTapStartDelayVariancePercent
+        public int CounterPressStartDelayVariancePercent
         {
-            get => action.CounterMovementReleasePress.CounterTapStartDelayVariancePercent;
+            get => action.CounterMovementReleasePress.CounterPressStartDelayVariancePercent;
             set
             {
-                if (action.CounterMovementReleasePress.CounterTapStartDelayVariancePercent == value) return;
-                action.CounterMovementReleasePress.ApplyStartDelayFixedAndPercentage(action.CounterMovementReleasePress.CounterTapStartDelayMs, value);
+                if (action.CounterMovementReleasePress.CounterPressStartDelayVariancePercent == value) return;
+                action.CounterMovementReleasePress.ApplyStartDelayFixedAndPercentage(action.CounterMovementReleasePress.CounterPressStartDelayMs, value);
                 action.CounterMovementReleasePress.NormalizeRanges();
-                CounterTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler CounterTapStartDelayVariancePercentChanged;
+        public event EventHandler CounterPressStartDelayVariancePercentChanged;
 
-        public int CounterTapStartDelayMinimumMs
+        public int CounterPressStartDelayMinimumMs
         {
-            get => action.CounterMovementReleasePress.CounterTapStartDelayMinimumMs;
+            get => action.CounterMovementReleasePress.CounterPressStartDelayMinimumMs;
             set
             {
-                if (action.CounterMovementReleasePress.CounterTapStartDelayMinimumMs == value) return;
-                action.CounterMovementReleasePress.ApplyStartDelayMinimumAndMaximum(value, action.CounterMovementReleasePress.CounterTapStartDelayMaximumMs);
-                CounterTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                if (action.CounterMovementReleasePress.CounterPressStartDelayMinimumMs == value) return;
+                action.CounterMovementReleasePress.ApplyStartDelayMinimumAndMaximum(value, action.CounterMovementReleasePress.CounterPressStartDelayMaximumMs);
+                CounterPressStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler CounterTapStartDelayMinimumMsChanged;
+        public event EventHandler CounterPressStartDelayMinimumMsChanged;
 
-        public int CounterTapStartDelayMaximumMs
+        public int CounterPressStartDelayMaximumMs
         {
-            get => action.CounterMovementReleasePress.CounterTapStartDelayMaximumMs;
+            get => action.CounterMovementReleasePress.CounterPressStartDelayMaximumMs;
             set
             {
-                if (action.CounterMovementReleasePress.CounterTapStartDelayMaximumMs == value) return;
-                action.CounterMovementReleasePress.ApplyStartDelayMinimumAndMaximum(action.CounterMovementReleasePress.CounterTapStartDelayMinimumMs, value);
-                CounterTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
-                CounterTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+                if (action.CounterMovementReleasePress.CounterPressStartDelayMaximumMs == value) return;
+                action.CounterMovementReleasePress.ApplyStartDelayMinimumAndMaximum(action.CounterMovementReleasePress.CounterPressStartDelayMinimumMs, value);
+                CounterPressStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+                CounterPressStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler CounterTapStartDelayMaximumMsChanged;
+        public event EventHandler CounterPressStartDelayMaximumMsChanged;
 
         public bool CounterMovementDeadZoneReleaseEnabled
         {
@@ -699,82 +699,82 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
         }
         public event EventHandler HighlightCounterMovementReleasePressEnabledChanged;
 
-        public bool HighlightTapLengthPreset
+        public bool HighlightPressLengthPreset
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
         }
-        public event EventHandler HighlightTapLengthPresetChanged;
+        public event EventHandler HighlightPressLengthPresetChanged;
 
-        public bool HighlightCounterTapLengthMode
+        public bool HighlightCounterPressLengthMode
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
         }
-        public event EventHandler HighlightCounterTapLengthModeChanged;
+        public event EventHandler HighlightCounterPressLengthModeChanged;
 
-        public bool HighlightCounterTapLengthMs
+        public bool HighlightCounterPressLengthMs
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
         }
-        public event EventHandler HighlightCounterTapLengthMsChanged;
+        public event EventHandler HighlightCounterPressLengthMsChanged;
 
-        public bool HighlightCounterTapLengthVariancePercent
+        public bool HighlightCounterPressLengthVariancePercent
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
         }
-        public event EventHandler HighlightCounterTapLengthVariancePercentChanged;
+        public event EventHandler HighlightCounterPressLengthVariancePercentChanged;
 
-        public bool HighlightCounterTapLengthMinimumMs
+        public bool HighlightCounterPressLengthMinimumMs
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
         }
-        public event EventHandler HighlightCounterTapLengthMinimumMsChanged;
+        public event EventHandler HighlightCounterPressLengthMinimumMsChanged;
 
-        public bool HighlightCounterTapLengthMaximumMs
+        public bool HighlightCounterPressLengthMaximumMs
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
+                action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
         }
-        public event EventHandler HighlightCounterTapLengthMaximumMsChanged;
+        public event EventHandler HighlightCounterPressLengthMaximumMsChanged;
 
-        public bool HighlightCounterTapStartDelayMode
+        public bool HighlightCounterPressStartDelayMode
         {
             get => action.ParentAction == null ||
                 action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
         }
-        public event EventHandler HighlightCounterTapStartDelayModeChanged;
+        public event EventHandler HighlightCounterPressStartDelayModeChanged;
 
-        public bool HighlightCounterTapStartDelayMs
+        public bool HighlightCounterPressStartDelayMs
         {
             get => action.ParentAction == null ||
                 action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
         }
-        public event EventHandler HighlightCounterTapStartDelayMsChanged;
+        public event EventHandler HighlightCounterPressStartDelayMsChanged;
 
-        public bool HighlightCounterTapStartDelayVariancePercent
+        public bool HighlightCounterPressStartDelayVariancePercent
         {
             get => action.ParentAction == null ||
                 action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
         }
-        public event EventHandler HighlightCounterTapStartDelayVariancePercentChanged;
+        public event EventHandler HighlightCounterPressStartDelayVariancePercentChanged;
 
-        public bool HighlightCounterTapStartDelayMinimumMs
+        public bool HighlightCounterPressStartDelayMinimumMs
         {
             get => action.ParentAction == null ||
                 action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
         }
-        public event EventHandler HighlightCounterTapStartDelayMinimumMsChanged;
+        public event EventHandler HighlightCounterPressStartDelayMinimumMsChanged;
 
-        public bool HighlightCounterTapStartDelayMaximumMs
+        public bool HighlightCounterPressStartDelayMaximumMs
         {
             get => action.ParentAction == null ||
                 action.ChangedProperties.Contains(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
         }
-        public event EventHandler HighlightCounterTapStartDelayMaximumMsChanged;
+        public event EventHandler HighlightCounterPressStartDelayMaximumMsChanged;
 
         public bool HighlightCounterMovementDeadZoneReleaseEnabled
         {
@@ -839,17 +839,17 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             OuterRingRangeChoiceChanged += TouchpadActionPadPropViewModel_OuterRingRangeChoiceChanged;
             ActionPresetChoiceChanged += TouchpadActionPadPropViewModel_ActionPresetChoiceChanged;
             CounterMovementReleasePressEnabledChanged += TouchpadActionPadPropViewModel_CounterMovementReleasePressEnabledChanged;
-            TapLengthPresetChanged += TouchpadActionPadPropViewModel_TapLengthPresetChanged;
-            CounterTapLengthModeChanged += TouchpadActionPadPropViewModel_CounterTapLengthModeChanged;
-            CounterTapLengthMsChanged += TouchpadActionPadPropViewModel_CounterTapLengthMsChanged;
-            CounterTapLengthVariancePercentChanged += TouchpadActionPadPropViewModel_CounterTapLengthVariancePercentChanged;
-            CounterTapLengthMinimumMsChanged += TouchpadActionPadPropViewModel_CounterTapLengthMinimumMsChanged;
-            CounterTapLengthMaximumMsChanged += TouchpadActionPadPropViewModel_CounterTapLengthMaximumMsChanged;
-            CounterTapStartDelayModeChanged += TouchpadActionPadPropViewModel_CounterTapStartDelayModeChanged;
-            CounterTapStartDelayMsChanged += TouchpadActionPadPropViewModel_CounterTapStartDelayMsChanged;
-            CounterTapStartDelayVariancePercentChanged += TouchpadActionPadPropViewModel_CounterTapStartDelayVariancePercentChanged;
-            CounterTapStartDelayMinimumMsChanged += TouchpadActionPadPropViewModel_CounterTapStartDelayMinimumMsChanged;
-            CounterTapStartDelayMaximumMsChanged += TouchpadActionPadPropViewModel_CounterTapStartDelayMaximumMsChanged;
+            PressLengthPresetChanged += TouchpadActionPadPropViewModel_PressLengthPresetChanged;
+            CounterPressLengthModeChanged += TouchpadActionPadPropViewModel_CounterPressLengthModeChanged;
+            CounterPressLengthMsChanged += TouchpadActionPadPropViewModel_CounterPressLengthMsChanged;
+            CounterPressLengthVariancePercentChanged += TouchpadActionPadPropViewModel_CounterPressLengthVariancePercentChanged;
+            CounterPressLengthMinimumMsChanged += TouchpadActionPadPropViewModel_CounterPressLengthMinimumMsChanged;
+            CounterPressLengthMaximumMsChanged += TouchpadActionPadPropViewModel_CounterPressLengthMaximumMsChanged;
+            CounterPressStartDelayModeChanged += TouchpadActionPadPropViewModel_CounterPressStartDelayModeChanged;
+            CounterPressStartDelayMsChanged += TouchpadActionPadPropViewModel_CounterPressStartDelayMsChanged;
+            CounterPressStartDelayVariancePercentChanged += TouchpadActionPadPropViewModel_CounterPressStartDelayVariancePercentChanged;
+            CounterPressStartDelayMinimumMsChanged += TouchpadActionPadPropViewModel_CounterPressStartDelayMinimumMsChanged;
+            CounterPressStartDelayMaximumMsChanged += TouchpadActionPadPropViewModel_CounterPressStartDelayMaximumMsChanged;
             CounterMovementDeadZoneReleaseEnabledChanged += TouchpadActionPadPropViewModel_CounterMovementDeadZoneReleaseEnabledChanged;
             CounterMovementMinimumHoldMsChanged += TouchpadActionPadPropViewModel_CounterMovementMinimumHoldMsChanged;
         }
@@ -861,81 +861,81 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
             HighlightCounterMovementReleasePressEnabledChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_TapLengthPresetChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_PressLengthPresetChanged(object sender, EventArgs e)
         {
-            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
-            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_PRESET);
-            HighlightTapLengthPresetChanged?.Invoke(this, EventArgs.Empty);
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET);
+            HighlightPressLengthPresetChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_CounterTapLengthModeChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterPressLengthModeChanged(object sender, EventArgs e)
         {
-            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
-            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
-            HighlightCounterTapLengthModeChanged?.Invoke(this, EventArgs.Empty);
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE);
+            HighlightCounterPressLengthModeChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_CounterTapLengthMsChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterPressLengthMsChanged(object sender, EventArgs e)
         {
-            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
-            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS);
-            HighlightCounterTapLengthMsChanged?.Invoke(this, EventArgs.Empty);
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS);
+            HighlightCounterPressLengthMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_CounterTapLengthVariancePercentChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterPressLengthVariancePercentChanged(object sender, EventArgs e)
         {
-            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
-            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT);
-            HighlightCounterTapLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT);
+            HighlightCounterPressLengthVariancePercentChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_CounterTapLengthMinimumMsChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterPressLengthMinimumMsChanged(object sender, EventArgs e)
         {
-            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
-            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
-            HighlightCounterTapLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS);
+            HighlightCounterPressLengthMinimumMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_CounterTapLengthMaximumMsChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterPressLengthMaximumMsChanged(object sender, EventArgs e)
         {
-            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
-            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
-            HighlightCounterTapLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+            action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
+            action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS);
+            HighlightCounterPressLengthMaximumMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_CounterTapStartDelayModeChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterPressStartDelayModeChanged(object sender, EventArgs e)
         {
             action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
             action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
-            HighlightCounterTapStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
+            HighlightCounterPressStartDelayModeChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_CounterTapStartDelayMsChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterPressStartDelayMsChanged(object sender, EventArgs e)
         {
             action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
             action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS);
-            HighlightCounterTapStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
+            HighlightCounterPressStartDelayMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_CounterTapStartDelayVariancePercentChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterPressStartDelayVariancePercentChanged(object sender, EventArgs e)
         {
             action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
             action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT);
-            HighlightCounterTapStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
+            HighlightCounterPressStartDelayVariancePercentChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_CounterTapStartDelayMinimumMsChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterPressStartDelayMinimumMsChanged(object sender, EventArgs e)
         {
             action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
             action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS);
-            HighlightCounterTapStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
+            HighlightCounterPressStartDelayMinimumMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void TouchpadActionPadPropViewModel_CounterTapStartDelayMaximumMsChanged(object sender, EventArgs e)
+        private void TouchpadActionPadPropViewModel_CounterPressStartDelayMaximumMsChanged(object sender, EventArgs e)
         {
             action.ChangedProperties.Add(TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
             action.RaiseNotifyPropertyChange(mapper, TouchpadActionPad.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS);
-            HighlightCounterTapStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
+            HighlightCounterPressStartDelayMaximumMsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void TouchpadActionPadPropViewModel_CounterMovementDeadZoneReleaseEnabledChanged(object sender, EventArgs e)

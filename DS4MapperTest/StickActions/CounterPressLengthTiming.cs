@@ -5,15 +5,15 @@ namespace DS4MapperTest.StickActions
 {
     /// <summary>
     /// Shared, mode-aware storage and computation for Counter Movement Release Press'
-    /// Counter Tap Length. Used by both CounterMovementReleasePressProcessor (stick D-Pad
+    /// Counter Press Length. Used by both CounterMovementReleasePressProcessor (stick D-Pad
     /// modes and Analog Emulation) and TouchpadCounterMovementReleasePress (touchpad D-Pad
     /// modes), so the percentage math, best-fit conversion search and CS2 constants exist
     /// in exactly one place rather than being duplicated across the two otherwise-independent
-    /// state machines. Deliberately excludes the tap-length preset and the start-delay
+    /// state machines. Deliberately excludes the press-length preset and the start-delay
     /// fields: those remain owned by each caller, since their surrounding preset/
     /// NormalizeRanges semantics differ slightly between the two.
     /// </summary>
-    public sealed class CounterTapLengthTiming
+    public sealed class CounterPressLengthTiming
     {
         public const int CS2_FIXED_TAP_LENGTH_MS = 84;
         public const int CS2_WAIT_VARIANCE_PERCENT = 7;
@@ -25,8 +25,8 @@ namespace DS4MapperTest.StickActions
 
         // New actions default to Time Variance (%), using CS2's 84ms base and
         // 7% variance while keeping the equivalent 78-90ms range in sync.
-        private CounterTapLengthMode mode = CounterTapLengthMode.WaitVariancePercentage;
-        public CounterTapLengthMode Mode
+        private CounterPressLengthMode mode = CounterPressLengthMode.WaitVariancePercentage;
+        public CounterPressLengthMode Mode
         {
             get => mode;
             set => mode = value;
@@ -115,7 +115,7 @@ namespace DS4MapperTest.StickActions
         }
 
         /// <summary>
-        /// True whenever the current numeric tap-length values happen to equal the CS2
+        /// True whenever the current numeric press-length values happen to equal the CS2
         /// preset's values, regardless of how they got there (the preset dropdown, a direct
         /// edit, migration, or a loaded profile).
         /// </summary>
@@ -132,7 +132,7 @@ namespace DS4MapperTest.StickActions
         /// </summary>
         public (int Minimum, int Maximum) GetEffectiveRange()
         {
-            if (mode == CounterTapLengthMode.Fixed)
+            if (mode == CounterPressLengthMode.Fixed)
             {
                 return (fixedMs, fixedMs);
             }
