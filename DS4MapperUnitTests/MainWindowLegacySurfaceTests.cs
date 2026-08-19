@@ -92,13 +92,17 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void DeviceListAutoSelectsSoleDeviceAfterRefresh()
+        public void DeviceListAutoSelectsAnAvailableDeviceAfterRefresh()
         {
             string codeBehind = ReadSourceFile("DS4MapperTest", "MainWindow.xaml.cs");
 
             StringAssert.Contains(codeBehind, "ReconcileDeviceSelectionAfterListChange");
-            StringAssert.Contains(codeBehind, "controlListVM.ControllerList.Count == 1");
-            StringAssert.Contains(codeBehind, "LoadProfileForDevice(controlListVM.ControllerList[0])");
+
+            // Selection must not be gated on the list holding exactly one device:
+            // a reconnected controller sharing the list with the app's own virtual
+            // pad has to be picked up too.
+            StringAssert.Contains(codeBehind, "foreach (DeviceListItem candidate in controlListVM.ControllerList)");
+            StringAssert.Contains(codeBehind, "LoadProfileForDevice(candidate)");
         }
 
         private static void AssertElementOpeningTagDoesNotContain(string xaml, string elementName, string prohibited)

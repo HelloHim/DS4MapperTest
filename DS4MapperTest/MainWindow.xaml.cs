@@ -643,10 +643,20 @@ namespace DS4MapperTest
                 HandleCurrentDeviceRemoved();
             }
 
-            if (currentDeviceItem == null &&
-                controlListVM.ControllerList.Count == 1)
+            // Any controller arriving while nothing is loaded should be picked up.
+            // Requiring the list to hold exactly one item meant a second device
+            // still in the list - the app's own virtual pad, or a controller whose
+            // profile had failed to load - left a freshly reconnected controller
+            // sitting there unrecognised until the app was restarted.
+            if (currentDeviceItem == null)
             {
-                LoadProfileForDevice(controlListVM.ControllerList[0]);
+                foreach (DeviceListItem candidate in controlListVM.ControllerList)
+                {
+                    if (LoadProfileForDevice(candidate))
+                    {
+                        break;
+                    }
+                }
             }
         }
 

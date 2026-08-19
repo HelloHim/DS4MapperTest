@@ -624,6 +624,7 @@ namespace DS4MapperTest.SdlDiagnostics
         private static readonly TimeSpan EnumerationReconcileInterval = TimeSpan.FromMilliseconds(100);
         private const int MissedEnumerationsBeforeClose = 3;
         private DateTimeOffset nextEnumerationReconcileUtc = DateTimeOffset.MinValue;
+        private IReadOnlyList<uint> lastEnumeratedInstanceIds = Array.Empty<uint>();
         private bool started;
         private bool disposed;
 
@@ -770,6 +771,16 @@ namespace DS4MapperTest.SdlDiagnostics
         private string ReconcileEnumeratedDevices(string reason)
         {
             IReadOnlyList<uint> instanceIds = api.EnumerateGamepads(out string enumError);
+
+            // A controller that never comes back after a replug leaves no trace
+            // otherwise: without this it is impossible to tell whether SDL stopped
+            // reporting the device or the app stopped acting on what SDL reported.
+            if (!instanceIds.SequenceEqual(lastEnumeratedInstanceIds))
+            {
+                logger.Info($"SDL universal backend enumeration changed ({reason}): [{string.Join(", ", instanceIds)}]");
+                lastEnumeratedInstanceIds = instanceIds.ToArray();
+            }
+
             foreach (uint instanceId in instanceIds)
             {
                 if (!devices.ContainsKey(instanceId) &&
@@ -828,10 +839,17 @@ namespace DS4MapperTest.SdlDiagnostics
 
         private void OpenDevice(uint instanceId, string reason)
         {
-            if (devices.TryGetValue(instanceId, out TrackedDevice existing) &&
-                existing.Controller.ConnectionState == UniversalControllerConnectionState.Connected)
+            if (devices.TryGetValue(instanceId, out TrackedDevice existing))
             {
-                return;
+                if (existing.Controller.ConnectionState == UniversalControllerConnectionState.Connected)
+                {
+                    return;
+                }
+
+                // Re-opening over a disconnected entry replaced it wholesale and
+                // dropped the old gamepad handle on the floor, so SDL kept the
+                // device open for the rest of the session. Retire it properly.
+                CloseDevice(instanceId, "reopening disconnected device");
             }
 
             SdlGamepadHandle handle = api.OpenGamepad(instanceId, out string error);
