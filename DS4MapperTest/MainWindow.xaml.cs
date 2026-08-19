@@ -1379,16 +1379,24 @@ namespace DS4MapperTest
                 selectedProfileFolderComboBox.ItemsSource = GetProfileFolderSnapshot();
                 selectedProfileFolderComboBox.SelectedItem = selectedListEntry.FolderName;
                 suppressSelectedProfileFolderCombo = false;
-                selectedProfilePanel.Visibility = Visibility.Visible;
+                ShowSelectedProfileControls(true);
                 Dispatcher.BeginInvoke(new Action(() => SelectProfileListEntry(selectedListEntry)),
                     DispatcherPriority.Loaded);
             }
             else
             {
-                selectedProfilePanel.Visibility = Visibility.Collapsed;
+                ShowSelectedProfileControls(false);
             }
 
             HideDeleteActiveProfileWarning();
+        }
+
+        // Copy Selected acts on the browser's selection rather than on the
+        // active profile, so it has nothing to work with until a row is picked.
+        private void ShowSelectedProfileControls(bool visible)
+        {
+            selectedProfilePanel.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            copySelectedProfileBtn.IsEnabled = visible;
         }
 
         private HashSet<string> GetExpandedProfileFolders()
@@ -1490,7 +1498,7 @@ namespace DS4MapperTest
             HideDeleteActiveProfileWarning();
             if (clickedEntry == null)
             {
-                selectedProfilePanel.Visibility = Visibility.Collapsed;
+                ShowSelectedProfileControls(false);
                 return;
             }
 
@@ -1500,7 +1508,7 @@ namespace DS4MapperTest
             selectedProfileFolderComboBox.ItemsSource = GetProfileFolderSnapshot();
             selectedProfileFolderComboBox.SelectedItem = clickedEntry.FolderName;
             suppressSelectedProfileFolderCombo = false;
-            selectedProfilePanel.Visibility = Visibility.Visible;
+            ShowSelectedProfileControls(true);
 
             // Scroll just far enough that Name/Folder/Delete/Load This Profile are
             // fully in view once a profile is picked, rather than always jumping to
@@ -2291,44 +2299,24 @@ namespace DS4MapperTest
             newProfilePanel.Visibility = Visibility.Collapsed;
         }
 
-        private void CopyActiveBtn_Click(object sender, RoutedEventArgs e)
+        private void CopySelectedBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null || editorTestVM == null) return;
 
+            string sourceFile = selectedListEntry?.Entity?.ProfilePath;
+            if (string.IsNullOrWhiteSpace(sourceFile)) return;
+
             if (currentDeviceItem.IsUniversal)
             {
-                CopyActiveUniversalProfile();
-                return;
-            }
-
-            Mapper mapper = editorTestVM.DeviceMapper;
-            string sourceFile = editorTestVM.ProfileEnt.ProfilePath;
-            string profilesDir = Path.GetDirectoryName(sourceFile);
-
-            SaveFileDialog dlg = new SaveFileDialog
-            {
-                Title = "Save Copy As",
-                InitialDirectory = profilesDir,
-                Filter = "JSON files (*.json)|*.json",
-                FileName = Path.GetFileNameWithoutExtension(sourceFile) + "_copy"
-            };
-
-            if (dlg.ShowDialog() != true) return;
-
-            string destFile = dlg.FileName;
-            if (!destFile.EndsWith(".json")) destFile += ".json";
-
-            if (File.Exists(destFile))
-            {
-                MessageBox.Show("A profile with that filename already exists.", "Cannot Overwrite",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                CopySelectedUniversalProfile(sourceFile);
                 return;
             }
 
             try
             {
+                string destFile = BuildLegacyProfileCopyPath(sourceFile);
                 controlListVM.DuplicateProfile(currentDeviceItem, sourceFile, destFile);
-                RefreshProfileList();
+                RefreshProfileList(selectedListEntry.FolderName, destFile);
             }
             catch (Exception ex)
             {
@@ -2337,13 +2325,30 @@ namespace DS4MapperTest
             }
         }
 
+        // A copy belongs beside the profile it came from, so it keeps the
+        // source's folder and only the filename is worked out here. Legacy
+        // profile names are filenames, so uniqueness is decided against disk
+        // rather than against the display names the universal store tracks.
+        private static string BuildLegacyProfileCopyPath(string sourceFile)
+        {
+            string folder = Path.GetDirectoryName(sourceFile);
+            string baseName = Path.GetFileNameWithoutExtension(sourceFile) +
+                UniversalProfileDuplicator.CopyNameSuffix;
+
+            string candidate = Path.Combine(folder, baseName + ".json");
+            for (int suffix = 2; File.Exists(candidate) && suffix < 1000; suffix++)
+            {
+                candidate = Path.Combine(folder, $"{baseName} ({suffix}).json");
+            }
+
+            return candidate;
+        }
+
         // Universal profiles are one shared, controller-independent set whose
         // filenames are owned by the store, so a copy is named and placed by
         // the store rather than through a Save As picker.
-        private void CopyActiveUniversalProfile()
+        private void CopySelectedUniversalProfile(string sourcePath)
         {
-            string sourcePath = editorTestVM.ProfileEnt.ProfilePath;
-
             try
             {
                 string folderName = universalProfileStore.GetFolderName(sourcePath);

@@ -6,7 +6,7 @@ namespace DS4MapperTest.Universal.Profiles
 {
     // Rules a profile has to satisfy before it can join the store as a second
     // copy of something already in there, whether that copy came from the Copy
-    // Active button or from a file the user picked off disk.
+    // Selected button or from a file the user picked off disk.
     public static class UniversalProfileDuplicator
     {
         public const string DefaultImportName = "Imported Profile";

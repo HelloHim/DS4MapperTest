@@ -1322,8 +1322,10 @@
                                     Click="ManageFoldersBtn_Click"
                                     Style="{StaticResource JsmccButtonStyle}"
                                     Margin="0,0,8,6"/>
-                            <Button Content="Copy Active"
-                                    Click="CopyActiveBtn_Click"
+                            <Button x:Name="copySelectedProfileBtn"
+                                    Content="Copy Selected"
+                                    Click="CopySelectedBtn_Click"
+                                    IsEnabled="False"
                                     Style="{StaticResource JsmccButtonStyle}"
                                     Margin="0,0,8,6"/>
                             <Button Content="Load from File..."
