@@ -1453,7 +1453,7 @@ namespace DS4MapperTest
             ApplyProfileListSelection(selectedListBox, clickedEntry);
         }
 
-        private void ProfileListBoxItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private async void ProfileListBoxItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is not ListBoxItem item ||
                 item.DataContext is not ProfileListEntry clickedEntry)
@@ -1487,6 +1487,16 @@ namespace DS4MapperTest
             // so the picked profile stops looking picked. Take focus explicitly.
             item.Focus();
             e.Handled = true;
+
+            // Handling the click here also suppresses ListBoxItem's own double
+            // click event, so the second click is recognised from the click
+            // count instead. The row has just been selected above either way,
+            // so a double click loads it whether or not it was already the
+            // selected profile.
+            if (e.ClickCount >= 2)
+            {
+                await LoadSelectedProfileFromListAsync();
+            }
         }
 
         private void ApplyProfileListSelection(ListBox selectedListBox, ProfileListEntry clickedEntry)
@@ -2482,6 +2492,11 @@ namespace DS4MapperTest
         }
 
         private async void LoadProfileFromListBtn_Click(object sender, RoutedEventArgs e)
+        {
+            await LoadSelectedProfileFromListAsync();
+        }
+
+        private async Task LoadSelectedProfileFromListAsync()
         {
             if (selectedListEntry == null || currentDeviceItem == null) return;
 
