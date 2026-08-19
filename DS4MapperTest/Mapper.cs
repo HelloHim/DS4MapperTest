@@ -313,9 +313,22 @@ namespace DS4MapperTest
         protected DSOutputCallbackDelegate viiperDSFeedback;
         protected NS2ProOutputCallbackDelegate viiperNS2ProFeedback;
         protected bool loggedFirstVirtualState;
+        private bool loggedMissingViiperServer;
         private readonly object viiperDeviceLock = new object();
 
         protected static bool IsPlausibleViiperDeviceHandle(nuint handle)
+        {
+            return handle != 0 && handle != nuint.MaxValue;
+        }
+
+        // The VIIPER server is optional; it fails to start when its port is
+        // already taken by another instance. libVIIPER resolves the server
+        // through a cgo handle table, and Go panics the whole process when it
+        // is handed an id that was never registered, which no managed handler
+        // can catch or log. Refuse to enter the native library without a real
+        // handle. MouseOutputViiperDevice.TryCreate guards its own calls the
+        // same way.
+        protected static bool IsPlausibleViiperServerHandle(nuint handle)
         {
             return handle != 0 && handle != nuint.MaxValue;
         }
@@ -346,6 +359,21 @@ namespace DS4MapperTest
 
             if (desiredEnabled && outputControlType == OutputContType.None)
             {
+                if (!IsPlausibleViiperServerHandle(viiperServerHandle))
+                {
+                    if (!loggedMissingViiperServer)
+                    {
+                        loggedMissingViiperServer = true;
+                        logger.Warn("Skipping virtual gamepad output. " +
+                            "No VIIPER server is available for this session.");
+                    }
+
+                    deviceHandle = 0;
+                    viiperBusId = 0;
+                    outputControlType = OutputContType.None;
+                    return false;
+                }
+
                 if (!LibVIIPER.CreateUSBBus(viiperServerHandle, ref viiperBusId))
                 {
                     deviceHandle = 0;

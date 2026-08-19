@@ -351,6 +351,11 @@ namespace DS4MapperTest
             {
                 LogDebug($"VIIPER connection established");
             }
+            else
+            {
+                LogDebug("VIIPER server unavailable. Virtual gamepad and mouse " +
+                    "output are disabled for this session.", true);
+            }
 
             mouseOutputDispatcher = new MouseOutputDispatcher(appGlobal,
                 virtualEventHandler, eventInputMapping, serverHandle);
