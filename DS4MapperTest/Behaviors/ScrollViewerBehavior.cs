@@ -282,12 +282,32 @@ namespace DS4MapperTest.Behaviors
 
         private static T FindVisualAncestor<T>(DependencyObject start) where T : DependencyObject
         {
-            for (DependencyObject current = start; current != null; current = VisualTreeHelper.GetParent(current))
+            for (DependencyObject current = start; current != null; current = GetVisualParent(current))
             {
                 if (current is T match)
                 {
                     return match;
                 }
+            }
+
+            return null;
+        }
+
+        // A wheel event's OriginalSource is often a content element rather than a
+        // visual - a Run inside a TextBlock, for instance. VisualTreeHelper throws
+        // outright on those, which took the whole wheel handler down, so step out
+        // of the content tree first and only then walk visuals.
+        private static DependencyObject GetVisualParent(DependencyObject current)
+        {
+            if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+            {
+                return VisualTreeHelper.GetParent(current);
+            }
+
+            if (current is FrameworkContentElement contentElement)
+            {
+                return (DependencyObject)contentElement.Parent ??
+                    LogicalTreeHelper.GetParent(contentElement);
             }
 
             return null;
@@ -305,7 +325,7 @@ namespace DS4MapperTest.Behaviors
                 return contentElement.Parent;
             }
 
-            return VisualTreeHelper.GetParent(current);
+            return GetVisualParent(current);
         }
 
         internal static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
