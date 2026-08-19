@@ -2487,9 +2487,16 @@ namespace DS4MapperTest
                 .First();
             if (newIndex < 0) return;
 
+            // Loading redraws the browser from scratch, which used to drop the
+            // selection and collapse the Name/Folder/Delete panel with it, so the
+            // profile the user had just loaded stopped being the selected one.
+            // Re-select it afterwards: loading a profile is usually the start of
+            // editing it, not the end of working with the browser.
+            string selectedFolderName = selectedListEntry.FolderName;
             if (await SwitchProfileAsync(currentDeviceItem, newIndex))
             {
                 HideNewProfilePanel();
+                RefreshProfileList(selectedFolderName, selectedPath);
             }
         }
 
