@@ -133,7 +133,7 @@ namespace DS4MapperTest.GyroActions
         public const GyroMouseAccelCurveChoice ACCEL_CURVE_DEFAULT =
             GyroMouseAccelCurveChoice.None;
         public const double SENSITIVITY_DEFAULT = 4.0;
-        public const double VERTICAL_SCALE_DEFAULT = 0.6;
+        public const double VERTICAL_SENSITIVITY_DEFAULT = 0.6;
         public const double MIN_ACCEL_SENS_DEFAULT = SENSITIVITY_DEFAULT;
         public const double MAX_ACCEL_SENS_DEFAULT = SENSITIVITY_DEFAULT;
         public const double MIN_GYRO_THRESHOLD_DEFAULT = 0.0;
@@ -167,7 +167,7 @@ namespace DS4MapperTest.GyroActions
         public double powerExponent;
         public double naturalVHalf;
         public double sensitivity;
-        public double verticalScale;
+        public double verticalSensitivity;
         // Legacy inversion/axis-selection fields. Retained only for backward-compatible
         // profile deserialisation and migration into `orientation` (see
         // GyroMouseSerializer.MigrateLegacyOrientation) - no longer read by Prepare/Event.
@@ -198,7 +198,7 @@ namespace DS4MapperTest.GyroActions
             public const string ANGLE_SNAP_DEGREES = "AngleSnapDegrees";
             public const string SMOOTH_ANGLE_SNAP = "SmoothAngleSnap";
             public const string SENSITIVITY = "Sensitivity";
-            public const string VERTICAL_SCALE = "VerticalScale";
+            public const string VERTICAL_SENSITIVITY = "VerticalSensitivity";
             public const string INVERT_X = "InvertX";
             public const string INVERT_Y = "InvertY";
             public const string X_AXIS = "XAxis";
@@ -256,7 +256,7 @@ namespace DS4MapperTest.GyroActions
             PropertyKeyStrings.ANGLE_SNAP_DEGREES,
             PropertyKeyStrings.SMOOTH_ANGLE_SNAP,
             PropertyKeyStrings.SENSITIVITY,
-            PropertyKeyStrings.VERTICAL_SCALE,
+            PropertyKeyStrings.VERTICAL_SENSITIVITY,
             PropertyKeyStrings.INVERT_X,
             PropertyKeyStrings.INVERT_Y,
             PropertyKeyStrings.X_AXIS,
@@ -333,13 +333,13 @@ namespace DS4MapperTest.GyroActions
                 minGyroThreshold = GyroMouseParams.MIN_GYRO_THRESHOLD_DEFAULT,
                 maxGyroThreshold = GyroMouseParams.MAX_GYRO_THRESHOLD_DEFAULT,
                 minAccelXSens = GyroMouseParams.MIN_ACCEL_SENS_DEFAULT,
-                minAccelYSens = GyroMouseParams.VERTICAL_SCALE_DEFAULT,
+                minAccelYSens = GyroMouseParams.VERTICAL_SENSITIVITY_DEFAULT,
                 maxAccelXSens = GyroMouseParams.MAX_ACCEL_SENS_DEFAULT,
-                maxAccelYSens = GyroMouseParams.VERTICAL_SCALE_DEFAULT,
+                maxAccelYSens = GyroMouseParams.VERTICAL_SENSITIVITY_DEFAULT,
                 powerExponent = GyroMouseParams.POWER_EXPONENT_DEFAULT,
                 powerVRef = GyroMouseParams.POWER_VREF_DEFAULT,
                 naturalVHalf = GyroMouseParams.NATURAL_VHALF_DEFAULT,
-                verticalScale = GyroMouseParams.VERTICAL_SCALE_DEFAULT,
+                verticalSensitivity = GyroMouseParams.VERTICAL_SENSITIVITY_DEFAULT,
                 triggerActivates = true,
                 activationHoldMs = 0,
                 andCond = false,
@@ -685,8 +685,8 @@ namespace DS4MapperTest.GyroActions
             if (mouseParams.accelCurve == GyroMouseAccelCurveChoice.None)
             {
                 double vertMultiplier = mouseParams.sensitivity > 0.0
-                    ? mouseParams.verticalScale / mouseParams.sensitivity
-                    : mouseParams.verticalScale;
+                    ? mouseParams.verticalSensitivity / mouseParams.sensitivity
+                    : mouseParams.verticalSensitivity;
                 if (vertMultiplier != 1.0)
                 {
                     yMotion = vertMultiplier * yMotion;
@@ -919,8 +919,8 @@ namespace DS4MapperTest.GyroActions
                         case PropertyKeyStrings.SENSITIVITY:
                             mouseParams.sensitivity = tempMouseAction.mouseParams.sensitivity;
                             break;
-                        case PropertyKeyStrings.VERTICAL_SCALE:
-                            mouseParams.verticalScale = tempMouseAction.mouseParams.verticalScale;
+                        case PropertyKeyStrings.VERTICAL_SENSITIVITY:
+                            mouseParams.verticalSensitivity = tempMouseAction.mouseParams.verticalSensitivity;
                             break;
                         case PropertyKeyStrings.INVERT_X:
                             mouseParams.invertX = tempMouseAction.mouseParams.invertX;
@@ -1108,8 +1108,8 @@ namespace DS4MapperTest.GyroActions
                 case PropertyKeyStrings.SENSITIVITY:
                     mouseParams.sensitivity = tempMouseAction.mouseParams.sensitivity;
                     break;
-                case PropertyKeyStrings.VERTICAL_SCALE:
-                    mouseParams.verticalScale = tempMouseAction.mouseParams.verticalScale;
+                case PropertyKeyStrings.VERTICAL_SENSITIVITY:
+                    mouseParams.verticalSensitivity = tempMouseAction.mouseParams.verticalSensitivity;
                     break;
                 case PropertyKeyStrings.INVERT_X:
                     mouseParams.invertX = tempMouseAction.mouseParams.invertX;

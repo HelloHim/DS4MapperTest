@@ -72,7 +72,7 @@
                                                       ValueFormat="0.0###"
                                                       Width="110" Style="{StaticResource JsmccNumericUpDownStyle}"
                                                       IsEnabled="{Binding VerticalScaleIsAbsoluteMode}"
-                                                      Value="{Binding VerticalScale, FallbackValue='0.6'}"/>
+                                                      Value="{Binding VerticalSensitivity, FallbackValue='0.6'}"/>
                                     <TextBlock Text="RWS" Style="{StaticResource SensUnitLabel}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
@@ -138,7 +138,7 @@
                                         <TextBlock Text="Modify Vertical Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="Off leaves vertical sensitivity unchanged. When enabled, it follows the horizontal modifier."/><CheckBox Grid.Column="1" Content="Match horizontal modifier" Style="{StaticResource JsmccToggleStyle}" IsChecked="{Binding TriggerSensitivityModifierModifyVerticalSensitivity}"/>
                                     </Grid></Border>
                                     <Border Style="{StaticResource SensRowBorder}" IsEnabled="{Binding TriggerSensitivityModifierModifyVerticalSensitivity}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                        <TextBlock Text="Base Vertical Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="This is the shared vertical gyro sensitivity. Changes here also update Static Sensitivity."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="4" Increment="0.01" ValueFormat="0.0###" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding VerticalScale}"/>
+                                        <TextBlock Text="Base Vertical Sensitivity" Style="{StaticResource SensRowLabel}" ToolTip="This is the shared vertical gyro sensitivity. Changes here also update Static Sensitivity."/><hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="10" DecimalPlaces="4" Increment="0.01" ValueFormat="0.0###" Width="110" Style="{StaticResource JsmccNumericUpDownStyle}" Value="{Binding VerticalSensitivity}"/>
                                     </Grid></Border>
                                     <Border Style="{StaticResource SensRowBorder}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                         <TextBlock Text="Response Curve" Style="{StaticResource SensRowLabel}"/><ComboBox Grid.Column="1" ItemsSource="{Binding TriggerSensitivityModifierResponseCurveItems}" DisplayMemberPath="DisplayName" SelectedValuePath="ChoiceValue" SelectedValue="{Binding TriggerSensitivityModifierResponseCurve}" Style="{StaticResource JsmccComboBoxStyle}" MinWidth="160"/>

@@ -182,7 +182,7 @@ namespace DS4MapperTest
             public double inGameSens;
             public GyroMouseAccelCurveChoice accelCurve;
             public double sensitivity;
-            public double verticalScale;
+            public double verticalSensitivity;
             public bool smoothing;
             public double maxGyroThreshold;
 
@@ -193,7 +193,7 @@ namespace DS4MapperTest
                 inGameSens = GyroMouseParams.IN_GAME_SENS_DEFAULT;
                 accelCurve = GyroMouseParams.ACCEL_CURVE_DEFAULT;
                 sensitivity = GyroMouseParams.SENSITIVITY_DEFAULT;
-                verticalScale = GyroMouseParams.VERTICAL_SCALE_DEFAULT;
+                verticalSensitivity = GyroMouseParams.VERTICAL_SENSITIVITY_DEFAULT;
                 smoothing = false;
                 maxGyroThreshold = GyroMouseParams.MAX_GYRO_THRESHOLD_DEFAULT;
             }
@@ -205,11 +205,11 @@ namespace DS4MapperTest
                 action.mouseParams.inGameSens = inGameSens;
                 action.mouseParams.accelCurve = accelCurve;
                 action.mouseParams.sensitivity = sensitivity;
-                action.mouseParams.verticalScale = verticalScale;
+                action.mouseParams.verticalSensitivity = verticalSensitivity;
                 action.mouseParams.minAccelXSens = sensitivity;
-                action.mouseParams.minAccelYSens = verticalScale;
+                action.mouseParams.minAccelYSens = verticalSensitivity;
                 action.mouseParams.maxAccelXSens = sensitivity;
-                action.mouseParams.maxAccelYSens = verticalScale;
+                action.mouseParams.maxAccelYSens = verticalSensitivity;
                 action.mouseParams.smoothing = smoothing;
                 action.mouseParams.maxGyroThreshold = maxGyroThreshold;
             }

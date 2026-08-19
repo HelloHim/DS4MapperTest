@@ -1005,7 +1005,7 @@ namespace DS4MapperUnitTests
               ""Settings"": {
                 ""DeadZone"": 0.2,
                 ""Sensitivity"": 4.0,
-                ""VerticalScale"": 0.6,
+                ""VerticalSensitivity"": 0.6,
                 ""InvertX"": false,
                 ""InvertY"": false,
                 ""TriggerButtons"": ""AlwaysOn"",

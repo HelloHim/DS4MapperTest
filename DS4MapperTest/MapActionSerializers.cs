@@ -10448,16 +10448,16 @@ namespace DS4MapperTest
                 return gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.SENSITIVITY);
             }
 
-            public double VerticalScale
+            public double VerticalSensitivity
             {
-                get => gyroMouseAction.mouseParams.verticalScale;
+                get => gyroMouseAction.mouseParams.verticalSensitivity;
                 set
                 {
-                    gyroMouseAction.mouseParams.verticalScale = Math.Clamp(value, 0.0, 10.0);
-                    VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                    gyroMouseAction.mouseParams.verticalSensitivity = Math.Clamp(value, 0.0, 10.0);
+                    VerticalSensitivityChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            public event EventHandler VerticalScaleChanged;
+            public event EventHandler VerticalSensitivityChanged;
 
             public bool InvertX
             {
@@ -11026,7 +11026,7 @@ namespace DS4MapperTest
             settings.PowerExponentChanged += Settings_PowerExponentChanged;
             settings.NaturalVHalfChanged += Settings_NaturalVHalfChanged;
             settings.SensitivityChanged += Settings_SensitivityChanged;
-            settings.VerticalScaleChanged += Settings_VerticalScaleChanged;
+            settings.VerticalSensitivityChanged += Settings_VerticalSensitivityChanged;
             settings.InvertXChanged += Settings_InvertXChanged;
             settings.InvertYChanged += Settings_InvertYChanged;
             settings.TriggersButtonChanged += Settings_TriggerButtonsChanged;
@@ -11317,9 +11317,9 @@ namespace DS4MapperTest
             gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.INVERT_Y);
         }
 
-        private void Settings_VerticalScaleChanged(object sender, EventArgs e)
+        private void Settings_VerticalSensitivityChanged(object sender, EventArgs e)
         {
-            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_SCALE);
+            gyroMouseAction.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_SENSITIVITY);
         }
 
         private void Settings_SensitivityChanged(object sender, EventArgs e)

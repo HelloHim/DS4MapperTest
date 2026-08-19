@@ -480,11 +480,11 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 action.mouseParams.sensitivity = sensitivity;
                 if (VerticalScaleIsMultiplierMode)
                 {
-                    action.mouseParams.verticalScale = Math.Clamp(
+                    action.mouseParams.verticalSensitivity = Math.Clamp(
                         sensitivity * verticalMultiplier, 0.0, 10.0);
-                    VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                    VerticalSensitivityChanged?.Invoke(this, EventArgs.Empty);
                     PropertyChanged?.Invoke(this,
-                        new PropertyChangedEventArgs(nameof(VerticalScale)));
+                        new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
                 }
                 SensitivityChanged?.Invoke(this, EventArgs.Empty);
                 RaiseTriggerModifierChanged();
@@ -568,7 +568,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             set { action.mouseParams.triggerSensitivityModifier.modifyVerticalSensitivity = value; RaiseTriggerModifierChanged(); }
         }
         public double TriggerSensitivityModifierBaseSensitivity => action.mouseParams.sensitivity;
-        public double TriggerSensitivityModifierBaseVerticalSensitivity => action.mouseParams.verticalScale;
+        public double TriggerSensitivityModifierBaseVerticalSensitivity => action.mouseParams.verticalSensitivity;
         public double TriggerSensitivityModifierCalculatedTarget => TriggerSensitivityModifier.ResolveTarget(
             action.mouseParams.triggerSensitivityModifier, TriggerSensitivityModifierBaseSensitivity);
         public double TriggerSensitivityModifierCalculatedMultiplier => TriggerSensitivityModifierBaseSensitivity > 0.0
@@ -597,20 +597,20 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public double VerticalScale
+        public double VerticalSensitivity
         {
-            get => action.mouseParams.verticalScale;
+            get => action.mouseParams.verticalSensitivity;
             set
             {
                 if (!_modelReady) return;
-                double verticalScale = Math.Clamp(value, 0.0, 10.0);
-                if (action.mouseParams.verticalScale == verticalScale) return;
-                action.mouseParams.verticalScale = verticalScale;
-                VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                double verticalSensitivity = Math.Clamp(value, 0.0, 10.0);
+                if (action.mouseParams.verticalSensitivity == verticalSensitivity) return;
+                action.mouseParams.verticalSensitivity = verticalSensitivity;
+                VerticalSensitivityChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        public event EventHandler VerticalScaleChanged;
+        public event EventHandler VerticalSensitivityChanged;
 
         private bool verticalScaleIsAbsoluteMode = true;
         public bool VerticalScaleIsAbsoluteMode
@@ -654,18 +654,18 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             get
             {
                 double sens = action.mouseParams.sensitivity;
-                if (Math.Abs(sens) < 1e-10) return action.mouseParams.verticalScale;
-                return Math.Round(action.mouseParams.verticalScale / sens, 4);
+                if (Math.Abs(sens) < 1e-10) return action.mouseParams.verticalSensitivity;
+                return Math.Round(action.mouseParams.verticalSensitivity / sens, 4);
             }
             set
             {
                 if (!_modelReady) return;
                 double sens = action.mouseParams.sensitivity;
                 double abs = Math.Abs(sens) < 1e-10 ? value : value * sens;
-                double verticalScale = Math.Clamp(abs, 0.0, 10.0);
-                if (action.mouseParams.verticalScale == verticalScale) return;
-                action.mouseParams.verticalScale = verticalScale;
-                VerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                double verticalSensitivity = Math.Clamp(abs, 0.0, 10.0);
+                if (action.mouseParams.verticalSensitivity == verticalSensitivity) return;
+                action.mouseParams.verticalSensitivity = verticalSensitivity;
+                VerticalSensitivityChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -1668,12 +1668,12 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler HighlightSensitivityChanged;
 
-        public bool HighlightVerticalScale
+        public bool HighlightVerticalSensitivity
         {
             get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_SCALE);
+                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_SENSITIVITY);
         }
-        public event EventHandler HighlightVerticalScaleChanged;
+        public event EventHandler HighlightVerticalSensitivityChanged;
 
         public bool HighlightGyroJitterCompensation
         {
@@ -1781,15 +1781,15 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 try
                 {
                     this.action.mouseParams.sensitivity = GyroMouseParams.SENSITIVITY_DEFAULT;
-                    this.action.mouseParams.verticalScale = GyroMouseParams.VERTICAL_SCALE_DEFAULT;
+                    this.action.mouseParams.verticalSensitivity = GyroMouseParams.VERTICAL_SENSITIVITY_DEFAULT;
                     this.action.mouseParams.minAccelXSens = this.action.mouseParams.sensitivity;
-                    this.action.mouseParams.minAccelYSens = this.action.mouseParams.verticalScale;
+                    this.action.mouseParams.minAccelYSens = this.action.mouseParams.verticalSensitivity;
                     this.action.mouseParams.maxAccelXSens = this.action.mouseParams.minAccelXSens;
                     this.action.mouseParams.maxAccelYSens = this.action.mouseParams.minAccelYSens;
                     foreach (string key in new[]
                     {
                         GyroMouse.PropertyKeyStrings.SENSITIVITY,
-                        GyroMouse.PropertyKeyStrings.VERTICAL_SCALE,
+                        GyroMouse.PropertyKeyStrings.VERTICAL_SENSITIVITY,
                         GyroMouse.PropertyKeyStrings.MIN_ACCEL_X_SENS,
                         GyroMouse.PropertyKeyStrings.MIN_ACCEL_Y_SENS,
                         GyroMouse.PropertyKeyStrings.MAX_ACCEL_X_SENS,
@@ -1813,7 +1813,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 }
                 RaiseAccelerationPropertyChanges();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScaleMultiplier)));
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             });
@@ -1839,7 +1839,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             PowerCurveExponentChanged += GyroMouseActionPropViewModel_PowerCurveExponentChanged;
             NaturalVHalfChanged += GyroMouseActionPropViewModel_NaturalVHalfChanged;
             SensitivityChanged += GyroMouseActionPropViewModel_SensitivityChanged;
-            VerticalScaleChanged += GyroMouseActionPropViewModel_VerticalScaleChanged;
+            VerticalSensitivityChanged += GyroMouseActionPropViewModel_VerticalSensitivityChanged;
             GyroJitterCompensationChanged += GyroMouseActionPropViewModel_GyroJitterCompensationChanged;
             MultiplierCompensationChanged += GyroMouseActionPropViewModel_MultiplierCompensationChanged;
             AccelerationMultiplierChanged += GyroMouseActionPropViewModel_AccelerationMultiplierChanged;
@@ -1854,7 +1854,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             double savedInGameSens = this.action.mouseParams.inGameSens;
             double savedRwc = this.action.mouseParams.realWorldCalibration;
             double savedSensitivity = this.action.mouseParams.sensitivity;
-            double savedVerticalScale = this.action.mouseParams.verticalScale;
+            double savedVerticalSensitivity = this.action.mouseParams.verticalSensitivity;
             double savedAccelerationMultiplier = this.action.mouseParams.accelerationMultiplier;
             double savedVerticalAccelerationMultiplier = this.action.mouseParams.verticalAccelerationMultiplier;
             double savedCounts = fullTurnCounts;
@@ -1865,7 +1865,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                     this.action.mouseParams.inGameSens = savedInGameSens;
                     this.action.mouseParams.realWorldCalibration = savedRwc;
                     this.action.mouseParams.sensitivity = savedSensitivity;
-                    this.action.mouseParams.verticalScale = savedVerticalScale;
+                    this.action.mouseParams.verticalSensitivity = savedVerticalSensitivity;
                     this.action.mouseParams.accelerationMultiplier = savedAccelerationMultiplier;
                     this.action.mouseParams.verticalAccelerationMultiplier = savedVerticalAccelerationMultiplier;
                     fullTurnCounts = savedCounts;
@@ -1873,7 +1873,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AccelerationMultiplier)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
@@ -1887,7 +1887,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                             this.action.mouseParams.inGameSens = savedInGameSens;
                             this.action.mouseParams.realWorldCalibration = savedRwc;
                             this.action.mouseParams.sensitivity = savedSensitivity;
-                            this.action.mouseParams.verticalScale = savedVerticalScale;
+                            this.action.mouseParams.verticalSensitivity = savedVerticalSensitivity;
                             this.action.mouseParams.accelerationMultiplier = savedAccelerationMultiplier;
                             this.action.mouseParams.verticalAccelerationMultiplier = savedVerticalAccelerationMultiplier;
                             fullTurnCounts = savedCounts;
@@ -1896,7 +1896,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AccelerationMultiplier)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
@@ -2050,13 +2050,13 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 {
                     _syncingAccelSens = true;
                     double newVScale = Math.Clamp(action.mouseParams.minAccelYSens, 0.0, 10.0);
-                    if (action.mouseParams.verticalScale != newVScale)
+                    if (action.mouseParams.verticalSensitivity != newVScale)
                     {
-                        action.mouseParams.verticalScale = newVScale;
-                        MarkChangedProperty(GyroMouse.PropertyKeyStrings.VERTICAL_SCALE);
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScale)));
+                        action.mouseParams.verticalSensitivity = newVScale;
+                        MarkChangedProperty(GyroMouse.PropertyKeyStrings.VERTICAL_SENSITIVITY);
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
                         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScaleMultiplier)));
-                        HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+                        HighlightVerticalSensitivityChanged?.Invoke(this, EventArgs.Empty);
                     }
                 }
                 finally
@@ -2136,7 +2136,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 action.mouseParams.accelCurve == GyroMouseAccelCurveChoice.None)
             {
                 MarkChangedProperty(GyroMouse.PropertyKeyStrings.SENSITIVITY);
-                MarkChangedProperty(GyroMouse.PropertyKeyStrings.VERTICAL_SCALE);
+                MarkChangedProperty(GyroMouse.PropertyKeyStrings.VERTICAL_SENSITIVITY);
             }
 
             StaticSensUsedChanged?.Invoke(this, EventArgs.Empty);
@@ -2375,22 +2375,22 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             HighlightSmoothingEnabledChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void GyroMouseActionPropViewModel_VerticalScaleChanged(object sender, EventArgs e)
+        private void GyroMouseActionPropViewModel_VerticalSensitivityChanged(object sender, EventArgs e)
         {
-            if (!action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_SCALE))
+            if (!action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.VERTICAL_SENSITIVITY))
             {
-                action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_SCALE);
+                action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.VERTICAL_SENSITIVITY);
             }
 
             ExecuteInMapperThread(() =>
             {
-                action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.VERTICAL_SCALE);
+                action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.VERTICAL_SENSITIVITY);
             });
 
-            HighlightVerticalScaleChanged?.Invoke(this, EventArgs.Empty);
+            HighlightVerticalSensitivityChanged?.Invoke(this, EventArgs.Empty);
             VerticalScaleMultiplierChanged?.Invoke(this, EventArgs.Empty);
             PropertyChanged?.Invoke(this,
-                new PropertyChangedEventArgs(nameof(VerticalScale)));
+                new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
             PropertyChanged?.Invoke(this,
                 new PropertyChangedEventArgs(nameof(VerticalScaleMultiplier)));
 
@@ -2459,7 +2459,7 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
         private void SyncGyroMinimumYFromBase()
         {
-            double minY = Math.Clamp(action.mouseParams.verticalScale, 0.0, 100.0);
+            double minY = Math.Clamp(action.mouseParams.verticalSensitivity, 0.0, 100.0);
             if (action.mouseParams.minAccelYSens == minY) return;
 
             action.mouseParams.minAccelYSens = minY;
