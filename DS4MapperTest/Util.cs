@@ -652,6 +652,36 @@ namespace DS4MapperTest
             return result;
         }
 
+        /// <summary>
+        /// Hardware ID prefixes of root-enumerated buses whose devices are real
+        /// inputs to map rather than this application's own output. Everything
+        /// else hanging off a root bus is treated as virtual output and ignored,
+        /// which is what stops the mapper consuming the pad it just emitted.
+        /// </summary>
+        /// <remarks>
+        /// Prefixes, not exact ids, so a bus that revises the generation suffix on
+        /// its hardware id does not silently drop off the list.
+        /// </remarks>
+        private static readonly string[] SourceVirtualBusHardwareIdPrefixes =
+        {
+            @"ROOT\WJL19DRV", // reWASD's own virtual bus (driver provider "R Team")
+            @"ROOT\HIDGAMEMAP", // reWASD, older builds
+            @"NEFARIUS\VIGEMBUS", // ViGEm, used by DS4Windows and others
+            @"ROOT\VHUSB3HC", // VirtualHere
+        };
+
+        internal static bool IsSourceVirtualBusHardwareId(string hardwareId)
+        {
+            if (string.IsNullOrEmpty(hardwareId))
+            {
+                return false;
+            }
+
+            string upper = hardwareId.ToUpperInvariant();
+            return SourceVirtualBusHardwareIdPrefixes.Any(prefix =>
+                upper.StartsWith(prefix, StringComparison.Ordinal));
+        }
+
         public static bool CheckIfVirtualDevice(string devicePath)
         {
             bool result = false;
@@ -664,14 +694,7 @@ namespace DS4MapperTest
                 var hardwareIds = GetStringArrayDeviceProperty(testInstanceId, NativeMethods.DEVPKEY_Device_HardwareIds);
                 if (hardwareIds != null)
                 {
-                    // hardware IDs of root hubs/controllers that emit supported virtual devices as sources
-                    var excludedIds = new[]
-                    {
-                        @"ROOT\HIDGAMEMAP", // reWASD
-                        @"ROOT\VHUSB3HC", // VirtualHere
-                    };
-
-                    excludeMatchFound = hardwareIds.Any(id => excludedIds.Contains(id.ToUpper()));
+                    excludeMatchFound = hardwareIds.Any(IsSourceVirtualBusHardwareId);
                     if (excludeMatchFound)
                     {
                         break;
