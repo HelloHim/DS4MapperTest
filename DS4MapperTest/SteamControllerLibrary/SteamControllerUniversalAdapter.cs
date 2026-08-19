@@ -173,6 +173,8 @@ namespace DS4MapperTest.SteamControllerLibrary
                     [UniversalInputId.RightTouchSurfaceClick] = UniversalInputValue.DigitalButton(input.RightPad.Click),
                     [UniversalInputId.LeftTouchSurface] = CreatePadValue(input.LeftPad),
                     [UniversalInputId.RightTouchSurface] = CreatePadValue(input.RightPad),
+                    [UniversalInputId.LeftTouchContact] = UniversalInputValue.DigitalButton(input.LeftPad.Touch),
+                    [UniversalInputId.RightTouchContact] = UniversalInputValue.DigitalButton(input.RightPad.Touch),
                     [UniversalInputId.Gyroscope] = UniversalInputValue.Gyroscope(
                         UniversalValueNormalizer.DegreesPerSecondToRadiansPerSecond(input.Motion.AngGyroPitch),
                         UniversalValueNormalizer.DegreesPerSecondToRadiansPerSecond(input.Motion.AngGyroYaw),
@@ -234,6 +236,8 @@ namespace DS4MapperTest.SteamControllerLibrary
                 UniversalInputId.RightTouchSurface,
                 UniversalInputId.LeftTouchSurfaceClick,
                 UniversalInputId.RightTouchSurfaceClick,
+                UniversalInputId.LeftTouchContact,
+                UniversalInputId.RightTouchContact,
                 UniversalInputId.Gyroscope,
                 UniversalInputId.Accelerometer,
             };

@@ -160,6 +160,9 @@ namespace DS4MapperTest.Universal.Mapping
             yield return Button(UniversalInputId.PrimaryTouchSurfaceClick, "PrimaryTouchSurfaceClick", "Primary Touch Surface Click");
             yield return Button(UniversalInputId.LeftTouchSurfaceClick, "LeftTouchSurfaceClick", "Left Touch Surface Click");
             yield return Button(UniversalInputId.RightTouchSurfaceClick, "RightTouchSurfaceClick", "Right Touch Surface Click");
+            yield return Button(UniversalInputId.PrimaryTouchContact, "PrimaryPadTouch", "Primary Pad Touch");
+            yield return Button(UniversalInputId.LeftTouchContact, "LeftPadTouch", "Left Pad Touch");
+            yield return Button(UniversalInputId.RightTouchContact, "RightPadTouch", "Right Pad Touch");
             yield return Button(UniversalInputId.LeftStickTouch, "LeftStickTouch", "Left Stick Touch");
             yield return Button(UniversalInputId.RightStickTouch, "RightStickTouch", "Right Stick Touch");
             yield return Button(UniversalInputId.MiscButton1, "MiscButton1", "Misc Button 1");

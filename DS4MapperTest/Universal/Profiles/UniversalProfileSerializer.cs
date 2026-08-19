@@ -161,6 +161,15 @@ namespace DS4MapperTest.Universal.Profiles
                     throw new UniversalProfileLoadException(UniversalProfileLoadStatus.ValidationFailed, $"Invalid value kind for binding '{token}'.");
                 }
 
+                // valueKind is derived from the input catalog, not authored, so a
+                // file written before an input's kind was corrected still names the
+                // old one. Take the catalog as the authority rather than failing the
+                // load and locking the user out of a profile they can still use.
+                if (UniversalInputCatalog.TryGetMetadata(input, out UniversalInputMetadata metadata))
+                {
+                    valueKind = metadata.ValueKind;
+                }
+
                 profile.Bindings.Add(new UniversalProfileBinding
                 {
                     ActionSet = bindingObject.Value<int?>("actionSet") ?? 0,

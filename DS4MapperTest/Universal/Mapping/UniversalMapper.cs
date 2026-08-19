@@ -490,7 +490,10 @@ namespace DS4MapperTest.Universal.Mapping
             }
 
             if (name.IndexOf("triton", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                name.IndexOf("steam controller 2026", StringComparison.OrdinalIgnoreCase) >= 0)
+                name.IndexOf("steam controller 2026", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                SteamController2026Identity.IsSteamController2026(
+                    controller.Identity.DeviceIdentity?.VendorId,
+                    controller.Identity.DeviceIdentity?.ProductId))
             {
                 return InputDeviceType.SteamControllerTriton;
             }

@@ -56,8 +56,18 @@ namespace DS4MapperTest.Universal
     {
         public int ContactId { get; }
         public bool Active { get; }
+
+        /// <summary>0 at the left edge of the pad, 1 at the right edge.</summary>
         public double X { get; }
+
+        /// <summary>
+        /// 0 at the bottom edge of the pad, 1 at the top edge. This follows the
+        /// pad hardware convention the touchpad actions are written against, not
+        /// the top-left screen convention SDL reports fingers in, so a backend
+        /// sourcing screen-style coordinates has to flip them on the way in.
+        /// </summary>
         public double Y { get; }
+
         public double? Pressure { get; }
 
         public UniversalTouchContact(int contactId, bool active, double x, double y, double? pressure)

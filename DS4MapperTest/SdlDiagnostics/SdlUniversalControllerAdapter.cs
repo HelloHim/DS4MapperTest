@@ -152,12 +152,16 @@ namespace DS4MapperTest.SdlDiagnostics
             foreach (KeyValuePair<int, SdlUniversalTouchSurfaceTarget> mapping in touchpadMappingPolicy.MapTouchpads(info))
             {
                 AddDescriptor(descriptors, TouchSurfaceId(mapping.Value), info, $"touchpad:{mapping.Key}", TouchLabel(mapping.Value));
+                AddDescriptor(descriptors, TouchContactId(mapping.Value), info,
+                    $"touchpad:{mapping.Key}:touch", $"{TouchLabel(mapping.Value)} Touch");
                 if (mapping.Value == SdlUniversalTouchSurfaceTarget.Primary)
                 {
                     AddDescriptor(descriptors, UniversalInputId.LeftTouchSurface, info, $"touchpad:{mapping.Key}:left", "Left Touchpad");
                     AddDescriptor(descriptors, UniversalInputId.RightTouchSurface, info, $"touchpad:{mapping.Key}:right", "Right Touchpad");
                     AddDescriptor(descriptors, UniversalInputId.LeftTouchSurfaceClick, info, $"touchpad:{mapping.Key}:left-click", "Left Touchpad Click");
                     AddDescriptor(descriptors, UniversalInputId.RightTouchSurfaceClick, info, $"touchpad:{mapping.Key}:right-click", "Right Touchpad Click");
+                    AddDescriptor(descriptors, UniversalInputId.LeftTouchContact, info, $"touchpad:{mapping.Key}:left-touch", "Left Touchpad Touch");
+                    AddDescriptor(descriptors, UniversalInputId.RightTouchContact, info, $"touchpad:{mapping.Key}:right-touch", "Right Touchpad Touch");
                 }
                 else
                 {
@@ -165,6 +169,8 @@ namespace DS4MapperTest.SdlDiagnostics
                         $"touchpad:{mapping.Key}:click", $"{TouchLabel(mapping.Value)} Click");
                 }
             }
+
+            AddDualPadAliasDescriptors(descriptors, info);
 
             if (HasEnabledSensor(info, "Gyro"))
             {
@@ -461,26 +467,60 @@ namespace DS4MapperTest.SdlDiagnostics
                     clickValue.Pressed;
 
                 values[inputId] = UniversalInputValue.TouchSurface(
-                    touchpad.Fingers.Select(finger => new UniversalTouchContact(
-                        finger.FingerIndex,
-                        finger.Active,
-                        finger.X,
-                        finger.Y,
-                        finger.Pressure)),
+                    touchpad.Fingers.Select(CreateContact),
                     clickPressed);
+
+                UniversalInputId contactInputId = TouchContactId(mapping.Value);
+                if (capabilities.Supports(contactInputId))
+                {
+                    values[contactInputId] = UniversalInputValue.DigitalButton(
+                        touchpad.Fingers.Any(finger => finger.Active));
+                }
 
                 if (mapping.Value == SdlUniversalTouchSurfaceTarget.Primary)
                 {
                     AddDerivedSinglePadHalf(values, capabilities, touchpad,
                         UniversalInputId.LeftTouchSurface,
                         UniversalInputId.LeftTouchSurfaceClick,
+                        UniversalInputId.LeftTouchContact,
                         clickPressed,
                         left: true);
                     AddDerivedSinglePadHalf(values, capabilities, touchpad,
                         UniversalInputId.RightTouchSurface,
                         UniversalInputId.RightTouchSurfaceClick,
+                        UniversalInputId.RightTouchContact,
                         clickPressed,
                         left: false);
+                }
+            }
+        }
+
+        // SDL reports the Steam Controller 2026's capacitive sensors as plain misc
+        // buttons, so nothing downstream can tell which sensor a misc slot stands
+        // for. The layout is fixed for the hardware, so publish the semantic input
+        // alongside the misc button rather than leaving the stick touch and grip
+        // sense bindings permanently unavailable.
+        private static readonly IReadOnlyDictionary<string, UniversalInputId> SteamDualPadMiscAliases =
+            new Dictionary<string, UniversalInputId>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Misc3"] = UniversalInputId.LeftStickTouch,
+                ["Misc4"] = UniversalInputId.RightStickTouch,
+                ["Misc5"] = UniversalInputId.LeftGripTouch,
+                ["Misc6"] = UniversalInputId.RightGripTouch,
+            };
+
+        private static void AddDualPadAliasDescriptors(
+            List<ControllerInputDescriptor> descriptors,
+            SdlRawGamepadInfo info)
+        {
+            if (!IsSteamDualPadController(info)) return;
+
+            foreach (KeyValuePair<string, UniversalInputId> alias in SteamDualPadMiscAliases)
+            {
+                if (info.Buttons.Any(item => item.Supported &&
+                    string.Equals(item.Name, alias.Key, StringComparison.OrdinalIgnoreCase)))
+                {
+                    AddDescriptor(descriptors, alias.Value, info, $"button:{alias.Key}", alias.Key);
                 }
             }
         }
@@ -497,6 +537,26 @@ namespace DS4MapperTest.SdlDiagnostics
             {
                 values[UniversalInputId.RightTouchSurfaceClick] = rightClick;
             }
+
+            if (!IsSteamDualPadController(info)) return;
+
+            foreach (KeyValuePair<string, UniversalInputId> alias in SteamDualPadMiscAliases)
+            {
+                if (!capabilities.Supports(alias.Value)) continue;
+
+                SdlRawButtonState button = info.Buttons.FirstOrDefault(item => item.Supported &&
+                    string.Equals(item.Name, alias.Key, StringComparison.OrdinalIgnoreCase));
+                if (button != null)
+                {
+                    values[alias.Value] = UniversalInputValue.DigitalButton(button.Pressed);
+                }
+            }
+        }
+
+        private static bool IsSteamDualPadController(SdlRawGamepadInfo info)
+        {
+            return HasTwoTouchpads(info) &&
+                string.Equals(InferFamily(info), "steam", StringComparison.OrdinalIgnoreCase);
         }
 
         private static void AddDerivedSinglePadHalf(
@@ -505,20 +565,21 @@ namespace DS4MapperTest.SdlDiagnostics
             SdlRawTouchpadState touchpad,
             UniversalInputId surfaceInput,
             UniversalInputId clickInput,
+            UniversalInputId contactInput,
             bool physicalClickPressed,
             bool left)
         {
             UniversalTouchContact[] contacts = touchpad.Fingers
                 .Where(finger => finger.Active && (left ? finger.X < 0.5f : finger.X >= 0.5f))
-                .Select(finger => new UniversalTouchContact(
-                    finger.FingerIndex,
-                    finger.Active,
-                    finger.X,
-                    finger.Y,
-                    finger.Pressure))
+                .Select(CreateContact)
                 .ToArray();
 
             bool halfTouched = contacts.Any();
+            if (capabilities.Supports(contactInput))
+            {
+                values[contactInput] = UniversalInputValue.DigitalButton(halfTouched);
+            }
+
             if (capabilities.Supports(surfaceInput))
             {
                 values[surfaceInput] = UniversalInputValue.TouchSurface(
@@ -579,6 +640,32 @@ namespace DS4MapperTest.SdlDiagnostics
                 SdlUniversalTouchSurfaceTarget.Left => UniversalInputId.LeftTouchSurface,
                 SdlUniversalTouchSurfaceTarget.Right => UniversalInputId.RightTouchSurface,
                 _ => UniversalInputId.PrimaryTouchSurface,
+            };
+        }
+
+        // SDL reports finger positions with the origin at the pad's top-left, the
+        // same way it reports a screen. Every touchpad action downstream was
+        // written against the pad hardware convention, where Y grows towards the
+        // top of the pad, so leaving SDL's Y alone inverted the vertical axis of
+        // the whole touchpad feature set - directional bindings fired the opposite
+        // cardinal, and pad mouse and stick modes moved the wrong way vertically.
+        private static UniversalTouchContact CreateContact(SdlRawTouchFingerState finger)
+        {
+            return new UniversalTouchContact(
+                finger.FingerIndex,
+                finger.Active,
+                finger.X,
+                1.0 - finger.Y,
+                finger.Pressure);
+        }
+
+        private static UniversalInputId TouchContactId(SdlUniversalTouchSurfaceTarget target)
+        {
+            return target switch
+            {
+                SdlUniversalTouchSurfaceTarget.Left => UniversalInputId.LeftTouchContact,
+                SdlUniversalTouchSurfaceTarget.Right => UniversalInputId.RightTouchContact,
+                _ => UniversalInputId.PrimaryTouchContact,
             };
         }
 

@@ -310,30 +310,12 @@
                     behaviors:ScrollViewerBehavior.ResetScrollOnSelection="True">
             <TabItem Header="Touch Bindings">
                 <StackPanel>
-                    <StackPanel Margin="0,0,0,6">
-                        <TextBlock Text="Touch Bindings" Style="{StaticResource JsmccSectionTitle}"/>
-                        <TextBlock Text="Touchpad capacitive touch bindings."
-                                   Style="{StaticResource JsmccBodyText}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,4,0,0"/>
-                    </StackPanel>
-                    <Border>
-                        <Border.Style>
-                            <Style TargetType="Border" BasedOn="{StaticResource JsmccCardBorder}">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding TouchpadTouchSurfaceBindings.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <TextBlock Text="No touchpad touch bindings were found for this controller."
-                                   Style="{StaticResource JsmccBodyText}"
-                                   TextWrapping="Wrap"/>
-                    </Border>
-                    <ItemsControl ItemsSource="{Binding TouchpadTouchSurfaceBindings}"
-                                  ItemTemplate="{StaticResource TouchpadPadSettingsTemplate}"/>
+                    <views:SharedButtonKeybindsControl
+                        SectionTitle="Touch Bindings"
+                        Description="Touchpad capacitive touch sensor bindings. Each pad's mode and mode settings live on its own tab."
+                        EmptyText="No touchpad touch bindings were found for this controller."
+                        CardSubtitle="Touchpad touch sensor"
+                        ItemsSource="{Binding TouchpadTouchBindings}"/>
                 </StackPanel>
             </TabItem>
             <TabItem Header="{Binding TouchpadClickBindingsTabHeader}">

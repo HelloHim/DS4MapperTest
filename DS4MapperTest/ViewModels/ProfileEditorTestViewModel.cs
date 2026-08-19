@@ -1257,19 +1257,25 @@ namespace DS4MapperTest.ViewModels
             FaceButtonBindingItem item;
 
             item = AddTouchpadButtonBinding(
-                new string[] { "LeftPadTouch", "LeftTouchpadTouch", "LeftTouchSurface" },
-                "Left Touch",
-                "Touchpad touch sensor");
+                new string[] { "LeftPadTouch", "LeftTouchpadTouch", "LeftTouchSurfaceTouch" },
+                UsesPlayStationTouchpadClickNames ? "Left-side Touch" : "Left Touch",
+                "Touchpad touch sensor",
+                false,
+                ControllerSupportsUniversalInput(UniversalInputId.LeftTouchContact),
+                GetUnavailableSideTouchMessage());
             if (item != null) touchpadTouchBindings.Add(item);
 
             item = AddTouchpadButtonBinding(
-                new string[] { "RightPadTouch", "RightTouchpadTouch", "RightTouchSurface" },
-                "Right Touch",
-                "Touchpad touch sensor");
+                new string[] { "RightPadTouch", "RightTouchpadTouch", "RightTouchSurfaceTouch" },
+                UsesPlayStationTouchpadClickNames ? "Right-side Touch" : "Right Touch",
+                "Touchpad touch sensor",
+                false,
+                ControllerSupportsUniversalInput(UniversalInputId.RightTouchContact),
+                GetUnavailableSideTouchMessage());
             if (item != null) touchpadTouchBindings.Add(item);
 
             item = AddTouchpadButtonBinding(
-                new string[] { "PrimaryTouchSurface" },
+                new string[] { "PrimaryPadTouch", "TouchpadTouch", "PrimaryTouchSurfaceTouch" },
                 "Center Touch",
                 "Touchpad touch sensor",
                 false,
@@ -1590,6 +1596,11 @@ namespace DS4MapperTest.ViewModels
             }
 
             return null;
+        }
+
+        private static string GetUnavailableSideTouchMessage()
+        {
+            return "The connected controller does not report this touchpad's capacitive touch sensor. This binding is preserved in the profile and becomes editable when compatible hardware is connected.";
         }
 
         private static string GetUnavailableCenterTouchMessage()

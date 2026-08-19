@@ -91,9 +91,13 @@ namespace DS4MapperTest.Universal
                 Button(UniversalInputId.PrimaryTouchSurfaceClick, UniversalInputCategory.TouchSurfaceClick, "Primary Touch Surface Click"),
                 Button(UniversalInputId.LeftTouchSurfaceClick, UniversalInputCategory.TouchSurfaceClick, "Left Touch Surface Click"),
                 Button(UniversalInputId.RightTouchSurfaceClick, UniversalInputCategory.TouchSurfaceClick, "Right Touch Surface Click"),
-                TouchSurface(UniversalInputId.PrimaryTouchContact, UniversalInputCategory.TouchSurface, "Primary Touch Contact"),
-                TouchSurface(UniversalInputId.LeftTouchContact, UniversalInputCategory.TouchSurface, "Left Touch Contact"),
-                TouchSurface(UniversalInputId.RightTouchContact, UniversalInputCategory.TouchSurface, "Right Touch Contact"),
+                // Touch contacts are the capacitive "a finger rests here" sensors,
+                // not the movement surface itself. They are digital so they can
+                // carry an ordinary button binding, the same way the capacitive
+                // stick touch sensors do.
+                Button(UniversalInputId.PrimaryTouchContact, UniversalInputCategory.TouchSurface, "Primary Touch Contact"),
+                Button(UniversalInputId.LeftTouchContact, UniversalInputCategory.TouchSurface, "Left Touch Contact"),
+                Button(UniversalInputId.RightTouchContact, UniversalInputCategory.TouchSurface, "Right Touch Contact"),
 
                 Gyroscope(UniversalInputId.Gyroscope),
                 Accelerometer(UniversalInputId.Accelerometer),
