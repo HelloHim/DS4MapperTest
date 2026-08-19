@@ -2768,6 +2768,15 @@ namespace DS4MapperTest
                 saveProfileButton.Content = "Save Profile";
                 ShowSaveStatusPill(success: false);
                 StartSaveStatusHideTimer(TimeSpan.FromSeconds(6), revertButton: false);
+
+                // A "Save failed" pill on its own leaves the user with edits that
+                // silently never reached disk and no way to tell why. Every other
+                // profile operation reports its reason, so this one must too.
+                MessageBox.Show(
+                    $"Failed to save the profile:\n{saveException.Message}",
+                    "Save Profile",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
                 return false;
             }
         }
