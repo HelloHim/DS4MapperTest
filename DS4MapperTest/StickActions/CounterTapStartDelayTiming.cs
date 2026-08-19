@@ -5,17 +5,17 @@ namespace DS4MapperTest.StickActions
 {
     /// <summary>
     /// Shared, mode-aware storage and computation for Counter Movement Release Press'
-    /// Opposite Tap Start Delay. Used by both CounterMovementReleasePressProcessor (stick
+    /// Counter Tap Start Delay. Used by both CounterMovementReleasePressProcessor (stick
     /// D-Pad modes and Analog Emulation) and TouchpadCounterMovementReleasePress (touchpad
     /// D-Pad modes), so the percentage math and best-fit conversion search exist in exactly
     /// one place rather than being duplicated across the two otherwise-independent state
     /// machines. Mirrors
-    /// OppositeTapLengthTiming's shape, but the start delay's own bounds start at 0 (a delay
+    /// CounterTapLengthTiming's shape, but the start delay's own bounds start at 0 (a delay
     /// of zero is the common case) rather than the tap length's 10ms floor, and new actions
     /// default to Minimum/Maximum mode at 0/0ms - the setting's only representation before
     /// Fixed/Percentage modes existed - rather than a percentage-based preset.
     /// </summary>
-    public sealed class OppositeTapStartDelayTiming
+    public sealed class CounterTapStartDelayTiming
     {
         public const int MIN_START_DELAY_MS = 0;
         public const int MAX_START_DELAY_MS = DigitalReleasePressPulse.MAX_RELEASE_PRESS_DURATION_MS;
@@ -30,8 +30,8 @@ namespace DS4MapperTest.StickActions
 
         // New actions default to Fixed at 0ms, preserving immediate-start behaviour while
         // making the simplest representation the initially selected UI mode.
-        private OppositeTapStartDelayMode mode = OppositeTapStartDelayMode.Fixed;
-        public OppositeTapStartDelayMode Mode
+        private CounterTapStartDelayMode mode = CounterTapStartDelayMode.Fixed;
+        public CounterTapStartDelayMode Mode
         {
             get => mode;
             set => mode = value;
@@ -39,7 +39,7 @@ namespace DS4MapperTest.StickActions
 
         // All four numeric fields below (Fixed, Percent, Minimum, Maximum) are plain,
         // side-effect-free storage: clamp and store, nothing else. See
-        // OppositeTapLengthTiming's class doc for why synchronisation is never done inside a
+        // CounterTapLengthTiming's class doc for why synchronisation is never done inside a
         // raw property setter - the same reasoning applies here.
         private int fixedMs = DEFAULT_START_DELAY_FIXED_MS;
         public int FixedMs
@@ -107,7 +107,7 @@ namespace DS4MapperTest.StickActions
         /// </summary>
         public (int Minimum, int Maximum) GetEffectiveRange()
         {
-            if (mode == OppositeTapStartDelayMode.Fixed)
+            if (mode == CounterTapStartDelayMode.Fixed)
             {
                 return (fixedMs, fixedMs);
             }
@@ -134,7 +134,7 @@ namespace DS4MapperTest.StickActions
         /// <summary>
         /// Deterministic best-fit search for the whole-number Fixed delay and Wait Variance
         /// Percentage that best reproduce a requested Minimum/Maximum range, using the same
-        /// priority order as OppositeTapLengthTiming.BestFitFixedAndPercentage: exact match,
+        /// priority order as CounterTapLengthTiming.BestFitFixedAndPercentage: exact match,
         /// then smallest total boundary error, then smallest largest-boundary error, then
         /// Fixed closest to the exact midpoint, then Percentage closest to the approximate
         /// percentage, then a deterministic tie-break (ascending Fixed then ascending

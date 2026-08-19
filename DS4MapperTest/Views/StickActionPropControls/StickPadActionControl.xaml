@@ -208,12 +208,12 @@ Increment="1" ToolTip="+ = Clockwise. - = Counter-clockwise" Width="100" Margin=
                 <StackPanel Margin="0,8,0,0">
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Counter Tap Length (Maximum)" />
-                        <hc:NumericUpDown Minimum="10" Maximum="150" Value="{Binding OppositeTapLengthMaximumMs}" DecimalPlaces="0"
+                        <hc:NumericUpDown Minimum="10" Maximum="150" Value="{Binding CounterTapLengthMaximumMs}" DecimalPlaces="0"
 Increment="1" Width="100" Margin="8,0,0,0">
                             <hc:NumericUpDown.Style>
                                 <Style TargetType="hc:NumericUpDown" BasedOn="{StaticResource NumericUpDownBaseStyle}">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HighlightOppositeTapLengthMaximumMs}" Value="False">
+                                        <DataTrigger Binding="{Binding HighlightCounterTapLengthMaximumMs}" Value="False">
                                             <Setter Property="Opacity" Value="0.7" />
                                         </DataTrigger>
                                     </Style.Triggers>

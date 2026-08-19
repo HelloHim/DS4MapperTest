@@ -11,8 +11,8 @@ using Newtonsoft.Json.Linq;
 
 namespace DS4MapperUnitTests
 {
-    // Covers the new Counter Movement Release Press behaviour: Opposite Tap Start Delay,
-    // Opposite Tap Length Variance sampling, subtraction, Tap Length Preset, range
+    // Covers the new Counter Movement Release Press behaviour: Counter Tap Start Delay,
+    // Counter Tap Length Variance sampling, subtraction, Tap Length Preset, range
     // validation, random-provider injection and legacy profile migration. Release-detection
     // itself (radial magnitude, derivative, re-engagement, diagonal ownership) is already
     // covered by CounterMovementReleasePressProcessorTests and is intentionally not
@@ -111,11 +111,11 @@ namespace DS4MapperUnitTests
                 ""DiagonalRange"": 45,
                 ""CounterMovementReleasePressEnabled"": {enabled.ToString().ToLowerInvariant()},
                 ""CounterMovementTapLengthPreset"": ""{preset}"",
-                ""OppositeTapLengthMinimumMs"": {tapLengthMin},
-                ""OppositeTapLengthMaximumMs"": {tapLengthMax},
-                ""OppositeTapStartDelayMode"": ""MinimumAndMaximum"",
-                ""OppositeTapStartDelayMinimumMs"": {startDelayMin},
-                ""OppositeTapStartDelayMaximumMs"": {startDelayMax},
+                ""CounterTapLengthMinimumMs"": {tapLengthMin},
+                ""CounterTapLengthMaximumMs"": {tapLengthMax},
+                ""CounterTapStartDelayMode"": ""MinimumAndMaximum"",
+                ""CounterTapStartDelayMinimumMs"": {startDelayMin},
+                ""CounterTapStartDelayMaximumMs"": {startDelayMax},
                 ""CounterMovementMinimumHoldMs"": {minimumHoldMs},
                 ""RequiredStickDeflectionThreshold"": {armingThreshold.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}
               }}
@@ -192,7 +192,7 @@ namespace DS4MapperUnitTests
             Neutral(mapper);
             HoldUp(mapper, 20);
             Report(mapper, 0, 0); // release
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive,
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.CounterTapActive,
                 padAction.CounterMovementReleasePress.State, "Opposite output must begin immediately at zero delay.");
             Assert.IsTrue(KeyDown(VK_S));
 
@@ -212,17 +212,17 @@ namespace DS4MapperUnitTests
             Neutral(mapper);
             HoldUp(mapper, 20);
             Report(mapper, 0, 0); // release: elapsed 0ms
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForOppositeTap,
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForCounterTap,
                 padAction.CounterMovementReleasePress.State, "Must wait out the start delay before pressing.");
             Assert.IsFalse(KeyDown(VK_S), "No opposite output during the neutral start-delay period.");
             Assert.IsFalse(KeyDown(VK_W));
 
             // Advance through the ~20ms delay (8ms ticks: 8, 16, 24ms elapsed).
-            for (int i = 0; i < 3 && padAction.CounterMovementReleasePress.State == CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForOppositeTap; i++)
+            for (int i = 0; i < 3 && padAction.CounterMovementReleasePress.State == CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForCounterTap; i++)
             {
                 Report(mapper, 0, 0);
             }
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive,
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.CounterTapActive,
                 padAction.CounterMovementReleasePress.State, "Opposite output must begin once the start delay elapses.");
             Assert.IsTrue(KeyDown(VK_S));
 
@@ -242,13 +242,13 @@ namespace DS4MapperUnitTests
             Neutral(mapper);
             HoldUp(mapper, 20);
             Report(mapper, 0, 0);
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForOppositeTap, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForCounterTap, padAction.CounterMovementReleasePress.State);
 
-            for (int i = 0; i < 3 && padAction.CounterMovementReleasePress.State == CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForOppositeTap; i++)
+            for (int i = 0; i < 3 && padAction.CounterMovementReleasePress.State == CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForCounterTap; i++)
             {
                 Report(mapper, 0, 0);
             }
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.CounterTapActive, padAction.CounterMovementReleasePress.State);
 
             for (int i = 0; i < 20 && padAction.CounterMovementReleasePress.State != CounterMovementReleasePressProcessor.CounterMovementReleasePressState.Suppressed; i++)
             {
@@ -292,21 +292,21 @@ namespace DS4MapperUnitTests
             HoldUp(mapper, 20);
             Report(mapper, 0, 0);
 
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.CounterTapActive, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_S), "Zero delay must behave identically to the pre-timing-variance implementation.");
         }
 
         // --- Section 17: real input takes priority --------------------------------
 
         [TestMethod]
-        public void DeliberateNewDirection_DuringWaitingForOppositeTap_CancelsScheduledPress()
+        public void DeliberateNewDirection_DuringWaitingForCounterTap_CancelsScheduledPress()
         {
             var (mapper, padAction) = LoadMapper(tapLengthMin: 120, tapLengthMax: 120, startDelayMin: 40, startDelayMax: 40);
 
             Neutral(mapper);
             HoldUp(mapper, 20);
             Report(mapper, 0, 0);
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForOppositeTap, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForCounterTap, padAction.CounterMovementReleasePress.State);
 
             // Deliberately push Right while still waiting out the delay.
             for (int i = 0; i < 6; i++)
@@ -320,14 +320,14 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void DeliberateNewDirection_DuringOppositeTapActive_CancelsGeneratedPress()
+        public void DeliberateNewDirection_DuringCounterTapActive_CancelsGeneratedPress()
         {
             var (mapper, padAction) = LoadMapper(tapLengthMin: 150, tapLengthMax: 150, startDelayMin: 0, startDelayMax: 0);
 
             Neutral(mapper);
             HoldUp(mapper, 20);
             Report(mapper, 0, 0);
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.CounterTapActive, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_S));
 
             for (int i = 0; i < 6; i++)
@@ -342,14 +342,14 @@ namespace DS4MapperUnitTests
         // --- Section 19: cancellation and cleanup ---------------------------------
 
         [TestMethod]
-        public void DisableDuringWaitingForOppositeTap_CancelsPendingPressAndReleasesSuppression()
+        public void DisableDuringWaitingForCounterTap_CancelsPendingPressAndReleasesSuppression()
         {
             var (mapper, padAction) = LoadMapper(tapLengthMin: 120, tapLengthMax: 120, startDelayMin: 40, startDelayMax: 40);
 
             Neutral(mapper);
             HoldUp(mapper, 20);
             Report(mapper, 0, 0);
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForOppositeTap, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.WaitingForCounterTap, padAction.CounterMovementReleasePress.State);
 
             padAction.CounterMovementReleasePress.Enabled = false;
             Report(mapper, 0, 0);
@@ -394,26 +394,26 @@ namespace DS4MapperUnitTests
         public void NormalizeRanges_SwapsInvertedTapLengthRange()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapLengthMinimumMs = 120;
-            processor.OppositeTapLengthMaximumMs = 75;
+            processor.CounterTapLengthMinimumMs = 120;
+            processor.CounterTapLengthMaximumMs = 75;
 
             processor.NormalizeRanges();
 
-            Assert.IsTrue(processor.OppositeTapLengthMinimumMs <= processor.OppositeTapLengthMaximumMs);
+            Assert.IsTrue(processor.CounterTapLengthMinimumMs <= processor.CounterTapLengthMaximumMs);
         }
 
         [TestMethod]
         public void NormalizeRanges_ClampsStartDelayMaximumToTapLengthMinimum()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapLengthMinimumMs = 78;
-            processor.OppositeTapLengthMaximumMs = 90;
-            processor.OppositeTapStartDelayMinimumMs = 0;
-            processor.OppositeTapStartDelayMaximumMs = 90;
+            processor.CounterTapLengthMinimumMs = 78;
+            processor.CounterTapLengthMaximumMs = 90;
+            processor.CounterTapStartDelayMinimumMs = 0;
+            processor.CounterTapStartDelayMaximumMs = 90;
 
             processor.NormalizeRanges();
 
-            Assert.AreEqual(78, processor.OppositeTapStartDelayMaximumMs,
+            Assert.AreEqual(78, processor.CounterTapStartDelayMaximumMs,
                 "Start delay maximum must never exceed the tap-length minimum.");
         }
 
@@ -421,16 +421,16 @@ namespace DS4MapperUnitTests
         public void NormalizeRanges_LoweringTapLengthMinimumPullsDownStartDelayMaximum()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapLengthMinimumMs = 78;
-            processor.OppositeTapLengthMaximumMs = 90;
-            processor.OppositeTapStartDelayMaximumMs = 70;
+            processor.CounterTapLengthMinimumMs = 78;
+            processor.CounterTapLengthMaximumMs = 90;
+            processor.CounterTapStartDelayMaximumMs = 70;
             processor.NormalizeRanges();
-            Assert.AreEqual(70, processor.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(70, processor.CounterTapStartDelayMaximumMs);
 
-            processor.OppositeTapLengthMinimumMs = 50;
+            processor.CounterTapLengthMinimumMs = 50;
             processor.NormalizeRanges();
 
-            Assert.AreEqual(50, processor.OppositeTapStartDelayMaximumMs,
+            Assert.AreEqual(50, processor.CounterTapStartDelayMaximumMs,
                 "Lowering the tap-length minimum below the current start-delay maximum must clamp the delay down too.");
         }
 
@@ -438,34 +438,34 @@ namespace DS4MapperUnitTests
         public void NormalizeRanges_EqualMinimumAndMaximum_StaysDeterministic()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapLengthMinimumMs = 100;
-            processor.OppositeTapLengthMaximumMs = 100;
-            processor.OppositeTapStartDelayMinimumMs = 0;
-            processor.OppositeTapStartDelayMaximumMs = 0;
+            processor.CounterTapLengthMinimumMs = 100;
+            processor.CounterTapLengthMaximumMs = 100;
+            processor.CounterTapStartDelayMinimumMs = 0;
+            processor.CounterTapStartDelayMaximumMs = 0;
 
             processor.NormalizeRanges();
 
-            Assert.AreEqual(100, processor.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(100, processor.OppositeTapLengthMaximumMs);
-            Assert.AreEqual(0, processor.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(0, processor.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(100, processor.CounterTapLengthMinimumMs);
+            Assert.AreEqual(100, processor.CounterTapLengthMaximumMs);
+            Assert.AreEqual(0, processor.CounterTapStartDelayMinimumMs);
+            Assert.AreEqual(0, processor.CounterTapStartDelayMaximumMs);
         }
 
         [TestMethod]
         public void NormalizeRanges_DoesNotCreateRecursiveOrUnstableLoop()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapLengthMinimumMs = 30;
-            processor.OppositeTapLengthMaximumMs = 20;
-            processor.OppositeTapStartDelayMinimumMs = 50;
-            processor.OppositeTapStartDelayMaximumMs = 10;
+            processor.CounterTapLengthMinimumMs = 30;
+            processor.CounterTapLengthMaximumMs = 20;
+            processor.CounterTapStartDelayMinimumMs = 50;
+            processor.CounterTapStartDelayMaximumMs = 10;
 
             processor.NormalizeRanges();
             processor.NormalizeRanges(); // Idempotent: a second call must not change anything further.
 
-            Assert.IsTrue(processor.OppositeTapLengthMinimumMs <= processor.OppositeTapLengthMaximumMs);
-            Assert.IsTrue(processor.OppositeTapStartDelayMinimumMs <= processor.OppositeTapStartDelayMaximumMs);
-            Assert.IsTrue(processor.OppositeTapStartDelayMaximumMs <= processor.OppositeTapLengthMinimumMs);
+            Assert.IsTrue(processor.CounterTapLengthMinimumMs <= processor.CounterTapLengthMaximumMs);
+            Assert.IsTrue(processor.CounterTapStartDelayMinimumMs <= processor.CounterTapStartDelayMaximumMs);
+            Assert.IsTrue(processor.CounterTapStartDelayMaximumMs <= processor.CounterTapLengthMinimumMs);
         }
 
         // --- Section 10/27: CS2 preset ---------------------------------------------
@@ -474,18 +474,18 @@ namespace DS4MapperUnitTests
         public void ApplyCs2Preset_SetsTapLengthRangeOnly()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapStartDelayMinimumMs = 3;
-            processor.OppositeTapStartDelayMaximumMs = 15;
+            processor.CounterTapStartDelayMinimumMs = 3;
+            processor.CounterTapStartDelayMaximumMs = 15;
             processor.MinimumHoldMs = 42;
             processor.ArmingThreshold = 0.33;
 
             processor.ApplyCs2Preset();
 
-            Assert.AreEqual(78, processor.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(90, processor.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(78, processor.CounterTapLengthMinimumMs);
+            Assert.AreEqual(90, processor.CounterTapLengthMaximumMs);
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, processor.TapLengthPreset);
-            Assert.AreEqual(3, processor.OppositeTapStartDelayMinimumMs, "CS2 must not alter the start delay.");
-            Assert.AreEqual(15, processor.OppositeTapStartDelayMaximumMs, "CS2 must not alter the start delay.");
+            Assert.AreEqual(3, processor.CounterTapStartDelayMinimumMs, "CS2 must not alter the start delay.");
+            Assert.AreEqual(15, processor.CounterTapStartDelayMaximumMs, "CS2 must not alter the start delay.");
             Assert.AreEqual(42, processor.MinimumHoldMs, "CS2 must not alter Minimum Hold Time.");
             Assert.AreEqual(0.33, processor.ArmingThreshold, "CS2 must not alter the Required Stick Deflection threshold.");
         }
@@ -494,8 +494,8 @@ namespace DS4MapperUnitTests
         public void EffectiveTapLengthPreset_MatchingCs2Values_DisplaysCs2()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapLengthMinimumMs = 78;
-            processor.OppositeTapLengthMaximumMs = 90;
+            processor.CounterTapLengthMinimumMs = 78;
+            processor.CounterTapLengthMaximumMs = 90;
             processor.TapLengthPreset = CounterMovementTapLengthPreset.CS2;
 
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, processor.EffectiveTapLengthPreset);
@@ -505,14 +505,14 @@ namespace DS4MapperUnitTests
         public void EffectiveTapLengthPreset_MismatchedCs2Values_DisplaysCustomWithoutOverwritingValues()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
-            processor.OppositeTapLengthMinimumMs = 80;
-            processor.OppositeTapLengthMaximumMs = 130;
+            processor.CounterTapLengthMinimumMs = 80;
+            processor.CounterTapLengthMaximumMs = 130;
             processor.TapLengthPreset = CounterMovementTapLengthPreset.CS2; // stale/malformed stored preset
 
             Assert.AreEqual(CounterMovementTapLengthPreset.Custom, processor.EffectiveTapLengthPreset,
                 "The numeric values are authoritative over a stale stored preset.");
-            Assert.AreEqual(80, processor.OppositeTapLengthMinimumMs, "Must not silently overwrite the loaded numeric values.");
-            Assert.AreEqual(130, processor.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(80, processor.CounterTapLengthMinimumMs, "Must not silently overwrite the loaded numeric values.");
+            Assert.AreEqual(130, processor.CounterTapLengthMaximumMs);
         }
 
         [TestMethod]
@@ -529,8 +529,8 @@ namespace DS4MapperUnitTests
             var (_, padAction) = LoadMapper(tapLengthMin: 60, tapLengthMax: 90, startDelayMin: 0, startDelayMax: 20, preset: "CS2");
 
             Assert.AreEqual(CounterMovementTapLengthPreset.Custom, padAction.CounterMovementReleasePress.EffectiveTapLengthPreset);
-            Assert.AreEqual(60, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(60, padAction.CounterMovementReleasePress.CounterTapLengthMinimumMs);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.CounterTapLengthMaximumMs);
         }
 
         // --- Section 13/26: legacy profile migration -------------------------------
@@ -629,17 +629,17 @@ namespace DS4MapperUnitTests
         public void LegacyProfile_ReleasePressDurationBecomesMinimumAndMaximum()
         {
             var (_, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 90);
-            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.CounterTapLengthMinimumMs);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.CounterTapLengthMaximumMs);
         }
 
         [TestMethod]
         public void LegacyProfile_StartDelayDefaultsToZeroZero_PreservingImmediateStart()
         {
             var (_, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 90);
-            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs,
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.CounterTapStartDelayMinimumMs,
                 "Migrated profiles must use 0ms, not the 0-20ms new-action default, to preserve old behaviour exactly.");
-            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.CounterTapStartDelayMaximumMs);
         }
 
         [TestMethod]
@@ -672,7 +672,7 @@ namespace DS4MapperUnitTests
             HoldUp(mapper, 20);
             Report(mapper, 0, 0);
 
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, padAction.CounterMovementReleasePress.State);
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.CounterTapActive, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_S), "A migrated legacy profile must still press the opposite direction immediately on release.");
         }
 
@@ -734,10 +734,10 @@ namespace DS4MapperUnitTests
             StickPadAction padAction = tempProfile.ActionSets[0].ActionLayers[0].stickActionDict["Stick"] as StickPadAction;
 
             Assert.IsFalse(padAction.CounterMovementReleasePress.Enabled);
-            Assert.AreEqual(78, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
-            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(78, padAction.CounterMovementReleasePress.CounterTapLengthMinimumMs);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.CounterTapLengthMaximumMs);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.CounterTapStartDelayMinimumMs);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.CounterTapStartDelayMaximumMs);
         }
 
         // --- Section 24/26: round trip through the serializer ----------------------
@@ -748,10 +748,10 @@ namespace DS4MapperUnitTests
             StickPadAction actionToSave = new StickPadAction();
             actionToSave.Id = 9;
             actionToSave.CounterMovementReleasePress.Enabled = true;
-            actionToSave.CounterMovementReleasePress.OppositeTapLengthMinimumMs = 60;
-            actionToSave.CounterMovementReleasePress.OppositeTapLengthMaximumMs = 110;
-            actionToSave.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs = 5;
-            actionToSave.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs = 25;
+            actionToSave.CounterMovementReleasePress.CounterTapLengthMinimumMs = 60;
+            actionToSave.CounterMovementReleasePress.CounterTapLengthMaximumMs = 110;
+            actionToSave.CounterMovementReleasePress.CounterTapStartDelayMinimumMs = 5;
+            actionToSave.CounterMovementReleasePress.CounterTapStartDelayMaximumMs = 25;
             actionToSave.CounterMovementReleasePress.TapLengthPreset = CounterMovementTapLengthPreset.Custom;
             actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS);
@@ -764,10 +764,10 @@ namespace DS4MapperUnitTests
             JObject parsed = JObject.Parse(json);
 
             Assert.AreEqual(true, parsed["Settings"]?["CounterMovementReleasePressEnabled"]?.Value<bool>());
-            Assert.AreEqual(60, parsed["Settings"]?["OppositeTapLengthMinimumMs"]?.Value<int>());
-            Assert.AreEqual(110, parsed["Settings"]?["OppositeTapLengthMaximumMs"]?.Value<int>());
-            Assert.AreEqual(5, parsed["Settings"]?["OppositeTapStartDelayMinimumMs"]?.Value<int>());
-            Assert.AreEqual(25, parsed["Settings"]?["OppositeTapStartDelayMaximumMs"]?.Value<int>());
+            Assert.AreEqual(60, parsed["Settings"]?["CounterTapLengthMinimumMs"]?.Value<int>());
+            Assert.AreEqual(110, parsed["Settings"]?["CounterTapLengthMaximumMs"]?.Value<int>());
+            Assert.AreEqual(5, parsed["Settings"]?["CounterTapStartDelayMinimumMs"]?.Value<int>());
+            Assert.AreEqual(25, parsed["Settings"]?["CounterTapStartDelayMaximumMs"]?.Value<int>());
             Assert.AreEqual("Custom", parsed["Settings"]?["CounterMovementTapLengthPreset"]?.Value<string>());
             Assert.IsNull(parsed["Settings"]?["BrakeEnabled"], "Legacy field names must not be re-serialized.");
             Assert.IsNull(parsed["Settings"]?["BrakeDurationMs"], "Legacy field names must not be re-serialized.");
@@ -778,10 +778,10 @@ namespace DS4MapperUnitTests
             reimport.PopulateMap();
             StickPadAction reloaded = reimport.MapAction as StickPadAction;
 
-            Assert.AreEqual(60, reloaded.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(110, reloaded.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
-            Assert.AreEqual(5, reloaded.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(25, reloaded.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(60, reloaded.CounterMovementReleasePress.CounterTapLengthMinimumMs);
+            Assert.AreEqual(110, reloaded.CounterMovementReleasePress.CounterTapLengthMaximumMs);
+            Assert.AreEqual(5, reloaded.CounterMovementReleasePress.CounterTapStartDelayMinimumMs);
+            Assert.AreEqual(25, reloaded.CounterMovementReleasePress.CounterTapStartDelayMaximumMs);
         }
 
         // --- Section 23: inheritance ------------------------------------------------
@@ -790,29 +790,29 @@ namespace DS4MapperUnitTests
         public void InheritedAction_PicksUpParentTimingValuesUntilOverridden()
         {
             StickPadAction parent = new StickPadAction();
-            parent.CounterMovementReleasePress.OppositeTapLengthMinimumMs = 60;
-            parent.CounterMovementReleasePress.OppositeTapLengthMaximumMs = 90;
-            parent.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs = 5;
-            parent.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs = 15;
+            parent.CounterMovementReleasePress.CounterTapLengthMinimumMs = 60;
+            parent.CounterMovementReleasePress.CounterTapLengthMaximumMs = 90;
+            parent.CounterMovementReleasePress.CounterTapStartDelayMinimumMs = 5;
+            parent.CounterMovementReleasePress.CounterTapStartDelayMaximumMs = 15;
 
             StickPadAction child = new StickPadAction();
             child.SoftCopyFromParent(parent);
 
-            Assert.AreEqual(60, child.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(90, child.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
-            Assert.AreEqual(5, child.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(15, child.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(60, child.CounterMovementReleasePress.CounterTapLengthMinimumMs);
+            Assert.AreEqual(90, child.CounterMovementReleasePress.CounterTapLengthMaximumMs);
+            Assert.AreEqual(5, child.CounterMovementReleasePress.CounterTapStartDelayMinimumMs);
+            Assert.AreEqual(15, child.CounterMovementReleasePress.CounterTapStartDelayMaximumMs);
 
-            parent.CounterMovementReleasePress.OppositeTapLengthMaximumMs = 100;
+            parent.CounterMovementReleasePress.CounterTapLengthMaximumMs = 100;
             parent.RaiseNotifyPropertyChange(null, StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
-            Assert.AreEqual(100, child.CounterMovementReleasePress.OppositeTapLengthMaximumMs,
+            Assert.AreEqual(100, child.CounterMovementReleasePress.CounterTapLengthMaximumMs,
                 "An uninherited-override child property must keep tracking the parent.");
 
-            child.CounterMovementReleasePress.OppositeTapLengthMaximumMs = 70;
+            child.CounterMovementReleasePress.CounterTapLengthMaximumMs = 70;
             child.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
-            parent.CounterMovementReleasePress.OppositeTapLengthMaximumMs = 130;
+            parent.CounterMovementReleasePress.CounterTapLengthMaximumMs = 130;
             parent.RaiseNotifyPropertyChange(null, StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS);
-            Assert.AreEqual(70, child.CounterMovementReleasePress.OppositeTapLengthMaximumMs,
+            Assert.AreEqual(70, child.CounterMovementReleasePress.CounterTapLengthMaximumMs,
                 "Once explicitly overridden, the child must stop tracking the parent for that property.");
         }
 
@@ -820,15 +820,15 @@ namespace DS4MapperUnitTests
         public void InheritedAction_PicksUpParentModeAndFixedPercentValues()
         {
             StickPadAction parent = new StickPadAction();
-            parent.CounterMovementReleasePress.OppositeTapLengthMode = OppositeTapLengthMode.Fixed;
+            parent.CounterMovementReleasePress.CounterTapLengthMode = CounterTapLengthMode.Fixed;
             parent.CounterMovementReleasePress.ApplyFixedAndPercentage(90, 15);
 
             StickPadAction child = new StickPadAction();
             child.SoftCopyFromParent(parent);
 
-            Assert.AreEqual(OppositeTapLengthMode.Fixed, child.CounterMovementReleasePress.OppositeTapLengthMode);
-            Assert.AreEqual(90, child.CounterMovementReleasePress.OppositeTapLengthMs);
-            Assert.AreEqual(15, child.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(CounterTapLengthMode.Fixed, child.CounterMovementReleasePress.CounterTapLengthMode);
+            Assert.AreEqual(90, child.CounterMovementReleasePress.CounterTapLengthMs);
+            Assert.AreEqual(15, child.CounterMovementReleasePress.CounterTapLengthVariancePercent);
         }
 
         // --- Section 20: three-generation profile migration --------------------------
@@ -836,17 +836,17 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void CurrentGenerationProfile_WithExplicitRangeButNoModeField_MigratesToMinimumAndMaximumMode()
         {
-            // LoadMapper's JSON already only ever writes OppositeTapLengthMinimumMs/MaximumMs
+            // LoadMapper's JSON already only ever writes CounterTapLengthMinimumMs/MaximumMs
             // (no oppositeTapLengthMode field), matching a profile saved by the pre-timing-mode
             // range-only implementation.
             var (_, padAction) = LoadMapper(tapLengthMin: 75, tapLengthMax: 120, startDelayMin: 0, startDelayMax: 20);
 
-            Assert.AreEqual(OppositeTapLengthMode.MinimumAndMaximum, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
-            Assert.AreEqual(75, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(120, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
-            Assert.AreEqual(98, padAction.CounterMovementReleasePress.OppositeTapLengthMs,
+            Assert.AreEqual(CounterTapLengthMode.MinimumAndMaximum, padAction.CounterMovementReleasePress.CounterTapLengthMode);
+            Assert.AreEqual(75, padAction.CounterMovementReleasePress.CounterTapLengthMinimumMs);
+            Assert.AreEqual(120, padAction.CounterMovementReleasePress.CounterTapLengthMaximumMs);
+            Assert.AreEqual(98, padAction.CounterMovementReleasePress.CounterTapLengthMs,
                 "The best-fit Fixed value must be derived from the already-loaded range.");
-            Assert.AreEqual(23, padAction.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(23, padAction.CounterMovementReleasePress.CounterTapLengthVariancePercent);
         }
 
         [TestMethod]
@@ -854,7 +854,7 @@ namespace DS4MapperUnitTests
         {
             var (_, padAction) = LoadMapper(tapLengthMin: 78, tapLengthMax: 90, startDelayMin: 0, startDelayMax: 20, preset: "CS2");
 
-            Assert.AreEqual(OppositeTapLengthMode.MinimumAndMaximum, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
+            Assert.AreEqual(CounterTapLengthMode.MinimumAndMaximum, padAction.CounterMovementReleasePress.CounterTapLengthMode);
             Assert.AreEqual(CounterMovementTapLengthPreset.CS2, padAction.CounterMovementReleasePress.EffectiveTapLengthPreset);
         }
 
@@ -863,11 +863,11 @@ namespace DS4MapperUnitTests
         {
             var (_, padAction) = LoadLegacyMapper(enabled: true, releasePressDurationMs: 90);
 
-            Assert.AreEqual(OppositeTapLengthMode.Fixed, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
-            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMs);
-            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
-            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(90, padAction.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
+            Assert.AreEqual(CounterTapLengthMode.Fixed, padAction.CounterMovementReleasePress.CounterTapLengthMode);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.CounterTapLengthMs);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.CounterTapLengthVariancePercent);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.CounterTapLengthMinimumMs);
+            Assert.AreEqual(90, padAction.CounterMovementReleasePress.CounterTapLengthMaximumMs);
         }
 
         [TestMethod]
@@ -928,14 +928,14 @@ namespace DS4MapperUnitTests
 
             StickPadAction padAction = tempProfile.ActionSets[0].ActionLayers[0].stickActionDict["Stick"] as StickPadAction;
 
-            Assert.AreEqual(OppositeTapLengthMode.WaitVariancePercentage, padAction.CounterMovementReleasePress.OppositeTapLengthMode);
-            Assert.AreEqual(84, padAction.CounterMovementReleasePress.OppositeTapLengthMs);
-            Assert.AreEqual(7, padAction.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
-            Assert.AreEqual(OppositeTapStartDelayMode.Fixed, padAction.CounterMovementReleasePress.OppositeTapStartDelayMode);
-            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMs);
-            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent);
-            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(0, padAction.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(CounterTapLengthMode.WaitVariancePercentage, padAction.CounterMovementReleasePress.CounterTapLengthMode);
+            Assert.AreEqual(84, padAction.CounterMovementReleasePress.CounterTapLengthMs);
+            Assert.AreEqual(7, padAction.CounterMovementReleasePress.CounterTapLengthVariancePercent);
+            Assert.AreEqual(CounterTapStartDelayMode.Fixed, padAction.CounterMovementReleasePress.CounterTapStartDelayMode);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.CounterTapStartDelayMs);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.CounterTapStartDelayVariancePercent);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.CounterTapStartDelayMinimumMs);
+            Assert.AreEqual(0, padAction.CounterMovementReleasePress.CounterTapStartDelayMaximumMs);
         }
 
         [TestMethod]
@@ -944,7 +944,7 @@ namespace DS4MapperUnitTests
             StickPadAction actionToSave = new StickPadAction();
             actionToSave.Id = 9;
             actionToSave.CounterMovementReleasePress.Enabled = true;
-            actionToSave.CounterMovementReleasePress.OppositeTapLengthMode = OppositeTapLengthMode.Fixed;
+            actionToSave.CounterMovementReleasePress.CounterTapLengthMode = CounterTapLengthMode.Fixed;
             actionToSave.CounterMovementReleasePress.ApplyFixedAndPercentage(64, 12);
             actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE);
@@ -956,18 +956,18 @@ namespace DS4MapperUnitTests
             string json = JsonConvert.SerializeObject(new StickPadActionSerializer(null, actionToSave));
             JObject parsed = JObject.Parse(json);
 
-            Assert.AreEqual("Fixed", parsed["Settings"]?["OppositeTapLengthMode"]?.Value<string>());
-            Assert.AreEqual(64, parsed["Settings"]?["OppositeTapLengthMs"]?.Value<int>());
-            Assert.AreEqual(12, parsed["Settings"]?["OppositeTapLengthVariancePercent"]?.Value<int>());
+            Assert.AreEqual("Fixed", parsed["Settings"]?["CounterTapLengthMode"]?.Value<string>());
+            Assert.AreEqual(64, parsed["Settings"]?["CounterTapLengthMs"]?.Value<int>());
+            Assert.AreEqual(12, parsed["Settings"]?["CounterTapLengthVariancePercent"]?.Value<int>());
 
             StickPadActionSerializer reimport = new StickPadActionSerializer();
             JsonConvert.PopulateObject(json, reimport);
             reimport.PopulateMap();
             StickPadAction reloaded = reimport.MapAction as StickPadAction;
 
-            Assert.AreEqual(OppositeTapLengthMode.Fixed, reloaded.CounterMovementReleasePress.OppositeTapLengthMode);
-            Assert.AreEqual(64, reloaded.CounterMovementReleasePress.OppositeTapLengthMs);
-            Assert.AreEqual(12, reloaded.CounterMovementReleasePress.OppositeTapLengthVariancePercent);
+            Assert.AreEqual(CounterTapLengthMode.Fixed, reloaded.CounterMovementReleasePress.CounterTapLengthMode);
+            Assert.AreEqual(64, reloaded.CounterMovementReleasePress.CounterTapLengthMs);
+            Assert.AreEqual(12, reloaded.CounterMovementReleasePress.CounterTapLengthVariancePercent);
         }
 
         [TestMethod]
@@ -976,7 +976,7 @@ namespace DS4MapperUnitTests
             StickPadAction actionToSave = new StickPadAction();
             actionToSave.Id = 9;
             actionToSave.CounterMovementReleasePress.Enabled = true;
-            actionToSave.CounterMovementReleasePress.OppositeTapStartDelayMode = OppositeTapStartDelayMode.WaitVariancePercentage;
+            actionToSave.CounterMovementReleasePress.CounterTapStartDelayMode = CounterTapStartDelayMode.WaitVariancePercentage;
             actionToSave.CounterMovementReleasePress.ApplyStartDelayFixedAndPercentage(20, 25);
             actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED);
             actionToSave.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE);
@@ -988,22 +988,22 @@ namespace DS4MapperUnitTests
             string json = JsonConvert.SerializeObject(new StickPadActionSerializer(null, actionToSave));
             JObject parsed = JObject.Parse(json);
 
-            Assert.AreEqual("WaitVariancePercentage", parsed["Settings"]?["OppositeTapStartDelayMode"]?.Value<string>());
-            Assert.AreEqual(20, parsed["Settings"]?["OppositeTapStartDelayMs"]?.Value<int>());
-            Assert.AreEqual(25, parsed["Settings"]?["OppositeTapStartDelayVariancePercent"]?.Value<int>());
-            Assert.AreEqual(15, parsed["Settings"]?["OppositeTapStartDelayMinimumMs"]?.Value<int>());
-            Assert.AreEqual(25, parsed["Settings"]?["OppositeTapStartDelayMaximumMs"]?.Value<int>());
+            Assert.AreEqual("WaitVariancePercentage", parsed["Settings"]?["CounterTapStartDelayMode"]?.Value<string>());
+            Assert.AreEqual(20, parsed["Settings"]?["CounterTapStartDelayMs"]?.Value<int>());
+            Assert.AreEqual(25, parsed["Settings"]?["CounterTapStartDelayVariancePercent"]?.Value<int>());
+            Assert.AreEqual(15, parsed["Settings"]?["CounterTapStartDelayMinimumMs"]?.Value<int>());
+            Assert.AreEqual(25, parsed["Settings"]?["CounterTapStartDelayMaximumMs"]?.Value<int>());
 
             StickPadActionSerializer reimport = new StickPadActionSerializer();
             JsonConvert.PopulateObject(json, reimport);
             reimport.PopulateMap();
             StickPadAction reloaded = reimport.MapAction as StickPadAction;
 
-            Assert.AreEqual(OppositeTapStartDelayMode.WaitVariancePercentage, reloaded.CounterMovementReleasePress.OppositeTapStartDelayMode);
-            Assert.AreEqual(20, reloaded.CounterMovementReleasePress.OppositeTapStartDelayMs);
-            Assert.AreEqual(25, reloaded.CounterMovementReleasePress.OppositeTapStartDelayVariancePercent);
-            Assert.AreEqual(15, reloaded.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(25, reloaded.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(CounterTapStartDelayMode.WaitVariancePercentage, reloaded.CounterMovementReleasePress.CounterTapStartDelayMode);
+            Assert.AreEqual(20, reloaded.CounterMovementReleasePress.CounterTapStartDelayMs);
+            Assert.AreEqual(25, reloaded.CounterMovementReleasePress.CounterTapStartDelayVariancePercent);
+            Assert.AreEqual(15, reloaded.CounterMovementReleasePress.CounterTapStartDelayMinimumMs);
+            Assert.AreEqual(25, reloaded.CounterMovementReleasePress.CounterTapStartDelayMaximumMs);
         }
     }
 }

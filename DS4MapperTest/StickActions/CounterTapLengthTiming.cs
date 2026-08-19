@@ -5,7 +5,7 @@ namespace DS4MapperTest.StickActions
 {
     /// <summary>
     /// Shared, mode-aware storage and computation for Counter Movement Release Press'
-    /// Opposite Tap Length. Used by both CounterMovementReleasePressProcessor (stick D-Pad
+    /// Counter Tap Length. Used by both CounterMovementReleasePressProcessor (stick D-Pad
     /// modes and Analog Emulation) and TouchpadCounterMovementReleasePress (touchpad D-Pad
     /// modes), so the percentage math, best-fit conversion search and CS2 constants exist
     /// in exactly one place rather than being duplicated across the two otherwise-independent
@@ -13,7 +13,7 @@ namespace DS4MapperTest.StickActions
     /// fields: those remain owned by each caller, since their surrounding preset/
     /// NormalizeRanges semantics differ slightly between the two.
     /// </summary>
-    public sealed class OppositeTapLengthTiming
+    public sealed class CounterTapLengthTiming
     {
         public const int CS2_FIXED_TAP_LENGTH_MS = 84;
         public const int CS2_WAIT_VARIANCE_PERCENT = 7;
@@ -25,8 +25,8 @@ namespace DS4MapperTest.StickActions
 
         // New actions default to Time Variance (%), using CS2's 84ms base and
         // 7% variance while keeping the equivalent 78-90ms range in sync.
-        private OppositeTapLengthMode mode = OppositeTapLengthMode.WaitVariancePercentage;
-        public OppositeTapLengthMode Mode
+        private CounterTapLengthMode mode = CounterTapLengthMode.WaitVariancePercentage;
+        public CounterTapLengthMode Mode
         {
             get => mode;
             set => mode = value;
@@ -132,7 +132,7 @@ namespace DS4MapperTest.StickActions
         /// </summary>
         public (int Minimum, int Maximum) GetEffectiveRange()
         {
-            if (mode == OppositeTapLengthMode.Fixed)
+            if (mode == CounterTapLengthMode.Fixed)
             {
                 return (fixedMs, fixedMs);
             }

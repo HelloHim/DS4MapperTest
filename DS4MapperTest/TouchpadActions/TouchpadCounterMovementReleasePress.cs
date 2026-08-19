@@ -12,7 +12,7 @@ namespace DS4MapperTest.TouchpadActions
         {
             Idle,
             Tracking,
-            OppositeTapActive,
+            CounterTapActive,
         }
 
         public const int CS2_TAP_LENGTH_MINIMUM_MS = CounterMovementReleasePressProcessor.CS2_TAP_LENGTH_MINIMUM_MS;
@@ -60,33 +60,33 @@ namespace DS4MapperTest.TouchpadActions
         // this one shared object so it exists in exactly one place; CounterMovementReleasePressProcessor
         // composes the same type rather than duplicating any of it. See its class doc for
         // why synchronisation is never done inside a raw property setter.
-        private readonly OppositeTapLengthTiming tapLengthTiming = new OppositeTapLengthTiming();
+        private readonly CounterTapLengthTiming tapLengthTiming = new CounterTapLengthTiming();
 
-        public OppositeTapLengthMode OppositeTapLengthMode
+        public CounterTapLengthMode CounterTapLengthMode
         {
             get => tapLengthTiming.Mode;
             set => tapLengthTiming.Mode = value;
         }
 
-        public int OppositeTapLengthMs
+        public int CounterTapLengthMs
         {
             get => tapLengthTiming.FixedMs;
             set => tapLengthTiming.FixedMs = value;
         }
 
-        public int OppositeTapLengthVariancePercent
+        public int CounterTapLengthVariancePercent
         {
             get => tapLengthTiming.VariancePercent;
             set => tapLengthTiming.VariancePercent = value;
         }
 
-        public int OppositeTapLengthMinimumMs
+        public int CounterTapLengthMinimumMs
         {
             get => tapLengthTiming.MinimumMs;
             set => tapLengthTiming.MinimumMs = value;
         }
 
-        public int OppositeTapLengthMaximumMs
+        public int CounterTapLengthMaximumMs
         {
             get => tapLengthTiming.MaximumMs;
             set => tapLengthTiming.MaximumMs = value;
@@ -94,7 +94,7 @@ namespace DS4MapperTest.TouchpadActions
 
         /// <summary>
         /// User-edit entry point for Fixed mode / Wait Variance Percentage mode. See
-        /// OppositeTapLengthTiming.ApplyFixedAndPercentage. Only ever called from a
+        /// CounterTapLengthTiming.ApplyFixedAndPercentage. Only ever called from a
         /// ViewModel edit, CS2 preset application or profile migration - never from the
         /// per-report runtime path.
         /// </summary>
@@ -102,7 +102,7 @@ namespace DS4MapperTest.TouchpadActions
 
         /// <summary>
         /// User-edit entry point for Minimum and Maximum mode. See
-        /// OppositeTapLengthTiming.ApplyMinimumAndMaximum. Only ever called from a
+        /// CounterTapLengthTiming.ApplyMinimumAndMaximum. Only ever called from a
         /// ViewModel edit or profile migration - never from the per-report runtime path.
         /// </summary>
         public void ApplyMinimumAndMaximum(int minimumMs, int maximumMs)
@@ -116,16 +116,16 @@ namespace DS4MapperTest.TouchpadActions
         /// This is the single, central place mode-aware timing logic lives: the state
         /// machine below must only ever consult this, never branch on the mode itself.
         /// </summary>
-        public (int Minimum, int Maximum) GetEffectiveOppositeTapLengthRange() => tapLengthTiming.GetEffectiveRange();
+        public (int Minimum, int Maximum) GetEffectiveCounterTapLengthRange() => tapLengthTiming.GetEffectiveRange();
 
         public int ReleasePressDurationMs
         {
-            get => OppositeTapLengthMaximumMs;
+            get => CounterTapLengthMaximumMs;
             set
             {
                 ApplyMinimumAndMaximum(value, value);
-                OppositeTapStartDelayMinimumMs = 0;
-                OppositeTapStartDelayMaximumMs = 0;
+                CounterTapStartDelayMinimumMs = 0;
+                CounterTapStartDelayMaximumMs = 0;
                 TapLengthPreset = CounterMovementTapLengthPreset.Custom;
                 NormalizeRanges();
             }
@@ -135,33 +135,33 @@ namespace DS4MapperTest.TouchpadActions
         // Minimum, Maximum, the percentage/best-fit maths) lives in this one shared object,
         // mirroring tapLengthTiming above; CounterMovementReleasePressProcessor composes the
         // same type rather than duplicating any of it.
-        private readonly OppositeTapStartDelayTiming startDelayTiming = new OppositeTapStartDelayTiming();
+        private readonly CounterTapStartDelayTiming startDelayTiming = new CounterTapStartDelayTiming();
 
-        public OppositeTapStartDelayMode OppositeTapStartDelayMode
+        public CounterTapStartDelayMode CounterTapStartDelayMode
         {
             get => startDelayTiming.Mode;
             set => startDelayTiming.Mode = value;
         }
 
-        public int OppositeTapStartDelayMs
+        public int CounterTapStartDelayMs
         {
             get => startDelayTiming.FixedMs;
             set => startDelayTiming.FixedMs = value;
         }
 
-        public int OppositeTapStartDelayVariancePercent
+        public int CounterTapStartDelayVariancePercent
         {
             get => startDelayTiming.VariancePercent;
             set => startDelayTiming.VariancePercent = value;
         }
 
-        public int OppositeTapStartDelayMinimumMs
+        public int CounterTapStartDelayMinimumMs
         {
             get => startDelayTiming.MinimumMs;
             set => startDelayTiming.MinimumMs = value;
         }
 
-        public int OppositeTapStartDelayMaximumMs
+        public int CounterTapStartDelayMaximumMs
         {
             get => startDelayTiming.MaximumMs;
             set => startDelayTiming.MaximumMs = value;
@@ -169,14 +169,14 @@ namespace DS4MapperTest.TouchpadActions
 
         /// <summary>
         /// User-edit entry point for Fixed mode / Wait Variance Percentage mode for the start
-        /// delay. See OppositeTapStartDelayTiming.ApplyFixedAndPercentage. Only ever called
+        /// delay. See CounterTapStartDelayTiming.ApplyFixedAndPercentage. Only ever called
         /// from a ViewModel edit or profile migration - never from the per-report runtime path.
         /// </summary>
         public void ApplyStartDelayFixedAndPercentage(int fixedMs, int percent) => startDelayTiming.ApplyFixedAndPercentage(fixedMs, percent);
 
         /// <summary>
         /// User-edit entry point for Minimum and Maximum mode for the start delay. See
-        /// OppositeTapStartDelayTiming.ApplyMinimumAndMaximum. Only ever called from a
+        /// CounterTapStartDelayTiming.ApplyMinimumAndMaximum. Only ever called from a
         /// ViewModel edit or profile migration - never from the per-report runtime path.
         /// </summary>
         public void ApplyStartDelayMinimumAndMaximum(int minimumMs, int maximumMs)
@@ -187,10 +187,10 @@ namespace DS4MapperTest.TouchpadActions
 
         /// <summary>
         /// Returns the runtime effective Minimum/Maximum for the currently selected start
-        /// delay mode. See GetEffectiveOppositeTapLengthRange's class doc: the state machine
+        /// delay mode. See GetEffectiveCounterTapLengthRange's class doc: the state machine
         /// below must only ever consult this, never branch on the mode itself.
         /// </summary>
-        public (int Minimum, int Maximum) GetEffectiveOppositeTapStartDelayRange() => startDelayTiming.GetEffectiveRange();
+        public (int Minimum, int Maximum) GetEffectiveCounterTapStartDelayRange() => startDelayTiming.GetEffectiveRange();
 
         private int minimumHoldMs = DigitalReleasePressPulse.DEFAULT_MINIMUM_HOLD_MS;
         public int MinimumHoldMs
@@ -228,24 +228,24 @@ namespace DS4MapperTest.TouchpadActions
 
         public void NormalizeRanges()
         {
-            if (OppositeTapLengthMinimumMs > OppositeTapLengthMaximumMs)
+            if (CounterTapLengthMinimumMs > CounterTapLengthMaximumMs)
             {
-                OppositeTapLengthMaximumMs = OppositeTapLengthMinimumMs;
+                CounterTapLengthMaximumMs = CounterTapLengthMinimumMs;
             }
 
-            if (OppositeTapStartDelayMinimumMs > OppositeTapStartDelayMaximumMs)
+            if (CounterTapStartDelayMinimumMs > CounterTapStartDelayMaximumMs)
             {
-                OppositeTapStartDelayMaximumMs = OppositeTapStartDelayMinimumMs;
+                CounterTapStartDelayMaximumMs = CounterTapStartDelayMinimumMs;
             }
 
-            if (OppositeTapStartDelayMaximumMs > OppositeTapLengthMinimumMs)
+            if (CounterTapStartDelayMaximumMs > CounterTapLengthMinimumMs)
             {
-                OppositeTapStartDelayMaximumMs = OppositeTapLengthMinimumMs;
+                CounterTapStartDelayMaximumMs = CounterTapLengthMinimumMs;
             }
 
-            if (OppositeTapStartDelayMinimumMs > OppositeTapStartDelayMaximumMs)
+            if (CounterTapStartDelayMinimumMs > CounterTapStartDelayMaximumMs)
             {
-                OppositeTapStartDelayMinimumMs = OppositeTapStartDelayMaximumMs;
+                CounterTapStartDelayMinimumMs = CounterTapStartDelayMaximumMs;
             }
         }
 
@@ -299,7 +299,7 @@ namespace DS4MapperTest.TouchpadActions
                 activeComponents = rawMask;
                 Advance(dt);
                 state = pulseOwnedComponents != 0 || pendingOppositeComponents != 0 ?
-                    PressState.OppositeTapActive : PressState.Tracking;
+                    PressState.CounterTapActive : PressState.Tracking;
                 return rawCurrentDir;
             }
 
@@ -317,9 +317,9 @@ namespace DS4MapperTest.TouchpadActions
 
             if (pulseOwnedComponents != 0 || pendingOppositeComponents != 0)
             {
-                state = PressState.OppositeTapActive;
+                state = PressState.CounterTapActive;
             }
-            else if (state != PressState.OppositeTapActive)
+            else if (state != PressState.CounterTapActive)
             {
                 state = PressState.Idle;
             }
@@ -381,22 +381,22 @@ namespace DS4MapperTest.TouchpadActions
             double elapsedMs = GetReleasePressElapsedMs();
             if (pendingOppositeComponents != 0 && elapsedMs >= selectedStartDelayMs)
             {
-                BeginOppositeTapOrSkip();
+                BeginCounterTapOrSkip();
 
                 if (pulseOwnedComponents != 0 && GetReleasePressElapsedMs() >= selectedTotalTapWindowMs)
                 {
-                    EndOppositeTap();
+                    EndCounterTap();
                 }
             }
 
             if (pulseOwnedComponents != 0 && elapsedMs >= selectedTotalTapWindowMs)
             {
-                EndOppositeTap();
+                EndCounterTap();
             }
 
             if (pulseOwnedComponents != 0 || pendingOppositeComponents != 0)
             {
-                state = PressState.OppositeTapActive;
+                state = PressState.CounterTapActive;
             }
             else
             {
@@ -484,27 +484,27 @@ namespace DS4MapperTest.TouchpadActions
             pulseOwnedComponents = 0;
 
             NormalizeRanges();
-            if (OppositeTapLengthMode == OppositeTapLengthMode.Fixed)
+            if (CounterTapLengthMode == CounterTapLengthMode.Fixed)
             {
                 // Fixed mode is deterministic: every qualifying activation uses exactly the
                 // fixed duration, so the random provider is never consulted for it at all.
-                selectedTotalTapWindowMs = OppositeTapLengthMs;
+                selectedTotalTapWindowMs = CounterTapLengthMs;
             }
             else
             {
-                (int effectiveMinimumMs, int effectiveMaximumMs) = GetEffectiveOppositeTapLengthRange();
+                (int effectiveMinimumMs, int effectiveMaximumMs) = GetEffectiveCounterTapLengthRange();
                 selectedTotalTapWindowMs = randomProvider.NextInclusive(effectiveMinimumMs, effectiveMaximumMs);
             }
 
-            if (OppositeTapStartDelayMode == OppositeTapStartDelayMode.Fixed)
+            if (CounterTapStartDelayMode == CounterTapStartDelayMode.Fixed)
             {
                 // Fixed mode is deterministic: every qualifying activation uses exactly the
                 // fixed delay, so the random provider is never consulted for it at all.
-                selectedStartDelayMs = OppositeTapStartDelayMs;
+                selectedStartDelayMs = CounterTapStartDelayMs;
             }
             else
             {
-                (int effectiveStartDelayMinimumMs, int effectiveStartDelayMaximumMs) = GetEffectiveOppositeTapStartDelayRange();
+                (int effectiveStartDelayMinimumMs, int effectiveStartDelayMaximumMs) = GetEffectiveCounterTapStartDelayRange();
                 selectedStartDelayMs = randomProvider.NextInclusive(effectiveStartDelayMinimumMs, effectiveStartDelayMaximumMs);
             }
             actualOppositeHoldMs = Math.Max(0, selectedTotalTapWindowMs - selectedStartDelayMs);
@@ -514,15 +514,15 @@ namespace DS4MapperTest.TouchpadActions
 
             if (selectedStartDelayMs <= 0)
             {
-                BeginOppositeTapOrSkip();
+                BeginCounterTapOrSkip();
             }
             else
             {
-                state = PressState.OppositeTapActive;
+                state = PressState.CounterTapActive;
             }
         }
 
-        private void BeginOppositeTapOrSkip()
+        private void BeginCounterTapOrSkip()
         {
             if (actualOppositeHoldMs <= 0)
             {
@@ -534,10 +534,10 @@ namespace DS4MapperTest.TouchpadActions
 
             pulseOwnedComponents = pendingOppositeComponents;
             pendingOppositeComponents = 0;
-            state = PressState.OppositeTapActive;
+            state = PressState.CounterTapActive;
         }
 
-        private void EndOppositeTap()
+        private void EndCounterTap()
         {
             explicitReleaseComponents |= pulseOwnedComponents;
             pulseOwnedComponents = 0;

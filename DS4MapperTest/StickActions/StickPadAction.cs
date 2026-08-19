@@ -48,16 +48,16 @@ namespace DS4MapperTest.StickActions
             public const string COUNTER_MOVEMENT_ENABLED = "CounterMovementReleasePressEnabled";
             public const string COUNTER_MOVEMENT_USE_ARROW_KEYS = "UseArrowKeysForCounterMovementPresses";
             public const string COUNTER_MOVEMENT_TAP_LENGTH_PRESET = "CounterMovementTapLengthPreset";
-            public const string COUNTER_MOVEMENT_TAP_LENGTH_MODE = "OppositeTapLengthMode";
-            public const string COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS = "OppositeTapLengthMs";
-            public const string COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT = "OppositeTapLengthVariancePercent";
-            public const string COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS = "OppositeTapLengthMinimumMs";
-            public const string COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS = "OppositeTapLengthMaximumMs";
-            public const string COUNTER_MOVEMENT_START_DELAY_MODE = "OppositeTapStartDelayMode";
-            public const string COUNTER_MOVEMENT_START_DELAY_FIXED_MS = "OppositeTapStartDelayMs";
-            public const string COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT = "OppositeTapStartDelayVariancePercent";
-            public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "OppositeTapStartDelayMinimumMs";
-            public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "OppositeTapStartDelayMaximumMs";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_MODE = "CounterTapLengthMode";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS = "CounterTapLengthMs";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT = "CounterTapLengthVariancePercent";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS = "CounterTapLengthMinimumMs";
+            public const string COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS = "CounterTapLengthMaximumMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_MODE = "CounterTapStartDelayMode";
+            public const string COUNTER_MOVEMENT_START_DELAY_FIXED_MS = "CounterTapStartDelayMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT = "CounterTapStartDelayVariancePercent";
+            public const string COUNTER_MOVEMENT_START_DELAY_MIN_MS = "CounterTapStartDelayMinimumMs";
+            public const string COUNTER_MOVEMENT_START_DELAY_MAX_MS = "CounterTapStartDelayMaximumMs";
             // Kept under the counter-movement namespace so the serialised setting matches
             // the current UI label.
             public const string COUNTER_MOVEMENT_MIN_HOLD_MS = "CounterMovementMinimumHoldMs";
@@ -272,10 +272,10 @@ namespace DS4MapperTest.StickActions
                 counterMovementReleasePress.Enabled = parentAction.counterMovementReleasePress.Enabled;
                 counterMovementReleasePress.UseArrowKeysForCounterMovementPresses = parentAction.counterMovementReleasePress.UseArrowKeysForCounterMovementPresses;
                 counterMovementReleasePress.TapLengthPreset = parentAction.counterMovementReleasePress.TapLengthPreset;
-                counterMovementReleasePress.OppositeTapLengthMinimumMs = parentAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
-                counterMovementReleasePress.OppositeTapLengthMaximumMs = parentAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
-                counterMovementReleasePress.OppositeTapStartDelayMinimumMs = parentAction.counterMovementReleasePress.OppositeTapStartDelayMinimumMs;
-                counterMovementReleasePress.OppositeTapStartDelayMaximumMs = parentAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
+                counterMovementReleasePress.CounterTapLengthMinimumMs = parentAction.counterMovementReleasePress.CounterTapLengthMinimumMs;
+                counterMovementReleasePress.CounterTapLengthMaximumMs = parentAction.counterMovementReleasePress.CounterTapLengthMaximumMs;
+                counterMovementReleasePress.CounterTapStartDelayMinimumMs = parentAction.counterMovementReleasePress.CounterTapStartDelayMinimumMs;
+                counterMovementReleasePress.CounterTapStartDelayMaximumMs = parentAction.counterMovementReleasePress.CounterTapStartDelayMaximumMs;
                 counterMovementReleasePress.MinimumHoldMs = parentAction.counterMovementReleasePress.MinimumHoldMs;
                 counterMovementReleasePress.ArmingThreshold = parentAction.counterMovementReleasePress.ArmingThreshold;
                 //usedFuncList = usedEventButtonsList;
@@ -1645,34 +1645,34 @@ namespace DS4MapperTest.StickActions
                             counterMovementReleasePress.TapLengthPreset = tempPadAction.counterMovementReleasePress.TapLengthPreset;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MODE:
-                            counterMovementReleasePress.OppositeTapLengthMode = tempPadAction.counterMovementReleasePress.OppositeTapLengthMode;
+                            counterMovementReleasePress.CounterTapLengthMode = tempPadAction.counterMovementReleasePress.CounterTapLengthMode;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_FIXED_MS:
-                            counterMovementReleasePress.OppositeTapLengthMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMs;
+                            counterMovementReleasePress.CounterTapLengthMs = tempPadAction.counterMovementReleasePress.CounterTapLengthMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_VARIANCE_PERCENT:
-                            counterMovementReleasePress.OppositeTapLengthVariancePercent = tempPadAction.counterMovementReleasePress.OppositeTapLengthVariancePercent;
+                            counterMovementReleasePress.CounterTapLengthVariancePercent = tempPadAction.counterMovementReleasePress.CounterTapLengthVariancePercent;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS:
-                            counterMovementReleasePress.OppositeTapLengthMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
+                            counterMovementReleasePress.CounterTapLengthMinimumMs = tempPadAction.counterMovementReleasePress.CounterTapLengthMinimumMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
-                            counterMovementReleasePress.OppositeTapLengthMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
+                            counterMovementReleasePress.CounterTapLengthMaximumMs = tempPadAction.counterMovementReleasePress.CounterTapLengthMaximumMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE:
-                            counterMovementReleasePress.OppositeTapStartDelayMode = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMode;
+                            counterMovementReleasePress.CounterTapStartDelayMode = tempPadAction.counterMovementReleasePress.CounterTapStartDelayMode;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS:
-                            counterMovementReleasePress.OppositeTapStartDelayMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMs;
+                            counterMovementReleasePress.CounterTapStartDelayMs = tempPadAction.counterMovementReleasePress.CounterTapStartDelayMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT:
-                            counterMovementReleasePress.OppositeTapStartDelayVariancePercent = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayVariancePercent;
+                            counterMovementReleasePress.CounterTapStartDelayVariancePercent = tempPadAction.counterMovementReleasePress.CounterTapStartDelayVariancePercent;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
-                            counterMovementReleasePress.OppositeTapStartDelayMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMinimumMs;
+                            counterMovementReleasePress.CounterTapStartDelayMinimumMs = tempPadAction.counterMovementReleasePress.CounterTapStartDelayMinimumMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
-                            counterMovementReleasePress.OppositeTapStartDelayMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
+                            counterMovementReleasePress.CounterTapStartDelayMaximumMs = tempPadAction.counterMovementReleasePress.CounterTapStartDelayMaximumMs;
                             break;
                         case PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS:
                             counterMovementReleasePress.MinimumHoldMs = tempPadAction.counterMovementReleasePress.MinimumHoldMs;
@@ -1845,25 +1845,25 @@ namespace DS4MapperTest.StickActions
                     counterMovementReleasePress.TapLengthPreset = tempPadAction.counterMovementReleasePress.TapLengthPreset;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MIN_MS:
-                    counterMovementReleasePress.OppositeTapLengthMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMinimumMs;
+                    counterMovementReleasePress.CounterTapLengthMinimumMs = tempPadAction.counterMovementReleasePress.CounterTapLengthMinimumMs;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_TAP_LENGTH_MAX_MS:
-                    counterMovementReleasePress.OppositeTapLengthMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapLengthMaximumMs;
+                    counterMovementReleasePress.CounterTapLengthMaximumMs = tempPadAction.counterMovementReleasePress.CounterTapLengthMaximumMs;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE:
-                    counterMovementReleasePress.OppositeTapStartDelayMode = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMode;
+                    counterMovementReleasePress.CounterTapStartDelayMode = tempPadAction.counterMovementReleasePress.CounterTapStartDelayMode;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS:
-                    counterMovementReleasePress.OppositeTapStartDelayMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMs;
+                    counterMovementReleasePress.CounterTapStartDelayMs = tempPadAction.counterMovementReleasePress.CounterTapStartDelayMs;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT:
-                    counterMovementReleasePress.OppositeTapStartDelayVariancePercent = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayVariancePercent;
+                    counterMovementReleasePress.CounterTapStartDelayVariancePercent = tempPadAction.counterMovementReleasePress.CounterTapStartDelayVariancePercent;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS:
-                    counterMovementReleasePress.OppositeTapStartDelayMinimumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMinimumMs;
+                    counterMovementReleasePress.CounterTapStartDelayMinimumMs = tempPadAction.counterMovementReleasePress.CounterTapStartDelayMinimumMs;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS:
-                    counterMovementReleasePress.OppositeTapStartDelayMaximumMs = tempPadAction.counterMovementReleasePress.OppositeTapStartDelayMaximumMs;
+                    counterMovementReleasePress.CounterTapStartDelayMaximumMs = tempPadAction.counterMovementReleasePress.CounterTapStartDelayMaximumMs;
                     break;
                 case PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS:
                     counterMovementReleasePress.MinimumHoldMs = tempPadAction.counterMovementReleasePress.MinimumHoldMs;

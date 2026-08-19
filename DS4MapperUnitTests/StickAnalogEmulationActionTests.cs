@@ -71,10 +71,10 @@ namespace DS4MapperUnitTests
             StickAnalogEmulationAction action = new StickAnalogEmulationAction();
 
             Assert.IsFalse(action.CounterMovementReleasePress.Enabled);
-            Assert.AreEqual(78, action.CounterMovementReleasePress.OppositeTapLengthMinimumMs);
-            Assert.AreEqual(90, action.CounterMovementReleasePress.OppositeTapLengthMaximumMs);
-            Assert.AreEqual(0, action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs);
-            Assert.AreEqual(0, action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs);
+            Assert.AreEqual(78, action.CounterMovementReleasePress.CounterTapLengthMinimumMs);
+            Assert.AreEqual(90, action.CounterMovementReleasePress.CounterTapLengthMaximumMs);
+            Assert.AreEqual(0, action.CounterMovementReleasePress.CounterTapStartDelayMinimumMs);
+            Assert.AreEqual(0, action.CounterMovementReleasePress.CounterTapStartDelayMaximumMs);
             Assert.AreEqual(0, action.CounterMovementReleasePress.MinimumHoldMs);
             Assert.AreEqual(0.0, action.CounterMovementReleasePress.ArmingThreshold);
         }
@@ -366,10 +366,10 @@ namespace DS4MapperUnitTests
         {
             var (mapper, action) = LoadMapper(directionMode: "EightWay");
             action.CounterMovementReleasePress.Enabled = true;
-            action.CounterMovementReleasePress.OppositeTapLengthMinimumMs = 40;
-            action.CounterMovementReleasePress.OppositeTapLengthMaximumMs = 40;
-            action.CounterMovementReleasePress.OppositeTapStartDelayMinimumMs = 0;
-            action.CounterMovementReleasePress.OppositeTapStartDelayMaximumMs = 0;
+            action.CounterMovementReleasePress.CounterTapLengthMinimumMs = 40;
+            action.CounterMovementReleasePress.CounterTapLengthMaximumMs = 40;
+            action.CounterMovementReleasePress.CounterTapStartDelayMinimumMs = 0;
+            action.CounterMovementReleasePress.CounterTapStartDelayMaximumMs = 0;
             action.CounterMovementReleasePress.MinimumHoldMs = 0;
             action.CounterMovementReleasePress.ArmingThreshold = 0.0;
 
@@ -377,7 +377,7 @@ namespace DS4MapperUnitTests
             for (int i = 0; i < 20; i++) HoldAngle(mapper, 0.0); // hold Up (North) at full deflection
             Report(mapper, 0, 0); // sudden release to centre
 
-            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.OppositeTapActive, action.CounterMovementReleasePress.State);
+            Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.CounterTapActive, action.CounterMovementReleasePress.State);
             Assert.IsFalse(KeyDown(VK_W), "Original Up key must be released.");
             Assert.IsTrue(KeyDown(VK_S), "Opposite Down key must pulse due to Counter Movement Release Press.");
         }

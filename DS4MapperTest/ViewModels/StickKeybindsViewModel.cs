@@ -277,10 +277,10 @@ namespace DS4MapperTest.ViewModels
 
             dst.Enabled = src.Enabled;
             dst.TapLengthPreset = src.TapLengthPreset;
-            dst.OppositeTapLengthMinimumMs = src.OppositeTapLengthMinimumMs;
-            dst.OppositeTapLengthMaximumMs = src.OppositeTapLengthMaximumMs;
-            dst.OppositeTapStartDelayMinimumMs = src.OppositeTapStartDelayMinimumMs;
-            dst.OppositeTapStartDelayMaximumMs = src.OppositeTapStartDelayMaximumMs;
+            dst.CounterTapLengthMinimumMs = src.CounterTapLengthMinimumMs;
+            dst.CounterTapLengthMaximumMs = src.CounterTapLengthMaximumMs;
+            dst.CounterTapStartDelayMinimumMs = src.CounterTapStartDelayMinimumMs;
+            dst.CounterTapStartDelayMaximumMs = src.CounterTapStartDelayMaximumMs;
             dst.MinimumHoldMs = src.MinimumHoldMs;
             dst.ArmingThreshold = src.ArmingThreshold;
         }
