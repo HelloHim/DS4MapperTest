@@ -58,6 +58,22 @@ namespace DS4MapperTest.Universal.Mapping
             }
         }
 
+        // Reading or editing Mapper.ActionProfile (the classic-editor projection of
+        // this session's live profile) has to take the same lock ProcessCurrentState
+        // holds while it runs Mapper.ProcessSnapshot, otherwise a save running on a
+        // background thread can serialize the action graph while the controller's own
+        // polling loop is still mutating it, which throws intermittently.
+        public void RunExclusive(Action action)
+        {
+            if (action == null) return;
+
+            lock (syncRoot)
+            {
+                if (disposed) return;
+                action();
+            }
+        }
+
         public void Dispose()
         {
             lock (syncRoot)

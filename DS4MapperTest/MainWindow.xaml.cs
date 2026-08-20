@@ -2821,10 +2821,32 @@ namespace DS4MapperTest
         private UniversalProfileSaveUiUpdate SaveUniversalProfileFromClassicEditor(ProfileEditorTestViewModel activeVM, UniversalMapper universalMapper)
         {
             UniversalProfile latest = universalProfileStore.LoadFromPath(activeVM.ProfileEnt.ProfilePath);
-            UniversalProfile updated = UniversalClassicProfileProjector.BuildUpdatedProfile(
-                universalMapper,
-                activeVM.DeviceMapper.ActionProfile,
-                latest);
+
+            // UniversalMapper.BaseReader is always null, so Mapper.ProcessMappingChangeAction
+            // (the halt used by the classic TestSave path) never actually pauses anything here.
+            // The real input loop for a live session runs under UniversalMapperSession.syncRoot
+            // (see ProcessCurrentState), so the projector's read of the still-live ActionProfile
+            // has to take that same lock or it races the controller's own polling thread.
+            UniversalProfile updated = null;
+            UniversalMapperSession session = currentDeviceItem?.UniversalSession;
+            if (session != null)
+            {
+                session.RunExclusive(() =>
+                {
+                    updated = UniversalClassicProfileProjector.BuildUpdatedProfile(
+                        universalMapper,
+                        activeVM.DeviceMapper.ActionProfile,
+                        latest);
+                });
+            }
+            else
+            {
+                updated = UniversalClassicProfileProjector.BuildUpdatedProfile(
+                    universalMapper,
+                    activeVM.DeviceMapper.ActionProfile,
+                    latest);
+            }
+
             string oldPath = activeVM.ProfileEnt.ProfilePath;
             UniversalProfileEditorSaveCoordinator coordinator = new UniversalProfileEditorSaveCoordinator(
                 universalProfileStore,
