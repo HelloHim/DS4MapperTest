@@ -23,6 +23,14 @@ namespace DS4MapperTest.ViewModels
 
         private bool _modelReady = false;
         private bool _applyingPreset = false;
+        // Guards ActionProfile_CalibValuesChanged against reacting to this instance's
+        // own in-flight writes: SyncCalibToProfile/CalculateRwcFromCounts write CalibRwc,
+        // CalibInGameSens and CalibCounts one at a time, so between those writes the
+        // profile is briefly inconsistent. Without this guard, the CalibRwcChanged fired
+        // by the first write re-enters ActionProfile_CalibValuesChanged, which re-derives
+        // fullTurnCounts from the not-yet-updated CalibCounts and clobbers the edit the
+        // user just made before it reaches the profile.
+        private bool _syncingProfile = false;
 
         private Mapper mapper;
         public Mapper Mapper => mapper;
@@ -36,7 +44,9 @@ namespace DS4MapperTest.ViewModels
                 if (mapper.ActionProfile.CalibMode == value) return;
                 mapper.ActionProfile.CalibMode = value;
                 RaiseCalibModePropertyChanges();
-                SyncCalibToProfile();
+                _syncingProfile = true;
+                try { SyncCalibToProfile(); }
+                finally { _syncingProfile = false; }
             }
         }
 
@@ -85,9 +95,14 @@ namespace DS4MapperTest.ViewModels
                 if (!countsChanged) return;
                 if (IsCountsMode)
                 {
-                    CalculateRwcFromCounts();
-                    SyncCalibToProfile();
-                    UpdatePresetFromCurrentRwc();
+                    _syncingProfile = true;
+                    try
+                    {
+                        CalculateRwcFromCounts();
+                        SyncCalibToProfile();
+                        UpdatePresetFromCurrentRwc();
+                    }
+                    finally { _syncingProfile = false; }
                 }
             }
         }
@@ -103,8 +118,13 @@ namespace DS4MapperTest.ViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
-                SyncCalibToProfile();
-                UpdatePresetFromCurrentRwc();
+                _syncingProfile = true;
+                try
+                {
+                    SyncCalibToProfile();
+                    UpdatePresetFromCurrentRwc();
+                }
+                finally { _syncingProfile = false; }
             }
         }
 
@@ -116,11 +136,16 @@ namespace DS4MapperTest.ViewModels
                 if (!_modelReady) return;
                 if (mapper.ActionProfile.CalibInGameSens == value) return;
                 mapper.ActionProfile.CalibInGameSens = value;
-                if (IsCountsMode) CalculateRwcFromCounts();
-                else CalculateCountsFromRwc();
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
-                SyncCalibToProfile();
-                UpdatePresetFromCurrentRwc();
+                _syncingProfile = true;
+                try
+                {
+                    if (IsCountsMode) CalculateRwcFromCounts();
+                    else CalculateCountsFromRwc();
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+                    SyncCalibToProfile();
+                    UpdatePresetFromCurrentRwc();
+                }
+                finally { _syncingProfile = false; }
             }
         }
 
@@ -304,8 +329,13 @@ namespace DS4MapperTest.ViewModels
         // Another calibration panel (Gyro/Stick Flick Stick/Touchpad Flick Stick all
         // share the same profile-level RWC/In-Game Sens/Counts) changed a value.
         // Refresh this instance's own cached counts and bound properties to match.
+        // Skipped while this instance is mid-write to the profile itself (_syncingProfile):
+        // its own multi-field writes leave the profile briefly inconsistent between steps,
+        // and re-deriving fullTurnCounts from that in-between state would clobber the edit
+        // before it finishes reaching the profile.
         private void ActionProfile_CalibValuesChanged(object sender, EventArgs e)
         {
+            if (_syncingProfile) return;
             fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0
                 ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
