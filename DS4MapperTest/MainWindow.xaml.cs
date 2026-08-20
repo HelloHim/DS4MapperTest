@@ -1743,13 +1743,13 @@ namespace DS4MapperTest
             HideNewProfilePanel();
         }
 
-        private void CreateNewProfileBtn_Click(object sender, RoutedEventArgs e)
+        private async void CreateNewProfileBtn_Click(object sender, RoutedEventArgs e)
         {
             if (currentDeviceItem == null || overlayNewProfileVM == null) return;
 
             if (currentDeviceItem.IsUniversal)
             {
-                CreateUniversalProfileFromClassicDialog();
+                await CreateUniversalProfileFromClassicDialogAsync();
                 return;
             }
 
@@ -1770,15 +1770,18 @@ namespace DS4MapperTest
             if (newEnt != null)
             {
                 int newIndex = profileList.IndexOf(newEnt);
-                _ = SwitchProfileAsync(currentDeviceItem, newIndex);
+                // Await the switch (rather than fire-and-forget it) so the
+                // browser refresh below runs after the new profile has
+                // actually landed in the list, instead of racing it and
+                // redrawing the overlay from a stale, pre-creation snapshot
+                // that then never gets rebuilt until the overlay is reopened.
+                await SwitchProfileAsync(currentDeviceItem, newIndex);
             }
-            else
-            {
-                RefreshProfileList();
-            }
+
+            RefreshProfileList();
         }
 
-        private void CreateUniversalProfileFromClassicDialog()
+        private async Task CreateUniversalProfileFromClassicDialogAsync()
         {
             string profileName = overlayNewProfileVM.ProfileName?.Trim();
             if (string.IsNullOrWhiteSpace(profileName))
@@ -1820,13 +1823,16 @@ namespace DS4MapperTest
                 if (newEnt != null)
                 {
                     int newIndex = currentDeviceItem.DevProfileList.IndexOf(newEnt);
-                    _ = SwitchProfileAsync(currentDeviceItem, newIndex);
+                    // Await the switch (rather than fire-and-forget it) so the
+                    // browser refresh below runs after the new profile has
+                    // actually landed in the list, instead of racing it and
+                    // redrawing the overlay from a stale, pre-creation snapshot
+                    // that then never gets rebuilt until the overlay is reopened.
+                    await SwitchProfileAsync(currentDeviceItem, newIndex);
                 }
-                else
-                {
-                    RefreshProfileCombo();
-                    RefreshProfileList();
-                }
+
+                RefreshProfileCombo();
+                RefreshProfileList();
             }
             catch (Exception ex)
             {
