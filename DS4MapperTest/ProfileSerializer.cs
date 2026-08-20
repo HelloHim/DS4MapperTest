@@ -179,9 +179,15 @@ namespace DS4MapperTest
             get => tempProfile.CalibMode;
             set => tempProfile.CalibMode = value;
         }
+        // Only CountsMode needs no explicit entry: it is the default a freshly
+        // constructed Profile already starts in, so an absent property still
+        // deserializes to the right value. Writing the condition the other way
+        // round meant RwcMode - the value a user actually had to choose - was
+        // the one left out of the file, so it silently reverted to CountsMode
+        // on every reload.
         public bool ShouldSerializeCalibMode()
         {
-            return tempProfile.CalibMode == DS4MapperTest.CalibMode.CountsMode;
+            return tempProfile.CalibMode != DS4MapperTest.CalibMode.CountsMode;
         }
 
         private bool calibPresetExplicitlySet = false;

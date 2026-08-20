@@ -30,7 +30,6 @@ namespace DS4MapperUnitTests
   ""CalibRwc"": 14.2857,
   ""CalibInGameSens"": 1.0,
   ""CalibCounts"": 5142.852,
-  ""CalibMode"": ""CountsMode"",
   ""CalibPreset"": ""VALORANT"",
   ""LightbarSettings"": {
     ""Mode"": ""SolidColor"",
@@ -678,7 +677,6 @@ namespace DS4MapperUnitTests
   ""CalibRwc"": 14.2857,
   ""CalibInGameSens"": 1.0,
   ""CalibCounts"": 5142.852,
-  ""CalibMode"": ""CountsMode"",
   ""CalibPreset"": ""VALORANT"",
   ""LightbarSettings"": {
     ""Mode"": ""SolidColor"",
