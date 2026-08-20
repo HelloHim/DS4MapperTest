@@ -64,6 +64,11 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        // The value NOT currently editable as the mode's primary field, shown
+        // read-only so the user can see both representations without switching modes.
+        public string DerivedLabel => IsCountsMode ? "RWC" : "Counts";
+        public double DerivedValue => IsCountsMode ? RealWorldCalibration : FullTurnCounts;
+
         private double fullTurnCounts = 1800.0;
         public double FullTurnCounts
         {
@@ -76,11 +81,13 @@ namespace DS4MapperTest.ViewModels
                 fullTurnCounts = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
                 if (!countsChanged) return;
                 if (IsCountsMode)
                 {
                     CalculateRwcFromCounts();
                     SyncCalibToProfile();
+                    UpdatePresetFromCurrentRwc();
                 }
             }
         }
@@ -95,7 +102,9 @@ namespace DS4MapperTest.ViewModels
                 mapper.ActionProfile.CalibRwc = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
                 SyncCalibToProfile();
+                UpdatePresetFromCurrentRwc();
             }
         }
 
@@ -107,9 +116,11 @@ namespace DS4MapperTest.ViewModels
                 if (!_modelReady) return;
                 if (mapper.ActionProfile.CalibInGameSens == value) return;
                 mapper.ActionProfile.CalibInGameSens = value;
-                if (IsCountsMode) CalculateCountsFromRwc();
+                if (IsCountsMode) CalculateRwcFromCounts();
+                else CalculateCountsFromRwc();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
                 SyncCalibToProfile();
+                UpdatePresetFromCurrentRwc();
             }
         }
 
@@ -128,8 +139,18 @@ namespace DS4MapperTest.ViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
                 if (next.IsCustom) return;
                 _applyingPreset = true;
-                InGameSens = next.RWC * 360.0 / FullTurnCounts;
-                RealWorldCalibration = next.RWC;
+                if (IsCountsMode)
+                {
+                    // Counts is this mode's fixed master: keep it as-is and let sensitivity
+                    // move to whatever value reproduces the preset's RWC at that Counts.
+                    if (FullTurnCounts > 0.0) InGameSens = next.RWC * 360.0 / FullTurnCounts;
+                }
+                else
+                {
+                    // RWC is this mode's fixed master: move it directly to the preset's value
+                    // and leave sensitivity exactly as the user had it.
+                    RealWorldCalibration = next.RWC;
+                }
                 _applyingPreset = false;
             }
         }
@@ -189,6 +210,7 @@ namespace DS4MapperTest.ViewModels
             if (mapper.ActionProfile.CalibRwc == rwc) return;
             mapper.ActionProfile.CalibRwc = rwc;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
         }
 
         private void CalculateCountsFromRwc()
@@ -200,6 +222,20 @@ namespace DS4MapperTest.ViewModels
             fullTurnCounts = counts;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
+        }
+
+        // Whenever RWC's authoritative value settles (direct edit, derived from Counts, or
+        // derived from a sensitivity change), check whether it now matches a known game
+        // preset within tolerance and reflect that in the preset dropdown; falls back to
+        // Custom when it doesn't. Skipped while a preset is actively being applied, since
+        // that flow already knows exactly which preset it is setting.
+        private void UpdatePresetFromCurrentRwc()
+        {
+            if (_applyingPreset) return;
+            string matchedName = (GameCalibPreset.MatchByRwc(mapper.ActionProfile.CalibRwc) ??
+                GameCalibPreset.Custom).Name;
+            mapper.ActionProfile.CalibPresetName = matchedName;
         }
 
         private void SyncCalibToProfile()
@@ -251,6 +287,8 @@ namespace DS4MapperTest.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCountsMode)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationLabel)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedLabel)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
         }
 
         private void ActionProfile_CalibModeChanged(object sender, EventArgs e)
@@ -274,6 +312,7 @@ namespace DS4MapperTest.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
         }
     }
 }

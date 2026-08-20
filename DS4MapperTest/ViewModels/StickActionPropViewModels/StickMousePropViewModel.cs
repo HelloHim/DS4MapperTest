@@ -19,18 +19,21 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private bool modelReady;
-        private bool applyingPreset;
         private Mapper mapper;
         private StickMouse action;
         private bool usingRealAction;
         private bool verticalScaleIsAbsoluteMode;
-        private double fullTurnCounts = 1800.0;
-        private GameCalibPreset selectedPreset = GameCalibPreset.Custom;
         private List<StickMouseDirectionBindItem> cardinalDirectionItems;
 
         public Mapper Mapper => mapper;
         public StickMouse Action => action;
+
+        // The profile-level angle calibration that converts this action's degree-based
+        // settings into mouse counts. Shared with the Gyro/Touchpad Mouse and Flick
+        // Stick panels, and surfaced here through the same CalibrationModeControl.
+        private GyroCalibrationViewModel calibration;
+        public GyroCalibrationViewModel Calibration =>
+            calibration ??= new GyroCalibrationViewModel(mapper);
 
         public string Name
         {
@@ -432,135 +435,6 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler DeltaMinFactorChanged;
 
-        public CalibMode CalibMode
-        {
-            get => mapper.ActionProfile.CalibMode;
-            set
-            {
-                if (!modelReady) return;
-                if (mapper.ActionProfile.CalibMode == value) return;
-                mapper.ActionProfile.CalibMode = value;
-                RaiseCalibModePropertyChanges();
-                SyncCalibToProfile();
-                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        public bool IsRwcMode
-        {
-            get => CalibMode == DS4MapperTest.CalibMode.RwcMode;
-            set { if (value) CalibMode = DS4MapperTest.CalibMode.RwcMode; }
-        }
-
-        public bool IsCountsMode
-        {
-            get => CalibMode == DS4MapperTest.CalibMode.CountsMode;
-            set { if (value) CalibMode = DS4MapperTest.CalibMode.CountsMode; }
-        }
-
-        public string MasterCalibrationLabel => IsCountsMode ? "Counts" : "RWC";
-
-        public double MasterCalibrationValue
-        {
-            get => IsCountsMode ? FullTurnCounts : RealWorldCalibration;
-            set
-            {
-                if (IsCountsMode) FullTurnCounts = value;
-                else RealWorldCalibration = value;
-            }
-        }
-
-        public double FullTurnCounts
-        {
-            get => fullTurnCounts;
-            set
-            {
-                if (!modelReady) return;
-                if (value == 0.0) return;
-                bool countsChanged = fullTurnCounts != value;
-                fullTurnCounts = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-                if (!countsChanged) return;
-                if (IsCountsMode)
-                {
-                    CalculateRwcFromCounts();
-                    SyncCalibToProfile();
-                    UpdatePresetFromCurrentRwc();
-                }
-            }
-        }
-
-        public double RealWorldCalibration
-        {
-            get => mapper.ActionProfile.CalibRwc;
-            set
-            {
-                if (!modelReady) return;
-                if (mapper.ActionProfile.CalibRwc == value) return;
-                mapper.ActionProfile.CalibRwc = value;
-                if (IsRwcMode) CalculateCountsFromRwc();
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-                SyncCalibToProfile();
-                UpdatePresetFromCurrentRwc();
-            }
-        }
-
-        public double InGameSens
-        {
-            get => mapper.ActionProfile.CalibInGameSens;
-            set
-            {
-                if (!modelReady) return;
-                if (mapper.ActionProfile.CalibInGameSens == value) return;
-                mapper.ActionProfile.CalibInGameSens = value;
-                // Whichever of RWC/Counts is NOT the mode's master is derived and must be
-                // recomputed here; the master itself never moves just because sensitivity did.
-                if (IsCountsMode) CalculateRwcFromCounts();
-                else CalculateCountsFromRwc();
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
-                SyncCalibToProfile();
-                UpdatePresetFromCurrentRwc();
-            }
-        }
-
-        public IReadOnlyList<GameCalibPreset> GamePresets => GameCalibPreset.All;
-
-        public GameCalibPreset SelectedPreset
-        {
-            get => selectedPreset;
-            set
-            {
-                if (!modelReady) return;
-                GameCalibPreset next = value ?? GameCalibPreset.Custom;
-                if (mapper.ActionProfile.CalibPresetName == next.Name) return;
-                selectedPreset = next;
-                mapper.ActionProfile.CalibPresetName = next.Name;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
-                if (next.IsCustom) return;
-                applyingPreset = true;
-                if (IsCountsMode)
-                {
-                    // Counts is this mode's fixed master: keep it as-is and let sensitivity
-                    // move to whatever value reproduces the preset's RWC at that Counts.
-                    if (FullTurnCounts > 0.0) InGameSens = next.RWC * 360.0 / FullTurnCounts;
-                }
-                else
-                {
-                    // RWC is this mode's fixed master: move it directly to the preset's value
-                    // and leave sensitivity exactly as the user had it.
-                    RealWorldCalibration = next.RWC;
-                }
-                applyingPreset = false;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
         public bool HighlightName => action.ParentAction == null ||
             action.ChangedProperties.Contains(StickMouse.PropertyKeyStrings.NAME);
         public event EventHandler HighlightNameChanged;
@@ -653,44 +527,10 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
             DeltaMaxTravelChanged += StickMousePropViewModel_DeltaMaxTravelChanged;
             DeltaEasingDurationChanged += StickMousePropViewModel_DeltaEasingDurationChanged;
             DeltaMinFactorChanged += StickMousePropViewModel_DeltaMinFactorChanged;
-            mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
-            mapper.ActionProfile.CalibRwcChanged += ActionProfile_CalibValuesChanged;
-            mapper.ActionProfile.CalibInGameSensChanged += ActionProfile_CalibValuesChanged;
-            mapper.ActionProfile.CalibCountsChanged += ActionProfile_CalibValuesChanged;
-            mapper.ActionProfile.CalibPresetNameChanged += ActionProfile_CalibPresetNameChanged;
-
-            double savedRwc = mapper.ActionProfile.CalibRwc;
-            double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
-            double savedCounts = fullTurnCounts;
-            System.Windows.Application.Current.Dispatcher.BeginInvoke(
-                System.Windows.Threading.DispatcherPriority.Background,
-                new Action(() =>
-                {
-                    mapper.ActionProfile.CalibRwc = savedRwc;
-                    mapper.ActionProfile.CalibInGameSens = savedInGameSens;
-                    fullTurnCounts = savedCounts;
-                    RaiseCalibrationPropertyChanges();
-                    System.Windows.Application.Current.Dispatcher.BeginInvoke(
-                        System.Windows.Threading.DispatcherPriority.ApplicationIdle,
-                        new Action(() =>
-                        {
-                            mapper.ActionProfile.CalibRwc = savedRwc;
-                            mapper.ActionProfile.CalibInGameSens = savedInGameSens;
-                            fullTurnCounts = savedCounts;
-                            modelReady = true;
-                            selectedPreset = GameCalibPreset.FindByName(
-                                mapper.ActionProfile.CalibPresetName) ??
-                                GameCalibPreset.Custom;
-                            RaiseCalibrationPropertyChanges();
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
-                        }));
-                }));
         }
 
         private void PrepareModel()
         {
-            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0
-                ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
             PrepareDirectionItems();
         }
 
@@ -709,117 +549,6 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScaleIsAbsoluteMode)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalScaleIsMultiplierMode)));
-        }
-
-        private void CalculateRwcFromCounts()
-        {
-            double rwc = fullTurnCounts * InGameSens / 360.0;
-            if (mapper.ActionProfile.CalibRwc == rwc) return;
-            mapper.ActionProfile.CalibRwc = rwc;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
-        }
-
-        private void CalculateCountsFromRwc()
-        {
-            double counts = InGameSens > 0.0
-                ? mapper.ActionProfile.CalibRwc * 360.0 / InGameSens
-                : 0.0;
-            if (fullTurnCounts == counts) return;
-            fullTurnCounts = counts;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-        }
-
-        // Whenever RWC's authoritative value settles (direct edit, derived from Counts, or
-        // derived from a sensitivity change), check whether it now matches a known game
-        // preset within tolerance and reflect that in the preset dropdown; falls back to
-        // Custom when it doesn't. Skipped while a preset is actively being applied, since
-        // that flow already knows exactly which preset it is setting.
-        private void UpdatePresetFromCurrentRwc()
-        {
-            if (applyingPreset) return;
-            string matchedName = (GameCalibPreset.MatchByRwc(mapper.ActionProfile.CalibRwc) ??
-                GameCalibPreset.Custom).Name;
-            mapper.ActionProfile.CalibPresetName = matchedName;
-        }
-
-        private void SyncCalibToProfile()
-        {
-            double inGameSens = mapper.ActionProfile.CalibInGameSens;
-            double rwc = IsCountsMode
-                ? fullTurnCounts * inGameSens / 360.0
-                : mapper.ActionProfile.CalibRwc;
-            double counts = IsCountsMode || inGameSens <= 0.0
-                ? fullTurnCounts
-                : rwc * 360.0 / inGameSens;
-            mapper.ActionProfile.CalibRwc = rwc;
-            mapper.ActionProfile.CalibInGameSens = inGameSens;
-            mapper.ActionProfile.CalibCounts = counts;
-            mapper.ProcessMappingChangeAction(() =>
-            {
-                foreach (var set in mapper.ActionProfile.ActionSets)
-                    foreach (var layer in set.ActionLayers)
-                        foreach (var mapAction in layer.normalActionDict.Values)
-                        {
-                            if (mapAction is GyroMouse gyroMouse)
-                            {
-                                gyroMouse.mouseParams.realWorldCalibration = rwc;
-                                gyroMouse.mouseParams.inGameSens = inGameSens;
-                            }
-                            if (mapAction is ButtonAction ba)
-                                foreach (var func in ba.ActionFuncs)
-                                    foreach (var data in func.OutputActions)
-                                        if (data.OutputType == OutputActionData.ActionType.CameraTurn)
-                                            data.cameraTurnCounts360 = counts;
-                            if (mapAction is StickFlickStick sfs)
-                            {
-                                sfs.RealWorldCalibration = rwc;
-                                sfs.InGameSens = inGameSens;
-                            }
-                            if (mapAction is TouchpadFlickStick tfs)
-                            {
-                                tfs.RealWorldCalibration = rwc;
-                                tfs.InGameSens = inGameSens;
-                            }
-                        }
-            });
-        }
-
-        private void RaiseCalibModePropertyChanges()
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalibMode)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsRwcMode)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCountsMode)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationLabel)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-        }
-
-        private void RaiseCalibrationPropertyChanges()
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-            RaiseCalibModePropertyChanges();
-        }
-
-        private void ActionProfile_CalibModeChanged(object sender, EventArgs e)
-        {
-            RaiseCalibModePropertyChanges();
-        }
-
-        private void ActionProfile_CalibPresetNameChanged(object sender, EventArgs e)
-        {
-            selectedPreset = GameCalibPreset.FindByName(
-                mapper.ActionProfile.CalibPresetName) ?? GameCalibPreset.Custom;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
-        }
-
-        private void ActionProfile_CalibValuesChanged(object sender, EventArgs e)
-        {
-            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0
-                ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
-            RaiseCalibrationPropertyChanges();
         }
 
         private void StickMousePropViewModel_DegreesPerSecondChangedForVerticalDegrees(object sender, EventArgs e)

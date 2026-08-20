@@ -370,6 +370,7 @@ namespace DS4MapperTest.ViewModels
                 CameraTurnCounts360Changed?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnCounts360)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
                 if (IsCountsMode)
                 {
                     SyncCalibFromCameraTurnToProfile();
@@ -393,6 +394,7 @@ namespace DS4MapperTest.ViewModels
                 CameraTurnRWCChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CameraTurnRWC)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
                 if (IsRwcMode)
                 {
                     SyncCalibFromCameraTurnToProfile();
@@ -469,6 +471,7 @@ namespace DS4MapperTest.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCameraTurnPreset)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
             RaiseCalibModePropertyChanges();
             CameraTurnCalculatedRWCChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -533,6 +536,11 @@ namespace DS4MapperTest.ViewModels
             }
         }
 
+        // The value NOT currently editable as the mode's primary field, shown
+        // read-only so the user can see both representations without switching modes.
+        public string DerivedLabel => IsCountsMode ? "RWC" : "Counts";
+        public double DerivedValue => IsCountsMode ? CameraTurnRWC : CameraTurnCounts360;
+
         public IReadOnlyList<GameCalibPreset> GamePresets => CameraTurnGamePresets;
 
         public GameCalibPreset SelectedPreset
@@ -554,6 +562,8 @@ namespace DS4MapperTest.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCountsMode)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationLabel)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedLabel)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
         }
 
         private void ActionProfile_CalibModeChanged(object sender, EventArgs e)

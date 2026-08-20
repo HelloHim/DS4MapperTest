@@ -45,7 +45,12 @@
                           DisplayMemberPath="Name"
                           Width="180"
                           HorizontalAlignment="Left"
+                          Visibility="{Binding IsRwcMode, Converter={StaticResource BoolToVis}}"
                           Style="{StaticResource JsmccComboBoxStyle}"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedPreset.Name}"
+                           Width="180" VerticalAlignment="Center"
+                           Style="{StaticResource JsmccMutedText}"
+                           Visibility="{Binding IsCountsMode, Converter={StaticResource BoolToVis}}"/>
             </Grid>
 
             <Grid Margin="0,6,0,0">
@@ -54,7 +59,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="{Binding MasterCalibrationLabel}" Style="{StaticResource JsmccLabelText}"/>
-                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9" DecimalPlaces="1" Increment="1000"
+                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9999" DecimalPlaces="4" Increment="1000"
+                                  ValueFormat="0.0###"
                                   Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                   Visibility="{Binding IsCountsMode, Converter={StaticResource BoolToVis}}"
                                   Value="{Binding MasterCalibrationValue, UpdateSourceTrigger=PropertyChanged}"/>
@@ -75,6 +81,18 @@
                                   ValueFormat="0.0###"
                                   Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                   Value="{Binding InGameSens, UpdateSourceTrigger=PropertyChanged}"/>
+            </Grid>
+
+            <Grid Margin="0,6,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="170"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding DerivedLabel}" Style="{StaticResource JsmccLabelText}"/>
+                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9999" DecimalPlaces="4"
+                                  ValueFormat="0.0###" IsEnabled="False" Focusable="False"
+                                  Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
+                                  Value="{Binding DerivedValue, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Text="Calibration is shared across Gyro Mouse, Trackpad Mouse, Joystick Mouse, Flick Stick, and Flick Turn Binds, in this profile."

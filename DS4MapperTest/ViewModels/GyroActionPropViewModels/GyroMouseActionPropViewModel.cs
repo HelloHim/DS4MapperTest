@@ -215,51 +215,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler GyroActivationHoldMsChanged;
 
-        public double RealWorldCalibration
-        {
-            get => action.mouseParams.realWorldCalibration;
-            set
-            {
-                if (!_modelReady) return;
-                if (action.mouseParams.realWorldCalibration == value) return;
-                action.mouseParams.realWorldCalibration = value;
-                if (IsRwcMode) CalculateCountsFromRwc();
-                RealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
-                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-                SyncCalibFromGyroMouseToProfile();
-                UpdatePresetFromCurrentRwc();
-            }
-        }
-        public event EventHandler RealWorldCalibrationChanged;
-
-        public double InGameSens
-        {
-            get => action.mouseParams.inGameSens;
-            set
-            {
-                // Reject changes until after the window has rendered. HandyControl's
-                // NumericUpDown fires ValueChanged(Minimum) during control init before
-                // the binding has populated the control with the real value, which would
-                // corrupt CalibInGameSens. _modelReady is set via a low-priority
-                // dispatcher post that runs after all Loaded-priority control events.
-                if (!_modelReady) return;
-                if (action.mouseParams.inGameSens == value) return;
-                action.mouseParams.inGameSens = value;
-                // Whichever of RWC/Counts is NOT the mode's master is derived and must be
-                // recomputed here; the master itself never moves just because sensitivity did.
-                if (IsCountsMode) CalculateRwcFromCounts();
-                else CalculateCountsFromRwc();
-                InGameSensChanged?.Invoke(this, EventArgs.Empty);
-                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
-                SyncCalibFromGyroMouseToProfile();
-                UpdatePresetFromCurrentRwc();
-            }
-        }
-        public event EventHandler InGameSensChanged;
-
         public bool StaticSensUsed
         {
             get => action.mouseParams.accelCurve == GyroMouseAccelCurveChoice.None;
@@ -1391,130 +1346,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         private bool _syncingAccelSens = false;
         private GyroMouseAccelCurveChoice _prevAccelCurve;
 
-        private bool _applyingPreset = false;
-
-        public IReadOnlyList<GameCalibPreset> GamePresets => GameCalibPreset.All;
-
-        public GameCalibPreset SelectedPreset
-        {
-            get => GameCalibPreset.FindByName(mapper.ActionProfile.CalibPresetName) ??
-                GameCalibPreset.Custom;
-            set
-            {
-                GameCalibPreset next = value ?? GameCalibPreset.Custom;
-                if (mapper.ActionProfile.CalibPresetName == next.Name) return;
-                mapper.ActionProfile.CalibPresetName = next.Name;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
-                if (next.IsCustom) return;
-                _applyingPreset = true;
-                if (IsCountsMode)
-                {
-                    // Counts is this mode's fixed master: keep it as-is and let sensitivity
-                    // move to whatever value reproduces the preset's RWC at that Counts.
-                    if (FullTurnCounts > 0.0) InGameSens = next.RWC * 360.0 / FullTurnCounts;
-                }
-                else
-                {
-                    // RWC is this mode's fixed master: move it directly to the preset's value
-                    // and leave sensitivity exactly as the user had it.
-                    RealWorldCalibration = next.RWC;
-                }
-                _applyingPreset = false;
-            }
-        }
-
-        public CalibMode CalibMode
-        {
-            get => mapper.ActionProfile.CalibMode;
-            set
-            {
-                if (!_modelReady) return;
-                if (mapper.ActionProfile.CalibMode == value) return;
-                mapper.ActionProfile.CalibMode = value;
-                RaiseCalibModePropertyChanges();
-                SyncCalibFromGyroMouseToProfile();
-                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        public bool IsRwcMode
-        {
-            get => CalibMode == DS4MapperTest.CalibMode.RwcMode;
-            set
-            {
-                if (value) CalibMode = DS4MapperTest.CalibMode.RwcMode;
-            }
-        }
-
-        public bool IsCountsMode
-        {
-            get => CalibMode == DS4MapperTest.CalibMode.CountsMode;
-            set
-            {
-                if (value) CalibMode = DS4MapperTest.CalibMode.CountsMode;
-            }
-        }
-
-        public string MasterCalibrationLabel => IsCountsMode ? "Counts" : "RWC";
-
-        public double MasterCalibrationValue
-        {
-            get => IsCountsMode ? FullTurnCounts : RealWorldCalibration;
-            set
-            {
-                if (IsCountsMode)
-                {
-                    FullTurnCounts = value;
-                }
-                else
-                {
-                    RealWorldCalibration = value;
-                }
-            }
-        }
-
-        private double fullTurnCounts = 10.0;
-        public double FullTurnCounts
-        {
-            get => fullTurnCounts;
-            set
-            {
-                if (!_modelReady) return;
-                if (value == 0.0) return; // Avoid division by zero
-                bool countsChanged = fullTurnCounts != value;
-                fullTurnCounts = value;
-                CalculateTestRWC();
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-                if (!countsChanged) return;
-                if (!IsCountsMode) return;
-                CalculateRwcFromCounts();
-                SyncCalibFromGyroMouseToProfile();
-                UpdatePresetFromCurrentRwc();
-            }
-        }
-        //public event EventHandler FullTurnCountsChanged;
-
-        private double calculatedRWC = 0.0;
-        public double CalculatedRWC
-        {
-            get => calculatedRWC;
-            set
-            {
-                if (calculatedRWC == value) return;
-                calculatedRWC = value;
-                CalculatedRWCChanged?.Invoke(this, EventArgs.Empty);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalculatedRWC)));
-            }
-        }
-        public event EventHandler CalculatedRWCChanged;
-
-        private BasicActionCommand copyTestRWCComm;
-        public BasicActionCommand CopyTestRWCComm
-        {
-            get => copyTestRWCComm;
-        }
-
         public bool HighlightName
         {
             get => action.ParentAction == null ||
@@ -1574,20 +1405,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 baseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.TRIGGER_ACTIVATE);
         }
         public event EventHandler HighlightGyroTriggerActivatesChanged;
-
-        public bool HighlightRealWorldCalibration
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.REAL_WORLD_CALIBRATION);
-        }
-        public event EventHandler HighlightRealWorldCalibrationChanged;
-
-        public bool HighlightInGameSens
-        {
-            get => action.ParentAction == null ||
-                action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.IN_GAME_SENS);
-        }
-        public event EventHandler HighlightInGameSensChanged;
 
         public bool HighlightAccelCurve
         {
@@ -1771,10 +1588,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             PopulateModel();
             _prevAccelCurve = this.action.mouseParams.accelCurve;
 
-            copyTestRWCComm = new BasicActionCommand((parameter) =>
-            {
-                RealWorldCalibration = CalculatedRWC;
-            });
             resetAccelerationDefaultsComm = new BasicActionCommand((parameter) =>
             {
                 _syncingAccelSens = true;
@@ -1826,8 +1639,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             GyroTriggerCondChoiceChanged += GyroMouseActionPropViewModel_GyroTriggerCondChoiceChanged;
             GyroTriggerActivatesChanged += GyroMouseActionPropViewModel_TriggerActivatesChanged;
             GyroActivationHoldMsChanged += GyroMouseActionPropViewModel_GyroActivationHoldMsChanged;
-            RealWorldCalibrationChanged += GyroMouseActionPropViewModel_RealWorldCalibrationChanged;
-            InGameSensChanged += GyroMouseActionPropViewModel_InGameSensChanged;
             AccelCurveChoiceChanged += GyroMouseActionPropViewModel_AccelCurveChoiceChanged;
             MinAccelXSensChanged += GyroMouseActionPropViewModel_MinAccelXSensChanged;
             MaxAccelXSensChanged += GyroMouseActionPropViewModel_MaxAccelXSensChanged;
@@ -1848,168 +1659,42 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             SmoothingEnabledChanged += GyroMouseActionPropViewModel_SmoothingEnabledChanged;
             SmoothingMinCutoffChanged += GyroMouseActionPropViewModel_SmoothingMinCutoffChanged;
             SmoothingBetaChanged += GyroMouseActionPropViewModel_SmoothingBetaChanged;
-            mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
-            mapper.ActionProfile.CalibPresetNameChanged += ActionProfile_CalibPresetNameChanged;
 
-            double savedInGameSens = this.action.mouseParams.inGameSens;
-            double savedRwc = this.action.mouseParams.realWorldCalibration;
             double savedSensitivity = this.action.mouseParams.sensitivity;
             double savedVerticalSensitivity = this.action.mouseParams.verticalSensitivity;
             double savedAccelerationMultiplier = this.action.mouseParams.accelerationMultiplier;
             double savedVerticalAccelerationMultiplier = this.action.mouseParams.verticalAccelerationMultiplier;
-            double savedCounts = fullTurnCounts;
             System.Windows.Application.Current.Dispatcher.BeginInvoke(
                 System.Windows.Threading.DispatcherPriority.Background,
                 new Action(() =>
                 {
-                    this.action.mouseParams.inGameSens = savedInGameSens;
-                    this.action.mouseParams.realWorldCalibration = savedRwc;
                     this.action.mouseParams.sensitivity = savedSensitivity;
                     this.action.mouseParams.verticalSensitivity = savedVerticalSensitivity;
                     this.action.mouseParams.accelerationMultiplier = savedAccelerationMultiplier;
                     this.action.mouseParams.verticalAccelerationMultiplier = savedVerticalAccelerationMultiplier;
-                    fullTurnCounts = savedCounts;
-                    CalculateTestRWC();
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AccelerationMultiplier)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-                    RaiseCalibModePropertyChanges();
                     System.Windows.Application.Current.Dispatcher.BeginInvoke(
                         System.Windows.Threading.DispatcherPriority.ApplicationIdle,
                         new Action(() =>
                         {
-                            this.action.mouseParams.inGameSens = savedInGameSens;
-                            this.action.mouseParams.realWorldCalibration = savedRwc;
                             this.action.mouseParams.sensitivity = savedSensitivity;
                             this.action.mouseParams.verticalSensitivity = savedVerticalSensitivity;
                             this.action.mouseParams.accelerationMultiplier = savedAccelerationMultiplier;
                             this.action.mouseParams.verticalAccelerationMultiplier = savedVerticalAccelerationMultiplier;
-                            fullTurnCounts = savedCounts;
-                            CalculateTestRWC();
                             _modelReady = true;
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Sensitivity)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalSensitivity)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AccelerationMultiplier)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationMultiplier)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationScale)));
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalAccelerationEffectiveMultiplier)));
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
-                            RaiseCalibModePropertyChanges();
                         }));
                 }));
-        }
-
-        private void CalculateTestRWC()
-        {
-            CalculatedRWC = InGameSens / (360.0 / fullTurnCounts);
-        }
-
-        private void CalculateRwcFromCounts()
-        {
-            double rwc = fullTurnCounts * InGameSens / 360.0;
-            if (action.mouseParams.realWorldCalibration == rwc) return;
-            action.mouseParams.realWorldCalibration = rwc;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
-        }
-
-        private void CalculateCountsFromRwc()
-        {
-            double counts = InGameSens > 0.0
-                ? action.mouseParams.realWorldCalibration * 360.0 / InGameSens
-                : 0.0;
-            if (fullTurnCounts == counts) return;
-            fullTurnCounts = counts;
-            CalculateTestRWC();
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-        }
-
-        private void SyncCalibFromGyroMouseToProfile()
-        {
-            double inGameSens = action.mouseParams.inGameSens;
-            double rwc = IsCountsMode
-                ? fullTurnCounts * inGameSens / 360.0
-                : action.mouseParams.realWorldCalibration;
-            action.mouseParams.realWorldCalibration = rwc;
-            double counts = IsCountsMode || inGameSens <= 0.0
-                ? fullTurnCounts
-                : rwc * 360.0 / inGameSens;
-            mapper.ActionProfile.CalibRwc = rwc;
-            mapper.ActionProfile.CalibInGameSens = inGameSens;
-            mapper.ActionProfile.CalibCounts = counts;
-            ExecuteInMapperThread(() =>
-            {
-                foreach (var set in mapper.ActionProfile.ActionSets)
-                    foreach (var layer in set.ActionLayers)
-                        foreach (var mapAction in layer.normalActionDict.Values)
-                        {
-                            if (mapAction is GyroMouse gyroMouse)
-                            {
-                                gyroMouse.mouseParams.realWorldCalibration = rwc;
-                                gyroMouse.mouseParams.inGameSens = inGameSens;
-                            }
-                            if (mapAction is ButtonAction btnAction)
-                                foreach (var func in btnAction.ActionFuncs)
-                                    foreach (var data in func.OutputActions)
-                                        if (data.OutputType == OutputActionData.ActionType.CameraTurn)
-                                            data.cameraTurnCounts360 = counts;
-                            if (mapAction is StickFlickStick sfs)
-                            {
-                                sfs.RealWorldCalibration = rwc;
-                                sfs.InGameSens = inGameSens;
-                            }
-                            if (mapAction is TouchpadFlickStick tfs)
-                            {
-                                tfs.RealWorldCalibration = rwc;
-                                tfs.InGameSens = inGameSens;
-                            }
-                        }
-            });
-        }
-
-        // Whenever RWC's authoritative value settles (direct edit, derived from Counts, or
-        // derived from a sensitivity change), check whether it now matches a known game
-        // preset within tolerance and reflect that in the preset dropdown; falls back to
-        // Custom when it doesn't. Skipped while a preset is actively being applied, since
-        // that flow already knows exactly which preset it is setting.
-        private void UpdatePresetFromCurrentRwc()
-        {
-            if (_applyingPreset) return;
-            string matchedName = (GameCalibPreset.MatchByRwc(mapper.ActionProfile.CalibRwc) ??
-                GameCalibPreset.Custom).Name;
-            mapper.ActionProfile.CalibPresetName = matchedName;
-        }
-
-        private void RaiseCalibModePropertyChanges()
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CalibMode)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsRwcMode)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCountsMode)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationLabel)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-        }
-
-        private void ActionProfile_CalibModeChanged(object sender, EventArgs e)
-        {
-            RaiseCalibModePropertyChanges();
-            if (IsCountsMode)
-            {
-                CalculateTestRWC();
-            }
-        }
-
-        private void ActionProfile_CalibPresetNameChanged(object sender, EventArgs e)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
         }
 
         private void GyroMouseActionPropViewModel_NaturalVHalfChanged(object sender, EventArgs e)
@@ -2237,31 +1922,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
             action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.MIN_GYRO_THRESHOLD);
             HighlightMinGyroThresholdChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void GyroMouseActionPropViewModel_InGameSensChanged(object sender, EventArgs e)
-        {
-            if (!this.action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.IN_GAME_SENS))
-            {
-                this.action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.IN_GAME_SENS);
-            }
-
-            action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.IN_GAME_SENS);
-            HighlightInGameSensChanged?.Invoke(this, EventArgs.Empty);
-            CalculateTestRWC();
-            SyncCalibFromGyroMouseToProfile();
-        }
-
-        private void GyroMouseActionPropViewModel_RealWorldCalibrationChanged(object sender, EventArgs e)
-        {
-            if (!this.action.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.REAL_WORLD_CALIBRATION))
-            {
-                this.action.ChangedProperties.Add(GyroMouse.PropertyKeyStrings.REAL_WORLD_CALIBRATION);
-            }
-
-            action.RaiseNotifyPropertyChange(mapper, GyroMouse.PropertyKeyStrings.REAL_WORLD_CALIBRATION);
-            HighlightRealWorldCalibrationChanged?.Invoke(this, EventArgs.Empty);
-            SyncCalibFromGyroMouseToProfile();
         }
 
         private void GyroMouseActionPropViewModel_GyroJitterCompensationChanged(object sender, EventArgs e)
@@ -2579,9 +2239,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
 
         private void PopulateModel()
         {
-            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0 ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
-            CalculateTestRWC();
-
             //triggerButtonItems.AddRange(new GyroTriggerButtonItem[]
             //{
             //    new GyroTriggerButtonItem("Always On", JoypadActionCodes.AlwaysOn),
