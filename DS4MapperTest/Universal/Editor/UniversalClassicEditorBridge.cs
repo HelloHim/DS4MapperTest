@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Data;
+using System.Windows.Threading;
 
 namespace DS4MapperTest.Universal.Editor
 {
@@ -64,10 +65,17 @@ namespace DS4MapperTest.Universal.Editor
             new ObservableCollection<ProfileEntity>();
         private readonly ObservableCollection<string> folders =
             new ObservableCollection<string> { ProfileList.DEFAULT_PROFILE_FOLDER };
+        // Explicitly supplied by the UI (see Refresh) rather than sniffed from
+        // Application.Current: a test host can have a live Application with no
+        // message loop actually pumping its Dispatcher, and Invoke-ing onto that
+        // one never returns. Null here (the default, and always the case in
+        // tests) means Refresh applies the update on the calling thread.
+        private readonly Dispatcher dispatcher;
 
-        public UniversalClassicProfileList(UniversalProfileStore store)
+        public UniversalClassicProfileList(UniversalProfileStore store, Dispatcher dispatcher = null)
         {
             this.store = store ?? throw new ArgumentNullException(nameof(store));
+            this.dispatcher = dispatcher;
             BindingOperations.EnableCollectionSynchronization(profiles, collectionLock);
             BindingOperations.EnableCollectionSynchronization(folders, collectionLock);
             Refresh();
@@ -87,6 +95,26 @@ namespace DS4MapperTest.Universal.Editor
                 .ThenBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
+            // EnableCollectionSynchronization above only protects an ItemsControl's own
+            // shadow copy of these collections. A CollectionView - created for any bound
+            // control that groups, sorts or filters, or via an explicit ICollectionView -
+            // raises its CollectionChanged straight off whichever thread mutated the
+            // source and requires that be the dispatcher thread regardless. Refresh runs
+            // off the universal mapping thread on every controller connect/disconnect, so
+            // without this a hotplug while such a view was bound threw out of the mapping
+            // loop (silently skipping that refresh) and the same throw during shutdown
+            // crashed the app outright instead of exiting cleanly.
+            if (dispatcher != null && !dispatcher.CheckAccess())
+            {
+                dispatcher.Invoke(() => ApplyRefresh(folderNames, entries));
+                return;
+            }
+
+            ApplyRefresh(folderNames, entries);
+        }
+
+        private void ApplyRefresh(List<string> folderNames, List<UniversalProfileSummary> entries)
+        {
             lock (collectionLock)
             {
                 // ProfileEntity exists to be held on to: the editor keeps the
@@ -284,6 +312,12 @@ namespace DS4MapperTest.Universal.Editor
                 .Where(property => !RootUniversalProperties.Contains(property.Name))
                 .Select(property => new JProperty(property.Name, property.Value.DeepClone())));
 
+            // Keyed by (ActionSet.Index, ActionLayer.Index): only populated for a layer
+            // where a collision actually had to be renumbered below, so it stays empty
+            // (and every Mappings lookup below a no-op) on the overwhelming common path.
+            Dictionary<(int SetIndex, int LayerIndex), Dictionary<int, int>> actionIdRemaps =
+                new Dictionary<(int, int), Dictionary<int, int>>();
+
             updated.ActionSets.Clear();
             foreach (JObject setObject in (root["ActionSets"] as JArray ?? new JArray()).OfType<JObject>())
             {
@@ -303,16 +337,43 @@ namespace DS4MapperTest.Universal.Editor
                         Description = layerObject.Value<string>("Description") ?? string.Empty,
                     };
 
+                    // The classic editor hands out action ids via ActionLayer.FindNextAvailableId,
+                    // which scans that layer's own in-memory action list at the moment a binding
+                    // is switched. Two switches made in the same editing session can still end up
+                    // requesting the same id, and the store's validator rejects the whole save the
+                    // instant that happens - "Duplicate action id" - discarding every other edit in
+                    // the session along with it. Renumber a collision here instead of failing the
+                    // save; nothing outside this layer's own Mappings addresses an action by number,
+                    // and the remap below keeps every mapping pointed at the action it actually
+                    // switched to.
+                    HashSet<int> usedActionIds = new HashSet<int>();
+                    Dictionary<int, int> layerRemap = null;
                     foreach (JObject actionObject in (layerObject["MappedActions"] as JArray ?? new JArray()).OfType<JObject>())
                     {
                         int actionId = actionObject.Value<int?>("Id") ?? -1;
+                        int assignedId = actionId;
+                        while (!usedActionIds.Add(assignedId))
+                        {
+                            assignedId++;
+                        }
+
+                        if (assignedId != actionId)
+                        {
+                            (layerRemap ??= new Dictionary<int, int>())[actionId] = assignedId;
+                        }
+
                         string actionMode = actionObject.Value<string>("ActionMode") ?? string.Empty;
                         layer.Actions.Add(new JObject
                         {
-                            ["id"] = actionId,
+                            ["id"] = assignedId,
                             ["type"] = actionMode,
                             ["payload"] = actionObject.DeepClone(),
                         });
+                    }
+
+                    if (layerRemap != null)
+                    {
+                        actionIdRemaps[(set.Index, layer.Index)] = layerRemap;
                     }
 
                     set.Layers.Add(layer);
@@ -329,10 +390,16 @@ namespace DS4MapperTest.Universal.Editor
             {
                 int actionSet = mappingGroup.Value<int?>("ActionSet") ?? 0;
                 int actionLayer = mappingGroup.Value<int?>("ActionLayer") ?? 0;
+                actionIdRemaps.TryGetValue((actionSet, actionLayer), out Dictionary<int, int> layerRemap);
                 foreach (JObject mapping in (mappingGroup["InputMappings"] as JArray ?? new JArray()).OfType<JObject>())
                 {
                     string legacyInput = mapping.Value<string>("Input") ?? string.Empty;
                     int actionId = mapping.Value<int?>("Action") ?? -1;
+                    if (layerRemap != null && layerRemap.TryGetValue(actionId, out int remappedActionId))
+                    {
+                        actionId = remappedActionId;
+                    }
+
                     if (!UniversalLegacyBindingMap.TryGetUniversalInput(legacyInput, out UniversalInputId input))
                     {
                         continue;

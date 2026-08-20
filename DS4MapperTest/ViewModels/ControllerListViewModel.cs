@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace DS4MapperTest.ViewModels
 {
@@ -63,6 +64,11 @@ namespace DS4MapperTest.ViewModels
         private UniversalClassicProfileList universalProfiles;
         private UniversalProfileStore universalStore;
         private int selectedIndex = -1;
+        // Captured here rather than at universalProfiles' own lazy-init below: a
+        // hotplug can trigger that init from the background mapping thread before
+        // the UI thread ever has, and this constructor is the one place a caller
+        // guarantees the UI thread runs it.
+        private readonly Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
 
         //public ProfileList DeviceProfileList
         //{
@@ -186,7 +192,7 @@ namespace DS4MapperTest.ViewModels
             if (runtime == null) return;
 
             universalStore ??= UniversalProfileStore.CreateDefault();
-            universalProfiles ??= new UniversalClassicProfileList(universalStore);
+            universalProfiles ??= new UniversalClassicProfileList(universalStore, uiDispatcher);
             universalProfiles.Refresh();
 
             using (WriteLocker locker = new WriteLocker(_colListLocker))
