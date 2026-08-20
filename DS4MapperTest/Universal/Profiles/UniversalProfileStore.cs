@@ -328,14 +328,21 @@ namespace DS4MapperTest.Universal.Profiles
                     stream.Flush(true);
                 }
 
-                if (File.Exists(targetPath))
+                // The profile store commonly lives under a sync-tracked folder (OneDrive)
+                // that briefly locks a file while indexing it, and antivirus scanners do
+                // the same. Either one landing on targetPath during the swap turned an
+                // otherwise-successful save into a one-off "Failed to save" error.
+                RetryOnTransientIOError(() =>
                 {
-                    File.Replace(tempPath, targetPath, null);
-                }
-                else
-                {
-                    File.Move(tempPath, targetPath);
-                }
+                    if (File.Exists(targetPath))
+                    {
+                        File.Replace(tempPath, targetPath, null);
+                    }
+                    else
+                    {
+                        File.Move(tempPath, targetPath);
+                    }
+                });
 
                 UniversalProfileSummaryReader.Invalidate(targetPath);
             }
@@ -353,6 +360,24 @@ namespace DS4MapperTest.Universal.Profiles
                     catch (UnauthorizedAccessException)
                     {
                     }
+                }
+            }
+        }
+
+        private static void RetryOnTransientIOError(Action action)
+        {
+            const int maxAttempts = 4;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    action();
+                    return;
+                }
+                catch (Exception ex) when (attempt < maxAttempts &&
+                    (ex is IOException || ex is UnauthorizedAccessException))
+                {
+                    System.Threading.Thread.Sleep(50 * attempt);
                 }
             }
         }
