@@ -254,7 +254,10 @@ namespace DS4MapperTest
             new DummyActionDefaultsCreator();
         public DeviceActionDefaultsCreator DeviceActionDefaults => deviceActionDefaults;
 
-        // Establish default items. Using old Steam Controller defaults
+        // Fallback defaults (old Steam Controller button set) for a Mapper
+        // with no live device to query. UniversalMapper, the only Mapper in
+        // active use, replaces this list in its constructor with one built
+        // from the connected controller's actual capabilities.
         protected List<ActionTriggerItem> actionTriggerItems = new List<ActionTriggerItem>()
         {
             new ActionTriggerItem("Always On", JoypadActionCodes.AlwaysOn),

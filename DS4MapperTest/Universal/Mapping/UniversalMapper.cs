@@ -6,6 +6,7 @@ using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickActions;
 using DS4MapperTest.TouchpadActions;
 using DS4MapperTest.TriggerActions;
+using DS4MapperTest.Universal.Editor;
 using DS4MapperTest.Universal.Profiles;
 using Newtonsoft.Json;
 using System;
@@ -16,6 +17,52 @@ namespace DS4MapperTest.Universal.Mapping
 {
     public sealed class UniversalMapper : Mapper
     {
+        // Single source of truth for which JoypadActionCodes an activation
+        // trigger (gyro hold-to-enable/disable, chorded press, etc.) can
+        // reference, and which universal input backs each one. Every entry
+        // here must be one TryMapActivationCode already understands, since
+        // that switch is what IsButtonActive polls at runtime.
+        //
+        // This list intentionally omits inputs with no JoypadActionCodes to
+        // carry them (rear tertiary, grip touch, stick touch, mute, quick
+        // access, misc buttons/axes) rather than widening JoypadActionCodes
+        // for them - that enum is serialised into saved profiles and used in
+        // exhaustive switches well beyond activation triggers.
+        private static readonly (JoypadActionCodes Code, UniversalInputId Input)[] ActivationCandidates =
+        {
+            (JoypadActionCodes.BtnSouth, UniversalInputId.FaceButtonSouth),
+            (JoypadActionCodes.BtnEast, UniversalInputId.FaceButtonEast),
+            (JoypadActionCodes.BtnWest, UniversalInputId.FaceButtonWest),
+            (JoypadActionCodes.BtnNorth, UniversalInputId.FaceButtonNorth),
+            (JoypadActionCodes.BtnLShoulder, UniversalInputId.LeftShoulder),
+            (JoypadActionCodes.BtnRShoulder, UniversalInputId.RightShoulder),
+            (JoypadActionCodes.AxisLTrigger, UniversalInputId.LeftTrigger),
+            (JoypadActionCodes.AxisRTrigger, UniversalInputId.RightTrigger),
+            (JoypadActionCodes.LTFullPull, UniversalInputId.LeftTriggerFullPull),
+            (JoypadActionCodes.RTFullPull, UniversalInputId.RightTriggerFullPull),
+            (JoypadActionCodes.BtnLGrip, UniversalInputId.LeftRearPrimary),
+            (JoypadActionCodes.BtnRGrip, UniversalInputId.RightRearPrimary),
+            (JoypadActionCodes.BtnLGrip2, UniversalInputId.LeftRearSecondary),
+            (JoypadActionCodes.BtnRGrip2, UniversalInputId.RightRearSecondary),
+            (JoypadActionCodes.BtnThumbL, UniversalInputId.LeftStickClick),
+            (JoypadActionCodes.BtnThumbR, UniversalInputId.RightStickClick),
+            (JoypadActionCodes.BtnLSideL, UniversalInputId.LeftSidePrimary),
+            (JoypadActionCodes.BtnLSideR, UniversalInputId.LeftSideSecondary),
+            (JoypadActionCodes.BtnRSideL, UniversalInputId.RightSidePrimary),
+            (JoypadActionCodes.BtnRSideR, UniversalInputId.RightSideSecondary),
+            (JoypadActionCodes.LPadTouch, UniversalInputId.LeftTouchSurface),
+            (JoypadActionCodes.RPadTouch, UniversalInputId.RightTouchSurface),
+            (JoypadActionCodes.LPadClick, UniversalInputId.LeftTouchSurfaceClick),
+            (JoypadActionCodes.RPadClick, UniversalInputId.RightTouchSurfaceClick),
+            (JoypadActionCodes.BtnSelect, UniversalInputId.View),
+            (JoypadActionCodes.BtnStart, UniversalInputId.Menu),
+            (JoypadActionCodes.BtnMode, UniversalInputId.System),
+            (JoypadActionCodes.BtnCapture, UniversalInputId.Capture),
+        };
+
+        private static readonly IReadOnlyDictionary<JoypadActionCodes, UniversalInputId> ActivationCodeToInput =
+            ActivationCandidates.ToDictionary(pair => pair.Code, pair => pair.Input);
+
         private UniversalControllerStateSnapshot currentSnapshot =
             UniversalControllerStateSnapshot.Disconnected();
         private UniversalControllerStateSnapshot previousSnapshot =
@@ -31,6 +78,7 @@ namespace DS4MapperTest.Universal.Mapping
             Controller = controller ?? throw new ArgumentNullException(nameof(controller));
             DeviceTypeOverride = ResolveDeviceType(controller);
             ConfigureUniversalBindings();
+            RebuildActionTriggerItems();
             ActivateProfile(profile);
         }
 
@@ -214,6 +262,27 @@ namespace DS4MapperTest.Universal.Mapping
                         : 0.0;
                 default:
                     return 0.0;
+            }
+        }
+
+        // Replaces the base Mapper's static "old Steam Controller defaults"
+        // trigger list with one built from this specific controller's actual
+        // capabilities, so activation dropdowns (gyro hold-to-enable/disable,
+        // chorded press, etc.) only offer buttons the connected pad really
+        // has, under that pad's own labels - e.g. separate Left/Right Stick
+        // Click instead of a single ambiguous "Stick Click", and "Cross"
+        // rather than "A" on a DualShock/DualSense.
+        private void RebuildActionTriggerItems()
+        {
+            actionTriggerItems.Clear();
+            actionTriggerItems.Add(new ActionTriggerItem("Always On", JoypadActionCodes.AlwaysOn));
+
+            ControllerCapabilities capabilities = Controller.Capabilities;
+            foreach ((JoypadActionCodes code, UniversalInputId input) in ActivationCandidates)
+            {
+                if (capabilities?.Supports(input) != true) continue;
+                actionTriggerItems.Add(new ActionTriggerItem(
+                    ControllerLabelProvider.GetLabel(input, capabilities), code));
             }
         }
 
@@ -503,69 +572,7 @@ namespace DS4MapperTest.Universal.Mapping
 
         private static bool TryMapActivationCode(JoypadActionCodes code, out UniversalInputId input)
         {
-            switch (code)
-            {
-                case JoypadActionCodes.BtnSouth:
-                    input = UniversalInputId.FaceButtonSouth;
-                    return true;
-                case JoypadActionCodes.BtnEast:
-                    input = UniversalInputId.FaceButtonEast;
-                    return true;
-                case JoypadActionCodes.BtnNorth:
-                    input = UniversalInputId.FaceButtonNorth;
-                    return true;
-                case JoypadActionCodes.BtnWest:
-                    input = UniversalInputId.FaceButtonWest;
-                    return true;
-                case JoypadActionCodes.BtnLShoulder:
-                    input = UniversalInputId.LeftShoulder;
-                    return true;
-                case JoypadActionCodes.BtnRShoulder:
-                    input = UniversalInputId.RightShoulder;
-                    return true;
-                case JoypadActionCodes.BtnStart:
-                    input = UniversalInputId.Menu;
-                    return true;
-                case JoypadActionCodes.BtnSelect:
-                    input = UniversalInputId.View;
-                    return true;
-                case JoypadActionCodes.BtnMode:
-                    input = UniversalInputId.System;
-                    return true;
-                case JoypadActionCodes.BtnThumbL:
-                    input = UniversalInputId.LeftStickClick;
-                    return true;
-                case JoypadActionCodes.BtnThumbR:
-                    input = UniversalInputId.RightStickClick;
-                    return true;
-                case JoypadActionCodes.AxisLTrigger:
-                    input = UniversalInputId.LeftTrigger;
-                    return true;
-                case JoypadActionCodes.AxisRTrigger:
-                    input = UniversalInputId.RightTrigger;
-                    return true;
-                case JoypadActionCodes.LPadTouch:
-                    input = UniversalInputId.LeftTouchSurface;
-                    return true;
-                case JoypadActionCodes.RPadTouch:
-                    input = UniversalInputId.RightTouchSurface;
-                    return true;
-                case JoypadActionCodes.LPadClick:
-                    input = UniversalInputId.LeftTouchSurfaceClick;
-                    return true;
-                case JoypadActionCodes.RPadClick:
-                    input = UniversalInputId.RightTouchSurfaceClick;
-                    return true;
-                case JoypadActionCodes.LTFullPull:
-                    input = UniversalInputId.LeftTriggerFullPull;
-                    return true;
-                case JoypadActionCodes.RTFullPull:
-                    input = UniversalInputId.RightTriggerFullPull;
-                    return true;
-                default:
-                    input = default;
-                    return false;
-            }
+            return ActivationCodeToInput.TryGetValue(code, out input);
         }
 
         private static double RadiansToDegrees(double radians)
