@@ -56,8 +56,26 @@ namespace DS4MapperTest
             }
         }
 
+        // Redirects every default path lookup at the named directory.
+        //
+        // The test project sets this. Without it the suite resolves the real
+        // production folder, because the test build configurations do not
+        // define DS4MAPPER_DEV_APPDATA, so simply running the tests created and
+        // wrote to the live configuration directory of whoever ran them. That
+        // is bad on its own, and it also defeated the one-time move of an
+        // existing install: the folder already existed by the time the app
+        // started, so the move was skipped and the user got an empty install.
+        public const string APPDATA_ROOT_OVERRIDE_VARIABLE = "DS4MAPPERTEST_APPDATA_ROOT";
+
         public static ApplicationDataPathSet ResolveDefault()
         {
+            string overrideRoot =
+                Environment.GetEnvironmentVariable(APPDATA_ROOT_OVERRIDE_VARIABLE);
+            if (!string.IsNullOrWhiteSpace(overrideRoot))
+            {
+                return new ApplicationDataPathSet(overrideRoot);
+            }
+
             return Resolve(DefaultBuildFlavor);
         }
 

@@ -54,16 +54,57 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void AppGlobalDataUsesConfiguredDefaultRoot()
         {
-            AppGlobalData appGlobal = new AppGlobalData();
+            // The suite redirects default paths away from the real folder, so
+            // drop the redirect for the length of this assertion to check what
+            // a shipped build would actually resolve. Constructing
+            // AppGlobalData only computes paths, so nothing is created.
+            string savedOverride = Environment.GetEnvironmentVariable(
+                ApplicationDataPathResolver.APPDATA_ROOT_OVERRIDE_VARIABLE);
+            try
+            {
+                Environment.SetEnvironmentVariable(
+                    ApplicationDataPathResolver.APPDATA_ROOT_OVERRIDE_VARIABLE, null);
 
-            string expectedFolder = ApplicationDataPathResolver.DefaultBuildFlavor == ApplicationDataBuildFlavor.Development
-                ? AppGlobalData.DEVELOPMENT_APP_FOLDER_NAME
-                : AppGlobalData.APP_FOLDER_NAME;
+                AppGlobalData appGlobal = new AppGlobalData();
 
-            Assert.AreEqual(expectedFolder, Path.GetFileName(appGlobal.appdatapath));
-            Assert.AreEqual(Path.Combine(appGlobal.appdatapath, AppGlobalData.PROFILES_FOLDER_NAME), appGlobal.baseProfilesPath);
-            Assert.AreEqual(Path.Combine(appGlobal.appdatapath, AppGlobalData.LOGS_FOLDER_NAME), appGlobal.LogsPath);
-            Assert.AreEqual(Path.Combine(appGlobal.appdatapath, AppGlobalData.CONTROLLER_CONFIGS_FILENAME), appGlobal.ControllerConfigsPath);
+                string expectedFolder = ApplicationDataPathResolver.DefaultBuildFlavor == ApplicationDataBuildFlavor.Development
+                    ? AppGlobalData.DEVELOPMENT_APP_FOLDER_NAME
+                    : AppGlobalData.APP_FOLDER_NAME;
+
+                Assert.AreEqual(expectedFolder, Path.GetFileName(appGlobal.appdatapath));
+                Assert.AreEqual(Path.Combine(appGlobal.appdatapath, AppGlobalData.PROFILES_FOLDER_NAME), appGlobal.baseProfilesPath);
+                Assert.AreEqual(Path.Combine(appGlobal.appdatapath, AppGlobalData.LOGS_FOLDER_NAME), appGlobal.LogsPath);
+                Assert.AreEqual(Path.Combine(appGlobal.appdatapath, AppGlobalData.CONTROLLER_CONFIGS_FILENAME), appGlobal.ControllerConfigsPath);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(
+                    ApplicationDataPathResolver.APPDATA_ROOT_OVERRIDE_VARIABLE, savedOverride);
+            }
+        }
+
+        [TestMethod]
+        public void DefaultRootHonoursTheOverrideVariable()
+        {
+            string savedOverride = Environment.GetEnvironmentVariable(
+                ApplicationDataPathResolver.APPDATA_ROOT_OVERRIDE_VARIABLE);
+            string tempRoot = CreateTempDirectory();
+            try
+            {
+                Environment.SetEnvironmentVariable(
+                    ApplicationDataPathResolver.APPDATA_ROOT_OVERRIDE_VARIABLE, tempRoot);
+
+                ApplicationDataPathSet paths = ApplicationDataPathResolver.ResolveDefault();
+
+                Assert.AreEqual(Path.GetFullPath(tempRoot), paths.RootPath);
+                AssertAllChildrenAreUnderRoot(paths);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(
+                    ApplicationDataPathResolver.APPDATA_ROOT_OVERRIDE_VARIABLE, savedOverride);
+                Directory.Delete(tempRoot, recursive: true);
+            }
         }
 
         [TestMethod]
