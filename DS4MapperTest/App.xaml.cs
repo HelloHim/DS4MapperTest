@@ -30,9 +30,46 @@ namespace DS4MapperTest
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            // Wired up before anything that can fail. These used to be attached
+            // only after the config was loaded, so any startup fault landed in
+            // the default WPF crash dialog with nothing written to the log.
+            DispatcherUnhandledException += App_DispatcherUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             _parser = new ArgumentParser();
             _parser.Parse(e.Args);
 
+            try
+            {
+                RunStartup();
+            }
+            catch (Exception ex)
+            {
+                ReportFatalStartupFailure(ex);
+            }
+        }
+
+        private void ReportFatalStartupFailure(Exception ex)
+        {
+            Trace.WriteLine($"Startup failed: {ex}");
+            try
+            {
+                logHolder?.Logger?.Error(ex, "Startup failed");
+            }
+            catch
+            {
+                // Logging is itself part of startup and may not exist yet.
+            }
+
+            MessageBox.Show(
+                $"DS4MapperTest could not start.\n\n{ex.Message}\n\n" +
+                $"Configuration folder:\n{appGlobal?.appdatapath}",
+                "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Current.Shutdown(1);
+        }
+
+        private void RunStartup()
+        {
             try
             {
                 Process.GetCurrentProcess().PriorityClass =
@@ -89,15 +126,23 @@ namespace DS4MapperTest
 
             ThemeService.Initialize(appGlobal);
 
-            DispatcherUnhandledException += App_DispatcherUnhandledException;
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-
             // Use all display space
             appGlobal.PrepareAbsMonitorBounds(string.Empty);
 
+            Exception managerFailure = null;
             testThread = new Thread(() =>
             {
-                manager = new BackendManager(_parser, appGlobal);
+                try
+                {
+                    manager = new BackendManager(_parser, appGlobal);
+                }
+                catch (Exception ex)
+                {
+                    // Nothing handles an exception thrown on a bare thread, so
+                    // carry it back to the caller instead of letting it end the
+                    // process with no window and no message.
+                    managerFailure = ex;
+                }
                 //manager.RequestOSD += Manager_RequestOSD;
                 //manager.Start();
                 //mapper = new Mapper();
@@ -108,6 +153,13 @@ namespace DS4MapperTest
             testThread.Start();
             testThread.Join();
 
+            if (managerFailure != null)
+            {
+                throw new InvalidOperationException(
+                    $"The controller backend could not be created. {managerFailure.Message}",
+                    managerFailure);
+            }
+
             logHolder = new LoggerHolder(manager, appGlobal);
             Logger logger = logHolder.Logger;
             logger.Info($"DS4MapperTest v. {AppGlobalData.exeversion}");
@@ -115,9 +167,24 @@ namespace DS4MapperTest
             logger.Info($"OS Product Name: {Util.GetOSProductName()}");
             logger.Info($"OS Release ID: {Util.GetOSReleaseId()}");
 
+            if (!string.IsNullOrEmpty(appGlobal.QuarantinedSettingsPath))
+            {
+                logger.Warn($"Unreadable settings file moved to {appGlobal.QuarantinedSettingsPath}");
+            }
+
             MainWindow window = new MainWindow();
             window.PostInit(appGlobal);
             window.Show();
+
+            if (!string.IsNullOrEmpty(appGlobal.QuarantinedSettingsPath))
+            {
+                MessageBox.Show(
+                    "The application settings file could not be read, so app " +
+                    "settings have been reset to their defaults.\n\n" +
+                    $"The previous file was kept at:\n{appGlobal.QuarantinedSettingsPath}\n\n" +
+                    "Your profiles were not affected.",
+                    "Settings Reset", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
 
             window.StartCheckProcess();
 

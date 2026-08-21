@@ -156,14 +156,17 @@ namespace DS4MapperTest
             this.configPath = configPath;
         }
 
+        // Returns false when the file could only be applied in part. Whatever
+        // was read before the failure is kept; the rest keeps its default.
         public bool LoadConfig()
         {
-            bool result = false;
+            bool result = true;
 
             if (string.IsNullOrEmpty(configPath) ||
                 !File.Exists(configPath))
             {
-                throw new Exception($"Passed path {configPath} does not exist");
+                throw new FileNotFoundException(
+                    $"Passed path {configPath} does not exist", configPath);
             }
 
             using (StreamReader sreader = new StreamReader(configPath))
@@ -176,12 +179,16 @@ namespace DS4MapperTest
                 {
                     JsonConvert.PopulateObject(json, settingsSerializer);
                 }
-                catch (JsonSerializationException)
+                // JsonReaderException and JsonSerializationException are
+                // siblings; neither derives from the other. Catching only the
+                // latter let a value of the wrong type (a string where an int
+                // belongs, say) escape and take the whole startup down.
+                catch (JsonException)
                 {
+                    result = false;
                 }
             }
 
-            result = true;
             return result;
         }
 

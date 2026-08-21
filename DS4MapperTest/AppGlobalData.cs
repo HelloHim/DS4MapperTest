@@ -144,13 +144,26 @@ namespace DS4MapperTest
 
                 Directory.CreateDirectory(logsPath);
             }
-            catch (UnauthorizedAccessException)
+            catch (Exception ex) when (IsConfigStorageFailure(ex))
             {
                 result = false;
             }
 
 
             return result;
+        }
+
+        // A permission problem is only one of the ways the config directory can
+        // refuse to appear. A full disk, a file sitting where a directory
+        // belongs, a path over the length limit or a synced folder holding a
+        // lock all surface as something other than UnauthorizedAccessException,
+        // and every one of them used to escape as far as Application_Startup.
+        private static bool IsConfigStorageFailure(Exception ex)
+        {
+            return ex is IOException ||
+                ex is UnauthorizedAccessException ||
+                ex is NotSupportedException ||
+                ex is ArgumentException;
         }
 
         public bool CreateDeviceProfilesSkeleton()
@@ -173,7 +186,7 @@ namespace DS4MapperTest
                     Directory.CreateDirectory(Path.Combine(tempDirPath, ProfileList.VALORANT_PROFILE_FOLDER));
                 }
             }
-            catch(UnauthorizedAccessException)
+            catch (Exception ex) when (IsConfigStorageFailure(ex))
             {
                 result = false;
             }
@@ -286,7 +299,7 @@ namespace DS4MapperTest
                     }
                 }
             }
-            catch(UnauthorizedAccessException)
+            catch (Exception ex) when (IsConfigStorageFailure(ex))
             {
                 result = false;
             }
@@ -383,11 +396,11 @@ namespace DS4MapperTest
             hidHideInstalled = IsHidHideInstalled();
         }
 
-        public void LoadAppSettings()
+        public bool LoadAppSettings()
         {
             string configPath = ConfigPath;
             appSettings = new AppSettingsStore(configPath);
-            appSettings.LoadConfig();
+            return appSettings.LoadConfig();
         }
 
         public void CreateAppSettings()
@@ -405,15 +418,57 @@ namespace DS4MapperTest
             }
         }
 
+        // Set when the previous settings file could not be used and was set
+        // aside. The startup code reports the quarantined copy to the user so
+        // they can tell that their preferences were reset on purpose.
+        public string QuarantinedSettingsPath { get; private set; }
+
         public void StartupLoadAppSettings()
         {
-            if (File.Exists(ConfigPath))
-            {
-                LoadAppSettings();
-            }
-            else
+            if (!File.Exists(ConfigPath))
             {
                 CreateAppSettings();
+                return;
+            }
+
+            bool fullyLoaded;
+            try
+            {
+                fullyLoaded = LoadAppSettings();
+            }
+            catch (Exception ex) when (ex is JsonException || IsConfigStorageFailure(ex))
+            {
+                // Nothing could be read at all. Losing the user's preferences
+                // is a bad day; refusing to launch until they find and delete a
+                // file themselves is a worse one.
+                QuarantinedSettingsPath = CopySettingsFileAside();
+                CreateAppSettings();
+                return;
+            }
+
+            if (fullyLoaded) return;
+
+            // Part of the file was applied before it became unreadable. Keep
+            // those values rather than resetting everything, but rewrite the
+            // file so the same fault is not hit again on the next launch.
+            QuarantinedSettingsPath = CopySettingsFileAside();
+            SaveAppSettings();
+        }
+
+        private string CopySettingsFileAside()
+        {
+            string quarantinePath =
+                $"{ConfigPath}.corrupt-{DateTime.Now:yyyyMMddHHmmss}";
+            try
+            {
+                File.Copy(ConfigPath, quarantinePath, overwrite: true);
+                return quarantinePath;
+            }
+            catch (Exception ex) when (IsConfigStorageFailure(ex))
+            {
+                // Startup carries on with defaults either way, so failing to
+                // keep the rescue copy is not worth blocking the launch over.
+                return null;
             }
         }
 
