@@ -77,8 +77,13 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="In-Game Sensitivity" Style="{StaticResource JsmccLabelText}"/>
-                <hc:NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="10" DecimalPlaces="4" Increment="0.1"
-                                  ValueFormat="0.0###"
+                <!-- Every preset's RWC is Counts x this value / 360, so the field has to hold
+                     whatever a game's own sensitivity slider can produce or the calibration is
+                     rounded before it is ever used. Four places silently cut Quake Live's
+                     0.545612 to 0.5456, which moves its RWC by 0.001, and a maximum of 10 put
+                     Rainbow Six's 50 and THE FINALS' 12 out of reach entirely. -->
+                <hc:NumericUpDown Grid.Column="1" Minimum="0.0001" Maximum="1000" DecimalPlaces="7" Increment="0.1"
+                                  ValueFormat="0.0######"
                                   Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                   Value="{Binding InGameSens, UpdateSourceTrigger=PropertyChanged}"/>
             </Grid>

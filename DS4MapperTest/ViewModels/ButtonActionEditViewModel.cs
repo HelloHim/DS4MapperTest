@@ -1867,8 +1867,8 @@ namespace DS4MapperTest.ViewModels
         private void UpdateCameraTurnPresetFromCurrentRwc()
         {
             if (_applyingCameraTurnPreset) return;
-            string matchedName = (GameCalibPreset.MatchByRwc(mapper.ActionProfile.CalibRwc) ??
-                GameCalibPreset.Custom).Name;
+            string matchedName = (GameCalibPreset.MatchByRwc(mapper.ActionProfile.CalibRwc,
+                SelectedCameraTurnPreset) ?? GameCalibPreset.Custom).Name;
             mapper.ActionProfile.CalibPresetName = matchedName;
         }
 

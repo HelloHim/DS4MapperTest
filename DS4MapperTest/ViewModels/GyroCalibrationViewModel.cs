@@ -258,7 +258,7 @@ namespace DS4MapperTest.ViewModels
         private void UpdatePresetFromCurrentRwc()
         {
             if (_applyingPreset) return;
-            string matchedName = (GameCalibPreset.MatchByRwc(mapper.ActionProfile.CalibRwc) ??
+            string matchedName = (GameCalibPreset.MatchByRwc(mapper.ActionProfile.CalibRwc, SelectedPreset) ??
                 GameCalibPreset.Custom).Name;
             mapper.ActionProfile.CalibPresetName = matchedName;
         }
