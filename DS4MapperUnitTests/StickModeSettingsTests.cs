@@ -98,6 +98,44 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(12, settings.Value<int>("Rotation"));
         }
 
+        // Saving a universal profile recompiles it into the live mapper, which replaces
+        // Mapper.ActionProfile wholesale and clears the edit layer refs. An editor view
+        // model built before that goes on editing the orphaned graph - the panels update,
+        // the controller never does - and switching a stick mode then throws deep in
+        // ActionLayer, which WPF swallows as a failed binding update, leaving the mode
+        // selector showing a mode whose settings were never loaded. MainWindow rebinds the
+        // editor after a save; this pins what it has to detect and what rebinding restores.
+        [TestMethod]
+        public void ReloadingTheLiveProfileLeavesAnEditorViewModelDetached()
+        {
+            using OfflineEditorFixture fixture = OfflineEditorFixture.OpenBlank();
+            ProfileEditorTestViewModel staleVM = fixture.EditorVM;
+            staleVM.LeftStickKeybinds.SelectedModeIndex = DirectionalPadModeIndex;
+
+            fixture.Mapper.ActivateProfile(fixture.SourceProfile.Clone());
+
+            Assert.AreNotSame(fixture.Mapper.ActionProfile, staleVM.CurrentProfile,
+                "A reload has to be detectable by comparing the mapper's profile with the editor's.");
+            Assert.IsNull(fixture.Mapper.EditActionSet);
+            Assert.IsNull(fixture.Mapper.EditLayer);
+
+            ProfileEditorTestViewModel reboundVM = new ProfileEditorTestViewModel(
+                fixture.Mapper, staleVM.ProfileEnt, fixture.Mapper.ActionProfile);
+            reboundVM.Test();
+
+            Assert.AreSame(fixture.Mapper.ActionProfile, reboundVM.CurrentProfile);
+            Assert.IsNotNull(fixture.Mapper.EditActionSet);
+            Assert.IsNotNull(fixture.Mapper.EditLayer);
+
+            // The rebound editor drives the action the mapper is running, so a mode switch
+            // reaches the live layer instead of throwing against an orphaned copy.
+            StickSideViewModel ls = reboundVM.LeftStickKeybinds;
+            ls.SelectedModeIndex = DirectionalPadModeIndex;
+            Assert.IsInstanceOfType(ls.SettingsViewModel, typeof(StickPadActionPropViewModel));
+            Assert.AreSame(ls.CurrentAction,
+                fixture.Mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.stickActionDict["LeftStick"]);
+        }
+
         private const int DirectionalPadModeIndex = 2;
 
         private static void SelectAnalogEmulationLayout(StickPadActionPropViewModel padVM)

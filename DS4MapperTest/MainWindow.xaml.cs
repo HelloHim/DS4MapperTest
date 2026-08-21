@@ -777,6 +777,41 @@ namespace DS4MapperTest
             return true;
         }
 
+        // Saving a universal profile (and renaming the one being edited) hands the stored
+        // profile back to UniversalMappingRuntime.SwitchProfile, which recompiles it into
+        // the live mapper. That builds a brand new Profile object graph and clears
+        // Mapper.EditActionSet/EditLayer, but the editor view model went on holding the
+        // pre-save graph, so from the first save onwards the editor and the running mapper
+        // were two different profiles: panels showed every later edit while the controller
+        // ignored it, the next save serialised the mapper's own untouched copy back over
+        // those edits, and any panel that rebuilt a prop view model threw on the cleared
+        // edit layer - an exception WPF swallows as a failed binding update, leaving a mode
+        // selector showing a mode whose settings were never loaded. Rebind the editor onto
+        // whichever profile the mapper is actually running.
+        private void RebindEditorToLiveProfile()
+        {
+            ProfileEditorTestViewModel staleVM = editorTestVM;
+            Mapper mapper = staleVM?.DeviceMapper;
+            if (mapper == null || ReferenceEquals(mapper.ActionProfile, staleVM.CurrentProfile)) return;
+
+            InlineBindingEditorService.CloseAny();
+            ExitRenameSetMode();
+            ExitRenameLayerMode();
+
+            // Same reason as LoadProfileForDevice: clear the inherited bindings and let WPF
+            // process the clear before the replacement view model is attached.
+            DataContext = null;
+            Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
+            staleVM.UnregisterEvents();
+            editorTestVM = new ProfileEditorTestViewModel(mapper, staleVM.ProfileEnt, mapper.ActionProfile);
+            DataContext = editorTestVM;
+            editorTestVM.Test();
+            RaiseUniversalControllerStateProperties();
+
+            RefreshActionSetCombo();
+            RefreshActionLayerCombo();
+        }
+
         private void RefreshDeviceCombo()
         {
             if (currentDeviceItem == null) return;
@@ -2651,6 +2686,7 @@ namespace DS4MapperTest
                 RefreshUniversalProfileLists();
                 RefreshProfileCombo();
                 RefreshProfileList();
+                RebindEditorToLiveProfile();
             }
             catch (Exception ex)
             {
@@ -2797,9 +2833,16 @@ namespace DS4MapperTest
                     RefreshUniversalProfileLists();
                     RefreshProfileCombo();
                     RefreshProfileList();
+
+                    // The save handed the stored profile back to the live mapper, which
+                    // recompiled it and left activeVM editing the graph it replaced.
+                    if (ReferenceEquals(editorTestVM, activeVM))
+                    {
+                        RebindEditorToLiveProfile();
+                    }
                 }
 
-                activeVM.MarkProfileClean();
+                (editorTestVM ?? activeVM).MarkProfileClean();
                 saveProfileButton.Content = "Saved ✓";
                 ShowSaveStatusPill(success: true);
                 StartSaveStatusHideTimer(TimeSpan.FromSeconds(2.5), revertButton: true);
