@@ -24,7 +24,6 @@ namespace DS4MapperTest
         public BackendManager Manager { get => manager; }
 
         private Thread testThread;
-        private Timer collectTimer;
         private ArgumentParser _parser;
         private LoggerHolder logHolder;
 
@@ -260,13 +259,6 @@ namespace DS4MapperTest
             }
 
             window.StartCheckProcess();
-
-            collectTimer = new Timer(GarbageTask, null, 30000, 30000);
-        }
-
-        private void GarbageTask(object state)
-        {
-            GC.Collect(0, GCCollectionMode.Forced, false);
         }
 
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

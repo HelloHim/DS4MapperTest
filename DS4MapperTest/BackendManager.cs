@@ -553,8 +553,18 @@ namespace DS4MapperTest
             }
         }
 
+        private const double MAPPING_LOOP_PERIOD_MS = 8.0;
+
         private void UniversalMappingLoop()
         {
+            // Paced against a deadline rather than sleeping a fixed eight
+            // milliseconds after each pass. A fixed sleep makes the real period
+            // eight milliseconds plus however long the pass took, so the poll
+            // rate sagged below the intended 125 Hz whenever the machine was
+            // busy, which is exactly when a game needs it least.
+            Stopwatch clock = Stopwatch.StartNew();
+            double nextTickMs = clock.Elapsed.TotalMilliseconds;
+
             while (!stopUniversalMappingThread)
             {
                 try
@@ -566,7 +576,18 @@ namespace DS4MapperTest
                     logger.Error(ex, "Universal mapping runtime refresh failed.");
                 }
 
-                Thread.Sleep(8);
+                nextTickMs += MAPPING_LOOP_PERIOD_MS;
+                double sleepMs = nextTickMs - clock.Elapsed.TotalMilliseconds;
+                if (sleepMs > 0.0)
+                {
+                    Thread.Sleep((int)Math.Ceiling(sleepMs));
+                }
+                else
+                {
+                    // Fell behind. Resync rather than trying to make up the
+                    // backlog with a burst of catch-up passes.
+                    nextTickMs = clock.Elapsed.TotalMilliseconds;
+                }
             }
         }
 
