@@ -67,6 +67,14 @@ namespace DS4MapperTest.SdlDiagnostics
                     initialisedConsumers++;
                 }
 
+                lock (EventPumpLock)
+                {
+                    if (!EventSubscribers.Contains(pendingEvents))
+                    {
+                        EventSubscribers.Add(pendingEvents);
+                    }
+                }
+
                 error = string.Empty;
                 return true;
             }
@@ -89,6 +97,12 @@ namespace DS4MapperTest.SdlDiagnostics
 
         public void Shutdown()
         {
+            lock (EventPumpLock)
+            {
+                EventSubscribers.Remove(pendingEvents);
+                pendingEvents.Clear();
+            }
+
             lock (InitialisationLock)
             {
                 if (!initialised) return;
@@ -162,7 +176,59 @@ namespace DS4MapperTest.SdlDiagnostics
             return info;
         }
 
+        // SDL keeps one process-wide event queue and hands each event to
+        // whoever polls first. Both the universal mapping backend and the
+        // diagnostics window own an instance of this class and poll it from
+        // their own threads, so opening the diagnostics window used to steal
+        // controller add and remove events from the running mapper at random.
+        //
+        // Draining is now done once under a lock and the result copied to every
+        // live consumer, so each of them sees the full stream.
+        private static readonly object EventPumpLock = new object();
+        private static readonly List<Queue<SdlDiagnosticEvent>> EventSubscribers =
+            new List<Queue<SdlDiagnosticEvent>>();
+        // A consumer that stops polling (a diagnostics window left open with
+        // its refresh timer stopped) must not grow its queue without bound.
+        private const int MaxQueuedEventsPerConsumer = 512;
+        private readonly Queue<SdlDiagnosticEvent> pendingEvents =
+            new Queue<SdlDiagnosticEvent>();
+
         public bool PollEvent(out SdlDiagnosticEvent diagnosticEvent)
+        {
+            lock (EventPumpLock)
+            {
+                if (pendingEvents.Count == 0) DrainSdlEventQueue();
+
+                if (pendingEvents.Count > 0)
+                {
+                    diagnosticEvent = pendingEvents.Dequeue();
+                    return true;
+                }
+            }
+
+            diagnosticEvent = null;
+            return false;
+        }
+
+        // Always called with EventPumpLock held.
+        private static void DrainSdlEventQueue()
+        {
+            SdlDiagnosticEvent diagnosticEvent;
+            while (TranslateNextEvent(out diagnosticEvent))
+            {
+                foreach (Queue<SdlDiagnosticEvent> subscriber in EventSubscribers)
+                {
+                    if (subscriber.Count >= MaxQueuedEventsPerConsumer)
+                    {
+                        subscriber.Dequeue();
+                    }
+
+                    subscriber.Enqueue(diagnosticEvent);
+                }
+            }
+        }
+
+        private static bool TranslateNextEvent(out SdlDiagnosticEvent diagnosticEvent)
         {
             diagnosticEvent = null;
             while (SDL.PollEvent(out Event sdlEvent))
