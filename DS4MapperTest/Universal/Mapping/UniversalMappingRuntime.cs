@@ -107,6 +107,14 @@ namespace DS4MapperTest.Universal.Mapping
         private readonly object sessionsLock = new object();
         private readonly Dictionary<Guid, UniversalMapperSession> sessions =
             new Dictionary<Guid, UniversalMapperSession>();
+
+        // Controllers whose profile could not be selected or compiled, keyed to
+        // the time the next attempt is allowed. Only ever touched from the
+        // mapping thread inside ReconcileSessions.
+        private readonly Dictionary<Guid, DateTimeOffset> unresolvedControllers =
+            new Dictionary<Guid, DateTimeOffset>();
+        private static readonly TimeSpan UnresolvedRetryInterval = TimeSpan.FromSeconds(5);
+
         private bool started;
         private bool disposed;
 
@@ -313,7 +321,7 @@ namespace DS4MapperTest.Universal.Mapping
                 .ToHashSet();
 
             List<UniversalMapperSession> removed = new List<UniversalMapperSession>();
-            List<Guid> missing = new List<Guid>();
+            HashSet<Guid> missing = new HashSet<Guid>();
             lock (sessionsLock)
             {
                 foreach (Guid staleId in sessions.Keys.Where(item => !connectedIds.Contains(item)).ToArray())
@@ -324,7 +332,18 @@ namespace DS4MapperTest.Universal.Mapping
                     logger.Info($"Disposed universal mapper session {staleId} after controller removal.");
                 }
 
-                missing.AddRange(connectedIds.Where(item => !sessions.ContainsKey(item)));
+                foreach (Guid connectedId in connectedIds)
+                {
+                    if (!sessions.ContainsKey(connectedId)) missing.Add(connectedId);
+                }
+            }
+
+            // A controller that has gone away gets a fresh attempt if it comes
+            // back, so its earlier failure must not be remembered.
+            foreach (Guid staleId in unresolvedControllers.Keys
+                .Where(item => !connectedIds.Contains(item)).ToArray())
+            {
+                unresolvedControllers.Remove(staleId);
             }
 
             // Disposing takes a session's own lock, so do it outside this
@@ -339,12 +358,24 @@ namespace DS4MapperTest.Universal.Mapping
                 Guid logicalId = controller.Identity.LogicalControllerId;
                 if (!missing.Contains(logicalId)) continue;
 
+                // Reconcile runs on every pass of the mapping loop, so a
+                // controller that cannot be given a profile would otherwise be
+                // retried 125 times a second. Each attempt walks the profile
+                // directory and writes a log line, which turned an empty or
+                // unreadable profile store into a permanent disk and log
+                // hammer. Back off instead, slowly enough to cost nothing and
+                // often enough that creating a profile still takes effect
+                // without replugging the controller.
+                if (IsBackingOff(logicalId)) continue;
+
                 UniversalProfile profile = profileSelector.SelectProfile(controller);
                 if (profile == null)
                 {
-                    logger.Warn($"No universal profile available for controller {logicalId} from {controller.Identity.BackendName}.");
+                    BackOff(logicalId, "no universal profile available");
                     continue;
                 }
+
+                unresolvedControllers.Remove(logicalId);
 
                 try
                 {
@@ -374,6 +405,10 @@ namespace DS4MapperTest.Universal.Mapping
                 }
                 catch (Exception ex) when (ex is JsonException || ex is UniversalProfileCompilationException || ex is UniversalProfileValidationException)
                 {
+                    // A profile that will not compile now will not compile on
+                    // the next pass either, so back off on the same terms as a
+                    // missing one.
+                    BackOff(logicalId, $"profile activation failed: {ex.Message}");
                     logger.Error(ex, $"Failed to activate universal profile for controller {logicalId} from {controller.Identity.BackendName}.");
                 }
             }
@@ -381,6 +416,28 @@ namespace DS4MapperTest.Universal.Mapping
             if (changed)
             {
                 SessionsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private bool IsBackingOff(Guid logicalControllerId)
+        {
+            return unresolvedControllers.TryGetValue(logicalControllerId,
+                    out DateTimeOffset retryAfter) &&
+                UniversalMonotonicClock.UtcNow < retryAfter;
+        }
+
+        private void BackOff(Guid logicalControllerId, string reason)
+        {
+            bool firstFailure = !unresolvedControllers.ContainsKey(logicalControllerId);
+            unresolvedControllers[logicalControllerId] =
+                UniversalMonotonicClock.UtcNow + UnresolvedRetryInterval;
+
+            // Only the first failure of a run is worth a line. Repeats are the
+            // same message about the same controller and would fill the log.
+            if (firstFailure)
+            {
+                logger.Warn($"Controller {logicalControllerId} left unmapped ({reason}). " +
+                    $"Retrying every {UnresolvedRetryInterval.TotalSeconds:0} seconds.");
             }
         }
 

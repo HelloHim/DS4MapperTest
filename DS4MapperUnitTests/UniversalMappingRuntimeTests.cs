@@ -284,6 +284,66 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
+        public void UnresolvableControllerIsNotRetriedOnEveryRefresh()
+        {
+            // Reconcile runs on every pass of the mapping loop. Without a
+            // backoff, a controller with no usable profile made the runtime
+            // walk the profile store and log a warning 125 times a second.
+            UniversalController controller = CreateController(
+                UniversalControllerBackendIds.Sdl3,
+                "unresolvable",
+                false,
+                Capabilities(UniversalInputId.FaceButtonSouth));
+            CountingProfileSelector selector = new CountingProfileSelector(null);
+            using UniversalMappingRuntime runtime = new UniversalMappingRuntime(
+                new UniversalControllerManager(new[] { new FakeUniversalBackend(controller) }),
+                selector,
+                new RecordingVirtualKeyboard(),
+                CreateMapping());
+
+            runtime.Start();
+            int attemptsAfterStart = selector.Attempts;
+
+            for (int i = 0; i < 50; i++)
+            {
+                runtime.Refresh();
+            }
+
+            Assert.AreEqual(0, runtime.Sessions.Count);
+            Assert.AreEqual(attemptsAfterStart, selector.Attempts);
+        }
+
+        [TestMethod]
+        public void ControllerIsRetriedOnceAProfileBecomesAvailable()
+        {
+            UniversalController controller = CreateController(
+                UniversalControllerBackendIds.Sdl3,
+                "recovers",
+                false,
+                Capabilities(UniversalInputId.FaceButtonSouth));
+            CountingProfileSelector selector = new CountingProfileSelector(null);
+            using UniversalMappingRuntime runtime = new UniversalMappingRuntime(
+                new UniversalControllerManager(new[] { new FakeUniversalBackend(controller) }),
+                selector,
+                new RecordingVirtualKeyboard(),
+                CreateMapping());
+
+            runtime.Start();
+            Assert.AreEqual(0, runtime.Sessions.Count);
+
+            selector.Profile = CreateProfile("late", Binding(UniversalInputId.FaceButtonSouth, 1));
+            runtime.Refresh();
+
+            // Still inside the backoff window, so nothing has changed yet.
+            Assert.AreEqual(0, runtime.Sessions.Count);
+
+            Thread.Sleep(TimeSpan.FromSeconds(5.2));
+            runtime.Refresh();
+
+            Assert.AreEqual(1, runtime.Sessions.Count);
+        }
+
+        [TestMethod]
         public void ProfileSwitchReleasesOldActionBeforeNewProfileActivates()
         {
             UniversalController controller = CreateController(
@@ -677,6 +737,23 @@ namespace DS4MapperUnitTests
             public UniversalProfile SelectProfile(IUniversalController controller)
             {
                 return profile?.Clone();
+            }
+        }
+
+        private sealed class CountingProfileSelector : IUniversalProfileSelector
+        {
+            public CountingProfileSelector(UniversalProfile profile)
+            {
+                Profile = profile;
+            }
+
+            public UniversalProfile Profile { get; set; }
+            public int Attempts { get; private set; }
+
+            public UniversalProfile SelectProfile(IUniversalController controller)
+            {
+                Attempts++;
+                return Profile?.Clone();
             }
         }
 
