@@ -162,6 +162,9 @@ namespace DS4MapperTest
             };
             physicalMouseService.StatusChanged += (_, _) => PhysicalMouseStatusChanged?.Invoke(this, EventArgs.Empty);
             hidHideVisibilityManager = new HidHideVisibilityManager(appGlobal);
+            // Undo anything a previous run left cloaked before this one starts
+            // hiding devices of its own.
+            hidHideVisibilityManager.RecoverOrphanedSession();
 
             mapperDict = new Dictionary<int, Mapper>();
             deviceReadersMap = new Dictionary<InputDeviceBase, DeviceReaderBase>();

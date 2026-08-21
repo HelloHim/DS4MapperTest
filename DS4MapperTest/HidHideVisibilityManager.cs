@@ -15,6 +15,7 @@ namespace DS4MapperTest
         private const string HIDHIDE_INSTALL_DIR =
             @"C:\Program Files\Nefarius Software Solutions\HidHide\x64";
         private const string HIDHIDE_CLI_EXE = "HidHideCLI.exe";
+        private const string SESSION_STATE_FILENAME = "HidHideSession.json";
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -33,6 +34,127 @@ namespace DS4MapperTest
             this.appGlobal = appGlobal;
             appPath = Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty;
             cliPath = ResolveCliPath();
+        }
+
+        private string SessionStatePath => string.IsNullOrEmpty(appGlobal?.appdatapath)
+            ? null
+            : Path.Combine(appGlobal.appdatapath, SESSION_STATE_FILENAME);
+
+        // Cloaking and the hidden device list are driver state, not app state:
+        // they outlive the process that set them. Only ClearSessionOverrides
+        // undid them, and that runs solely on the clean shutdown path, so being
+        // killed from Task Manager or losing power left the controller hidden
+        // from every other application until the user found HidHide and fixed
+        // it by hand. Recording what was changed lets the next launch put it
+        // back before anything else touches HidHide.
+        public void RecoverOrphanedSession()
+        {
+            lock (syncRoot)
+            {
+                string statePath = SessionStatePath;
+                if (string.IsNullOrEmpty(statePath) || !File.Exists(statePath)) return;
+
+                try
+                {
+                    HidHideSessionState state =
+                        JsonConvert.DeserializeObject<HidHideSessionState>(
+                            File.ReadAllText(statePath));
+                    if (state == null) return;
+
+                    foreach (string hiddenPath in state.HiddenDevices ?? new List<string>())
+                    {
+                        if (!string.IsNullOrWhiteSpace(hiddenPath))
+                        {
+                            sessionHiddenDevices.Add(hiddenPath);
+                        }
+                    }
+
+                    sessionRegisteredApp = state.RegisteredApp;
+                    sessionEnabledCloak = state.EnabledCloak;
+
+                    if (sessionHiddenDevices.Count == 0 &&
+                        !sessionRegisteredApp &&
+                        !sessionEnabledCloak)
+                    {
+                        return;
+                    }
+
+                    if (!IsAvailable)
+                    {
+                        logger.Warn("A previous session left devices hidden but HidHide is " +
+                            "no longer available to restore them.");
+                        return;
+                    }
+
+                    logger.Info($"Restoring {sessionHiddenDevices.Count} device(s) hidden by a " +
+                        "previous session that did not shut down cleanly.");
+                    RestoreSessionOverrides();
+                }
+                catch (Exception ex) when (ex is JsonException || ex is IOException ||
+                    ex is UnauthorizedAccessException || ex is InvalidOperationException)
+                {
+                    logger.Warn(ex, "Could not restore HidHide state left by a previous session.");
+                }
+                finally
+                {
+                    sessionHiddenDevices.Clear();
+                    sessionRegisteredApp = false;
+                    sessionEnabledCloak = false;
+                    DeleteSessionState();
+                }
+            }
+        }
+
+        // Always called with syncRoot held.
+        private void PersistSessionState()
+        {
+            string statePath = SessionStatePath;
+            if (string.IsNullOrEmpty(statePath)) return;
+
+            try
+            {
+                if (sessionHiddenDevices.Count == 0 &&
+                    !sessionRegisteredApp &&
+                    !sessionEnabledCloak)
+                {
+                    DeleteSessionState();
+                    return;
+                }
+
+                AtomicFileWriter.WriteText(statePath, JsonConvert.SerializeObject(
+                    new HidHideSessionState
+                    {
+                        HiddenDevices = sessionHiddenDevices.ToList(),
+                        RegisteredApp = sessionRegisteredApp,
+                        EnabledCloak = sessionEnabledCloak,
+                    }));
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                logger.Warn(ex, "Could not record HidHide session state.");
+            }
+        }
+
+        private void DeleteSessionState()
+        {
+            string statePath = SessionStatePath;
+            if (string.IsNullOrEmpty(statePath)) return;
+
+            try
+            {
+                if (File.Exists(statePath)) File.Delete(statePath);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                logger.Warn(ex, "Could not clear the HidHide session state file.");
+            }
+        }
+
+        private sealed class HidHideSessionState
+        {
+            public List<string> HiddenDevices { get; set; }
+            public bool RegisteredApp { get; set; }
+            public bool EnabledCloak { get; set; }
         }
 
         public bool IsAvailable =>
@@ -113,6 +235,13 @@ namespace DS4MapperTest
                     logger.Warn(ex, "HidHide reconcile failed; controller visibility left unchanged. " +
                         "HidHideCLI usually requires DS4MapperTest to run as Administrator.");
                 }
+                finally
+                {
+                    // Recorded even when the reconcile failed part way through:
+                    // whatever was hidden before the failure still needs undoing
+                    // if this process never gets to shut down cleanly.
+                    PersistSessionState();
+                }
             }
         }
 
@@ -125,6 +254,7 @@ namespace DS4MapperTest
                     sessionHiddenDevices.Clear();
                     sessionRegisteredApp = false;
                     sessionEnabledCloak = false;
+                    DeleteSessionState();
                     return;
                 }
 
@@ -136,6 +266,12 @@ namespace DS4MapperTest
                 {
                     logger.Warn(ex, "HidHide session cleanup failed; some devices or the app " +
                         "registration may remain hidden/registered until HidHideCLI is run elevated.");
+                }
+                finally
+                {
+                    // A cleanup that only got part way through leaves the rest
+                    // recorded for the next launch to finish.
+                    PersistSessionState();
                 }
             }
         }
