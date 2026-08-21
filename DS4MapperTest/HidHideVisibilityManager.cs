@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DS4MapperTest
 {
@@ -211,7 +212,7 @@ namespace DS4MapperTest
                             continue;
                         }
 
-                        RunCli($"--dev-hide \"{EscapeCliArg(deviceInstancePath)}\"");
+                        RunCli("--dev-hide", deviceInstancePath);
                         sessionHiddenDevices.Add(deviceInstancePath);
                         logger.Info($"HidHide hidden device '{deviceInstancePath}'");
                     }
@@ -220,7 +221,7 @@ namespace DS4MapperTest
                         StringComparer.OrdinalIgnoreCase).ToArray();
                     foreach (string stalePath in stalePaths)
                     {
-                        RunCli($"--dev-unhide \"{EscapeCliArg(stalePath)}\"");
+                        RunCli("--dev-unhide", stalePath);
                         sessionHiddenDevices.Remove(stalePath);
                         logger.Info($"HidHide restored device '{stalePath}'");
                     }
@@ -280,14 +281,14 @@ namespace DS4MapperTest
         {
             foreach (string hiddenPath in sessionHiddenDevices.ToArray())
             {
-                RunCli($"--dev-unhide \"{EscapeCliArg(hiddenPath)}\"");
+                RunCli("--dev-unhide", hiddenPath);
                 logger.Info($"HidHide restored device '{hiddenPath}'");
             }
             sessionHiddenDevices.Clear();
 
             if (sessionRegisteredApp)
             {
-                RunCli($"--app-unreg \"{EscapeCliArg(appPath)}\"");
+                RunCli("--app-unreg", appPath);
                 sessionRegisteredApp = false;
                 logger.Info($"HidHide unregistered app '{appPath}'");
             }
@@ -447,7 +448,7 @@ namespace DS4MapperTest
             HashSet<string> registeredApps = GetRegisteredApps();
             if (!registeredApps.Contains(appPath))
             {
-                RunCli($"--app-reg \"{EscapeCliArg(appPath)}\"");
+                RunCli("--app-reg", appPath);
                 sessionRegisteredApp = true;
                 logger.Info($"HidHide registered app '{appPath}'");
             }
@@ -520,12 +521,13 @@ namespace DS4MapperTest
             return output.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        private string RunCli(string arguments)
+        private const int CLI_TIMEOUT_MS = 30000;
+
+        private string RunCli(params string[] arguments)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = cliPath,
-                Arguments = arguments,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -533,15 +535,50 @@ namespace DS4MapperTest
                 WorkingDirectory = Path.GetDirectoryName(cliPath),
             };
 
-            using Process process = Process.Start(startInfo);
-            string stdout = process.StandardOutput.ReadToEnd();
-            string stderr = process.StandardError.ReadToEnd();
-            process.WaitForExit();
+            // ArgumentList quotes each value the way the Windows command line
+            // parser expects. Building one string by hand meant a device path
+            // containing a quote produced a mangled argument.
+            foreach (string argument in arguments)
+            {
+                startInfo.ArgumentList.Add(argument);
+            }
+
+            using Process process = Process.Start(startInfo) ??
+                throw new InvalidOperationException(
+                    $"Could not start HidHideCLI at '{cliPath}'.");
+
+            // Both pipes are drained at once. Reading them one after the other
+            // deadlocks as soon as the child fills the buffer of the stream not
+            // being read, which for a redirected pipe is only a few kilobytes.
+            Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> stderrTask = process.StandardError.ReadToEndAsync();
+
+            if (!process.WaitForExit(CLI_TIMEOUT_MS))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (Exception ex) when (ex is InvalidOperationException ||
+                    ex is System.ComponentModel.Win32Exception)
+                {
+                    // Already gone, or cannot be killed. The throw below is
+                    // what matters either way.
+                }
+
+                throw new InvalidOperationException(
+                    $"HidHideCLI did not finish within {CLI_TIMEOUT_MS} ms. " +
+                    $"Args='{string.Join(" ", arguments)}'");
+            }
+
+            string stdout = stdoutTask.GetAwaiter().GetResult();
+            string stderr = stderrTask.GetAwaiter().GetResult();
 
             if (process.ExitCode != 0)
             {
                 throw new InvalidOperationException(
-                    $"HidHideCLI failed with exit code {process.ExitCode}. Args='{arguments}' StdErr='{stderr}'");
+                    $"HidHideCLI failed with exit code {process.ExitCode}. " +
+                    $"Args='{string.Join(" ", arguments)}' StdErr='{stderr}'");
             }
 
             return stdout;
@@ -556,11 +593,6 @@ namespace DS4MapperTest
             };
 
             return candidates.FirstOrDefault(File.Exists) ?? string.Empty;
-        }
-
-        private static string EscapeCliArg(string value)
-        {
-            return value?.Replace("\"", "\\\"") ?? string.Empty;
         }
 
         private sealed class HidHideDeviceInventory

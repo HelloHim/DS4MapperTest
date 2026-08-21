@@ -3830,7 +3830,17 @@ namespace DS4MapperTest.ViewModels
                     device.DeviceOptions);
             }
 
-            (System.Windows.Application.Current as App)?.Manager?.RefreshControllerVisibilityState();
+            // Reconciling shells out to HidHideCLI several times over, once to
+            // dump the device inventory and again per device. Running that
+            // inline froze the window for as long as those child processes took
+            // to answer, which on a machine with plenty of HID devices is a
+            // visible stall every time the box is ticked.
+            BackendManager manager = (System.Windows.Application.Current as App)?.Manager;
+            if (manager != null)
+            {
+                Task.Run(() => manager.RefreshControllerVisibilityState());
+            }
+
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Enabled)));
         }
 
