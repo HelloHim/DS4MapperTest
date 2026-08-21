@@ -72,7 +72,7 @@
 
   <ItemGroup>
     <Reference Include="FakerInputWrapper">
-      <HintPath>..\libs\$(Platform)\FakerInputWrapper\FakerInputWrapper.dll</HintPath>
+      <HintPath>libs\$(Platform)\FakerInputWrapper\FakerInputWrapper.dll</HintPath>
     </Reference>
   </ItemGroup>
 
