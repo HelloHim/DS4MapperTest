@@ -325,8 +325,16 @@ namespace DS4MapperTest
             CleanShutDown();
         }
 
+        // Both the terminating unhandled exception handler and Application_Exit
+        // call this, and on a crash during exit both fire. The second pass used
+        // to redispose the routing controller and the physical mouse service
+        // and shut NLog down again.
+        private int shutdownStarted;
+
         private void CleanShutDown()
         {
+            if (Interlocked.Exchange(ref shutdownStarted, 1) != 0) return;
+
             BackendManager currentManager = manager;
             if (currentManager != null)
             {

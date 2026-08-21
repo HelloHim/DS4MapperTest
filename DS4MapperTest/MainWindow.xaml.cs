@@ -514,7 +514,12 @@ namespace DS4MapperTest
 
         private async void ServiceToggleButton_Click(object sender, RoutedEventArgs e)
         {
-            BackendManager manager = (Application.Current as App).Manager;
+            // Manager is null when the backend failed to construct at startup.
+            // SetMappingServiceRunningAsync already handles that; reading
+            // IsRunning off it first did not.
+            BackendManager manager = (Application.Current as App)?.Manager;
+            if (manager == null) return;
+
             await SetMappingServiceRunningAsync(!manager.IsRunning);
         }
 
@@ -3293,14 +3298,16 @@ namespace DS4MapperTest
                     int type = wParam.ToInt32();
                     if (type == DBT_DEVICEARRIVAL || type == DBT_DEVICEREMOVECOMPLETE)
                     {
+                        bool startPass;
                         using (WriteLocker locker = new WriteLocker(hotplugCounterLock))
                         {
                             hotplugCounter++;
+                            startPass = !inHotPlug;
+                            if (startPass) inHotPlug = true;
                         }
 
-                        if (!inHotPlug)
+                        if (startPass)
                         {
-                            inHotPlug = true;
                             Task.Run(() => InnerHotplug(manager));
                         }
                     }
@@ -3311,26 +3318,26 @@ namespace DS4MapperTest
 
         private void InnerHotplug(BackendManager manager)
         {
-            bool loop;
-            using (WriteLocker locker = new WriteLocker(hotplugCounterLock))
+            while (true)
             {
-                loop = hotplugCounter > 0;
-                hotplugCounter = 0;
-            }
-
-            while (loop)
-            {
-                Thread.Sleep(HOTPLUG_CHECK_DELAY);
-                manager.EventDispatcher.Invoke((Action)(() => manager.Hotplug()));
-
+                // Taking the count and clearing the in-progress flag under the
+                // same lock is what closes the race. Clearing the flag after
+                // the loop had already ended left a window in which a device
+                // arriving right then bumped the counter, saw the flag still
+                // set, started no new pass, and was never acted on.
+                bool loop;
                 using (WriteLocker locker = new WriteLocker(hotplugCounterLock))
                 {
                     loop = hotplugCounter > 0;
                     hotplugCounter = 0;
+                    if (!loop) inHotPlug = false;
                 }
-            }
 
-            inHotPlug = false;
+                if (!loop) return;
+
+                Thread.Sleep(HOTPLUG_CHECK_DELAY);
+                manager.EventDispatcher.Invoke((Action)(() => manager.Hotplug()));
+            }
         }
 
         public void DuplicateProfile(DeviceListItem item, string inputFile, string outputFile)
