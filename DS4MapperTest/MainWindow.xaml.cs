@@ -2239,7 +2239,9 @@ namespace DS4MapperTest
 
             if (folderName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
                 folderName.Contains(Path.DirectorySeparatorChar) ||
-                folderName.Contains(Path.AltDirectorySeparatorChar))
+                folderName.Contains(Path.AltDirectorySeparatorChar) ||
+                folderName.Trim() == "." ||
+                folderName.Trim() == "..")
             {
                 MessageBox.Show("Folder name contains invalid characters.", title,
                     MessageBoxButton.OK, MessageBoxImage.Warning);

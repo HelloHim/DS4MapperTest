@@ -100,7 +100,20 @@ namespace DS4MapperTest
 
         public string GetFolderPath(string folderName)
         {
-            return Path.Combine(GetDeviceProfileRoot(), folderName);
+            string cleanName = NormalizeFolderName(folderName);
+            if (!IsSafeFolderName(cleanName))
+            {
+                throw new ArgumentException("Folder name contains invalid characters.", nameof(folderName));
+            }
+
+            string root = Path.GetFullPath(GetDeviceProfileRoot());
+            string fullPath = Path.GetFullPath(Path.Combine(root, cleanName));
+            if (!fullPath.StartsWith(EnsureTrailingSeparator(root), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Folder name resolves outside the profile root.", nameof(folderName));
+            }
+
+            return fullPath;
         }
 
         public bool FolderExists(string folderName)
@@ -111,7 +124,7 @@ namespace DS4MapperTest
         public bool CreateFolder(string folderName)
         {
             string cleanName = NormalizeFolderName(folderName);
-            if (string.IsNullOrWhiteSpace(cleanName) || FolderExists(cleanName))
+            if (!IsSafeFolderName(cleanName) || FolderExists(cleanName))
             {
                 return false;
             }
@@ -124,8 +137,8 @@ namespace DS4MapperTest
         public bool RenameFolder(string oldFolderName, string newFolderName)
         {
             string cleanName = NormalizeFolderName(newFolderName);
-            if (string.IsNullOrWhiteSpace(oldFolderName) ||
-                string.IsNullOrWhiteSpace(cleanName) ||
+            if (!IsSafeFolderName(NormalizeFolderName(oldFolderName)) ||
+                !IsSafeFolderName(cleanName) ||
                 string.Equals(oldFolderName, cleanName, StringComparison.OrdinalIgnoreCase) ||
                 FolderExists(cleanName))
             {
@@ -156,7 +169,7 @@ namespace DS4MapperTest
 
         public bool DeleteFolder(string folderName)
         {
-            if (string.IsNullOrWhiteSpace(folderName) ||
+            if (!IsSafeFolderName(NormalizeFolderName(folderName)) ||
                 string.Equals(folderName, DEFAULT_PROFILE_FOLDER, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -179,7 +192,7 @@ namespace DS4MapperTest
 
         public bool MoveProfile(ProfileEntity profile, string folderName)
         {
-            if (profile == null || string.IsNullOrWhiteSpace(folderName) ||
+            if (profile == null || !IsSafeFolderName(NormalizeFolderName(folderName)) ||
                 string.Equals(profile.FolderName, folderName, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -382,6 +395,25 @@ namespace DS4MapperTest
         private static string NormalizeFolderName(string folderName)
         {
             return (folderName ?? string.Empty).Trim();
+        }
+
+        // Mirrors the check UniversalProfileStore already applies. A folder name
+        // reaches here straight from the user, and the profile root is the only
+        // directory these operations are ever allowed to touch.
+        private static bool IsSafeFolderName(string cleanName)
+        {
+            return !string.IsNullOrWhiteSpace(cleanName) &&
+                cleanName != "." &&
+                cleanName != ".." &&
+                cleanName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0 &&
+                !cleanName.Contains(Path.DirectorySeparatorChar) &&
+                !cleanName.Contains(Path.AltDirectorySeparatorChar);
+        }
+
+        private static string EnsureTrailingSeparator(string path)
+        {
+            return path.EndsWith(Path.DirectorySeparatorChar) ?
+                path : path + Path.DirectorySeparatorChar;
         }
 
         private static string GetFolderName(string deviceRoot, string profilePath)
