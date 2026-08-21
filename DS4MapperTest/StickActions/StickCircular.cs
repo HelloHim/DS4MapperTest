@@ -447,7 +447,31 @@ namespace DS4MapperTest.StickActions
 
         public override StickMapAction DuplicateAction()
         {
-            throw new NotImplementedException();
+            StickCircular copy = new StickCircular();
+            copy.CopyBaseProps(this);
+            copy.CopyBaseMapProps(this);
+            copy.deadMod = new StickDeadZone(deadMod);
+            copy.sensitivity = sensitivity;
+            copy.ActionHapticsIntensity = actionHapticsIntensity;
+            copy.clockwiseBtn = CopyCircularButton(clockwiseBtn);
+            copy.counterClockwiseBtn = CopyCircularButton(counterClockwiseBtn);
+            return copy;
+        }
+
+        private static TouchpadCircularButton CopyCircularButton(TouchpadCircularButton sourceBtn)
+        {
+            if (sourceBtn == null) return null;
+
+            // ButtonAction.DuplicateAction returns a plain ButtonAction, which would
+            // drop the circular button type these fields are declared as.
+            TouchpadCircularButton copy = new TouchpadCircularButton();
+            copy.CopyBaseProps(sourceBtn);
+            foreach (ActionFunc func in sourceBtn.ActionFuncs)
+            {
+                copy.ActionFuncs.Add(ActionFuncCopyFactory.CopyFunc(func));
+            }
+
+            return copy;
         }
     }
 }

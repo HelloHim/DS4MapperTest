@@ -676,12 +676,34 @@ namespace DS4MapperTest.GyroActions
 
         public override void BlankEvent(Mapper mapper)
         {
-            throw new NotImplementedException();
+            Release(mapper);
         }
 
         public override GyroMapAction DuplicateAction()
         {
-            throw new NotImplementedException();
+            GyroDirectionalSwipe copy = new GyroDirectionalSwipe();
+            copy.CopyBaseProps(this);
+            copy.CopyBaseMapProps(this);
+
+            // swipeParams is a struct, so the assignment carries every setting
+            // except the trigger array, which both copies would otherwise share.
+            copy.swipeParams = swipeParams;
+            copy.swipeParams.gyroTriggerButtons =
+                swipeParams.gyroTriggerButtons?.ToArray();
+
+            for (int i = 0; i < usedEventsButtonsX.Length; i++)
+            {
+                copy.usedEventsButtonsX[i] =
+                    usedEventsButtonsX[i]?.DuplicateAction() as ButtonAction;
+            }
+
+            for (int i = 0; i < usedEventsButtonsY.Length; i++)
+            {
+                copy.usedEventsButtonsY[i] =
+                    usedEventsButtonsY[i]?.DuplicateAction() as ButtonAction;
+            }
+
+            return copy;
         }
     }
 }

@@ -125,7 +125,15 @@ namespace DS4MapperTest.ButtonActions
 
         public override ButtonMapAction DuplicateAction()
         {
-            throw new NotImplementedException();
+            CycleButton copy = new CycleButton(cycleIdentifier);
+            copy.CopyBaseProps(this);
+            foreach (OutputActionData outputAction in actions)
+            {
+                copy.actions.Add(new OutputActionData(outputAction));
+            }
+
+            copy.CreateNewEnumerator();
+            return copy;
         }
 
         public override void PrepareAnalog(Mapper mapper, double axisValue, double axisUnit, bool alterState = true)

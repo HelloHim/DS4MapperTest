@@ -484,7 +484,25 @@ namespace DS4MapperTest.StickActions
 
         public override StickMapAction DuplicateAction()
         {
-            throw new NotImplementedException();
+            StickFlickStick copy = new StickFlickStick();
+            copy.CopyBaseProps(this);
+            copy.CopyBaseMapProps(this);
+            copy.realWorldCalibration = realWorldCalibration;
+            copy.flickThreshold = flickThreshold;
+            copy.flickTime = flickTime;
+            copy.flickTimeExponent = flickTimeExponent;
+            copy.minAngleThreshold = minAngleThreshold;
+            copy.inGameSens = inGameSens;
+            copy.releaseDampeningSpeed = releaseDampeningSpeed;
+            copy.multiplierCompensation = multiplierCompensation;
+            copy.accelerationMultiplier = accelerationMultiplier;
+            copy.rotateSmoothOverride = rotateSmoothOverride;
+            copy.subMode = subMode;
+            copy.snapAngle = snapAngle;
+            copy.snapStrength = snapStrength;
+            copy.sweepSensitivity = sweepSensitivity;
+            copy.frontAngleDeadzone = frontAngleDeadzone;
+            return copy;
         }
 
         private static double WarpEaseOut(double input)

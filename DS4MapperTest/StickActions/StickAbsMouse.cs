@@ -430,7 +430,19 @@ namespace DS4MapperTest.StickActions
 
         public override StickMapAction DuplicateAction()
         {
-            throw new NotImplementedException();
+            StickAbsMouse copy = new StickAbsMouse();
+            copy.CopyBaseProps(this);
+            copy.CopyBaseMapProps(this);
+            copy.deadMod = new StickDeadZone(deadMod);
+            copy.absRange = absRange;
+            copy.antiRelease = antiRelease;
+            copy.snapToCenterRelease = snapToCenterRelease;
+            copy.outerRing = outerRing;
+            copy.useRingButton = useRingButton;
+            copy.outerRingDeadZone = outerRingDeadZone;
+            copy.ringButton = ringButton != null ?
+                (AxisDirButton)ringButton.DuplicateAction() : null;
+            return copy;
         }
 
         public override void SoftCopyFromParent(StickMapAction parentAction)

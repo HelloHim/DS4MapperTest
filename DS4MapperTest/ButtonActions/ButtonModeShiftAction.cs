@@ -98,7 +98,17 @@ namespace DS4MapperTest.ButtonActions
 
         public override ButtonMapAction DuplicateAction()
         {
-            throw new NotImplementedException();
+            ButtonModeShiftAction copy = new ButtonModeShiftAction();
+            copy.CopyBaseProps(this);
+            copy.modeShiftTrigger = modeShiftTrigger;
+            copy.primaryAction = primaryAction?.DuplicateAction();
+            copy.modeShiftAction = modeShiftAction?.DuplicateAction();
+
+            // ButtonDistance and AxisUnit read straight off currentAction, so the
+            // copy needs the same starting branch Prepare would pick unshifted
+            // rather than a null it would be asked about before its first Prepare.
+            copy.currentAction = copy.primaryAction;
+            return copy;
         }
     }
 }
