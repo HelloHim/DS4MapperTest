@@ -28,6 +28,14 @@ namespace DS4MapperTest
         private ArgumentParser _parser;
         private LoggerHolder logHolder;
 
+        // Global rather than session scoped so a second copy is caught even
+        // when it is launched from another session, such as a scheduled task
+        // or a fast user switch.
+        private const string SINGLE_INSTANCE_MUTEX_NAME =
+            @"Global\DS4MapperTest_SingleInstance";
+        private Mutex singleInstanceMutex;
+        private bool ownsSingleInstanceMutex;
+
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             // Wired up before anything that can fail. These used to be attached
@@ -35,6 +43,17 @@ namespace DS4MapperTest
             // the default WPF crash dialog with nothing written to the log.
             DispatcherUnhandledException += App_DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
+            if (!ClaimSingleInstance())
+            {
+                MessageBox.Show(
+                    "DS4MapperTest is already running.\n\n" +
+                    "Only one copy can map controllers at a time. Use the copy " +
+                    "that is already open.",
+                    "DS4MapperTest", MessageBoxButton.OK, MessageBoxImage.Information);
+                Shutdown(0);
+                return;
+            }
 
             _parser = new ArgumentParser();
             _parser.Parse(e.Args);
@@ -47,6 +66,60 @@ namespace DS4MapperTest
             {
                 ReportFatalStartupFailure(ex);
             }
+        }
+
+        // Two copies of a remapper means every button press is emitted twice,
+        // two USB/IP servers fight over the same port, two writers race on the
+        // same profile files and two HidHide sessions contend for the cloak
+        // list. None of that is recoverable once it has started, so the second
+        // copy has to be stopped before it does any work at all.
+        private bool ClaimSingleInstance()
+        {
+            try
+            {
+                singleInstanceMutex = new Mutex(true, SINGLE_INSTANCE_MUTEX_NAME,
+                    out ownsSingleInstanceMutex);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // The mutex exists but this session cannot open it, which still
+                // means another copy created it.
+                return false;
+            }
+            catch (WaitHandleCannotBeOpenedException)
+            {
+                return false;
+            }
+
+            if (!ownsSingleInstanceMutex)
+            {
+                singleInstanceMutex.Dispose();
+                singleInstanceMutex = null;
+            }
+
+            return ownsSingleInstanceMutex;
+        }
+
+        private void ReleaseSingleInstance()
+        {
+            if (singleInstanceMutex == null) return;
+
+            try
+            {
+                if (ownsSingleInstanceMutex)
+                {
+                    singleInstanceMutex.ReleaseMutex();
+                    ownsSingleInstanceMutex = false;
+                }
+            }
+            catch (ApplicationException)
+            {
+                // Released from a thread that does not hold it, or already
+                // abandoned by a crash. Disposing below is all that is left.
+            }
+
+            singleInstanceMutex.Dispose();
+            singleInstanceMutex = null;
         }
 
         private void ReportFatalStartupFailure(Exception ex)
@@ -281,6 +354,8 @@ namespace DS4MapperTest
 
             // Reset timer
             Util.timeEndPeriod(1);
+
+            ReleaseSingleInstance();
         }
     }
 }
