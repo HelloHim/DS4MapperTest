@@ -269,18 +269,83 @@ namespace DS4MapperTest.ViewModels
                 CopyReleasePressSettings(oldReleasePress, newAnalog.CounterMovementReleasePress);
                 CopyDeadZoneAndRotation(oldDeadMod, oldRotation, newAnalog.DeadMod, val => newAnalog.Rotation = val);
             }
+            else
+            {
+                return;
+            }
+
+            MarkCarriedSettingsChanged(newAction);
         }
+
+        // A serializer only writes a setting the action lists in ChangedProperties, so a
+        // value carried across the mode switch above is live in memory but absent from the
+        // profile the next save produces: reloading brings the new mode back with stock
+        // defaults and the carried settings gone. Flag everything carried over as changed
+        // so what the panel shows after the switch is what actually gets stored.
+        private static void MarkCarriedSettingsChanged(StickMapAction action)
+        {
+            // StickPadAction and StickAnalogEmulationAction spell these keys separately but
+            // identically - they are the serialised setting names, shared by both modes for
+            // the same reason the settings themselves are.
+            foreach (string propertyName in carriedSettingPropertyNames)
+            {
+                if (!action.ChangedProperties.Contains(propertyName))
+                {
+                    action.ChangedProperties.Add(propertyName);
+                }
+            }
+        }
+
+        private static readonly string[] carriedSettingPropertyNames = new string[]
+        {
+            StickPadAction.PropertyKeyStrings.DEAD_ZONE_TYPE,
+            StickPadAction.PropertyKeyStrings.DEAD_ZONE,
+            StickPadAction.PropertyKeyStrings.SEPARATE_AXIS_DEAD_ZONES,
+            StickPadAction.PropertyKeyStrings.DEAD_ZONE_X,
+            StickPadAction.PropertyKeyStrings.DEAD_ZONE_Y,
+            StickPadAction.PropertyKeyStrings.MAX_ZONE,
+            StickPadAction.PropertyKeyStrings.ROTATION,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_ENABLED,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_USE_ARROW_KEYS,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_PRESET,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MODE,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_FIXED_MS,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_VARIANCE_PERCENT,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MIN_MS,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_PRESS_LENGTH_MAX_MS,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MODE,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_FIXED_MS,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_VARIANCE_PERCENT,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MIN_MS,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_START_DELAY_MAX_MS,
+            StickPadAction.PropertyKeyStrings.COUNTER_MOVEMENT_MIN_HOLD_MS,
+            StickPadAction.PropertyKeyStrings.REQUIRED_STICK_DEFLECTION_THRESHOLD,
+        };
 
         private static void CopyReleasePressSettings(CounterMovementReleasePressProcessor src, CounterMovementReleasePressProcessor dst)
         {
             if (src == null || dst == null) return;
 
             dst.Enabled = src.Enabled;
+            dst.UseArrowKeysForCounterMovementPresses = src.UseArrowKeysForCounterMovementPresses;
             dst.PressLengthPreset = src.PressLengthPreset;
+
+            // Every representation of both timings is stored side by side and kept in sync
+            // by whichever one the user edits, so the mode has to travel with its numbers:
+            // copying only the ranges left the new action on its default Time Variance (%)
+            // mode reading a fixed duration the user never chose.
+            dst.CounterPressLengthMode = src.CounterPressLengthMode;
+            dst.CounterPressLengthMs = src.CounterPressLengthMs;
+            dst.CounterPressLengthVariancePercent = src.CounterPressLengthVariancePercent;
             dst.CounterPressLengthMinimumMs = src.CounterPressLengthMinimumMs;
             dst.CounterPressLengthMaximumMs = src.CounterPressLengthMaximumMs;
+
+            dst.CounterPressStartDelayMode = src.CounterPressStartDelayMode;
+            dst.CounterPressStartDelayMs = src.CounterPressStartDelayMs;
+            dst.CounterPressStartDelayVariancePercent = src.CounterPressStartDelayVariancePercent;
             dst.CounterPressStartDelayMinimumMs = src.CounterPressStartDelayMinimumMs;
             dst.CounterPressStartDelayMaximumMs = src.CounterPressStartDelayMaximumMs;
+
             dst.MinimumHoldMs = src.MinimumHoldMs;
             dst.ArmingThreshold = src.ArmingThreshold;
         }
@@ -291,6 +356,12 @@ namespace DS4MapperTest.ViewModels
 
             dst.DeadZoneType = src.DeadZoneType;
             dst.DeadZone = src.DeadZone;
+            // Both modes offer the same split-axis dead zone and max zone rows, so a stick
+            // shaped on one of them has to arrive on the other still shaped the same way.
+            dst.SeparateAxisDeadZones = src.SeparateAxisDeadZones;
+            dst.DeadZoneX = src.DeadZoneX;
+            dst.DeadZoneY = src.DeadZoneY;
+            dst.MaxZone = src.MaxZone;
             setRotation(srcRotation);
         }
 
