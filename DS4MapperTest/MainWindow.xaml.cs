@@ -3287,8 +3287,8 @@ namespace DS4MapperTest
         {
             if (msg == Util.WM_DEVICECHANGE)
             {
-                BackendManager manager = (Application.Current as App).Manager;
-                if (manager.IsRunning)
+                BackendManager manager = (Application.Current as App)?.Manager;
+                if (manager?.IsRunning == true)
                 {
                     int type = wParam.ToInt32();
                     if (type == DBT_DEVICEARRIVAL || type == DBT_DEVICEREMOVECOMPLETE)

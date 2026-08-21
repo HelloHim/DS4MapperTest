@@ -621,7 +621,7 @@ namespace DS4MapperTest
                 universalMappingThread.IsAlive &&
                 Thread.CurrentThread != universalMappingThread)
             {
-                universalMappingThread.Join();
+                universalMappingThread.Join(TimeSpan.FromSeconds(2));
             }
 
             universalMappingThread = null;

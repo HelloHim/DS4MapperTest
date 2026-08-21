@@ -187,22 +187,24 @@ namespace DS4MapperTest
 
         private void CleanShutDown()
         {
+            BackendManager currentManager = manager;
+            if (currentManager != null)
             {
-                manager?.LogDebug($"Stopping manager");
+                currentManager.LogDebug($"Stopping manager");
 
                 Task tempTask = Task.Run(() =>
                 {
-                    manager?.PreAppStopDown();
-                    manager?.Stop();
+                    currentManager.PreAppStopDown();
+                    currentManager.Stop();
                 });
                 tempTask.Wait();
 
-                manager.ShutDown();
+                currentManager.ShutDown();
 
-                manager?.LogDebug($"Manager stopped");
+                currentManager.LogDebug($"Manager stopped");
             }
 
-            manager?.LogDebug($"Stopping program");
+            currentManager?.LogDebug($"Stopping program");
 
             LogManager.Flush();
             LogManager.Shutdown();
