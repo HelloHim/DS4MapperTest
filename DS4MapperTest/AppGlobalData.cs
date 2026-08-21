@@ -22,7 +22,11 @@ namespace DS4MapperTest
     {
         public const string APP_SETTINGS_FILENAME = "Settings.json";
         public const string CONTROLLER_CONFIGS_FILENAME = "ControllerConfigs.json";
-        public const string APP_FOLDER_NAME = "DS4Test";
+        public const string APP_FOLDER_NAME = "DS4TestUniversal";
+
+        // What upstream DS4MapperTest uses. This fork must not read, write,
+        // move, copy or rearrange that folder automatically.
+        public const string LEGACY_APP_FOLDER_NAME = "DS4Test";
         public const string DEVELOPMENT_APP_FOLDER_NAME = ApplicationDataPathResolver.DevelopmentAppFolderName;
         public const string PROFILES_FOLDER_NAME = "Profiles";
         public const string LEGACY_PROFILES_FOLDER_NAME = "LegacyProfiles";
