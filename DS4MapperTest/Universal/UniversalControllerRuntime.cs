@@ -274,7 +274,7 @@ namespace DS4MapperTest.Universal
         public static UniversalControllerStateSnapshot Disconnected(long sequence = 0)
         {
             return new UniversalControllerStateSnapshot(
-                DateTimeOffset.UtcNow,
+                UniversalMonotonicClock.UtcNow,
                 sequence,
                 false,
                 new Dictionary<UniversalInputId, UniversalInputValue>());

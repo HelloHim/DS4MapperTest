@@ -535,17 +535,32 @@ namespace DS4MapperTest.Universal.Mapping
             return false;
         }
 
-        private static double CalculateElapsedSeconds(
+        // The nominal poll period, used whenever a real interval cannot be
+        // worked out.
+        internal const double DefaultElapsedSeconds = 1.0 / 125.0;
+
+        // Roughly six poll periods. Anything longer is a stall, a resume from
+        // sleep or a clock adjustment, never real controller motion.
+        internal const double MaxElapsedSeconds = 0.05;
+
+        internal static double CalculateElapsedSeconds(
             UniversalControllerStateSnapshot current,
             UniversalControllerStateSnapshot previous)
         {
             if (previous == null || previous.Sequence == 0)
             {
-                return 1.0 / 125.0;
+                return DefaultElapsedSeconds;
             }
 
             double elapsed = (current.TimestampUtc - previous.TimestampUtc).TotalSeconds;
-            return elapsed > 0.0 ? elapsed : 1.0 / 125.0;
+            if (elapsed <= 0.0) return DefaultElapsedSeconds;
+
+            // Mouse and gyro output integrate this value, so an unbounded gap
+            // is multiplied straight into a pointer movement. Suspending the
+            // machine with a stick held off centre produced one frame carrying
+            // the whole sleep duration, and the cursor crossed the screen the
+            // moment the machine woke up.
+            return elapsed > MaxElapsedSeconds ? MaxElapsedSeconds : elapsed;
         }
 
         private static InputDeviceType ResolveDeviceType(IUniversalController controller)

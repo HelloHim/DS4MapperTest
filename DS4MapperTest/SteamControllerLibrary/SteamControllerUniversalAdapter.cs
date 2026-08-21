@@ -186,7 +186,7 @@ namespace DS4MapperTest.SteamControllerLibrary
                 };
 
             return new UniversalControllerStateSnapshot(
-                DateTimeOffset.UtcNow,
+                UniversalMonotonicClock.UtcNow,
                 sequence,
                 true,
                 values);

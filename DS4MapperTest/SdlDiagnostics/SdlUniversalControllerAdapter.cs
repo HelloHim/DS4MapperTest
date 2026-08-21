@@ -805,7 +805,7 @@ namespace DS4MapperTest.SdlDiagnostics
                             tracked.Controller.Capabilities,
                             true,
                             tracked.Sequence,
-                            DateTimeOffset.UtcNow));
+                            UniversalMonotonicClock.UtcNow));
                     }
                     catch (Exception ex)
                     {
@@ -992,7 +992,7 @@ namespace DS4MapperTest.SdlDiagnostics
                     deviceIdentity,
                     DateTimeOffset.UtcNow),
                 capabilities,
-                translator.CreateState(info, capabilities, true, 1, DateTimeOffset.UtcNow));
+                translator.CreateState(info, capabilities, true, 1, UniversalMonotonicClock.UtcNow));
             controller.PublishBatteryPercent(info.BatteryPercent);
 
             devices[instanceId] = new TrackedDevice
@@ -1036,7 +1036,7 @@ namespace DS4MapperTest.SdlDiagnostics
                 capabilities,
                 true,
                 tracked.Sequence,
-                DateTimeOffset.UtcNow));
+                UniversalMonotonicClock.UtcNow));
         }
 
         private void CloseDevice(uint instanceId, string reason)
