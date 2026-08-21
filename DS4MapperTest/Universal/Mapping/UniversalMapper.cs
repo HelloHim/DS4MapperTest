@@ -54,6 +54,8 @@ namespace DS4MapperTest.Universal.Mapping
             (JoypadActionCodes.RPadTouch, UniversalInputId.RightTouchSurface),
             (JoypadActionCodes.LPadClick, UniversalInputId.LeftTouchSurfaceClick),
             (JoypadActionCodes.RPadClick, UniversalInputId.RightTouchSurfaceClick),
+            (JoypadActionCodes.CenterPadTouch, UniversalInputId.PrimaryTouchSurface),
+            (JoypadActionCodes.CenterPadClick, UniversalInputId.PrimaryTouchSurfaceClick),
             (JoypadActionCodes.BtnSelect, UniversalInputId.View),
             (JoypadActionCodes.BtnStart, UniversalInputId.Menu),
             (JoypadActionCodes.BtnMode, UniversalInputId.System),
@@ -62,6 +64,18 @@ namespace DS4MapperTest.Universal.Mapping
 
         private static readonly IReadOnlyDictionary<JoypadActionCodes, UniversalInputId> ActivationCodeToInput =
             ActivationCandidates.ToDictionary(pair => pair.Code, pair => pair.Input);
+
+        // A single-pad controller reports its whole surface and that surface's
+        // click under the same native label ("Touchpad"), which would leave two
+        // identical rows in every activation list. Name them the way the rest of
+        // the editor names that pad, and keep the touch/click distinction the
+        // left and right region entries already spell out.
+        private static readonly IReadOnlyDictionary<JoypadActionCodes, string> ActivationLabelOverrides =
+            new Dictionary<JoypadActionCodes, string>
+            {
+                [JoypadActionCodes.CenterPadTouch] = "Center Touchpad Touch",
+                [JoypadActionCodes.CenterPadClick] = "Center Touchpad Click",
+            };
 
         private UniversalControllerStateSnapshot currentSnapshot =
             UniversalControllerStateSnapshot.Disconnected();
@@ -281,8 +295,10 @@ namespace DS4MapperTest.Universal.Mapping
             foreach ((JoypadActionCodes code, UniversalInputId input) in ActivationCandidates)
             {
                 if (capabilities?.Supports(input) != true) continue;
-                actionTriggerItems.Add(new ActionTriggerItem(
-                    ControllerLabelProvider.GetLabel(input, capabilities), code));
+                string label = ActivationLabelOverrides.TryGetValue(code, out string overrideLabel)
+                    ? overrideLabel
+                    : ControllerLabelProvider.GetLabel(input, capabilities);
+                actionTriggerItems.Add(new ActionTriggerItem(label, code));
             }
         }
 
