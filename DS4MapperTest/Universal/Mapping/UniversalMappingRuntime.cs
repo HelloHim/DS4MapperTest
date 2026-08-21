@@ -141,15 +141,29 @@ namespace DS4MapperTest.Universal.Mapping
             this.controllerManager.ControllersChanged += ControllerManager_ControllersChanged;
         }
 
+        // Rebuilt only when the session set actually changes. Refresh reads
+        // this on every tick of the mapping loop, so returning a fresh array
+        // and wrapper each time meant two allocations 125 times a second in
+        // steady state.
+        private IReadOnlyList<UniversalMapperSession> sessionsSnapshot =
+            Array.Empty<UniversalMapperSession>();
+
         public IReadOnlyList<UniversalMapperSession> Sessions
         {
             get
             {
                 lock (sessionsLock)
                 {
-                    return new ReadOnlyCollection<UniversalMapperSession>(sessions.Values.ToArray());
+                    return sessionsSnapshot;
                 }
             }
+        }
+
+        // Always called with sessionsLock held.
+        private void RebuildSessionsSnapshot()
+        {
+            sessionsSnapshot = new ReadOnlyCollection<UniversalMapperSession>(
+                sessions.Values.ToArray());
         }
 
         public UniversalControllerManager ControllerManager => controllerManager;
@@ -240,6 +254,7 @@ namespace DS4MapperTest.Universal.Mapping
             {
                 stopping = sessions.Values.ToArray();
                 sessions.Clear();
+                RebuildSessionsSnapshot();
             }
 
             foreach (UniversalMapperSession session in stopping)
@@ -336,6 +351,8 @@ namespace DS4MapperTest.Universal.Mapping
                 {
                     if (!sessions.ContainsKey(connectedId)) missing.Add(connectedId);
                 }
+
+                if (changed) RebuildSessionsSnapshot();
             }
 
             // A controller that has gone away gets a fresh attempt if it comes
@@ -391,6 +408,7 @@ namespace DS4MapperTest.Universal.Mapping
                     lock (sessionsLock)
                     {
                         added = sessions.TryAdd(logicalId, session);
+                        if (added) RebuildSessionsSnapshot();
                     }
 
                     if (!added)

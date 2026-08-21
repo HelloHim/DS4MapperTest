@@ -715,6 +715,17 @@ namespace DS4MapperTest.SdlDiagnostics
         private bool started;
         private bool disposed;
 
+        private readonly List<TrackedDevice> refreshBuffer = new List<TrackedDevice>();
+
+        // Held between calls and rebuilt only when the connected set changes.
+        // UniversalControllerManager reads this on every mapping tick, and the
+        // LINQ chain it replaces allocated an enumerator per operator, an array
+        // and a wrapper each time to hand back a list that almost never
+        // differed from the last one.
+        private IReadOnlyList<IUniversalController> connectedSnapshot =
+            Array.Empty<IUniversalController>();
+        private bool connectedSnapshotStale = true;
+
         public string BackendName => UniversalControllerBackendIds.Sdl3;
         public IReadOnlyList<IUniversalController> Controllers
         {
@@ -722,10 +733,26 @@ namespace DS4MapperTest.SdlDiagnostics
             {
                 lock (syncRoot)
                 {
-                    return new ReadOnlyCollection<IUniversalController>(
-                        devices.Values.Select(item => item.Controller).Where(item => item.ConnectionState == UniversalControllerConnectionState.Connected).Cast<IUniversalController>().ToArray());
+                    if (connectedSnapshotStale)
+                    {
+                        connectedSnapshot = new ReadOnlyCollection<IUniversalController>(
+                            devices.Values.Select(item => item.Controller)
+                                .Where(item => item.ConnectionState == UniversalControllerConnectionState.Connected)
+                                .Cast<IUniversalController>()
+                                .ToArray());
+                        connectedSnapshotStale = false;
+                    }
+
+                    return connectedSnapshot;
                 }
             }
+        }
+
+        // Called whenever a device is added or removed, or a connection state
+        // changes. Always with syncRoot held.
+        private void InvalidateConnectedSnapshot()
+        {
+            connectedSnapshotStale = true;
         }
 
         public event EventHandler ControllersChanged;
@@ -788,7 +815,13 @@ namespace DS4MapperTest.SdlDiagnostics
                     nextEnumerationReconcileUtc = now.Add(EnumerationReconcileInterval);
                 }
 
-                foreach (TrackedDevice tracked in devices.Values.ToList())
+                // Copied into a reused buffer because CloseDevice below can
+                // remove entries while this is iterating. A fresh list here
+                // meant one allocation per controller poll, 125 times a second.
+                refreshBuffer.Clear();
+                refreshBuffer.AddRange(devices.Values);
+
+                foreach (TrackedDevice tracked in refreshBuffer)
                 {
                     if (tracked.Controller.ConnectionState != UniversalControllerConnectionState.Connected)
                     {
@@ -828,6 +861,7 @@ namespace DS4MapperTest.SdlDiagnostics
                 }
 
                 devices.Clear();
+                InvalidateConnectedSnapshot();
                 suppressedInstanceIds.Clear();
                 started = false;
                 api.Shutdown();
@@ -893,6 +927,13 @@ namespace DS4MapperTest.SdlDiagnostics
                 logger.Warn($"SDL universal backend enumeration reported: {enumError}");
                 return enumError;
             }
+
+            // A belt and braces refresh of the connected list. Adds, removals
+            // and closes all invalidate it explicitly, but a controller can
+            // also change state through PublishState without this class being
+            // told, and reconciling runs only ten times a second, so paying for
+            // one rebuild here bounds how stale the cache can get.
+            InvalidateConnectedSnapshot();
 
             HashSet<uint> enumerated = new HashSet<uint>(instanceIds);
             foreach (TrackedDevice tracked in devices.Values.ToArray())
@@ -1002,6 +1043,7 @@ namespace DS4MapperTest.SdlDiagnostics
                 Controller = controller,
                 Sequence = 1,
             };
+            InvalidateConnectedSnapshot();
 
             logger.Info($"SDL universal backend opened instance {instanceId} ({reason}): {info.Name}");
             ControllersChanged?.Invoke(this, EventArgs.Empty);
@@ -1057,6 +1099,7 @@ namespace DS4MapperTest.SdlDiagnostics
 
             tracked.Controller.MarkDisconnected();
             devices.Remove(instanceId);
+            InvalidateConnectedSnapshot();
             suppressedInstanceIds.Remove(instanceId);
             logger.Info($"SDL universal backend closed instance {instanceId} ({reason})");
             ControllersChanged?.Invoke(this, EventArgs.Empty);

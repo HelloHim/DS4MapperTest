@@ -271,25 +271,56 @@ namespace DS4MapperTest.Universal
             RefreshControllerList();
         }
 
+        // Scratch buffers reused across passes. This method runs on every tick
+        // of the mapping loop, so anything allocated here is allocated 125
+        // times a second for the life of the process whether or not a
+        // controller has actually come or gone.
+        private readonly List<IUniversalController> candidateBuffer =
+            new List<IUniversalController>();
+        private readonly HashSet<(string Backend, string Session)> seenBackendSessions =
+            new HashSet<(string, string)>();
+        private readonly List<IUniversalController> uniqueBuffer =
+            new List<IUniversalController>();
+
         private void RefreshControllerList()
         {
             bool changed;
             lock (syncRoot)
             {
-                IUniversalController[] candidates = backends
-                    .SelectMany(backend => backend.Controllers)
-                    .Where(controller => controller.ConnectionState == UniversalControllerConnectionState.Connected)
-                    .ToArray();
+                candidateBuffer.Clear();
+                foreach (IUniversalControllerBackend backend in backends)
+                {
+                    foreach (IUniversalController controller in backend.Controllers)
+                    {
+                        if (controller.ConnectionState == UniversalControllerConnectionState.Connected)
+                        {
+                            candidateBuffer.Add(controller);
+                        }
+                    }
+                }
 
-                IEnumerable<IUniversalController> unique = candidates
-                    .GroupBy(controller => $"{controller.Identity.BackendName}|{controller.Identity.BackendSessionId}")
-                    .Select(group => group.First());
+                // A value tuple key where a GroupBy over an interpolated string
+                // key used to be. The old form built one throwaway string per
+                // controller per tick purely to deduplicate.
+                seenBackendSessions.Clear();
+                uniqueBuffer.Clear();
+                foreach (IUniversalController controller in candidateBuffer)
+                {
+                    if (seenBackendSessions.Add((controller.Identity.BackendName,
+                        controller.Identity.BackendSessionId)))
+                    {
+                        uniqueBuffer.Add(controller);
+                    }
+                }
 
                 IUniversalController[] next =
-                    UniversalBackendArbitrator.SelectAuthoritativeControllers(unique).ToArray();
-                changed = !next.Select(item => item.Identity.LogicalControllerId)
-                    .SequenceEqual(controllers.Select(item => item.Identity.LogicalControllerId));
-                controllers = new ReadOnlyCollection<IUniversalController>(next);
+                    UniversalBackendArbitrator.SelectAuthoritativeControllers(uniqueBuffer).ToArray();
+
+                changed = HasControllerSetChanged(next, controllers);
+                if (changed)
+                {
+                    controllers = new ReadOnlyCollection<IUniversalController>(next);
+                }
             }
 
             // This runs on every mapping tick. Announcing a change that did not
@@ -299,6 +330,27 @@ namespace DS4MapperTest.Universal
             {
                 ControllersChanged?.Invoke(this, EventArgs.Empty);
             }
+        }
+
+        // Compared by hand rather than with SequenceEqual over two Select
+        // projections, which allocated two enumerators and two closures per
+        // tick to answer a question that is almost always "no".
+        private static bool HasControllerSetChanged(
+            IReadOnlyList<IUniversalController> next,
+            IReadOnlyList<IUniversalController> current)
+        {
+            if (next.Count != current.Count) return true;
+
+            for (int i = 0; i < next.Count; i++)
+            {
+                if (next[i].Identity.LogicalControllerId !=
+                    current[i].Identity.LogicalControllerId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void ThrowIfDisposed()
