@@ -47,7 +47,7 @@ namespace DS4MapperUnitTests
             padVM.CounterPressLengthMaximumMs = 120;
             padVM.UseArrowKeysForCounterMovementPresses = true;
             padVM.Rotation = 12;
-            padVM.DeadZone = "0.15";
+            padVM.DeadZone = 0.15;
 
             SelectAnalogEmulationLayout(padVM);
 

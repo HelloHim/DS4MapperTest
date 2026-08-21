@@ -107,17 +107,16 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler DeadZoneTypeChanged;
 
-        public string DeadZone
+        public double DeadZone
         {
-            get => action.DeadMod.DeadZone.ToString();
+            get => action.DeadMod.DeadZone;
             set
             {
-                if (double.TryParse(value, out double temp))
-                {
-                    action.DeadMod.DeadZone = Math.Clamp(temp, 0.0, 1.0);
-                    DeadZoneChanged?.Invoke(this, EventArgs.Empty);
-                    ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
-                }
+                double next = Math.Clamp(value, 0.0, 1.0);
+                if (action.DeadMod.DeadZone == next) return;
+                action.DeadMod.DeadZone = next;
+                DeadZoneChanged?.Invoke(this, EventArgs.Empty);
+                ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
         public event EventHandler DeadZoneChanged;
@@ -142,26 +141,28 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
         }
         public event EventHandler SeparateAxisDeadZonesChanged;
 
-        public string DeadZoneX
+        public double DeadZoneX
         {
-            get => action.DeadMod.DeadZoneX.ToString();
+            get => action.DeadMod.DeadZoneX;
             set
             {
-                if (!double.TryParse(value, out double result)) return;
-                action.DeadMod.DeadZoneX = Math.Clamp(result, 0.0, 1.0);
+                double next = Math.Clamp(value, 0.0, 1.0);
+                if (action.DeadMod.DeadZoneX == next) return;
+                action.DeadMod.DeadZoneX = next;
                 DeadZoneXChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
         public event EventHandler DeadZoneXChanged;
 
-        public string DeadZoneY
+        public double DeadZoneY
         {
-            get => action.DeadMod.DeadZoneY.ToString();
+            get => action.DeadMod.DeadZoneY;
             set
             {
-                if (!double.TryParse(value, out double result)) return;
-                action.DeadMod.DeadZoneY = Math.Clamp(result, 0.0, 1.0);
+                double next = Math.Clamp(value, 0.0, 1.0);
+                if (action.DeadMod.DeadZoneY == next) return;
+                action.DeadMod.DeadZoneY = next;
                 DeadZoneYChanged?.Invoke(this, EventArgs.Empty);
                 ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
             }
