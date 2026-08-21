@@ -3212,7 +3212,22 @@ namespace DS4MapperTest
             ProfileEditorTestViewModel activeVM = editorTestVM;
             try
             {
-                activeVM.TestSave(activeVM.ProfileEnt, activeVM.DeviceMapper.ActionProfile);
+                // Same split as SaveCurrentProfileAsync. A universal profile has to be
+                // projected back into its own stored format and written through the
+                // store, so sending one down the classic TestSave path writes the wrong
+                // file and loses the edits the user just chose to keep.
+                if (activeVM.DeviceMapper is UniversalMapper universalMapper)
+                {
+                    UniversalProfileSaveUiUpdate universalSaveUpdate =
+                        SaveUniversalProfileFromClassicEditor(activeVM, universalMapper);
+                    activeVM.ProfileEnt.UpdatePath(universalSaveUpdate.ProfilePath);
+                    activeVM.ProfileEnt.Name = universalSaveUpdate.DisplayName;
+                }
+                else
+                {
+                    activeVM.TestSave(activeVM.ProfileEnt, activeVM.DeviceMapper.ActionProfile);
+                }
+
                 activeVM.MarkProfileClean();
                 return true;
             }
