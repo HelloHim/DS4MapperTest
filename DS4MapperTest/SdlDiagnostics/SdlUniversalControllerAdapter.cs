@@ -182,7 +182,27 @@ namespace DS4MapperTest.SdlDiagnostics
                 AddDescriptor(descriptors, UniversalInputId.Accelerometer, info, "sensor:Accel", "Accelerometer");
             }
 
-            return new ControllerCapabilities(CreateDisplayInfo(info), descriptors);
+            return new ControllerCapabilities(CreateDisplayInfo(info), descriptors,
+                ResolveMotionSampleRate(info));
+        }
+
+        // The fastest enabled motion sensor decides how often this device has
+        // something new to say. SDL reports it per sensor, and gyro and
+        // accelerometer do not have to agree.
+        private static double? ResolveMotionSampleRate(SdlRawGamepadInfo info)
+        {
+            if (info?.Sensors == null) return null;
+
+            double best = 0.0;
+            foreach (SdlRawSensorState sensor in info.Sensors)
+            {
+                if (sensor.Supported && sensor.Enabled && sensor.DataRateHz > best)
+                {
+                    best = sensor.DataRateHz;
+                }
+            }
+
+            return best > 0.0 ? best : null;
         }
 
         public UniversalControllerStateSnapshot CreateState(

@@ -18,11 +18,26 @@ namespace DS4MapperTest.Universal
                 .Where(descriptor => descriptor.IsSupported)
                 .Select(descriptor => descriptor.InputId);
 
+        /// <summary>
+        /// How many motion samples per second this device actually produces,
+        /// when the backend can tell. Null when unknown or when the device has
+        /// no motion sensor.
+        /// </summary>
+        /// <remarks>
+        /// The mapping loop polls at a fixed rate, and a device that reports
+        /// faster than that has samples read twice and others never read at
+        /// all. Reading the device's own rate lets the loop keep up with the
+        /// hardware instead of assuming every controller is a 125 Hz one.
+        /// </remarks>
+        public double? MotionSampleRateHz { get; }
+
         public ControllerCapabilities(
             ControllerDisplayInfo displayInfo,
-            IEnumerable<ControllerInputDescriptor> descriptors)
+            IEnumerable<ControllerInputDescriptor> descriptors,
+            double? motionSampleRateHz = null)
         {
             DisplayInfo = displayInfo ?? ControllerDisplayInfo.Unknown();
+            MotionSampleRateHz = motionSampleRateHz > 0.0 ? motionSampleRateHz : null;
 
             Dictionary<UniversalInputId, ControllerInputDescriptor> temp =
                 new Dictionary<UniversalInputId, ControllerInputDescriptor>();

@@ -94,3 +94,29 @@ Two other pieces guard the same property, and all three should stay:
   a warning if it falls below 105 Hz, then an entry when it recovers. If a
   user reports stuttering gyro, that pair of log lines is the first thing to
   look for.
+
+### Poll rate
+
+The loop starts at 125 Hz and then follows
+`UniversalMappingRuntime.RecommendedPollRateHz`, which is the fastest motion
+sample rate reported by any connected controller, clamped to 125-1000 Hz and
+re-read once every health window.
+
+Polling faster than the controller reports buys nothing in smoothness: the
+extra passes read the same sample again. Measured on an Xbox pad, polling
+28,860 times a second still yielded only 112 distinct samples a second. What
+it does buy is latency, since a sample waits on average half a poll period
+before being seen. What matters far more is not polling *slower* than the
+device, which silently discards samples the hardware did produce, and is
+what a fixed 125 Hz did to every 250 Hz controller.
+
+Raising the rate is safe in both directions:
+
+- Gyro output is `angular velocity * timeElapsed`, so the same rotation
+  produces the same cursor travel however finely it is sliced. Sensitivity
+  does not need retuning when the rate changes.
+- Sub-pixel mouse movement is carried between passes in `mouseXRemainder` /
+  `RelativeRouteMouseState.XRemainder`, so smaller per-pass deltas are not
+  lost to rounding.
+- A full controller read costs about 14 microseconds, so even 1000 Hz is
+  under 1.5% of one core.

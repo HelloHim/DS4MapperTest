@@ -176,6 +176,34 @@ namespace DS4MapperTest.Universal.Mapping
 
         public UniversalControllerManager ControllerManager => controllerManager;
 
+        // Never below the historical fixed rate, so a device that reports no
+        // motion rate, or a slow one, polls exactly as it always did.
+        public const double MinimumPollRateHz = 125.0;
+
+        // A sanity bound rather than a judgement about hardware. Nothing sane
+        // reports motion faster than this, and a bad rate read from a device
+        // must not be able to spin the mapping loop.
+        public const double MaximumPollRateHz = 1000.0;
+
+        /// <summary>
+        /// The rate the mapping loop should run at to keep up with the fastest
+        /// connected controller, rather than assuming every device is 125 Hz.
+        /// </summary>
+        public double RecommendedPollRateHz
+        {
+            get
+            {
+                double best = MinimumPollRateHz;
+                foreach (UniversalMapperSession session in Sessions)
+                {
+                    double? rate = session.Controller.Capabilities?.MotionSampleRateHz;
+                    if (rate.HasValue && rate.Value > best) best = rate.Value;
+                }
+
+                return best > MaximumPollRateHz ? MaximumPollRateHz : best;
+            }
+        }
+
         public event EventHandler SessionsChanged;
 
         public IReadOnlyList<string> StartupErrors { get; private set; } =

@@ -553,6 +553,9 @@ namespace DS4MapperTest
             }
         }
 
+        // Starting point only. The loop follows whatever the connected
+        // controllers actually report once they are up; see
+        // UniversalMappingRuntime.RecommendedPollRateHz.
         private const double MAPPING_LOOP_PERIOD_MS = 8.0;
 
         // How far the achieved poll rate may fall before it is worth telling
@@ -587,6 +590,8 @@ namespace DS4MapperTest
             double windowStartMs = clock.Elapsed.TotalMilliseconds;
             long windowPasses = 0;
             bool rateDegraded = false;
+            double periodMs = MAPPING_LOOP_PERIOD_MS;
+            double targetHz = 1000.0 / periodMs;
 
             while (!stopUniversalMappingThread)
             {
@@ -605,12 +610,26 @@ namespace DS4MapperTest
                 if (windowMs >= MappingLoopHealthWindow.TotalMilliseconds)
                 {
                     double achievedHz = windowPasses * 1000.0 / windowMs;
-                    ReportMappingLoopRate(achievedHz, ref rateDegraded);
+                    ReportMappingLoopRate(achievedHz, targetHz, ref rateDegraded);
+
+                    // Re-read here rather than on every pass. Controllers come
+                    // and go rarely, and the answer walks the session list.
+                    double desiredHz = universalMappingRuntime?.RecommendedPollRateHz ??
+                        UniversalMappingRuntime.MinimumPollRateHz;
+                    if (Math.Abs(desiredHz - targetHz) > 0.5)
+                    {
+                        LogDebug($"Controller poll rate set to {desiredHz:0} Hz to match the " +
+                            "fastest connected controller.");
+                        targetHz = desiredHz;
+                        periodMs = 1000.0 / desiredHz;
+                        nextTickMs = nowMs;
+                    }
+
                     windowStartMs = nowMs;
                     windowPasses = 0;
                 }
 
-                nextTickMs += MAPPING_LOOP_PERIOD_MS;
+                nextTickMs += periodMs;
                 double sleepMs = nextTickMs - clock.Elapsed.TotalMilliseconds;
                 if (sleepMs > 0.0)
                 {
@@ -625,18 +644,22 @@ namespace DS4MapperTest
             }
         }
 
-        private void ReportMappingLoopRate(double achievedHz, ref bool rateDegraded)
+        private void ReportMappingLoopRate(double achievedHz, double targetHz,
+            ref bool rateDegraded)
         {
-            double targetHz = 1000.0 / MAPPING_LOOP_PERIOD_MS;
+            // Scaled to the rate actually being asked for, so a controller
+            // polled at 250 Hz is not judged against a 125 Hz threshold.
+            double degradedBelowHz = targetHz * (MAPPING_LOOP_DEGRADED_HZ /
+                (1000.0 / MAPPING_LOOP_PERIOD_MS));
 
-            if (!rateDegraded && achievedHz < MAPPING_LOOP_DEGRADED_HZ)
+            if (!rateDegraded && achievedHz < degradedBelowHz)
             {
                 rateDegraded = true;
                 LogDebug($"Controller poll rate has dropped to {achievedHz:0.0} Hz " +
                     $"(target {targetHz:0} Hz). Gyro and mouse output will feel stuttery " +
                     "until it recovers.", warning: true);
             }
-            else if (rateDegraded && achievedHz >= MAPPING_LOOP_DEGRADED_HZ)
+            else if (rateDegraded && achievedHz >= degradedBelowHz)
             {
                 rateDegraded = false;
                 LogDebug($"Controller poll rate recovered to {achievedHz:0.0} Hz.");
