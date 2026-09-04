@@ -1,0 +1,44 @@
+# Produces a downloadable x64 build of the application.
+#
+# Published without a runtime identifier and with Platform pinned to x64. The
+# bundled FakerInputWrapper reference and the native libVIIPER and SDL3
+# libraries are all resolved through libs\$(Platform), so passing a runtime
+# identifier instead moves that path out from under them and the build fails
+# to resolve FakerInputWrapper.
+
+name: Build artifact
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    # Taken from the project file so a release build cannot be published under
+    # a version that was last correct several releases ago.
+    - name: Read version
+      id: version
+      shell: pwsh
+      run: |
+        [xml]$project = Get-Content DS4MapperTest\DS4MapperTest.csproj
+        $version = $project.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+        if (-not $version) { throw "No Version property found in DS4MapperTest.csproj" }
+        "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+    - name: Publish
+      run: dotnet publish DS4MapperTest\DS4MapperTest.csproj -c Release -p:Platform=x64 -o build
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: DS4MapperTest_${{ steps.version.outputs.version }}
+        path: build
