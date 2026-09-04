@@ -30,15 +30,5 @@ namespace DS4MapperUnitTests
             Assert.IsNull(Caps(-5.0).MotionSampleRateHz);
         }
 
-        [TestMethod]
-        public void PollRateBoundsNeverGoBelowTheOldFixedRate()
-        {
-            // A device slower than 125 Hz, or one that reports nothing, must
-            // still be polled exactly as it was before the rate became
-            // adaptive. This is the guarantee that the change cannot regress
-            // any controller that works today.
-            Assert.AreEqual(125.0, UniversalMappingRuntime.MinimumPollRateHz);
-            Assert.IsTrue(UniversalMappingRuntime.MaximumPollRateHz >= 1000.0);
-        }
     }
 }

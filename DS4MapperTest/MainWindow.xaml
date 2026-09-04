@@ -390,6 +390,14 @@
                                         ToolTip="Inspect SDL3 controller discovery and raw input without driving mappings"
                                         Style="{StaticResource JsmccButtonStyle}"/>
 
+                                <Button x:Name="pollingRateButton"
+                                        Content="Polling Rate"
+                                        Click="PollingRateButton_Click"
+                                        Margin="12,4,0,4"
+                                        VerticalAlignment="Center"
+                                        ToolTip="See the polling rate of each connected controller and set a global maximum"
+                                        Style="{StaticResource JsmccButtonStyle}"/>
+
                             </WrapPanel>
 
                             <TextBlock x:Name="gyroCalibrationStatusText"
@@ -399,6 +407,115 @@
                                        FontSize="12"
                                        VerticalAlignment="Center"/>
                             </StackPanel>
+
+                            <Popup x:Name="pollingRatePopup"
+                                   PlacementTarget="{Binding ElementName=pollingRateButton}"
+                                   Placement="Bottom"
+                                   StaysOpen="False"
+                                   AllowsTransparency="True"
+                                   PopupAnimation="Fade"
+                                   Opened="PollingRatePopup_Opened"
+                                   Closed="PollingRatePopup_Closed">
+                                <Border Style="{StaticResource JsmccPanelBorder}"
+                                        Width="480"
+                                        MaxHeight="560"
+                                        Margin="0,8,0,0">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <!-- A popup is its own visual root, so it does not
+                                             inherit the window's foreground. Anything left
+                                             unstyled in here renders black, which is
+                                             invisible against the dark theme. -->
+                                        <StackPanel x:Name="pollingRatePanelRoot"
+                                                    Margin="18"
+                                                    TextElement.Foreground="{DynamicResource JsmccTextMidBrush}">
+                                            <TextBlock Text="Polling Rate"
+                                                       Style="{StaticResource JsmccSectionTitle}"/>
+                                            <TextBlock Text="{Binding ExplanationText}"
+                                                       Style="{StaticResource JsmccBodyText}"
+                                                       FontSize="14"
+                                                       LineHeight="20"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,8,0,0"/>
+
+                                            <TextBlock Text="{Binding CurrentRateText}"
+                                                       Style="{StaticResource JsmccCardTitle}"
+                                                       FontSize="17"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,16,0,0"/>
+
+                                            <TextBlock Text="Connected controllers"
+                                                       Style="{StaticResource JsmccLabelText}"
+                                                       FontSize="14"
+                                                       Margin="0,18,0,6"/>
+                                            <ItemsControl ItemsSource="{Binding Controllers}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <DockPanel Margin="0,3,0,3">
+                                                            <TextBlock DockPanel.Dock="Right"
+                                                                       Text="{Binding ReportRateText}"
+                                                                       Style="{StaticResource JsmccBodyText}"
+                                                                       FontSize="14"
+                                                                       VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding DisplayName}"
+                                                                       Style="{StaticResource JsmccBodyText}"
+                                                                       FontSize="14"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource JsmccTextStrongBrush}"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,12,0"/>
+                                                        </DockPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <TextBlock Text="No controllers connected."
+                                                       Margin="0,2,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource JsmccBodyText}">
+                                                        <Setter Property="FontSize" Value="14"/>
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasControllers}" Value="False">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+
+                                            <Border Height="1"
+                                                    Background="{DynamicResource JsmccBorderBrush}"
+                                                    Margin="0,18,0,14"/>
+
+                                            <TextBlock Text="Advanced"
+                                                       Style="{StaticResource JsmccLabelText}"
+                                                       FontSize="14"/>
+                                            <CheckBox Content="Set a maximum polling rate"
+                                                      Style="{StaticResource JsmccToggleStyle}"
+                                                      FontSize="14"
+                                                      Foreground="{DynamicResource JsmccTextStrongBrush}"
+                                                      Margin="0,10,0,0"
+                                                      IsChecked="{Binding OverrideEnabled, Mode=TwoWay}"/>
+                                            <TextBlock Text="Leave this off unless you have a reason. It only lowers the ceiling; it cannot make a controller send faster than it does."
+                                                       Style="{StaticResource JsmccBodyText}"
+                                                       FontSize="13"
+                                                       LineHeight="19"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,8,0,0"/>
+                                            <ComboBox Margin="0,12,0,0"
+                                                      HorizontalAlignment="Left"
+                                                      MinWidth="220"
+                                                      FontSize="14"
+                                                      Style="{StaticResource JsmccComboBoxStyle}"
+                                                      ItemContainerStyle="{StaticResource JsmccComboBoxItemStyle}"
+                                                      IsEnabled="{Binding OverrideEnabled}"
+                                                      ItemsSource="{Binding CapOptions}"
+                                                      DisplayMemberPath="DisplayName"
+                                                      SelectedItem="{Binding SelectedCapOption, Mode=TwoWay}"/>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
 
                             <Popup x:Name="mouseRoutingPopup"
                                        PlacementTarget="{Binding ElementName=mouseRoutingButton}"

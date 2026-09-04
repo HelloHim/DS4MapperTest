@@ -13,6 +13,7 @@ namespace DS4MapperTest.SdlDiagnostics
         AxisChanged,
         TouchpadChanged,
         SensorChanged,
+        UpdateComplete,
     }
 
     internal sealed class SdlDiagnosticVersionInfo

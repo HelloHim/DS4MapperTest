@@ -98,25 +98,37 @@ Two other pieces guard the same property, and all three should stay:
 ### Poll rate
 
 The loop starts at 125 Hz and then follows
-`UniversalMappingRuntime.RecommendedPollRateHz`, which is the fastest motion
-sample rate reported by any connected controller, clamped to 125-1000 Hz and
-re-read once every health window.
+`UniversalMappingRuntime.ResolvePollRateHz`, re-read once per health window.
+The answer is the fastest rate any connected controller actually reports,
+multiplied by `PollRateOversampleFactor`, clamped to 125-1000 Hz, and then
+clamped again by the user's optional ceiling.
 
-Polling faster than the controller reports buys nothing in smoothness: the
-extra passes read the same sample again. Measured on an Xbox pad, polling
-28,860 times a second still yielded only 112 distinct samples a second. What
-it does buy is latency, since a sample waits on average half a poll period
-before being seen. What matters far more is not polling *slower* than the
-device, which silently discards samples the hardware did produce, and is
-what a fixed 125 Hz did to every 250 Hz controller.
+Where the rate comes from, in order of preference:
 
-Raising the rate is safe in both directions:
+1. `IUniversalController.ReportRateHz`, measured by `ControllerReportRateMeter`
+   from `SDL_EVENT_GAMEPAD_UPDATE_COMPLETE`. SDL raises that once per input
+   report for every controller, so this works on a pad with no motion sensor
+   and on hardware SDL has no specific driver for.
+2. `ControllerCapabilities.MotionSampleRateHz`, SDL's declared sensor rate.
+   A fallback for a backend that cannot count reports; it answers only for
+   devices with a gyro SDL recognises.
+3. The 125 Hz floor, which is what the loop did before it adapted at all.
 
-- Gyro output is `angular velocity * timeElapsed`, so the same rotation
-  produces the same cursor travel however finely it is sliced. Sensitivity
-  does not need retuning when the rate changes.
-- Sub-pixel mouse movement is carried between passes in `mouseXRemainder` /
-  `RelativeRouteMouseState.XRemainder`, so smaller per-pass deltas are not
-  lost to rounding.
-- A full controller read costs about 14 microseconds, so even 1000 Hz is
-  under 1.5% of one core.
+The oversample factor exists because polling at exactly the device rate is
+not the same as keeping up with it: the two clocks drift, so some passes see
+two reports and some see none. Twice the device rate removes the beat. It
+does not extract data that is not there - measured on an Xbox pad, polling
+28,860 times a second still yielded only 112 distinct samples a second.
+
+The ceiling is `AppSettingsStore.PollRateCapHz`, applied only when
+`PollRateOverrideEnabled` is set, and surfaced in the Polling Rate
+panel in the window header. It is deliberately global rather than per
+profile: there is one mapping loop for the whole app, so two controllers on
+two profiles could not be given different rates. Default is 1000 Hz, which
+is the absolute maximum, so out of the box the ceiling never decides the
+rate.
+
+Costs, measured on this hardware: a full controller read is about 14
+microseconds and a full mapping pass with a migrated default profile is
+about 39 microseconds, so 1000 Hz costs roughly 5% of one core and the
+500 Hz a 250 Hz controller asks for costs roughly half that.

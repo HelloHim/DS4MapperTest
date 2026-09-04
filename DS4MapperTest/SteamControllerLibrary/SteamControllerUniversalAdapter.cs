@@ -109,6 +109,12 @@ namespace DS4MapperTest.SteamControllerLibrary
         public UniversalControllerStateSnapshot State => state;
         public int? BatteryPercent => source.BatteryPercent;
 
+        // The native reader for the 2015 Steam Controller drives this device
+        // itself rather than through SDL, so there is no per report signal to
+        // count. Leaving it unmeasured falls the loop back to its floor, which
+        // comfortably exceeds what this hardware sends.
+        public double? ReportRateHz => null;
+
         public SteamControllerUniversalController(
             ISteamControllerNativeStateSource source,
             bool ownsSource = false)

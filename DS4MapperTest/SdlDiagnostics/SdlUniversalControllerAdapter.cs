@@ -719,6 +719,8 @@ namespace DS4MapperTest.SdlDiagnostics
             public SdlRawGamepadInfo Info { get; set; }
             public long Sequence { get; set; }
             public int MissedEnumerations { get; set; }
+            public ControllerReportRateMeter ReportRate { get; } =
+                new ControllerReportRateMeter();
         }
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -850,6 +852,12 @@ namespace DS4MapperTest.SdlDiagnostics
 
                     try
                     {
+                        // Closes an elapsed measurement window even when no
+                        // report arrived, so a controller that has gone quiet
+                        // stops advertising the rate it used to manage.
+                        tracked.ReportRate.Tick(UniversalMonotonicClock.UtcNow);
+                        tracked.Controller.PublishReportRate(tracked.ReportRate.MeasuredRateHz);
+
                         api.RefreshLiveState(tracked.Handle, tracked.Info);
                         tracked.Controller.PublishBatteryPercent(tracked.Info.BatteryPercent);
                         tracked.Sequence++;
@@ -906,7 +914,20 @@ namespace DS4MapperTest.SdlDiagnostics
                     suppressedInstanceIds.Remove(diagnosticEvent.InstanceId);
                     RebuildDevice(diagnosticEvent.InstanceId);
                     break;
+                case SdlDiagnosticInputEventKind.UpdateComplete:
+                    RecordReport(diagnosticEvent.InstanceId);
+                    break;
             }
+        }
+
+        // One of these arrives per input report SDL processes for the device,
+        // which is exactly the rate the mapping loop has to keep up with.
+        private void RecordReport(uint instanceId)
+        {
+            if (!devices.TryGetValue(instanceId, out TrackedDevice tracked)) return;
+
+            tracked.ReportRate.RecordReport(UniversalMonotonicClock.UtcNow);
+            tracked.Controller.PublishReportRate(tracked.ReportRate.MeasuredRateHz);
         }
 
         private string ReconcileEnumeratedDevices(string reason)

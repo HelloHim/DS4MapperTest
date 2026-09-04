@@ -72,6 +72,11 @@ namespace DS4MapperTest
         private readonly ObservableCollection<PhysicalMouseSettingsItem> physicalMouseItems =
             new ObservableCollection<PhysicalMouseSettingsItem>();
         private MouseRoutingPanelViewModel mouseRoutingPanelVM;
+        private PollingRatePanelViewModel pollingRatePanelVM;
+        // Only runs while the polling panel is open. The figures it shows are
+        // live measurements, so a static snapshot taken when the popup opened
+        // would be wrong within a second of a controller connecting.
+        private DispatcherTimer pollingRateRefreshTimer;
         private bool updatingPhysicalMouseSettings;
         private bool stagedPhysicalMouseForwardingEnabled;
         private string stagedPhysicalMouseId;
@@ -150,6 +155,8 @@ namespace DS4MapperTest
                 manager.MouseOutputRoutingController,
                 action => Dispatcher.BeginInvoke(action));
             mouseRoutingPanelRoot.DataContext = mouseRoutingPanelVM;
+            pollingRatePanelVM = new PollingRatePanelViewModel(manager, appGlobal);
+            pollingRatePanelRoot.DataContext = pollingRatePanelVM;
             manager.PhysicalMouseStatusChanged += BackendManager_PhysicalMouseStatusChanged;
             LoadPhysicalMouseSettings();
             _ = RefreshPhysicalMouseListAsync();
@@ -393,6 +400,35 @@ namespace DS4MapperTest
 
             mouseRoutingPanelVM.PopupOpen = !mouseRoutingPopup.IsOpen;
             mouseRoutingPopup.IsOpen = mouseRoutingPanelVM.PopupOpen;
+        }
+
+        private void PollingRateButton_Click(object sender, RoutedEventArgs e)
+        {
+            pollingRatePanelVM?.Refresh();
+            pollingRatePopup.IsOpen = !pollingRatePopup.IsOpen;
+        }
+
+        private void PollingRatePopup_Opened(object sender, EventArgs e)
+        {
+            pollingRatePanelVM?.Refresh();
+
+            pollingRateRefreshTimer ??= CreatePollingRateRefreshTimer();
+            pollingRateRefreshTimer.Start();
+        }
+
+        private void PollingRatePopup_Closed(object sender, EventArgs e)
+        {
+            pollingRateRefreshTimer?.Stop();
+        }
+
+        private DispatcherTimer CreatePollingRateRefreshTimer()
+        {
+            DispatcherTimer timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(500),
+            };
+            timer.Tick += (_, _) => pollingRatePanelVM?.Refresh();
+            return timer;
         }
 
         private void MouseRoutingPopup_Closed(object sender, EventArgs e)

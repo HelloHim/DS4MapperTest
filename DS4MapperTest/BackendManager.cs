@@ -457,6 +457,8 @@ namespace DS4MapperTest
                 migrationSources,
                 lastProfileStore);
 
+            ApplyPollRateSettings();
+
             bool started = universalMappingRuntime.Start();
             foreach (string error in universalMappingRuntime.StartupErrors)
             {
@@ -480,6 +482,21 @@ namespace DS4MapperTest
                 Name = "Universal Mapper Runtime",
             };
             universalMappingThread.Start();
+        }
+
+        /// <summary>
+        /// Pushes the user's advanced poll rate ceiling into the runtime. With
+        /// the override off there is no extra ceiling and the rate simply
+        /// follows whatever the connected controllers report.
+        /// </summary>
+        public void ApplyPollRateSettings()
+        {
+            if (universalMappingRuntime == null) return;
+
+            bool overrideEnabled = appGlobal.appSettings?.PollRateOverrideEnabled ?? false;
+            universalMappingRuntime.PollRateCapHz = overrideEnabled
+                ? appGlobal.appSettings.PollRateCapHz
+                : UniversalMappingRuntime.MaximumPollRateHz;
         }
 
         private void StartNativeSteamControllerDiscovery()
@@ -563,7 +580,7 @@ namespace DS4MapperTest
         // about 64 Hz, so anything near that is caught, while the ordinary
         // jitter of a busy machine is not.
         private const double MAPPING_LOOP_DEGRADED_HZ = 105.0;
-        private static readonly TimeSpan MappingLoopHealthWindow = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan MappingLoopHealthWindow = TimeSpan.FromSeconds(2);
 
         private void UniversalMappingLoop()
         {
@@ -614,12 +631,15 @@ namespace DS4MapperTest
 
                     // Re-read here rather than on every pass. Controllers come
                     // and go rarely, and the answer walks the session list.
-                    double desiredHz = universalMappingRuntime?.RecommendedPollRateHz ??
+                    bool limitedByCap = false;
+                    double desiredHz = universalMappingRuntime?.ResolvePollRateHz(out limitedByCap) ??
                         UniversalMappingRuntime.MinimumPollRateHz;
                     if (Math.Abs(desiredHz - targetHz) > 0.5)
                     {
-                        LogDebug($"Controller poll rate set to {desiredHz:0} Hz to match the " +
-                            "fastest connected controller.");
+                        LogDebug($"Controller poll rate set to {desiredHz:0} Hz" +
+                            (limitedByCap
+                                ? " (limited by the configured maximum)."
+                                : " to match the fastest connected controller."));
                         targetHz = desiredHz;
                         periodMs = 1000.0 / desiredHz;
                         nextTickMs = nowMs;

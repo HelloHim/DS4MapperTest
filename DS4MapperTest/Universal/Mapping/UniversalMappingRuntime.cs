@@ -176,32 +176,63 @@ namespace DS4MapperTest.Universal.Mapping
 
         public UniversalControllerManager ControllerManager => controllerManager;
 
-        // Never below the historical fixed rate, so a device that reports no
-        // motion rate, or a slow one, polls exactly as it always did.
+        // Never below the historical fixed rate, so a device that cannot be
+        // measured, or a slow one, polls exactly as it always did.
         public const double MinimumPollRateHz = 125.0;
 
-        // A sanity bound rather than a judgement about hardware. Nothing sane
-        // reports motion faster than this, and a bad rate read from a device
-        // must not be able to spin the mapping loop.
+        // A sanity bound rather than a judgement about hardware. A misread
+        // rate must not be able to spin the mapping loop.
         public const double MaximumPollRateHz = 1000.0;
+
+        // Polling at exactly the rate a controller reports sounds right and is
+        // not: the two clocks drift against each other, so some passes see two
+        // reports and some see none. Checking about twice as often removes the
+        // beat without pretending to extract data that is not there.
+        public const double PollRateOversampleFactor = 2.0;
+
+        /// <summary>
+        /// Ceiling applied to the measured rate, from the user's advanced
+        /// setting. Defaults to the absolute maximum, meaning no extra limit.
+        /// </summary>
+        public double PollRateCapHz { get; set; } = MaximumPollRateHz;
 
         /// <summary>
         /// The rate the mapping loop should run at to keep up with the fastest
         /// connected controller, rather than assuming every device is 125 Hz.
         /// </summary>
-        public double RecommendedPollRateHz
-        {
-            get
-            {
-                double best = MinimumPollRateHz;
-                foreach (UniversalMapperSession session in Sessions)
-                {
-                    double? rate = session.Controller.Capabilities?.MotionSampleRateHz;
-                    if (rate.HasValue && rate.Value > best) best = rate.Value;
-                }
+        public double RecommendedPollRateHz => ResolvePollRateHz(out _);
 
-                return best > MaximumPollRateHz ? MaximumPollRateHz : best;
+        /// <summary>
+        /// Same as <see cref="RecommendedPollRateHz"/>, additionally reporting
+        /// whether the user's cap is what decided the answer, so the UI can say
+        /// so rather than leaving the user to work it out from two numbers.
+        /// </summary>
+        public double ResolvePollRateHz(out bool limitedByCap)
+        {
+            double fastestDeviceHz = 0.0;
+            foreach (UniversalMapperSession session in Sessions)
+            {
+                // The measured report rate is what the device actually does.
+                // The declared motion rate is a fallback for a backend that
+                // cannot count reports.
+                double? rate = session.Controller.ReportRateHz ??
+                    session.Controller.Capabilities?.MotionSampleRateHz;
+                if (rate.HasValue && rate.Value > fastestDeviceHz)
+                {
+                    fastestDeviceHz = rate.Value;
+                }
             }
+
+            double desired = fastestDeviceHz * PollRateOversampleFactor;
+            if (desired < MinimumPollRateHz) desired = MinimumPollRateHz;
+            if (desired > MaximumPollRateHz) desired = MaximumPollRateHz;
+
+            double cap = PollRateCapHz;
+            if (cap < MinimumPollRateHz) cap = MinimumPollRateHz;
+            if (cap > MaximumPollRateHz) cap = MaximumPollRateHz;
+
+            limitedByCap = desired > cap;
+            return limitedByCap ? cap : desired;
         }
 
         public event EventHandler SessionsChanged;

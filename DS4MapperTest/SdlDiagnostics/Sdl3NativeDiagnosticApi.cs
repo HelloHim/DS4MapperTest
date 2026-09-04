@@ -299,6 +299,12 @@ namespace DS4MapperTest.SdlDiagnostics
                     EventType.GamepadAxisMotion => new SdlDiagnosticEvent { Kind = SdlDiagnosticInputEventKind.AxisChanged, InstanceId = sdlEvent.GAxis.Which, ControlIndex = Convert.ToInt32(sdlEvent.GAxis.Axis), ControlName = sdlEvent.GAxis.Axis.ToString(), AxisValue = sdlEvent.GAxis.Value },
                     EventType.GamepadTouchpadDown or EventType.GamepadTouchpadMotion or EventType.GamepadTouchpadUp => new SdlDiagnosticEvent { Kind = SdlDiagnosticInputEventKind.TouchpadChanged, InstanceId = sdlEvent.GTouchpad.Which, TouchpadIndex = sdlEvent.GTouchpad.Touchpad, FingerIndex = sdlEvent.GTouchpad.Finger, TouchActive = eventType != EventType.GamepadTouchpadUp, X = sdlEvent.GTouchpad.X, Y = sdlEvent.GTouchpad.Y, Pressure = sdlEvent.GTouchpad.Pressure },
                     EventType.GamepadSensorUpdate => new SdlDiagnosticEvent { Kind = SdlDiagnosticInputEventKind.SensorChanged, InstanceId = sdlEvent.GSensor.Which, SensorName = sdlEvent.GSensor.Sensor.ToString(), SensorValues = Array.Empty<float>() },
+                    // Raised once per input report SDL processes, for every
+                    // controller, whether or not it has a motion sensor. This
+                    // is the only honest measure of how fast a device actually
+                    // talks; the sensor data rate is a per model lookup that
+                    // returns nothing for a pad without a gyro.
+                    EventType.GamepadUpdateComplete => new SdlDiagnosticEvent { Kind = SdlDiagnosticInputEventKind.UpdateComplete, InstanceId = sdlEvent.GDevice.Which },
                     _ => null,
                 };
 

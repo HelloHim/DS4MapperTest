@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
+using DS4MapperTest.Universal.Mapping;
 
 namespace DS4MapperTest
 {
@@ -29,6 +30,16 @@ namespace DS4MapperTest
         private MouseOutputDestination otherMouseDestination = MouseOutputDestination.FakerInputMouse;
         private MouseOutputDestination absoluteMouseDestination = MouseOutputDestination.FakerInputMouse;
         private bool nintendoFaceButtonSwapEnabled = false;
+
+        // Controller polling is normally decided by measuring what the
+        // connected hardware actually sends. These two only exist so a user
+        // can put a ceiling on that, and they are deliberately global: the
+        // mapping loop is one loop for the whole app, so a per profile poll
+        // rate could not be honoured with two controllers on two profiles.
+        private bool pollRateOverrideEnabled = false;
+        private int pollRateCapHz = DEFAULT_POLL_RATE_CAP_HZ;
+
+        public const int DEFAULT_POLL_RATE_CAP_HZ = 1000;
 
         public int ConfigVersion
         {
@@ -118,6 +129,39 @@ namespace DS4MapperTest
         {
             get => nintendoFaceButtonSwapEnabled;
             set => nintendoFaceButtonSwapEnabled = value;
+        }
+
+        /// <summary>
+        /// When false the poll rate follows the connected hardware and
+        /// <see cref="PollRateCapHz"/> is ignored.
+        /// </summary>
+        public bool PollRateOverrideEnabled
+        {
+            get => pollRateOverrideEnabled;
+            set => pollRateOverrideEnabled = value;
+        }
+
+        /// <summary>
+        /// Upper limit in Hz applied to the measured rate when
+        /// <see cref="PollRateOverrideEnabled"/> is set. Clamped on write so a
+        /// hand edited config cannot ask the mapping loop for something absurd.
+        /// </summary>
+        public int PollRateCapHz
+        {
+            get => pollRateCapHz;
+            set => pollRateCapHz = ClampPollRateCap(value);
+        }
+
+        public static int ClampPollRateCap(int value)
+        {
+            if (value < (int)UniversalMappingRuntime.MinimumPollRateHz)
+            {
+                return (int)UniversalMappingRuntime.MinimumPollRateHz;
+            }
+
+            return value > (int)UniversalMappingRuntime.MaximumPollRateHz
+                ? (int)UniversalMappingRuntime.MaximumPollRateHz
+                : value;
         }
 
         public MouseOutputRoutingTable MouseOutputRouting
@@ -297,6 +341,18 @@ namespace DS4MapperTest
         {
             get => settings.NintendoFaceButtonSwapEnabled;
             set => settings.NintendoFaceButtonSwapEnabled = value;
+        }
+
+        public bool PollRateOverrideEnabled
+        {
+            get => settings.PollRateOverrideEnabled;
+            set => settings.PollRateOverrideEnabled = value;
+        }
+
+        public int PollRateCapHz
+        {
+            get => settings.PollRateCapHz;
+            set => settings.PollRateCapHz = value;
         }
 
         public AppSettingsSerializer(AppSettingsStore appStore)

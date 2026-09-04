@@ -111,6 +111,13 @@ namespace DS4MapperTest.Universal
         ControllerDisplayInfo DisplayInfo { get; }
         UniversalControllerStateSnapshot State { get; }
         int? BatteryPercent { get; }
+
+        /// <summary>
+        /// Measured input reports per second, or null before a backend has
+        /// been able to measure one. Drives how fast the mapping loop needs to
+        /// run to keep up with this device.
+        /// </summary>
+        double? ReportRateHz { get; }
     }
 
     public interface IUniversalControllerBackend : IDisposable
@@ -133,6 +140,7 @@ namespace DS4MapperTest.Universal
         public ControllerCapabilities Capabilities { get; private set; }
         public ControllerDisplayInfo DisplayInfo => Capabilities.DisplayInfo;
         public int? BatteryPercent { get; private set; }
+        public double? ReportRateHz { get; private set; }
 
         public UniversalControllerStateSnapshot State
         {
@@ -169,6 +177,11 @@ namespace DS4MapperTest.Universal
         public void PublishCapabilities(ControllerCapabilities capabilities)
         {
             Capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
+        }
+
+        public void PublishReportRate(double? reportRateHz)
+        {
+            ReportRateHz = reportRateHz > 0.0 ? reportRateHz : null;
         }
 
         public void PublishBatteryPercent(int? batteryPercent)
