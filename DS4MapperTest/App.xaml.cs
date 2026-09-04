@@ -26,6 +26,7 @@ namespace DS4MapperTest
         private Thread testThread;
         private ArgumentParser _parser;
         private LoggerHolder logHolder;
+        private bool powerThrottlingDisabled;
 
         // Global rather than session scoped so a second copy is caught even
         // when it is launched from another session, such as a scheduled task
@@ -162,6 +163,16 @@ namespace DS4MapperTest
             // Allow sleep time durations less than 16 ms
             Util.timeBeginPeriod(1);
 
+            // ...and keep Windows from taking that back. Power throttling a
+            // background process includes ignoring its timer resolution
+            // request, which silently drops the controller poll rate from
+            // 125 Hz to 64 Hz while the user is in a game with this window
+            // behind it. Nothing in the app changes, so it presents purely as
+            // gyro output that has gone stuttery and laggy since the last time
+            // they tabbed away.
+            powerThrottlingDisabled = Util.DisableProcessPowerThrottling(
+                Process.GetCurrentProcess().Handle);
+
             RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
 
             appGlobal = AppGlobalDataSingleton.Instance;
@@ -238,6 +249,17 @@ namespace DS4MapperTest
             logger.Info($"OS Version: {Environment.OSVersion}");
             logger.Info($"OS Product Name: {Util.GetOSProductName()}");
             logger.Info($"OS Release ID: {Util.GetOSReleaseId()}");
+            if (powerThrottlingDisabled)
+            {
+                logger.Info("Power throttling disabled for this process; the 1 ms " +
+                    "timer resolution request will be honoured while in the background.");
+            }
+            else
+            {
+                logger.Warn("Could not opt out of Windows power throttling. Windows may " +
+                    "ignore this process's timer resolution request once it has been in " +
+                    "the background, which lowers the controller poll rate.");
+            }
 
             if (!string.IsNullOrEmpty(appGlobal.QuarantinedSettingsPath))
             {

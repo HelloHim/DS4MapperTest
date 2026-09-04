@@ -69,3 +69,28 @@ configuration remain outside universal profiles.
 The final profile editor conversion is deferred to Step 6. The Step 5 runtime
 activates universal profiles, but this commit does not redesign labels, glyphs
 or capability-filtered editor visibility.
+
+## Loop pacing and timer resolution
+
+The mapping loop runs at 125 Hz and is paced by `PrecisionLoopTimer`, which
+uses a Windows high-resolution waitable timer rather than `Thread.Sleep`.
+
+This matters more than it looks. `Thread.Sleep` rounds up to the process
+timer resolution, and since Windows 10 2004 that resolution is per process,
+defaulting to 15.625 ms. The app asks for 1 ms with `timeBeginPeriod` at
+startup, but Windows ignores that request for a process it has placed under
+power throttling, which it does to processes that have been in the
+background for a while. The loop then cannot hit an 8 ms period at all, and
+gyro output becomes stuttery and laggy with nothing in the app having
+changed. Measured on the old pacing, in a process whose timer resolution
+request is not being honoured: 100 Hz average with individual periods
+spiking to 23.5 ms, against a steady 125 Hz on the waitable timer.
+
+Two other pieces guard the same property, and all three should stay:
+
+- `App.RunStartup` calls `Util.DisableProcessPowerThrottling`, so the
+  `timeBeginPeriod(1)` request keeps being honoured in the background.
+- The loop measures its own achieved rate over a five second window and logs
+  a warning if it falls below 105 Hz, then an entry when it recovers. If a
+  user reports stuttering gyro, that pair of log lines is the first thing to
+  look for.

@@ -555,6 +555,13 @@ namespace DS4MapperTest
 
         private const double MAPPING_LOOP_PERIOD_MS = 8.0;
 
+        // How far the achieved poll rate may fall before it is worth telling
+        // the user about. Losing the 1 ms timer resolution takes 125 Hz to
+        // about 64 Hz, so anything near that is caught, while the ordinary
+        // jitter of a busy machine is not.
+        private const double MAPPING_LOOP_DEGRADED_HZ = 105.0;
+        private static readonly TimeSpan MappingLoopHealthWindow = TimeSpan.FromSeconds(5);
+
         private void UniversalMappingLoop()
         {
             // Paced against a deadline rather than sleeping a fixed eight
@@ -564,6 +571,22 @@ namespace DS4MapperTest
             // busy, which is exactly when a game needs it least.
             Stopwatch clock = Stopwatch.StartNew();
             double nextTickMs = clock.Elapsed.TotalMilliseconds;
+
+            using PrecisionLoopTimer waitTimer = new PrecisionLoopTimer();
+            if (!waitTimer.IsHighResolution)
+            {
+                LogDebug("High resolution wait timer unavailable; the mapping loop is " +
+                    "paced by Thread.Sleep and its rate depends on the system timer " +
+                    "resolution.", warning: true);
+            }
+
+            // The rate is measured rather than assumed. A silent halving of the
+            // poll rate is felt as stuttering, laggy gyro output with nothing in
+            // the app to point at, so the log has to be able to answer whether
+            // the loop actually kept its cadence.
+            double windowStartMs = clock.Elapsed.TotalMilliseconds;
+            long windowPasses = 0;
+            bool rateDegraded = false;
 
             while (!stopUniversalMappingThread)
             {
@@ -576,11 +599,22 @@ namespace DS4MapperTest
                     logger.Error(ex, "Universal mapping runtime refresh failed.");
                 }
 
+                windowPasses++;
+                double nowMs = clock.Elapsed.TotalMilliseconds;
+                double windowMs = nowMs - windowStartMs;
+                if (windowMs >= MappingLoopHealthWindow.TotalMilliseconds)
+                {
+                    double achievedHz = windowPasses * 1000.0 / windowMs;
+                    ReportMappingLoopRate(achievedHz, ref rateDegraded);
+                    windowStartMs = nowMs;
+                    windowPasses = 0;
+                }
+
                 nextTickMs += MAPPING_LOOP_PERIOD_MS;
                 double sleepMs = nextTickMs - clock.Elapsed.TotalMilliseconds;
                 if (sleepMs > 0.0)
                 {
-                    Thread.Sleep((int)Math.Ceiling(sleepMs));
+                    waitTimer.Wait(sleepMs);
                 }
                 else
                 {
@@ -588,6 +622,24 @@ namespace DS4MapperTest
                     // backlog with a burst of catch-up passes.
                     nextTickMs = clock.Elapsed.TotalMilliseconds;
                 }
+            }
+        }
+
+        private void ReportMappingLoopRate(double achievedHz, ref bool rateDegraded)
+        {
+            double targetHz = 1000.0 / MAPPING_LOOP_PERIOD_MS;
+
+            if (!rateDegraded && achievedHz < MAPPING_LOOP_DEGRADED_HZ)
+            {
+                rateDegraded = true;
+                LogDebug($"Controller poll rate has dropped to {achievedHz:0.0} Hz " +
+                    $"(target {targetHz:0} Hz). Gyro and mouse output will feel stuttery " +
+                    "until it recovers.", warning: true);
+            }
+            else if (rateDegraded && achievedHz >= MAPPING_LOOP_DEGRADED_HZ)
+            {
+                rateDegraded = false;
+                LogDebug($"Controller poll rate recovered to {achievedHz:0.0} Hz.");
             }
         }
 

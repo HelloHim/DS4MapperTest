@@ -739,6 +739,81 @@ namespace DS4MapperTest
         [DllImport("winmm.dll")]
         internal static extern uint timeEndPeriod(uint period);
 
+        // Win32 SetProcessInformation classes. Deliberately separate from the
+        // native PROCESS_INFORMATION_CLASS above, which belongs to
+        // NtSetInformationProcess and numbers its members differently.
+        internal enum PROCESS_INFORMATION_CLASS_WIN32
+        {
+            ProcessMemoryPriority = 0,
+            ProcessMemoryExhaustionInfo = 1,
+            ProcessAppMemoryInfo = 2,
+            ProcessInPrivateInfo = 3,
+            ProcessPowerThrottling = 4,
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct PROCESS_POWER_THROTTLING_STATE
+        {
+            public uint Version;
+            public uint ControlMask;
+            public uint StateMask;
+        }
+
+        internal const uint PROCESS_POWER_THROTTLING_CURRENT_VERSION = 1;
+        internal const uint PROCESS_POWER_THROTTLING_EXECUTION_SPEED = 0x1;
+        internal const uint PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION = 0x4;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetProcessInformation(
+            IntPtr process,
+            PROCESS_INFORMATION_CLASS_WIN32 processInformationClass,
+            ref PROCESS_POWER_THROTTLING_STATE processInformation,
+            uint processInformationSize);
+
+        /// <summary>
+        /// Opts the process out of Windows power throttling, so its timer
+        /// resolution request keeps being honoured while it sits in the
+        /// background.
+        /// </summary>
+        /// <remarks>
+        /// Windows applies EcoQoS to processes that have not been in the
+        /// foreground for a while, and part of that is ignoring their
+        /// timeBeginPeriod request. The mapping loop then sleeps in 15.625 ms
+        /// steps instead of 8 ms and the controller poll rate halves, which is
+        /// exactly the state the app lands in after the user has been playing
+        /// a game with this window behind it.
+        ///
+        /// A control bit set with the matching state bit clear means "never
+        /// throttle this", as opposed to leaving the bit clear entirely, which
+        /// means "let Windows decide".
+        /// </remarks>
+        internal static bool DisableProcessPowerThrottling(IntPtr processHandle)
+        {
+            PROCESS_POWER_THROTTLING_STATE state = new PROCESS_POWER_THROTTLING_STATE
+            {
+                Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION,
+                ControlMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED |
+                    PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION,
+                StateMask = 0,
+            };
+
+            try
+            {
+                return SetProcessInformation(processHandle,
+                    PROCESS_INFORMATION_CLASS_WIN32.ProcessPowerThrottling,
+                    ref state, (uint)Marshal.SizeOf<PROCESS_POWER_THROTTLING_STATE>());
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return false;
+            }
+            catch (DllNotFoundException)
+            {
+                return false;
+            }
+        }
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern bool EnumDisplayDevicesW(string lpDevice, uint iDevNum, ref DISPLAY_DEVICE lpDisplayDevice, uint dwFlags);
 
