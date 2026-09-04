@@ -114,6 +114,13 @@ namespace DS4MapperTest.Universal.Mapping
                 : SdlSensorConvention.FrameDeviceType;
         public GyroCalibrationStatus GyroCalibrationStatus => gyroCalibration.Status;
 
+        // The last frame handed to the gyro action. Exists so a test can assert
+        // that calibration reaches the fields the gyro actions actually read,
+        // rather than only that the arithmetic is right somewhere off to one
+        // side, which is exactly how it came to be applied to the legacy
+        // integer fields and not the angular ones.
+        internal GyroEventFrame LastGyroFrameForTest { get; private set; }
+
         public void RequestGyroCalibration()
         {
             gyroCalibration.RequestCalibrationAfterDelay(1000);
@@ -494,14 +501,26 @@ namespace DS4MapperTest.Universal.Mapping
             gyroCalibration.Update(ref gyroYaw, ref gyroPitch, ref gyroRoll,
                 ref accelX, ref accelY, ref accelZ);
 
+            // The calibration offset has to reach the angular velocity fields,
+            // not just the legacy integer ones. Gyro mouse, directional swipe
+            // and the flick/joystick angular path all read AngGyro*, so leaving
+            // those raw meant calibrating the gyro changed nothing a user could
+            // feel: the drift it exists to remove went straight through to the
+            // pointer. The native reader for the 2015 pad has always subtracted
+            // first and derived its angular values from the corrected figure;
+            // this is the same order.
+            double yawOffsetDegrees = gyroCalibration.GyroOffsetXPrecise / LegacyGyroUnitsPerDegreePerSecond;
+            double pitchOffsetDegrees = gyroCalibration.GyroOffsetYPrecise / LegacyGyroUnitsPerDegreePerSecond;
+            double rollOffsetDegrees = gyroCalibration.GyroOffsetZPrecise / LegacyGyroUnitsPerDegreePerSecond;
+
             GyroEventFrame frame = new GyroEventFrame
             {
                 GyroYaw = ClampLegacySensor(gyroYaw - gyroCalibration.gyro_offset_x),
                 GyroPitch = ClampLegacySensor(gyroPitch - gyroCalibration.gyro_offset_y),
                 GyroRoll = ClampLegacySensor(gyroRoll - gyroCalibration.gyro_offset_z),
-                AngGyroYaw = gyroYawDegrees,
-                AngGyroPitch = gyroPitchDegrees,
-                AngGyroRoll = gyroRollDegrees,
+                AngGyroYaw = gyroYawDegrees - yawOffsetDegrees,
+                AngGyroPitch = gyroPitchDegrees - pitchOffsetDegrees,
+                AngGyroRoll = gyroRollDegrees - rollOffsetDegrees,
                 AccelX = ClampLegacySensor(accelX),
                 AccelY = ClampLegacySensor(accelY),
                 AccelZ = ClampLegacySensor(accelZ),
@@ -511,6 +530,8 @@ namespace DS4MapperTest.Universal.Mapping
                 timeElapsed = currentLatency,
                 elapsedReference = 125.0,
             };
+
+            LastGyroFrameForTest = frame;
 
             if (action.OutputsNativeGyro) PopulateStateGyro(ref frame);
             else ClearStateGyro();
@@ -611,9 +632,15 @@ namespace DS4MapperTest.Universal.Mapping
             return radians * 180.0 / Math.PI;
         }
 
+        // Legacy integer sensor units per degree per second. Shared so the
+        // scale and its inverse cannot drift apart.
+        internal const double LegacyGyroUnitsPerDegreePerSecond = 16.0;
+
         private static short ScaleLegacyGyro(double degreesPerSecond)
         {
-            return (short)Math.Clamp(Math.Round(degreesPerSecond * 16.0), short.MinValue, short.MaxValue);
+            return (short)Math.Clamp(
+                Math.Round(degreesPerSecond * LegacyGyroUnitsPerDegreePerSecond),
+                short.MinValue, short.MaxValue);
         }
 
         private static short ScaleLegacyAccel(double metresPerSecondSquared)

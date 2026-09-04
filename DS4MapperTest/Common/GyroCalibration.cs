@@ -73,6 +73,20 @@ namespace DS4MapperTest.Common
         public int gyro_offset_z => numSamples > 0 ? (int)Math.Round(sumZ / numSamples) : 0;
         public double gyro_accel_magnitude => numSamples > 0 ? sumAccelMagnitude / numSamples : 1.0;
 
+        // The same means without the rounding to whole device units.
+        //
+        // Individual samples arrive already quantised, but averaging hundreds
+        // of them recovers far more precision than one unit, and rounding that
+        // back away throws it out. On a device reporting sixteen units per
+        // degree per second, a rounded offset leaves up to about 0.03 deg/s of
+        // uncorrected drift, which is a degree of unwanted rotation every
+        // thirty seconds of play. GamepadMotion keeps its offsets in floating
+        // point for the same reason, so anything working in real units should
+        // read these rather than the rounded pair above.
+        public double GyroOffsetXPrecise => numSamples > 0 ? sumX / numSamples : 0.0;
+        public double GyroOffsetYPrecise => numSamples > 0 ? sumY / numSamples : 0.0;
+        public double GyroOffsetZPrecise => numSamples > 0 ? sumZ / numSamples : 0.0;
+
         public long CntCalibrating
         {
             get
