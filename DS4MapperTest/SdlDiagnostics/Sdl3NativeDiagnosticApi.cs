@@ -36,15 +36,32 @@ namespace DS4MapperTest.SdlDiagnostics
 
         private bool initialised;
 
-        public SdlDiagnosticVersionInfo VersionInfo => new SdlDiagnosticVersionInfo
-        {
-            BindingName = "SDL3-CS",
-            BindingVersion = "3.4.14.1",
-            NativeVersion = SafeString(() => GetVersion().ToString()) ?? string.Empty,
-            NativeRevision = SafeString(() => GetRevision()) ?? string.Empty,
-        };
+        // Every member below funnels its native work through
+        // SdlNativeCallDispatcher so that SDL is initialised, polled and shut
+        // down from a single thread. See that class for why Windows controller
+        // hotplug depends on it.
+        public SdlDiagnosticVersionInfo VersionInfo =>
+            SdlNativeCallDispatcher.Invoke(() => new SdlDiagnosticVersionInfo
+            {
+                BindingName = "SDL3-CS",
+                BindingVersion = "3.4.14.1",
+                NativeVersion = SafeString(() => GetVersion().ToString()) ?? string.Empty,
+                NativeRevision = SafeString(() => GetRevision()) ?? string.Empty,
+            });
 
         public bool Initialise(out string error)
+        {
+            (bool started, string message) = SdlNativeCallDispatcher.Invoke(() =>
+            {
+                bool result = InitialiseCore(out string initError);
+                return (result, initError);
+            });
+
+            error = message;
+            return started;
+        }
+
+        private bool InitialiseCore(out string error)
         {
             try
             {
@@ -97,6 +114,11 @@ namespace DS4MapperTest.SdlDiagnostics
 
         public void Shutdown()
         {
+            SdlNativeCallDispatcher.Invoke(ShutdownCore);
+        }
+
+        private void ShutdownCore()
+        {
             lock (EventPumpLock)
             {
                 EventSubscribers.Remove(pendingEvents);
@@ -119,8 +141,20 @@ namespace DS4MapperTest.SdlDiagnostics
 
         public IReadOnlyList<uint> EnumerateGamepads(out string error)
         {
+            (IReadOnlyList<uint> ids, string message) = SdlNativeCallDispatcher.Invoke(() =>
+            {
+                IReadOnlyList<uint> result = EnumerateGamepadsCore(out string enumError);
+                return (result, enumError);
+            });
+
+            error = message;
+            return ids;
+        }
+
+        private IReadOnlyList<uint> EnumerateGamepadsCore(out string error)
+        {
             error = string.Empty;
-            RefreshGamepads();
+            UpdateGamepads();
             RefreshJoysticks();
 
             uint[] gamepadIds = SDL.GetGamepads(out int gamepadCount);
@@ -136,18 +170,29 @@ namespace DS4MapperTest.SdlDiagnostics
 
         public SdlGamepadHandle OpenGamepad(uint instanceId, out string error)
         {
-            error = string.Empty;
-            IntPtr handle = SDL.OpenGamepad(instanceId);
-            if (handle == IntPtr.Zero) error = SafeGetError();
-            return new SdlGamepadHandle(handle);
+            (SdlGamepadHandle handle, string message) = SdlNativeCallDispatcher.Invoke(() =>
+            {
+                IntPtr nativeHandle = SDL.OpenGamepad(instanceId);
+                string openError = nativeHandle == IntPtr.Zero ? SafeGetError() : string.Empty;
+                return (new SdlGamepadHandle(nativeHandle), openError);
+            });
+
+            error = message;
+            return handle;
         }
 
         public void CloseGamepad(SdlGamepadHandle handle)
         {
-            if (!handle.IsNull) SDL.CloseGamepad(handle.NativeHandle);
+            if (handle.IsNull) return;
+            SdlNativeCallDispatcher.Invoke(() => SDL.CloseGamepad(handle.NativeHandle));
         }
 
         public SdlRawGamepadInfo QueryGamepadInfo(uint instanceId, SdlGamepadHandle handle)
+        {
+            return SdlNativeCallDispatcher.Invoke(() => QueryGamepadInfoCore(instanceId, handle));
+        }
+
+        private SdlRawGamepadInfo QueryGamepadInfoCore(uint instanceId, SdlGamepadHandle handle)
         {
             SdlRawGamepadInfo info = new SdlRawGamepadInfo
             {
@@ -195,19 +240,30 @@ namespace DS4MapperTest.SdlDiagnostics
 
         public bool PollEvent(out SdlDiagnosticEvent diagnosticEvent)
         {
+            // Callers drain in a loop, and one drain of SDL's queue fills this
+            // consumer's backlog in full. Serving that backlog without going
+            // near SDL keeps a controller reporting motion at several hundred
+            // hertz from costing a thread handoff per event.
+            SdlDiagnosticEvent next = TryDequeuePendingEvent();
+            next ??= SdlNativeCallDispatcher.Invoke(() =>
+            {
+                lock (EventPumpLock)
+                {
+                    if (pendingEvents.Count == 0) DrainSdlEventQueue();
+                    return pendingEvents.Count > 0 ? pendingEvents.Dequeue() : null;
+                }
+            });
+
+            diagnosticEvent = next;
+            return next != null;
+        }
+
+        private SdlDiagnosticEvent TryDequeuePendingEvent()
+        {
             lock (EventPumpLock)
             {
-                if (pendingEvents.Count == 0) DrainSdlEventQueue();
-
-                if (pendingEvents.Count > 0)
-                {
-                    diagnosticEvent = pendingEvents.Dequeue();
-                    return true;
-                }
+                return pendingEvents.Count > 0 ? pendingEvents.Dequeue() : null;
             }
-
-            diagnosticEvent = null;
-            return false;
         }
 
         // Always called with EventPumpLock held.
@@ -252,9 +308,9 @@ namespace DS4MapperTest.SdlDiagnostics
             return false;
         }
 
-        public void RefreshGamepads() => UpdateGamepads();
+        public void RefreshGamepads() => SdlNativeCallDispatcher.Invoke(() => UpdateGamepads());
         private static void RefreshJoysticks() => UpdateJoysticks();
-        public void RefreshSensors() => UpdateSensors();
+        public void RefreshSensors() => SdlNativeCallDispatcher.Invoke(() => UpdateSensors());
 
         internal static IReadOnlyList<uint> MergeGamepadInstanceIds(
             uint[] gamepadIds,
@@ -303,6 +359,11 @@ namespace DS4MapperTest.SdlDiagnostics
         }
 
         public void RefreshLiveState(SdlGamepadHandle handle, SdlRawGamepadInfo info)
+        {
+            SdlNativeCallDispatcher.Invoke(() => RefreshLiveStateCore(handle, info));
+        }
+
+        private static void RefreshLiveStateCore(SdlGamepadHandle handle, SdlRawGamepadInfo info)
         {
             foreach (SdlRawButtonState button in info.Buttons.Where(item => item.Supported))
             {

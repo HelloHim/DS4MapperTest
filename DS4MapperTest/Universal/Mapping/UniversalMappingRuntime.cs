@@ -108,9 +108,17 @@ namespace DS4MapperTest.Universal.Mapping
         private readonly Dictionary<Guid, UniversalMapperSession> sessions =
             new Dictionary<Guid, UniversalMapperSession>();
 
+        // Serialises whole reconcile passes. Reconciliation is not driven by
+        // the mapping loop alone: a backend raising ControllersChanged runs one
+        // on whichever thread noticed the change, which for a hotplug is the
+        // backend event dispatcher. Two passes running at once corrupted the
+        // unresolved-controller dictionary below and could open two sessions
+        // for one controller.
+        private readonly object reconcileLock = new object();
+
         // Controllers whose profile could not be selected or compiled, keyed to
-        // the time the next attempt is allowed. Only ever touched from the
-        // mapping thread inside ReconcileSessions.
+        // the time the next attempt is allowed. Only ever touched inside
+        // ReconcileSessions, under reconcileLock.
         private readonly Dictionary<Guid, DateTimeOffset> unresolvedControllers =
             new Dictionary<Guid, DateTimeOffset>();
         private static readonly TimeSpan UnresolvedRetryInterval = TimeSpan.FromSeconds(5);
@@ -325,6 +333,23 @@ namespace DS4MapperTest.Universal.Mapping
 
         private void ReconcileSessions()
         {
+            bool changed;
+            lock (reconcileLock)
+            {
+                changed = ReconcileSessionsLocked();
+            }
+
+            // Raised outside the lock. Listeners rebuild the controller list on
+            // the UI thread, and holding a reconcile pass open while that
+            // happens would let a UI callback block the mapping loop.
+            if (changed)
+            {
+                SessionsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private bool ReconcileSessionsLocked()
+        {
             bool changed = false;
             IReadOnlyList<IUniversalController> authoritative = controllerManager.Controllers
                 .Where(item => item.ConnectionState == UniversalControllerConnectionState.Connected)
@@ -431,10 +456,7 @@ namespace DS4MapperTest.Universal.Mapping
                 }
             }
 
-            if (changed)
-            {
-                SessionsChanged?.Invoke(this, EventArgs.Empty);
-            }
+            return changed;
         }
 
         private bool IsBackingOff(Guid logicalControllerId)

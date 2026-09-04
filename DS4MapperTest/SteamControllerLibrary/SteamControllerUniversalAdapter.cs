@@ -307,14 +307,31 @@ namespace DS4MapperTest.SteamControllerLibrary
         private readonly Dictionary<string, SteamControllerUniversalController> controllers =
             new Dictionary<string, SteamControllerUniversalController>(StringComparer.OrdinalIgnoreCase);
 
+        // The mapping loop reads this backend on its own thread while a
+        // hotplug replaces its sources from the backend event dispatcher, so
+        // the dictionary has to be serialised or an enumeration races a write.
+        private readonly object syncRoot = new object();
+
         public string BackendName => UniversalControllerBackendIds.SteamControllerNative;
-        public IReadOnlyList<IUniversalController> Controllers =>
-            new ReadOnlyCollection<IUniversalController>(controllers.Values.Cast<IUniversalController>().ToArray());
+        public IReadOnlyList<IUniversalController> Controllers
+        {
+            get
+            {
+                lock (syncRoot)
+                {
+                    return new ReadOnlyCollection<IUniversalController>(
+                        controllers.Values.Cast<IUniversalController>().ToArray());
+                }
+            }
+        }
         public event EventHandler ControllersChanged;
 
         public SteamControllerUniversalBackend(IEnumerable<ISteamControllerNativeStateSource> sources)
         {
-            AddOrReplaceSources(sources);
+            lock (syncRoot)
+            {
+                AddOrReplaceSources(sources);
+            }
         }
 
         public bool Start(out string error)
@@ -326,7 +343,13 @@ namespace DS4MapperTest.SteamControllerLibrary
 
         public void RefreshSources(IEnumerable<ISteamControllerNativeStateSource> sources)
         {
-            if (AddOrReplaceSources(sources))
+            bool changed;
+            lock (syncRoot)
+            {
+                changed = AddOrReplaceSources(sources);
+            }
+
+            if (changed)
             {
                 ControllersChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -334,9 +357,12 @@ namespace DS4MapperTest.SteamControllerLibrary
 
         public void Refresh()
         {
-            foreach (SteamControllerUniversalController controller in controllers.Values)
+            lock (syncRoot)
             {
-                controller.Refresh();
+                foreach (SteamControllerUniversalController controller in controllers.Values)
+                {
+                    controller.Refresh();
+                }
             }
 
             ControllersChanged?.Invoke(this, EventArgs.Empty);
@@ -344,22 +370,29 @@ namespace DS4MapperTest.SteamControllerLibrary
 
         public void Stop()
         {
-            foreach (SteamControllerUniversalController controller in controllers.Values)
+            lock (syncRoot)
             {
-                controller.Refresh();
+                foreach (SteamControllerUniversalController controller in controllers.Values)
+                {
+                    controller.Refresh();
+                }
             }
         }
 
         public void Dispose()
         {
-            foreach (SteamControllerUniversalController controller in controllers.Values)
+            lock (syncRoot)
             {
-                controller.Dispose();
-            }
+                foreach (SteamControllerUniversalController controller in controllers.Values)
+                {
+                    controller.Dispose();
+                }
 
-            controllers.Clear();
+                controllers.Clear();
+            }
         }
 
+        // Always called with syncRoot held.
         private bool AddOrReplaceSources(IEnumerable<ISteamControllerNativeStateSource> sources)
         {
             bool changed = false;
