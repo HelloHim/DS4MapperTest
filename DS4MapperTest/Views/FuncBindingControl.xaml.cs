@@ -52,42 +52,12 @@ namespace DS4MapperTest.Views
                 funcBindVM.CurrentBindItemIndex = ind;
                 item.ItemActive = true;
 
-                //CheckSelectionActionType(item);
                 SwitchPropView(item);
             }
 
             ConnectPartialEvents();
             DataContext = funcBindVM;
         }
-
-        //private void FuncBindVM_ActionTypeIndexChanged(object sender, EventArgs e)
-        //{
-        //    DataContext = null;
-
-        //    if (funcBindVM.ActionTypeIndex == 0)
-        //    {
-        //        int currentInd = funcBindVM.CurrentBindItemIndex;
-        //        funcBindVM.RemoveBindItem(currentInd);
-
-        //        funcBindVM.DisplayPropControl = null;
-        //        Task.Delay(1000).Wait();
-        //        Dispatcher.BeginInvoke((Action)(() => {
-        //            FuncBindItem item = funcBindVM.CurrentItem;
-        //            //CheckSelectionActionType(item);
-        //            //SwitchPropView(item);
-        //        }));
-        //    }
-        //    else
-        //    {
-        //        funcBindVM.ChangeFunc(funcBindVM.CurrentItem.Index);
-
-        //        FuncBindItem item = funcBindVM.CurrentItem;
-        //        //CheckSelectionActionType(item);
-        //        SwitchPropView(item);
-        //    }
-
-        //    DataContext = funcBindVM;
-        //}
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -103,7 +73,6 @@ namespace DS4MapperTest.Views
 
                 DataContext = null;
 
-                //CheckSelectionActionType(item);
                 SwitchPropView(item);
 
                 DataContext = funcBindVM;
@@ -114,7 +83,6 @@ namespace DS4MapperTest.Views
         {
             DataContext = null;
 
-            //CheckSelectionActionType(funcBindVM.CurrentItem);
             SwitchPropView(funcBindVM.CurrentItem);
 
             DataContext = funcBindVM;
@@ -208,7 +176,6 @@ namespace DS4MapperTest.Views
                 funcBindVM.ChangeFunc(funcBindVM.CurrentItem.Index, ind);
 
                 FuncBindItem item = funcBindVM.CurrentItem;
-                ////CheckSelectionActionType(item);
                 SwitchPropView(item);
             }
         }
@@ -234,22 +201,16 @@ namespace DS4MapperTest.Views
             item.ItemActive = true;
             ActionChanged?.Invoke(this, funcBindVM.Action);
 
-            //DataContext = null;
-
-            //CheckSelectionActionType(item);
             SwitchPropView(item);
 
-            //DataContext = funcBindVM;
         }
 
         private void ConnectPartialEvents()
         {
-            //funcBindVM.ActionTypeIndexChanged += FuncBindVM_ActionTypeIndexChanged;
         }
 
         private void DisconnectPartialEvents()
         {
-            //funcBindVM.ActionTypeIndexChanged -= FuncBindVM_ActionTypeIndexChanged;
         }
 
         private void CopyFuncButton_Click(object sender, RoutedEventArgs e)
@@ -259,13 +220,11 @@ namespace DS4MapperTest.Views
             DataContext = null;
 
             Mapper mapper = funcBindVM.Mapper;
-            //ButtonAction oldAction = funcBindVM.Action.ParentAction as ButtonAction;
             ButtonAction oldAction = funcBindVM.Action as ButtonAction;
             ButtonAction newAction = FuncBindingControlViewModel.CopyAction(oldAction);
 
             PreActionSwitch?.Invoke(oldAction, newAction);
             funcBindVM.SwitchAction(oldAction, newAction);
-            //ActionChanged?.Invoke(this, newAction);
 
             funcBindVM = new FuncBindingControlViewModel(mapper, newAction, defaultPropControl);
             funcBindVM.IsRealAction = true;
@@ -278,7 +237,6 @@ namespace DS4MapperTest.Views
                 funcBindVM.CurrentBindItemIndex = ind;
                 item.ItemActive = true;
 
-                //CheckSelectionActionType(item);
                 SwitchPropView(item);
             }
 
@@ -299,7 +257,6 @@ namespace DS4MapperTest.Views
             if (!funcBindVM.IsRealAction)
             {
                 Mapper mapper = funcBindVM.Mapper;
-                //ButtonAction oldAction = funcBindVM.Action.ParentAction as ButtonAction;
                 ButtonAction oldAction = funcBindVM.Action as ButtonAction;
                 ButtonAction newAction = FuncBindingControlViewModel.CreateUnboundAction(oldAction);
 

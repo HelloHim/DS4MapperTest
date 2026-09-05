@@ -156,17 +156,8 @@ namespace DS4MapperTest.ViewModels
             mapper.ProcessMappingChangeAction(() =>
             {
                 oldAction.Release(mapper, ignoreReleaseActions: true);
-                //int tempInd = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.FindIndex((item) => item == tempAction);
-                //if (tempInd >= 0)
                 {
-                    //mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.RemoveAt(tempInd);
-                    //mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.Insert(tempInd, newAction);
 
-                    //oldAction.Release(mapper, ignoreReleaseActions: true);
-
-                    //mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.AddTouchpadAction(this.action);
-                    //newAction.MappingId = oldAction.MappingId;
-                    //if (oldAction.Id != MapAction.DEFAULT_UNBOUND_ID)
                     bool exists = mapper.EditLayer.LayerActions.Contains(oldAction);
                     if (exists)
                     {
@@ -247,7 +238,6 @@ namespace DS4MapperTest.ViewModels
                 ButtonMapAction baseLayerAction = mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as ButtonMapAction;
                 ButtonAction tempAction = new ButtonAction();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.EditLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
                 tempAction.MappingId = action.MappingId;
@@ -332,15 +322,12 @@ namespace DS4MapperTest.ViewModels
                 ButtonMapAction baseLayerAction = mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as ButtonMapAction;
                 ButtonNoAction tempAction = new ButtonNoAction();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.EditLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
 
                 this.action = tempAction;
                 usingRealAction = false;
 
-                //ActionPropertyChanged += ReplaceExistingLayerAction;
             }
         }
     }

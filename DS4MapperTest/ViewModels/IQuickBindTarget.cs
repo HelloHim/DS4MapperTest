@@ -22,7 +22,6 @@ namespace DS4MapperTest.ViewModels
         string SlotLabel { get; }
 
         // Current binding text as already surfaced by the advanced editor's
-        // Describe()/DescribeOutputActions() helpers.
         string DisplayBind { get; }
 
         // True when the current slot holds something Quick Bind cannot safely

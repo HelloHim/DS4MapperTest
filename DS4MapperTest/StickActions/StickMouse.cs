@@ -77,7 +77,6 @@ namespace DS4MapperTest.StickActions
         private MouseMotionSettings motion = new MouseMotionSettings();
         private AxisDirButton[] dirButtons = new AxisDirButton[4];
         public AxisDirButton[] DirButtons { get => dirButtons; set => dirButtons = value; }
-        //private StickDefinition stickDefinition;
         private double xNorm = 0.0, yNorm = 0.0;
         private double xMotion;
         private double yMotion;
@@ -157,7 +156,6 @@ namespace DS4MapperTest.StickActions
         public StickMouse()
         {
             actionTypeName = ACTION_TYPE_NAME;
-            //deadMod = new StickDeadZone(0.10, 0.9, 0.0);
             deadMod = new StickDeadZone(0.10, 1.0, 0.0);
             deadMod.CircleDead = true;
             FillDirectionButtons();
@@ -167,7 +165,6 @@ namespace DS4MapperTest.StickActions
         {
             actionTypeName = ACTION_TYPE_NAME;
             this.stickDefinition = stickDefinition;
-            //deadMod = new StickDeadZone(0.10, 0.9, 0.0);
             deadMod = new StickDeadZone(0.10, 1.0, 0.0);
             deadMod.CircleDead = true;
             FillDirectionButtons();
@@ -213,14 +210,8 @@ namespace DS4MapperTest.StickActions
         }
 
         double previousPointerX = 0.0;
-        //double accelHelperX = 0.0;
-        //double accelTravelX = 0.0;
-        //Stopwatch deltaEasingTimeX = new Stopwatch();
 
         double previousPointerY = 0.0;
-        //double accelHelperY = 0.0;
-        //double accelTravelY = 0.0;
-        //Stopwatch deltaEasingTimeY = new Stopwatch();
 
         double previousPointerRadial = 0.0;
         double accelCurrentMultiRadial = 0.0;
@@ -228,9 +219,6 @@ namespace DS4MapperTest.StickActions
         double accelTravelRadial = 0.0;
         Stopwatch deltaEasingTimeRadial = new Stopwatch();
         double totalTravelRadial = 0.0;
-        //bool inDuration = false;
-        //long currentTime;
-        //long previousTime;
 
         public override void Prepare(Mapper mapper, int axisXVal, int axisYVal,
             bool alterState = true)
@@ -239,7 +227,6 @@ namespace DS4MapperTest.StickActions
             activeEvent = false;
 
             xNorm = 0.0; yNorm = 0.0;
-            //int axisMid = stickDefinition.axisMid;
             int axisXMid = stickDefinition.xAxis.mid, axisYMid = stickDefinition.yAxis.mid;
             int axisXDir = axisXVal - axisXMid, axisYDir = axisYVal - axisYMid;
             bool xNegative = axisXDir < 0;
@@ -255,10 +242,6 @@ namespace DS4MapperTest.StickActions
                 {
                     StickOutCurve.CalcOutValue(motion.OutputCurve, xNorm, yNorm,
                         out xNorm, out yNorm);
-                    //StickOutCurve.CalcOutValue(StickOutCurve.Curve.EnhancedPrecision, xNorm, yNorm,
-                    //    out xNorm, out yNorm);
-                    //xNorm = AxisOutCurve.CalcOutValue(AxisOutCurve.Curve.EnhancedPrecision, xNorm);
-                    //yNorm = AxisOutCurve.CalcOutValue(AxisOutCurve.Curve.EnhancedPrecision, yNorm);
                 }
 
                 double rawXNorm = axisXDir / (double)maxDirX;
@@ -295,8 +278,6 @@ namespace DS4MapperTest.StickActions
 
                 if (testDeltaAccel)
                 {
-                    //Trace.WriteLine("DELTA CHECK");
-                    //double tempCheckTravel = !inDuration ? testAccelMinTravel : testAccelMinTravel;
                     if (hyp > 0.0 &&
                         Math.Abs(hyp - previousPointerRadial) >= testAccelMinTravel &&
                         (hyp - previousPointerRadial >= 0.0))
@@ -313,8 +294,6 @@ namespace DS4MapperTest.StickActions
                         {
                             totalTravelRadial += tempDist;
                             double tempEasingDist = totalTravelRadial;
-                            //tempDist = tempEasingDist;
-                            //tempTravel = tempDist;
                             accelEasingMultiRadial = (accelSlope * tempEasingDist + accelOffset);
                         }
 
@@ -324,14 +303,11 @@ namespace DS4MapperTest.StickActions
                         accelTravelRadial = tempTravel;
 
                         deltaEasingTimeRadial.Restart();
-                        //currentTime = Stopwatch.GetTimestamp();
-                        //previousTime = currentTime;
 
                         previousPointerRadial = hyp;
                         previousPointerX = rawXNorm;
                         previousPointerY = rawYNorm;
 
-                        //Trace.WriteLine($"WTF {hyp} {accelTravelRadial} {accelCurrentMultiRadial} {accelEasingMultiRadial}");
                     }
                     else if (hyp > 0.0 && accelCurrentMultiRadial > 0.0 &&
                         Math.Abs(previousPointerRadial - hyp) < minTravelStop &&
@@ -340,12 +316,8 @@ namespace DS4MapperTest.StickActions
                         (previousPointerY >= 0.0) != (rawYNorm >= 0.0))
                         )
                     {
-                        //Trace.WriteLine("STAY ZONE");
-                        //inDuration = true;
 
                         double timeElapsed = deltaEasingTimeRadial.ElapsedMilliseconds;
-                        //currentTime = Stopwatch.GetTimestamp();
-                        //double timeElapsed = (currentTime - previousTime) * (1.0 / Stopwatch.Frequency) * 1000.0;
                         double elapsedDiff = 1.0;
                         double tempAccel = accelCurrentMultiRadial;
                         double tempTravel = accelTravelRadial;
@@ -363,7 +335,6 @@ namespace DS4MapperTest.StickActions
                         }
 
                         double elapsedDuration = testAccelEasingDuration * (accelEasingMultiRadial / testAccelMulti);
-                        //Trace.WriteLine($"TIME ELAPSED: {timeElapsed} {tempAccel} {elapsedDuration}");
                         if (elapsedDuration > 0.0 && (timeElapsed * 0.001) < elapsedDuration)
                         {
                             elapsedDiff = ((timeElapsed * 0.001) / elapsedDuration);
@@ -371,7 +342,6 @@ namespace DS4MapperTest.StickActions
                             outXNorm = elapsedDiff * outXNorm;
                             outYNorm = elapsedDiff * outYNorm;
 
-                            //Trace.WriteLine($"CONITNUING {elapsedDiff}");
                         }
                         else
                         {
@@ -382,28 +352,21 @@ namespace DS4MapperTest.StickActions
                             deltaEasingTimeRadial.Reset();
                             accelEasingMultiRadial = 0.0;
                             totalTravelRadial = 0.0;
-                            //previousTime = currentTime;
                             previousPointerX = rawXNorm;
                             previousPointerY = rawYNorm;
-                            //inDuration = false;
 
-                            //Trace.WriteLine($"DURATION ENDED");
                         }
                     }
                     else
                     {
-                        //Trace.WriteLine("NEW RESET");
                         previousPointerRadial = hyp;
                         accelCurrentMultiRadial = 0.0;
                         accelTravelRadial = 0.0;
                         accelEasingMultiRadial = 0.0;
                         totalTravelRadial = 0.0;
                         deltaEasingTimeRadial.Reset();
-                        //currentTime = Stopwatch.GetTimestamp();
-                        //previousTime = currentTime;
                         previousPointerX = rawXNorm;
                         previousPointerY = rawYNorm;
-                        //inDuration = false;
                     }
                 }
                 else
@@ -415,10 +378,6 @@ namespace DS4MapperTest.StickActions
                     accelTravelRadial = 0.0;
                     accelEasingMultiRadial = 0.0;
                     totalTravelRadial = 0.0;
-                    //inDuration = false;
-                    //currentTime = Stopwatch.GetTimestamp();
-                    //previousTime = currentTime;
-                    //if (deltaEasingTimeRadial.IsRunning)
                     {
                         deltaEasingTimeRadial.Reset();
                     }
@@ -548,10 +507,6 @@ namespace DS4MapperTest.StickActions
                 slotOn[i] = false;
             }
 
-            //if (resetState)
-            //{
-            //    stateData.Reset();
-            //}
         }
 
         public override StickMapAction DuplicateAction()

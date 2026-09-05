@@ -226,10 +226,6 @@ namespace DS4MapperTest
                     // process with no window and no message.
                     managerFailure = ex;
                 }
-                //manager.RequestOSD += Manager_RequestOSD;
-                //manager.Start();
-                //mapper = new Mapper();
-                //mapper.Start();
             });
 
             testThread.IsBackground = true;
@@ -306,7 +302,6 @@ namespace DS4MapperTest
         {
             Exception exp = e.ExceptionObject as Exception;
             bool canAccessMain = Current.Dispatcher.CheckAccess();
-            //Trace.WriteLine($"CRASHED {help}");
             Logger logger = logHolder?.Logger;
             if (e.IsTerminating)
             {
@@ -370,9 +365,6 @@ namespace DS4MapperTest
 
             LogManager.Flush();
             LogManager.Shutdown();
-
-            //osdTestWindow.Close();
-            //osdTestWindow = null;
 
             // Reset timer
             Util.timeEndPeriod(1);

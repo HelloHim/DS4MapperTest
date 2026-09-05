@@ -66,7 +66,7 @@ namespace DS4MapperUnitTests
             double placedX = mapper.AbsMouseX;
             double placedY = mapper.AbsMouseY;
 
-            // Stick returns to center (inside deadzone): JSM leaves the cursor
+            // Stick returns to centre (inside deadzone): JSM leaves the cursor
             // where it was rather than resetting it.
             action.Prepare(mapper, 0, 0);
             action.Event(mapper);

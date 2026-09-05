@@ -2,7 +2,6 @@
 using DS4MapperTest.StickModifiers;
 using System;
 using System.Collections.Generic;
-//using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -53,10 +52,6 @@ namespace DS4MapperTest.TouchpadActions
 
         public struct AbsCoordRange
         {
-            //public double top;
-            //public double bottom;
-            //public double left;
-            //public double right;
 
             public double xcenter;
             public double ycenter;
@@ -151,7 +146,6 @@ namespace DS4MapperTest.TouchpadActions
             deadMod = new StickDeadZone(0.0, 1.0, 0.0);
             absRange = new AbsCoordRange()
             {
-                //top = 0.3, bottom = 0.7, left = 0.3, right = 0.7,
                 width = 0.4,
                 height = 0.4,
                 xcenter = 0.5,
@@ -206,8 +200,6 @@ namespace DS4MapperTest.TouchpadActions
                 double usedYNorm = (isActive) ? yNorm : (!snapToCenterRelease ? prevYNorm : 0.0);
                 double xSign = usedXNorm >= 0.0 ? 1.0 : -1.0;
                 double ySign = usedYNorm >= 0.0 ? 1.0 : -1.0;
-                //double absXUnit = Math.Abs(usedXNorm);
-                //double absYUnit = Math.Abs(usedYNorm);
                 double angleRad = Math.Atan2(-axisYDir, axisXDir);
                 double angCos = Math.Abs(Math.Cos(angleRad));
                 double angSin = Math.Abs(Math.Sin(angleRad));
@@ -232,7 +224,6 @@ namespace DS4MapperTest.TouchpadActions
                 }
 
                 double outXRatio = usedXNorm, outYRatio = usedYNorm;
-                //double antiDead = 0.2;
                 double antiDead = antiRelease;
 
                 // Find Release zone
@@ -244,42 +235,20 @@ namespace DS4MapperTest.TouchpadActions
                     double absY = Math.Abs(outYRatio);
                     outXRatio = ((1.0 - antiDeadX) * absX + antiDeadX) * xSign;
                     outYRatio = ((1.0 - antiDeadY) * absY + antiDeadY) * ySign;
-                    //Trace.WriteLine($"{antiDeadX} {outXRatio}");
                 }
 
-                //if (absRange.xcenter != 0.5 || absRange.ycenter != 0.5)
                 {
-                    //Trace.WriteLine($"{absRange.xcenter} {absRange.ycenter} {absRange.width / 2.0} {absRange.height / 2.0}");
                     outXRatio = (absRange.width / 2.0) * outXRatio + absRange.xcenter;
                     outYRatio = (absRange.height / 2.0) * (outYRatio * -1.0) + absRange.ycenter;
 
-                    //Trace.WriteLine($"Test Abs Mouse: IN ({xNorm}, {yNorm}) OUT ({outXRatio}, {outYRatio})");
                 }
-
-                // Determine position relative to box size
-                //if (absRange.width != 1.0 || absRange.height != 1.0)
-                //{
-                //    outXRatio = absRange.width * outXRatio;
-                //    outYRatio = absRange.height * outYRatio;
-                //}
 
                 // Keep final coords within [-1.0, 1.0] range
                 outXRatio = Math.Clamp(outXRatio, -1.0, 1.0);
                 outYRatio = Math.Clamp(outYRatio, -1.0, 1.0);
 
-                // [-1.0, 1.0] -> [0.0, 1.0]
-                //xMotion = (1.0 - 0.5) * xNorm + 0.5;
-                //yMotion = (1.0 - 0.5) * (yNorm * -1.0) + 0.5; // Invert Y
-                //xMotion = (1.0 - 0.5) * outXRatio + 0.5;
-                //yMotion = (1.0 - 0.5) * (outYRatio * -1.0) + 0.5; // Invert Y
                 xMotion = outXRatio;
                 yMotion = outYRatio;
-                //xMotion = (absRange.right - 0.5) * xNorm + 0.5;
-                //yMotion = (absRange.bottom - 0.5) * (yNorm * -1.0) + 0.5; // Invert Y
-
-                //Trace.WriteLine($"Test Abs Mouse: IN ({xNorm}, {yNorm}) OUT ({xMotion}, {yMotion})");
-
-                //usedRingButton = ringButton;
 
                 active = true;
                 activeEvent = true;
@@ -289,7 +258,6 @@ namespace DS4MapperTest.TouchpadActions
                 inputStatus = false;
 
                 active = ringDistance != 0.0 || (usedRingButton != null && usedRingButton.active);
-                //usedRingButton = ringButton;
             }
         }
 
@@ -306,19 +274,12 @@ namespace DS4MapperTest.TouchpadActions
                 bool oldRingActive = usedRingButton.active;
                 usedRingButton.PrepareAnalog(mapper, tempRingDistance, tempRingUnit);
                 // Treat as boolean button for now
-                //usedRingButton.Prepare(mapper, activeMod);
-                //usedRingButton.PrepareAnalog(mapper, dist);
                 if (usedRingButton.active)
                 {
                     usedRingButton.Event(mapper);
                 }
-                //else if (oldRingActive)
-                //{
-                //    usedRingButton.Event(mapper);
-                //}
             }
 
-            //if (xMotion != 0.0 || yMotion != 0.0)
             {
                 mapper.AbsMouseX = xMotion; mapper.AbsMouseY = yMotion;
                 mapper.AbsMouseSync = true;
@@ -367,7 +328,6 @@ namespace DS4MapperTest.TouchpadActions
             {
                 base.SoftCopyFromParent(parentAction);
 
-                //tempAbsAction.hasLayeredAction = true;
                 mappingId = tempAbsAction.mappingId;
 
                 this.touchpadDefinition = new TouchpadDefinition(tempAbsAction.touchpadDefinition);

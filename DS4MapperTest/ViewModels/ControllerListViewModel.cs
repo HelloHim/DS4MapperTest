@@ -70,11 +70,6 @@ namespace DS4MapperTest.ViewModels
         // guarantees the UI thread runs it.
         private readonly Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
 
-        //public ProfileList DeviceProfileList
-        //{
-        //    get => backendManager.DeviceProfileList;
-        //}
-
         public int SelectedIndex
         {
             get => selectedIndex;
@@ -106,8 +101,6 @@ namespace DS4MapperTest.ViewModels
         {
             using (WriteLocker locker = new WriteLocker(_colListLocker))
             {
-                //int ind = controllerList.Where((item) => item.ItemIndex == device.Index)
-                //    .Select((item) => item.ItemIndex).DefaultIfEmpty(-1).First();
                 if (ind >= 0)
                 {
                     controllerDict.Remove(ind);
@@ -162,10 +155,6 @@ namespace DS4MapperTest.ViewModels
                             devItem.EditProfileRequested += DevItem_EditProfileRequested;
                         }
 
-                        //if (!string.IsNullOrWhiteSpace(backendManager.ProfileFile))
-                        //{
-                        //    devItem.PostInit(backendManager.ProfileFile);
-                        //}
                         device.Removal += Device_Removal;
                         controllerList.Add(devItem);
                         controllerDict[i] = devItem;
@@ -293,8 +282,6 @@ namespace DS4MapperTest.ViewModels
 
                     findInd++;
                 }
-                //int ind = controllerList.Where((item) => item.ItemIndex == device.Index)
-                //    .Select((item) => item.ItemIndex).DefaultIfEmpty(-1).First();
                 if (device.Synced && ind >= 0)
                 {
                     controllerList.RemoveAt(ind);
@@ -341,8 +328,6 @@ namespace DS4MapperTest.ViewModels
             map.QueueEvent(() =>
             {
                 {
-                    //map.UseBlankProfile();
-                    //ReadProfileFailure?.Invoke(this, new ReadProfileFailException(new JsonException(), $"Failed to read profile {profilePath}"));
                     try
                     {
                         map.ChangeProfile(profilePath);
@@ -351,7 +336,6 @@ namespace DS4MapperTest.ViewModels
                     {
                         ReadProfileFailure?.Invoke(this, new ReadProfileFailException(e, $"Failed to read profile {profilePath}"));
                     }
-                    //backendManager.ProfileFile = DeviceProfileList.ProfileListCol[item.ProfileIndex].ProfilePath;
                 }
 
                 resetEvent.Set();
@@ -392,7 +376,6 @@ namespace DS4MapperTest.ViewModels
         // handled by the universal copy path rather than a raw file copy.
         public void DuplicateProfile(DeviceListItem item, string inputFile, string outputFile)
         {
-            // Copy file as is
             File.Copy(inputFile, outputFile);
 
             string tempOutJson = string.Empty;
@@ -527,9 +510,6 @@ namespace DS4MapperTest.ViewModels
         {
             get => universalProfileListHolder;
         }
-
-        //private EditProfileCommand editProfCommand;
-        //public EditProfileCommand EditProfCommand => editProfCommand;
 
         private BasicActionCommand editProfCommand;
         public BasicActionCommand EditProfCommand => editProfCommand;

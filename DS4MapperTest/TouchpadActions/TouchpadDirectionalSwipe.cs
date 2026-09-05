@@ -146,11 +146,6 @@ namespace DS4MapperTest.TouchpadActions
 
                 return;
             }
-            //else if (touchFrame.passDelta)
-            //{
-            //    // Just keep current state info
-            //    return;
-            //}
 
             ref TouchEventFrame previousTouchFrame =
                 ref mapper.GetPreviousTouchEventFrame(touchpadDefinition.touchCode);

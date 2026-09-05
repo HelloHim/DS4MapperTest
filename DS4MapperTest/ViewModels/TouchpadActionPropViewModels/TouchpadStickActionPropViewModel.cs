@@ -581,10 +581,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 TouchpadStickAction baseLayerAction = mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as TouchpadStickAction;
                 TouchpadStickAction tempAction = new TouchpadStickAction();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.EditLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
 
                 this.action = tempAction;
                 usingRealAction = false;
@@ -638,7 +636,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 this.action.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.OUTER_RING_FULL_RANGE);
             }
 
-            //ExecuteInMapperThread(() =>
             {
                 action.RaiseNotifyPropertyChange(mapper, TouchpadStickAction.PropertyKeyStrings.OUTER_RING_FULL_RANGE);
             }//);
@@ -653,7 +650,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 this.action.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.USE_AS_OUTER_RING);
             }
 
-            //ExecuteInMapperThread(() =>
             {
                 action.RaiseNotifyPropertyChange(mapper, TouchpadStickAction.PropertyKeyStrings.USE_AS_OUTER_RING);
             }//);
@@ -668,7 +664,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 this.action.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.OUTER_RING_DEAD_ZONE);
             }
 
-            //ExecuteInMapperThread(() =>
             {
                 action.RaiseNotifyPropertyChange(mapper, TouchpadStickAction.PropertyKeyStrings.OUTER_RING_DEAD_ZONE);
             }//);
@@ -683,7 +678,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 this.action.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.USE_OUTER_RING);
             }
 
-            //ExecuteInMapperThread(() =>
             {
                 action.RaiseNotifyPropertyChange(mapper, TouchpadStickAction.PropertyKeyStrings.USE_OUTER_RING);
             }//);
@@ -698,7 +692,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 this.action.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.SMOOTHING_FILTER);
             }
 
-            //ExecuteInMapperThread(() =>
             {
                 action.RaiseNotifyPropertyChange(mapper, TouchpadStickAction.PropertyKeyStrings.SMOOTHING_FILTER);
                 action.SmoothingFilterSettingsDataRef.UpdateSmoothingFilters();
@@ -714,7 +707,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 this.action.ChangedProperties.Add(TouchpadStickAction.PropertyKeyStrings.SMOOTHING_FILTER);
             }
 
-            //ExecuteInMapperThread(() =>
             {
                 action.RaiseNotifyPropertyChange(mapper, TouchpadStickAction.PropertyKeyStrings.SMOOTHING_FILTER);
                 action.SmoothingFilterSettingsDataRef.UpdateSmoothingFilters();

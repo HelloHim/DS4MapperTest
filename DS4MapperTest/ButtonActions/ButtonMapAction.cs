@@ -14,7 +14,6 @@ namespace DS4MapperTest.ButtonActions
         public bool active;
         public bool analog;
         public bool useNotches;
-        //public bool preprocess;
         public bool processAction;
 
         public abstract double ButtonDistance { get; }

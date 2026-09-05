@@ -50,11 +50,6 @@ namespace DS4MapperTest.ActionUtil
         public bool onChorded;
 
         public abstract void Prepare(Mapper mapper, bool state, ActionFuncStateData stateData);
-        /*public virtual void PrepareAnalog(Mapper mapper, double state)
-        {
-            throw new NotImplementedException();
-        }
-        */
 
         public abstract void Event(Mapper mapper, ActionFuncStateData stateData);
 

@@ -27,7 +27,6 @@ namespace DS4MapperTest.TouchpadActions
         public bool Touch;
         public bool Click;
         public uint numTouches;
-        //public TouchesMode supportedTouches;
         public double timeElapsed;
         public bool passDelta;
     }

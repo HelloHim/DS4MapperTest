@@ -132,10 +132,8 @@ namespace DS4MapperTest.GyroActions
         public override void Prepare(Mapper mapper, ref GyroEventFrame gyroFrame, bool alterState = true)
         {
             xNorm = 0.0; yNorm = 0.0;
-            //Console.WriteLine("{0} {1}", gyroFrame.AccelX, gyroFrame.AccelY);
 
             JoypadActionCodes[] tempTriggerButtons = padParams.gyroTriggerButtons;
-            //if (tempTriggerButtons != JoypadActionCodes.Empty)
             {
                 bool triggerButtonActive = mapper.IsButtonsActiveDraft(padParams.gyroTriggerButtons, padParams.andCond);
                 if (!padParams.triggerActivates && triggerButtonActive)
@@ -186,22 +184,16 @@ namespace DS4MapperTest.GyroActions
         public override void Event(Mapper mapper)
         {
             int previousDirNum = (int)previousDir;
-            //Console.WriteLine("DIRS: Previous: {0} Current: {1}", previousDir, currentDir);
             if (previousDir != DpadDirections.Centered)
             {
                 bool onlyCardinal = previousDirNum % 3 != 0;
-                //Console.WriteLine("lkjdfslkjdfslkjdfs {0}", (previousDir & currentDir) != 0);
                 if (onlyCardinal)
                 {
-                    //OutputActionData data = null;
                     AxisDirButton data = null;
-                    //double axisval = 0.0;
                     if (currentMode == DPadMode.Standard)
                     {
                         if ((previousDir & currentDir) == 0)
                         {
-                            //Console.WriteLine("REMOVE CARDINAL");
-                            //int code = eventCodes[previousDirNum];
                             data = eventCodes4[previousDirNum];
                         }
                     }
@@ -217,7 +209,6 @@ namespace DS4MapperTest.GyroActions
                     {
                         data.PrepareAnalog(mapper, 0.0, 0.0);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(data, false);
 
                         if (!data.active)
                         {
@@ -228,8 +219,6 @@ namespace DS4MapperTest.GyroActions
                 else if (!onlyCardinal)
                 {
                     int tempDir;
-                    //int* codes = stackalloc int[2];
-                    //tmpCodes[0] = tmpCodes[1] = null;
                     tmpBtnActions[0] = tmpBtnActions[1] = null;
                     int i = 0;
 
@@ -238,26 +227,22 @@ namespace DS4MapperTest.GyroActions
                         if ((previousDir & DpadDirections.Up) != 0 && (currentDir & DpadDirections.Up) == 0)
                         {
                             tempDir = (int)DpadDirections.Up;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = eventCodes4[tempDir]; i++;
                         }
                         else if ((previousDir & DpadDirections.Down) != 0 && (currentDir & DpadDirections.Down) == 0)
                         {
                             tempDir = (int)DpadDirections.Down;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = eventCodes4[tempDir]; i++;
                         }
 
                         if ((previousDir & DpadDirections.Left) != 0 && (currentDir & DpadDirections.Left) == 0)
                         {
                             tempDir = (int)DpadDirections.Left;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = eventCodes4[tempDir]; i++;
                         }
                         else if ((previousDir & DpadDirections.Right) != 0 && (currentDir & DpadDirections.Right) == 0)
                         {
                             tempDir = (int)DpadDirections.Right;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = eventCodes4[tempDir]; i++;
                         }
                     }
@@ -265,20 +250,17 @@ namespace DS4MapperTest.GyroActions
                     {
                         if (previousDir != currentDir)
                         {
-                            //tmpCodes[i] = eventCodes[(int)previousDir]; i++;
                             tmpBtnActions[i] = eventCodes4[(int)previousDir]; i++;
                         }
                     }
 
 
-                    //if (tmpCodes[0] != null)
                     AxisDirButton data = null;
                     if (tmpBtnActions[0] != null)
                     {
                         data = tmpBtnActions[0];
                         data.PrepareAnalog(mapper, 0.0, 0.0);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[0], false);
                         if (!data.active)
                         {
                             tmpActiveBtns.Remove(data);
@@ -291,7 +273,6 @@ namespace DS4MapperTest.GyroActions
                         data = tmpBtnActions[1];
                         data.PrepareAnalog(mapper, 0.0, 0.0);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[1], false);
 
                         if (!data.active)
                         {
@@ -308,30 +289,20 @@ namespace DS4MapperTest.GyroActions
                 bool changedDir = previousDir != currentDir;
                 if (onlyCardinal)
                 {
-                    //Console.WriteLine("ACTIVATE CARDINAL");
-                    //int code = eventCodes[currentDirNum];
-                    //OutputActionData data = null;
                     AxisDirButton data = null;
                     if (currentMode == DPadMode.Standard)
                     {
-                        //if ((previousDir & currentDir) == 0)
-                        //{
                         data = eventCodes4[currentDirNum];
-                        //}
                     }
                     else if (currentMode == DPadMode.EightWay)
                     {
-                        //if (currentDir != previousDir)
-                        //{
                         data = eventCodes4[currentDirNum];
-                        //}
                     }
 
                     if (data != null)
                     {
                         data.PrepareAnalog(mapper, ButtonAxisValue(data), ButtonAxisUnitValue(data));
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(data, true);
 
                         if (changedDir && !tmpActiveBtns.ContainsKey(data))
                         {
@@ -342,7 +313,6 @@ namespace DS4MapperTest.GyroActions
                 else if (!onlyCardinal)
                 {
                     int tempDir;
-                    //int* codes = stackalloc int[2];
                     tmpBtnActions[0] = tmpBtnActions[1] = null;
                     tmpBtnDirs[0] = tmpBtnDirs[1] = (int)DpadDirections.Centered;
                     int i = 0;
@@ -353,14 +323,12 @@ namespace DS4MapperTest.GyroActions
                         if ((currentDir & DpadDirections.Up) != 0)// && (previousDir & DpadDirections.Up) == 0)
                         {
                             tempDir = (int)DpadDirections.Up;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = eventCodes4[tempDir]; i++;
                         }
                         else if ((currentDir & DpadDirections.Down) != 0)// && (previousDir & DpadDirections.Down) == 0)
                         {
                             tempDir = (int)DpadDirections.Down;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = eventCodes4[tempDir]; i++;
                         }
@@ -368,36 +336,28 @@ namespace DS4MapperTest.GyroActions
                         if ((currentDir & DpadDirections.Left) != 0)// && (previousDir & DpadDirections.Left) == 0)
                         {
                             tempDir = (int)DpadDirections.Left;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = eventCodes4[tempDir]; i++;
                         }
                         else if ((currentDir & DpadDirections.Right) != 0)// && (previousDir & DpadDirections.Right) == 0)
                         {
                             tempDir = (int)DpadDirections.Right;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = eventCodes4[tempDir]; i++;
                         }
                     }
                     else if (currentMode == DPadMode.EightWay)
                     {
-                        //if (currentDir != previousDir)
-                        //{
-                        //tmpCodes[i] = eventCodes[(int)currentDir]; i++;
                         tmpBtnDirs[i] = currentDirNum;
                         tmpBtnActions[i] = eventCodes4[(int)currentDir]; i++;
-                        //}
                     }
 
 
-                    //if (tmpCodes[0] != null)
                     if (tmpBtnActions[0] != null)
                     {
                         data = tmpBtnActions[0];
                         data.PrepareAnalog(mapper, ButtonAxisValue(data), ButtonAxisUnitValue(data));
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[0], true);
 
                         if (changedDir && !tmpActiveBtns.ContainsKey(data))
                         {
@@ -410,7 +370,6 @@ namespace DS4MapperTest.GyroActions
                         data = tmpBtnActions[1];
                         data.PrepareAnalog(mapper, ButtonAxisValue(data), ButtonAxisUnitValue(data));
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[1], true);
 
                         if (changedDir && !tmpActiveBtns.ContainsKey(data))
                         {
@@ -426,7 +385,6 @@ namespace DS4MapperTest.GyroActions
                     AxisDirButton data = pair.Key;
                     if (data != null)
                     {
-                        //data.Prepare(mapper, status);
                         data.Prepare(mapper, false);
                         data.Event(mapper);
 
@@ -444,26 +402,6 @@ namespace DS4MapperTest.GyroActions
 
                 removeBtnCandidates.Clear();
             }
-            /*else
-            {
-                AxisDirButton data = null;
-                if (tmpBtnActions[0] != null)
-                {
-                    data = tmpBtnActions[0];
-                    data.PrepareAnalog(mapper, 0.0);
-                    data.Event(mapper);
-                    //mapper.RunEventFromButton(tmpCodes[0], false);
-                }
-
-                if (tmpBtnActions[1] != null)
-                {
-                    data = tmpBtnActions[1];
-                    data.PrepareAnalog(mapper, 0.0);
-                    data.Event(mapper);
-                    //mapper.RunEventFromButton(tmpCodes[1], false);
-                }
-            }
-            */
 
             prevXNorm = xNorm; prevYNorm = yNorm;
             previousDir = currentDir;
@@ -498,7 +436,6 @@ namespace DS4MapperTest.GyroActions
             previousDir = currentDir;
             active = false;
             activeEvent = false;
-            //inputStatus = false;
         }
 
         public override void SoftRelease(Mapper mapper, MapAction checkAction, bool resetState = true)
@@ -530,7 +467,6 @@ namespace DS4MapperTest.GyroActions
             previousDir = currentDir;
             active = false;
             activeEvent = false;
-            //inputStatus = false;
 
             if (resetState)
             {
@@ -545,14 +481,11 @@ namespace DS4MapperTest.GyroActions
                 int currentDirNum = (int)currentDir;
                 if (currentDirNum % 3 != 0)
                 {
-                    //int code = eventCodes[currentDirNum];
-                    //OutputActionData data = eventCodes[currentDirNum];
                     AxisDirButton data = eventCodes4[currentDirNum];
                     if (data != null)
                     {
                         data.PrepareAnalog(mapper, 0.0, 0.0);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(data, false);
                     }
                 }
                 else
@@ -569,8 +502,6 @@ namespace DS4MapperTest.GyroActions
                             data.PrepareAnalog(mapper, 0.0, 0.0);
                             data.Event(mapper);
                         }
-                        //OutputActionData data = eventCodes[currentDirNum];
-                        //mapper.RunEventFromButton(data, false);
                     }
                 }
 
@@ -592,33 +523,27 @@ namespace DS4MapperTest.GyroActions
         private unsafe void ReleaseStandardDiagonalEvents(Mapper mapper)
         {
             int tempDir;
-            //int* codes = stackalloc int[2];
-            //tmpCodes[0] = tmpCodes[1] = null;
             tmpBtnActions[0] = tmpBtnActions[1] = null;
             int i = 0;
             if ((currentDir & DpadDirections.Up) != 0)
             {
                 tempDir = (int)DpadDirections.Up;
-                //tmpCodes[i] = eventCodes[tempDir]; i++;
                 tmpBtnActions[i] = eventCodes4[tempDir]; i++;
             }
             else if ((currentDir & DpadDirections.Down) != 0)
             {
                 tempDir = (int)DpadDirections.Down;
-                //tmpCodes[i] = eventCodes[tempDir]; i++;
                 tmpBtnActions[i] = eventCodes4[tempDir]; i++;
             }
 
             if ((currentDir & DpadDirections.Left) != 0)
             {
                 tempDir = (int)DpadDirections.Left;
-                //tmpCodes[i] = eventCodes[tempDir]; i++;
                 tmpBtnActions[i] = eventCodes4[tempDir]; i++;
             }
             else if ((currentDir & DpadDirections.Right) != 0)
             {
                 tempDir = (int)DpadDirections.Right;
-                //tmpCodes[i] = eventCodes[tempDir]; i++;
                 tmpBtnActions[i] = eventCodes4[tempDir]; i++;
             }
 
@@ -628,7 +553,6 @@ namespace DS4MapperTest.GyroActions
                 data = tmpBtnActions[0];
                 data.PrepareAnalog(mapper, 0.0, 0.0);
                 data.Event(mapper);
-                //mapper.RunEventFromButton(tmpCodes[0], false);
 
                 if (!data.active)
                 {
@@ -636,13 +560,11 @@ namespace DS4MapperTest.GyroActions
                 }
             }
 
-            //if (tmpCodes[1] != null)
             if (tmpBtnActions[1] != null)
             {
                 data = tmpBtnActions[1];
                 data.PrepareAnalog(mapper, 0.0, 0.0);
                 data.Event(mapper);
-                //mapper.RunEventFromButton(tmpCodes[1], false);
 
                 if (!data.active)
                 {
@@ -661,7 +583,6 @@ namespace DS4MapperTest.GyroActions
             {
                 const double CARDINAL_RANGE = 45.0;
                 const double DIAGONAL_RANGE = 45.0;
-                //const double CARDINAL_HALF_RANGE = CARDINAL_RANGE / 2.0;
                 const double CARDINAL_HALF_RANGE = 22.5;
 
                 const double upLeftEnd = 360 - CARDINAL_HALF_RANGE;
@@ -676,7 +597,6 @@ namespace DS4MapperTest.GyroActions
                 double angleRad = Math.Atan2(xNorm, yNorm);
                 double angle = (angleRad >= 0 ? angleRad : (2 * Math.PI + angleRad)) * 180 / Math.PI;
 
-                //Console.WriteLine(angle);
                 if (angle == 0.0)
                 {
                     currentDir = DpadDirections.Up;
@@ -715,7 +635,6 @@ namespace DS4MapperTest.GyroActions
                 }
             }
 
-            //Console.WriteLine(currentDir);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

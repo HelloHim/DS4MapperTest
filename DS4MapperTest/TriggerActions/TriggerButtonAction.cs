@@ -15,8 +15,6 @@ namespace DS4MapperTest.TriggerActions
             public const string NAME = "Name";
             public const string DEAD_ZONE = "DeadZone";
             public const string OUTPUT_BINDING = "OutputBinding";
-            //public const string MAX_ZONE = "MaxZone";
-            //public const string ANTIDEAD_ZONE = "AntiDeadZone";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -63,18 +61,8 @@ namespace DS4MapperTest.TriggerActions
 
         public override void Prepare(Mapper mapper, ref TriggerEventFrame eventFrame, bool alterState = true)
         {
-            //bool inSafeZone = axisValue > 30;
             int maxDir = triggerDefinition.trigAxis.max;
             deadZone.CalcOutValues((int)eventFrame.axisValue, maxDir, out axisNorm);
-            //bool inSafeZone = axisNorm != 0.0;
-            //if (inSafeZone)
-            //{
-            //    axisNorm = (axisValue - 30.0) / (255.0 - 30.0);
-            //}
-            //else
-            //{
-            //    axisNorm = 0.0;
-            //}
 
             eventButton.PrepareAnalog(mapper, axisNorm, 1.0);
 

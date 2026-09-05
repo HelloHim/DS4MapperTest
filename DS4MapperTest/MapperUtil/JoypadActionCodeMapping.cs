@@ -35,7 +35,6 @@ namespace DS4MapperTest.MapperUtil
         }
 
         public OutputValueUnion outputValue;
-        //public JoypadActionCodes code;
 
         public JoypadActionCodeMapping()
         {

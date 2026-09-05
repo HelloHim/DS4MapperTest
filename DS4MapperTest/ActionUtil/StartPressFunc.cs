@@ -22,7 +22,6 @@ namespace DS4MapperTest.ActionUtil
             set => durationMs = value;
         }
 
-        //private Stopwatch elapsed = new Stopwatch();
         private bool waited;
 
         public StartPressFunc()
@@ -73,10 +72,6 @@ namespace DS4MapperTest.ActionUtil
                     else if (active)
                     {
                         inToggleState = true;
-                        //// Flip current state
-                        //active = !active;
-                        //outputActive = active;
-                        //finished = !active;
                     }
                 }
             }
@@ -84,15 +79,11 @@ namespace DS4MapperTest.ActionUtil
             if (status && !finished && !waited)
             {
                 if (stateData.elapsed.ElapsedMilliseconds <= durationMs)
-                //if (elapsed.ElapsedMilliseconds <= durationMs)
-                //if (!state && stateData.wasActive)
                 {
                     active = true;
                     outputActive = true;
                     activeEvent = true;
                     finished = false;
-                    // Execute system event
-                    //SendOutputEvent(mapper);
                 }
                 else
                 {

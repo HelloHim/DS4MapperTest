@@ -37,10 +37,6 @@ namespace DS4MapperTest.TouchpadActions
             public const string STABILITY_EDGE_START_GATE = "StabilityEdgeStartGate";
             public const string STABILITY_STATIONARY = "StabilityStationary";
             public const string STABILITY_DELTA_CLAMP = "StabilityDeltaClamp";
-            //public const string MAX_OUTPUT = "MaxOutput";
-            //public const string MAX_OUTPUT_ENABLED = "MaxOutputEnabled";
-            //public const string SQUARE_STICK_ENABLED = "SquareStickEnabled";
-            //public const string SQUARE_STICK_ROUNDNESS = "SquareStickRoundness";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -177,8 +173,6 @@ namespace DS4MapperTest.TouchpadActions
         }
 
         private double xNorm = 0.0, yNorm = 0.0;
-        //private double xMotion;
-        //private double yMotion;
         private int previousDX, previousDY;
 
         private const int TRACKBALL_INIT_FRICTION = 10;
@@ -186,11 +180,9 @@ namespace DS4MapperTest.TouchpadActions
         private const int TRACKBALL_MASS = 45;
         private const double TRACKBALL_RADIUS = 0.0245;
         private const double TOUCHPAD_MOUSE_OFFSET = 0.375;
-        //private const double TOUCHPAD_COEFFICIENT = 0.012;
         private const double TOUCHPAD_COEFFICIENT = 0.012 * 1.1;
 
         private double TRACKBALL_INERTIA = 2.0 * (TRACKBALL_MASS * TRACKBALL_RADIUS * TRACKBALL_RADIUS) / 5.0;
-        //private double TRACKBALL_SCALE = 0.000023;
         private double TRACKBALL_SCALE = 0.000023;
         private const int TRACKBALL_BUFFER_LEN = 8;
 
@@ -280,8 +272,6 @@ namespace DS4MapperTest.TouchpadActions
 
         public override void Prepare(Mapper mapper, ref TouchEventFrame touchFrame, bool alterState = true)
         {
-            //Trace.WriteLine($"IN PREPARE {touchFrame.X} {touchFrame.Y}");
-            //Trace.WriteLine($"IN PREPARE {touchFrame.X} {touchFrame.Y}");
 
             double previousXNorm = xNorm;
             double previousYNorm = yNorm;
@@ -319,23 +309,9 @@ namespace DS4MapperTest.TouchpadActions
 
                 if (previousTouchFrame.Touch)
                 {
-                    // Process normal mouse
                     ProcessTouchMouseJoystick(mapper, ref touchFrame, ref previousTouchFrame);
                 }
             }
-
-            //if (xNorm != 0.0 || yNorm != 0.0)
-            //{
-            //    active = activeEvent = true;
-            //}
-            ////else if (previousXNorm != xNorm || previousYNorm != yNorm)
-            ////{
-            ////    active = activeEvent = true;
-            ////}
-            //else
-            //{
-            //    active = activeEvent = false;
-            //}
 
             if (touchFrame.Touch || trackData.trackballActive)
             {
@@ -380,7 +356,6 @@ namespace DS4MapperTest.TouchpadActions
                 tempXNorm = Math.Clamp(tempXNorm, -1.0, 1.0);
                 tempYNorm = Math.Clamp(tempYNorm, -1.0, 1.0);
 
-                //Trace.WriteLine($"OUTPUT: {tempXNorm} {tempYNorm} | BE {outXNorm}");
             }
 
             mapper.GamepadFromStickInput(outputAction, tempXNorm, tempYNorm);
@@ -461,7 +436,6 @@ namespace DS4MapperTest.TouchpadActions
             {
                 if (trackData.trackballActive)
                 {
-                    //Trace.WriteLine("CHECKING HERE");
                 }
 
                 // Initial touch
@@ -475,13 +449,9 @@ namespace DS4MapperTest.TouchpadActions
                 trackData.trackballDXRemain = 0.0;
                 trackData.trackballDYRemain = 0.0;
 
-                //Trace.WriteLine("INITIAL");
             }
             else if (touchFrame.Touch && previousTouchFrame.Touch)
             {
-                // Process normal mouse
-                //RightTouchMouse(ref current, ref previous);
-                //Trace.WriteLine("NORMAL");
                 ProcessTouchMouseJoystick(mapper, ref touchFrame, ref previousTouchFrame);
 
             }
@@ -511,14 +481,11 @@ namespace DS4MapperTest.TouchpadActions
                 {
                     trackData.trackballActive = true;
 
-                    //Trace.WriteLine($"START TRACK {dist}");
                     ProcessTrackballJoystickFrame(ref touchFrame);
                 }
             }
             else if (!touchFrame.Touch && trackData.trackballActive)
             {
-                //Trace.WriteLine("CONTINUE TRACK");
-                // Trackball Running
                 ProcessTrackballJoystickFrame(ref touchFrame);
             }
             else if (!touchFrame.Touch)
@@ -551,9 +518,6 @@ namespace DS4MapperTest.TouchpadActions
             }
             
             previousDX = dx; previousDY = dy;
-            //int rawDeltaX = dx, rawDeltaY = dy;
-
-            //Trace.WriteLine(String.Format("DELTA X: {0} Y: {1}", dx, dy));
 
             if (mStickParams.trackballEnabled)
             {
@@ -612,12 +576,9 @@ namespace DS4MapperTest.TouchpadActions
             trackData.trackballXVel = xVNew;
             trackData.trackballYVel = yVNew;
 
-            //Trace.WriteLine(string.Format("DX: {0} DY: {1}", dx, dy));
-
             if (dx == 0 && dy == 0)
             {
                 trackData.trackballActive = false;
-                //Trace.WriteLine("ENDING TRACK");
                 xNorm = yNorm = 0.0;
             }
             else
@@ -630,14 +591,9 @@ namespace DS4MapperTest.TouchpadActions
         private void TouchMouseJoystickPad(int dx, int dy,
             ref TouchEventFrame touchFrame)
         {
-            //const int deadZone = 70;
             int deadZone = mStickParams.deadZone;
-            //const int maxDeadZoneAxial = 100;
-            //const int minDeadZoneAxial = 20;
             int maxDeadZoneAxial = (int)(mStickParams.maxZone * 0.24);
             int minDeadZoneAxial = (int)(mStickParams.maxZone * 0.02);
-
-            //Trace.WriteLine(touchFrame.Y);
 
             int maxDirX = dx >= 0 ? 32767 : -32768;
             int maxDirY = dy >= 0 ? 32767 : -32768;
@@ -648,25 +604,15 @@ namespace DS4MapperTest.TouchpadActions
             int signX = Math.Sign(dx);
             int signY = Math.Sign(dy);
 
-            //double timeElapsed = touchFrame.timeElapsed;
-            // Base speed 8 ms
-            //double tempDouble = timeElapsed * 125.0;
-
-            //int maxValX = signX * 430;
-            //int maxValY = signY * 430;
-
             int maxValX = signX * mStickParams.maxZone;
             int maxValY = signY * mStickParams.maxZone;
 
             double xratio = 0.0, yratio = 0.0;
-            //double antiX = 0.30 * normX;
-            //double antiY = 0.30 * normY;
             double antiX = mStickParams.antiDeadzoneX * normX;
             double antiY = mStickParams.antiDeadzoneY * normY;
 
             int deadzoneX = (int)Math.Abs(normX * deadZone);
             int radialDeadZoneY = (int)(Math.Abs(normY * deadZone));
-            //int deadzoneY = (int)(Math.Abs(normY * deadZone));
 
             int absDX = Math.Abs(dx);
             int absDY = Math.Abs(dy);
@@ -681,35 +627,10 @@ namespace DS4MapperTest.TouchpadActions
             // Past radial. Check for bowtie
             else
             {
-                //Trace.WriteLine($"X ({dx}) | Y ({dy})");
 
                 // X axis calculated with scaled radial
-                /*if (absDX > deadzoneX)
-                {
-                    dx -= signX * deadzoneX;
-                    //dx = (dx < 0 && dx < maxValX) ? maxValX :
-                    //    (dx > 0 && dx > maxValX) ? maxValX : dx;
-                }
-                else
-                {
-                    dx = 0;
-                }
-
-                if (absDY > radialDeadZoneY)
-                {
-                    dy -= signY * radialDeadZoneY;
-                    //dy = (dy < 0 && dy < maxValY) ? maxValY :
-                    //    (dy > 0 && dy > maxValY) ? maxValY : dy;
-                }
-                else
-                {
-                    dy = 0;
-                }
-                */
 
                 // Need to adjust Y axis dead zone based on X axis input. Bowtie
-                //int deadzoneY = Math.Max(radialDeadZoneY,
-                //    (int)(Math.Min(1.0, absDX / (double)maxValX) * maxDeadZoneAxialY));
                 double tempRangeRatioX = absDX / Math.Abs((double)maxValX);
                 double tempRangeRatioY = absDY / Math.Abs((double)maxValY);
 
@@ -717,17 +638,6 @@ namespace DS4MapperTest.TouchpadActions
                     Math.Min(1.0, tempRangeRatioY) + minDeadZoneAxial);
                 int deadzoneY = (int)((maxDeadZoneAxial - minDeadZoneAxial) *
                     Math.Min(1.0, tempRangeRatioX) + minDeadZoneAxial);
-
-                //Trace.WriteLine($"Axial {axialDeadX} DX: {dx}");
-                //Trace.WriteLine(deadzoneY);
-                //int deadzoneY = Math.Min(maxValX, Math.Abs(dx)) * maxDeadZoneAxialY;
-                //if (absDY > radialDeadZoneY)
-                //{
-                //    dy -= signY * radialDeadZoneY;
-                //    dy = (dy < 0 && dy < maxValY) ? maxValY :
-                //        (dy > 0 && dy > maxValY) ? maxValY : dy;
-                //}
-                //else if (absDY > deadzoneY)
 
                 if (Math.Abs(dx) > axialDeadX)
                 {
@@ -739,12 +649,10 @@ namespace DS4MapperTest.TouchpadActions
 
                     dx = (dx < 0 && dx < maxValX) ? maxValX :
                         (dx > 0 && dx > maxValX) ? maxValX : dx;
-                    //Trace.WriteLine($"{scaleX} {dx}");
                 }
                 else
                 {
                     dx = 0;
-                    //Trace.WriteLine("dx zero");
                 }
 
                 if (Math.Abs(dy) > deadzoneY)
@@ -763,36 +671,6 @@ namespace DS4MapperTest.TouchpadActions
                     dy = 0;
                 }
 
-                /*
-                if (absDY > deadzoneY)
-                {
-                    int newMaxValY = signY * (Math.Abs(maxValY) - deadzoneY);
-                    dy -= signY * deadzoneY;
-                    //dy = (dy < 0 && dy < maxValY) ? maxValY :
-                    //    (dy > 0 && dy > maxValY) ? maxValY : dy;
-                    dy = (dy < 0 && dy < newMaxValY) ? newMaxValY :
-                          (dy > 0 && dy > newMaxValY) ? newMaxValY : dy;
-
-                    double scaleY;
-                    if (dy == newMaxValY)
-                    {
-                        scaleY = 1.0;
-                    }
-                    else
-                    {
-                        scaleY = (double)(dy - 0.0) / (double)(newMaxValY - 0.0);
-                    }
-                    //scaleY = (Math.Abs(newMaxValY) - Math.Abs(dy)) /
-                    //    (double)(Math.Abs(maxValY) - 0);
-                    dy = (int)(scaleY * maxValY);
-
-                    //Trace.WriteLine($"SCALE: ({scaleY}) | NEW: ({newMaxValY}) | DY({dy})");
-                }
-                else
-                {
-                    dy = 0;
-                }
-                //*/
             }
 
             if (mStickParams.jitterCompensation)
@@ -832,7 +710,6 @@ namespace DS4MapperTest.TouchpadActions
             double maxOutXRatio = Math.Abs(Math.Cos(tempAngle)) * maxOutRatio;
             double maxOutYRatio = Math.Abs(Math.Sin(tempAngle)) * maxOutRatio;
 
-            //Trace.WriteLine($"{maxOutXRatio} {maxOutYRatio}");
             // Expand output a bit
             maxOutXRatio = Math.Min(maxOutXRatio / 0.96, 1.0);
             // Expand output a bit
@@ -840,20 +717,6 @@ namespace DS4MapperTest.TouchpadActions
 
             xratio = Math.Min(Math.Max(xratio, 0.0), maxOutXRatio);
             yratio = Math.Min(Math.Max(yratio, 0.0), maxOutYRatio);
-
-            //Trace.WriteLine($"X ({dx}) | Y ({dy})");
-
-            //double maxOutRatio = 0.98;
-            //// Expand output a bit. Likely not going to get a straight line with Gyro
-            //double maxOutXRatio = Math.Min(normX / 1.0, 1.0) * maxOutRatio;
-            //double maxOutYRatio = Math.Min(normY / 1.0, 1.0) * maxOutRatio;
-
-            //xratio = Math.Min(Math.Max(xratio, 0.0), maxOutXRatio);
-            //yratio = Math.Min(Math.Max(yratio, 0.0), maxOutYRatio);
-
-            // QuadOut
-            //xratio = 1.0 - ((1.0 - xratio) * (1.0 - xratio));
-            //yratio = 1.0 - ((1.0 - yratio) * (1.0 - yratio));
 
             double xNorm = 0.0, yNorm = 0.0;
             if (xratio != 0.0)
@@ -879,16 +742,6 @@ namespace DS4MapperTest.TouchpadActions
                 this.yNorm *= -1.0;
             }
 
-            //Trace.WriteLine($"OutX ({this.xNorm}) | OutY ({this.yNorm})");
-            //short axisXOut = (short)filterX.Filter(xNorm * maxDirX,
-            //    1.0 / currentRate);
-            //short axisYOut = (short)filterY.Filter(yNorm * maxDirY,
-            //    1.0 / currentRate);
-
-            //Trace.WriteLine($"OutX ({axisXOut}) | OutY ({axisYOut})");
-
-            //xbox.RightThumbX = axisXOut;
-            //xbox.RightThumbY = axisYOut;
         }
 
         public override void SoftCopyFromParent(TouchpadMapAction parentAction)
@@ -996,8 +849,6 @@ namespace DS4MapperTest.TouchpadActions
 
         private void CalcTrackAccel()
         {
-            //trackData.trackballAccel = TRACKBALL_RADIUS * TRACKBALL_JOY_FRICTION / TRACKBALL_INERTIA;
-            //trackData.trackballAccel = TRACKBALL_RADIUS * trackballFriction / TRACKBALL_INERTIA;
             trackData.trackballAccel = TRACKBALL_RADIUS * mStickParams.trackballFriction / TRACKBALL_INERTIA;
         }
 

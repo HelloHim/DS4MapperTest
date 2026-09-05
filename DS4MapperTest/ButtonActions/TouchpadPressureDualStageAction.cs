@@ -11,7 +11,7 @@ namespace DS4MapperTest.ButtonActions
     // (DualStageEvaluator, extracted from TriggerDualStageAction) so Threshold/Exclusive
     // Buttons/Hair Trigger/Hip Fire/Hip Fire Exclusive Buttons behave identically to the
     // trigger settings users already know. Unlike triggers, the per-frame driver is raw
-    // touchpad pressure (0-32767) plus a finger touch flag rather than an analog axis with
+    // touchpad pressure (0-32767) plus a finger touch flag rather than an analogue axis with
     // an optional dedicated click button, so PrepareTouchpadPressure (not Prepare/PrepareAnalog)
     // is the real entry point for whichever mapper drives pressure-sensitive touchpad clicks.
     public class TouchpadPressureDualStageAction : ButtonMapAction

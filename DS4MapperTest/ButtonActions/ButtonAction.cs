@@ -24,17 +24,12 @@ namespace DS4MapperTest.ButtonActions
         {
         }
 
-        //private List<OutputActionData> outputActions =
-        //    new List<OutputActionData>();
-        //private OutputActionDataEnumerator outputActionEnumerator;
-
         protected ButtonAction parentButtonAct;
         protected bool useParentActions;
         public bool UseParentActions => useParentActions;
         // Hold reference to usable PrivateStateData instance
         private PrivateStateData privateState;
 
-        //private NormalPressFunc pressFunc;
         private List<OutputActionData> activeActions = new List<OutputActionData>();
         protected List<ActionFunc> actionFuncs = new List<ActionFunc>();
         protected List<ActionFunc> actionFuncCandidates = new List<ActionFunc>();
@@ -86,7 +81,6 @@ namespace DS4MapperTest.ButtonActions
             if (parentAction != null)
             {
                 this.CopyBaseProps(parentAction);
-                //parentAction.CopyBaseProps(this);
 
                 foreach (ActionFunc func in parentAction.actionFuncs)
                 {
@@ -115,50 +109,36 @@ namespace DS4MapperTest.ButtonActions
 
         public ButtonAction(OutputActionData outputAction)
         {
-            //outputActions.Add(outputAction);
-            //outputActionEnumerator = new OutputActionDataEnumerator(outputActions);
 
             NormalPressFunc pressFunc = new NormalPressFunc(outputAction);
             actionFuncs.Add(pressFunc);
             privateState = new PrivateStateData();
-            //actionFuncCandidates.Add(pressFunc);
 
             actionTypeName = ACTION_TYPE_NAME;
         }
 
         public ButtonAction(IEnumerable<OutputActionData> outputActions)
         {
-            //this.outputActions.AddRange(outputActions);
-            //outputActionEnumerator =
-            //    new OutputActionDataEnumerator(this.outputActions);
 
             NormalPressFunc pressFunc = new NormalPressFunc(outputActions);
             actionFuncs.Add(pressFunc);
             privateState = new PrivateStateData();
-            //actionFuncCandidates.Add(pressFunc);
 
             actionTypeName = ACTION_TYPE_NAME;
         }
 
         public override void Prepare(Mapper mapper, bool status, bool alterState = true)
         {
-            //if (status != active)
             if (this.status != status)
             {
                 if (status)
                 {
-                    //if (useParentActions)
-                    //{
-                    //    usedFuncList = parentButtonAct.actionFuncs;
-                    //}
-                    //else
                     {
                         usedFuncList = actionFuncs;
                     }
 
                     ConfigureRegularPressInterruptDelay(usedFuncList);
                     actionFuncCandidates.AddRange(usedFuncList);
-                    //actionFuncCandidates.AddRange(actionFuncs);
                     if (alterState)
                     {
                         stateData.elapsed.Restart();
@@ -172,13 +152,6 @@ namespace DS4MapperTest.ButtonActions
                     stateData.state = status;
                     stateData.axisNormValue = status ? 1.0 : 0.0;
                 }
-                /*if (alterState)
-                {
-                    stateData.wasActive = stateData.state;
-                    stateData.state = status;
-                    stateData.axisValue = status ? 1.0 : 0.0;
-                }
-                */
 
                 active = true;
                 activeEvent = true;
@@ -228,20 +201,6 @@ namespace DS4MapperTest.ButtonActions
                 if (status)
                 {
                     // Activate current actions
-                    /*foreach(ActionFunc func in activeFuns)
-                    {
-                        foreach (OutputActionData action in func.OutputActions)
-                        {
-                            mapper.RunEventFromButton(action, status);
-                        }
-                    }
-                    */
-
-                    /*foreach(OutputActionData action in activeActions)
-                    {
-                        mapper.RunEventFromButton(action, status);
-                    }
-                    */
 
                     // Check for new function candidates to add
                     int i = 0;
@@ -250,13 +209,8 @@ namespace DS4MapperTest.ButtonActions
                     bool pressNonInterruptable = false;
                     distanceFuns.Clear();
                     double distancePercent = 0.0;
-                    //ActionFuncEnumerator funcEnumerator =
-                    //        new ActionFuncEnumerator(actionFuncCandidates);
-                    //funcEnumerator.MoveToEnd();
-                    //while (funcEnumerator.MovePrevious())
                     foreach (ActionFunc func in actionFuncCandidates)
                     {
-                        //ActionFunc func = funcEnumerator.Current;
                         func.Prepare(mapper, true, stateData);
                         if (func.onRelease)
                         {
@@ -289,11 +243,6 @@ namespace DS4MapperTest.ButtonActions
                             removed = true;
                         }
 
-                        //if (func.canPressInterrupt)
-                        //{
-                        //    interruptFound = true;
-                        //}
-
                         i++;
                     }
 
@@ -311,23 +260,6 @@ namespace DS4MapperTest.ButtonActions
                     i = 0;
                     removed = false;
 
-                    // Press Interrupt func found in sequence. Check current steps
-                    //if (interruptFound)
-                    //{
-                    //    ActionFuncEnumerator funcEnumerator =
-                    //            new ActionFuncEnumerator(actionFuncCandidates);
-                    //    funcEnumerator.MoveToEnd();
-                    //    while (funcEnumerator.MovePrevious())
-                    //    {
-                    //        ActionFunc func = funcEnumerator.Current;
-                    //        func.Prepare(mapper, status);
-                    //        if (func.active && func.canPressInterrupt)
-                    //        {
-                    //            pressNonInterruptable = true;
-                    //        }
-                    //    }
-                    //}
-
                     // Change DistanceFunc action states before other ActionFunc instances
                     if (distanceFuns.Count > 0)
                     {
@@ -338,7 +270,6 @@ namespace DS4MapperTest.ButtonActions
                             {
                                 foreach (OutputActionData action in func.OutputActions)
                                 {
-                                    //Console.WriteLine("JAMIES CRYING");
                                     if (!action.checkTick)
                                     {
                                         if (action.processOutput)
@@ -379,22 +310,10 @@ namespace DS4MapperTest.ButtonActions
                                     {
                                         mapper.RunEventFromButton(action, false);
                                         action.Release();
-                                        //if (action.checkTick) action.Release();
                                     }
 
                                     action.firstRun = true;
                                 }
-                                /*foreach (OutputActionData action in func.OutputActions)
-                                {
-                                    activeActions.Remove(action);
-                                    if (action.activatedEvent)
-                                    {
-                                        mapper.RunEventFromButton(action, false);
-                                    }
-
-                                    action.firstRun = false;
-                                }
-                                */
 
 
                                 func.Release(mapper);
@@ -407,7 +326,6 @@ namespace DS4MapperTest.ButtonActions
                     removed = false;
                     foreach (ActionFunc func in activeFuns)
                     {
-                        //func.Prepare(mapper, true, stateData);
                         func.Event(mapper, stateData);
                         bool shouldInterrupt = func.interruptable && pressNonInterruptable;
                         bool outputStatus = func.outputActive;
@@ -415,31 +333,7 @@ namespace DS4MapperTest.ButtonActions
                         {
                             foreach (OutputActionData action in func.OutputActions)
                             {
-                                //Console.WriteLine("JAMIES CRYING");
 
-                                //if (useNotches)
-                                //{
-                                //    WrapNotchesProcess(action);
-                                //    if (!action.activatedEvent && action.currentNotches >= 1.0)
-                                //    {
-                                //        OutputActionData.NotchResultData notchData = action.ProcessNotches();
-                                //        if (notchData.useAnalog)
-                                //        {
-                                //            mapper.RunEventFromAnalog(action, true, notchData.notches, 1.0);
-                                //        }
-                                //        else
-                                //        {
-                                //            mapper.RunEventFromButton(action, true);
-                                //        }
-                                //    }
-                                //    else if (action.activatedEvent)
-                                //    {
-                                //        mapper.RunEventFromButton(action, false);
-                                //    }
-
-                                //    action.firstRun = false;
-                                //    //action.activatedEvent = action.currentNotches != 0.0;
-                                //}
                                 if (!action.checkTick)
                                 {
                                     if (action.processOutput) action.ProcessAction();
@@ -486,19 +380,6 @@ namespace DS4MapperTest.ButtonActions
                                         break;
                                     }
                                 }
-                                /*else if (action.ProcessTick())
-                                {
-                                    mapper.RunEventFromButton(action, status);
-                                    WrapTickProcess(action);
-                                    //mapper.RunEventFromButton(action, status);
-                                    //action.firstRun = false;
-                                    //action.EffectiveDurationMs = (int)(action.DurationMs / ButtonDistance);
-                                }
-                                else if (analog)
-                                {
-                                    WrapTickProcess(action);
-                                }
-                                */
                             }
                         }
                         else if (func.active && shouldInterrupt)
@@ -529,10 +410,8 @@ namespace DS4MapperTest.ButtonActions
                                 OutputActionData action = activeActionsEnumerator.Current;
                                 if (action.activatedEvent)
                                 {
-                                    //mapper.RunEventFromButton(action, status);
                                     mapper.RunEventFromButton(action, false);
                                     action.Release();
-                                    //if (action.checkTick) action.Release();
                                 }
 
                                 action.firstRun = true;
@@ -559,26 +438,12 @@ namespace DS4MapperTest.ButtonActions
                                 OutputActionData action = activeActionsEnumerator.Current;
                                 if (action.activatedEvent)
                                 {
-                                    //mapper.RunEventFromButton(action, status);
                                     mapper.RunEventFromButton(action, false);
                                     action.Release();
-                                    //if (action.checkTick) action.Release();
                                 }
 
                                 action.firstRun = true;
                             }
-
-                            /*foreach (OutputActionData action in func.OutputActions)
-                            {
-                                activeActions.Remove(action);
-                                if (action.activatedEvent)
-                                {
-                                    mapper.RunEventFromButton(action, false);
-                                }
-
-                                action.firstRun = false;
-                            }
-                            */
 
                             func.Release(mapper);
                             removeFuncsCandiates.Add(i);
@@ -599,13 +464,6 @@ namespace DS4MapperTest.ButtonActions
                         removeFuncsCandiates.Clear();
                     }
 
-                    /*pressFunc.Prepare(mapper, active);
-                    foreach(OutputActionData action in pressFunc.OutputActions)
-                    {
-                        mapper.RunEventFromButton(action, status);
-                        activeActions.Add(action);
-                    }
-                    */
                 }
                 else if (!status)
                 {
@@ -631,7 +489,6 @@ namespace DS4MapperTest.ButtonActions
                             actionFuncCandidates.Add(func);
                             stillActiveFun = true;
                         }
-                        //func.Release(mapper);
                     }
 
                     activeFuns.Clear();
@@ -693,7 +550,6 @@ namespace DS4MapperTest.ButtonActions
                         {
                             mapper.RunEventFromButton(action, status);
                             action.Release();
-                            //if (action.checkTick) action.Release();
                         }
 
                         action.firstRun = true;
@@ -717,7 +573,6 @@ namespace DS4MapperTest.ButtonActions
                                 {
                                     mapper.RunEventFromButton(action, status);
                                     action.Release();
-                                    //if (action.checkTick) action.Release();
                                 }
 
                                 action.firstRun = true;
@@ -732,36 +587,10 @@ namespace DS4MapperTest.ButtonActions
                         FireArmedReleaseFuncs(mapper);
                     }
 
-                    /*foreach (ActionFunc func in actionFuncCandidates)
-                    {
-                        func.Prepare(mapper, false, stateData);
-                        //func.Prepare(mapper, new ActionFuncStateData()
-                        //{
-                        //    state = false,
-                        //    axisValue = 0.0,
-                        //});
-                        //func.Release(mapper);
-                    }
-                    */
-
-                    //actionFuncCandidates.Clear();
                     interruptFound = false;
 
-                    //pressFunc.Release(mapper);
                 }
-                /*outputActionEnumerator.Reset();
-                while (outputActionEnumerator.MoveNext())
-                {
-                    OutputActionData action = outputActionEnumerator.Current;
-                    mapper.RunEventFromButton(action, status);
-                }
-                */
 
-                /*foreach(OutputActionData action in outputActions)
-                {
-                    mapper.RunEventFromButton(action, status);
-                }
-                */
             }
 
             active = status || activeFuns.Count > 0;
@@ -770,7 +599,6 @@ namespace DS4MapperTest.ButtonActions
 
         public override void Release(Mapper mapper, bool resetState=true, bool ignoreReleaseActions=false)
         {
-            //if (active)
             if (active || activeFuns.Count > 0)
             {
                 if (resetState)
@@ -797,7 +625,6 @@ namespace DS4MapperTest.ButtonActions
                     {
                         mapper.RunEventFromButton(action, false);
                         action.Release();
-                        //if (action.checkTick) action.Release();
                     }
                 }
 
@@ -818,7 +645,6 @@ namespace DS4MapperTest.ButtonActions
                             {
                                 mapper.RunEventFromButton(action, false);
                                 action.Release();
-                                //if (action.checkTick) action.Release();
                             }
 
                             action.firstRun = true;
@@ -828,25 +654,6 @@ namespace DS4MapperTest.ButtonActions
                     distanceFuns.Clear();
                 }
 
-                /*foreach (ActionFunc func in activeFuns)
-                {
-                    func.Release(mapper);
-                }
-                */
-
-                //pressFunc.Release(mapper);
-                /*outputActionEnumerator.MoveToEnd();
-                while (outputActionEnumerator.MovePrevious())
-                {
-                    OutputActionData action = outputActionEnumerator.Current;
-                    mapper.RunEventFromButton(action, false);
-                }
-                */
-                /*foreach (OutputActionData action in outputActions)
-                {
-                    mapper.RunEventFromButton(action, false);
-                }
-                */
             }
 
             if (releaseFuns.Count > 0)
@@ -865,10 +672,6 @@ namespace DS4MapperTest.ButtonActions
             activeEvent = false;
             interruptFound = false;
             status = false;
-            //if (resetState)
-            //{
-            //    stateData.Reset(true);
-            //}
         }
 
         // Fires any Release Press-style functions that were armed while the source was
@@ -974,25 +777,6 @@ namespace DS4MapperTest.ButtonActions
                 distanceFuns.Clear();
             }
 
-            /*foreach (ActionFunc func in activeFuns)
-            {
-                func.Release(mapper);
-            }
-            */
-
-            //pressFunc.Release(mapper);
-            /*outputActionEnumerator.MoveToEnd();
-            while (outputActionEnumerator.MovePrevious())
-            {
-                OutputActionData action = outputActionEnumerator.Current;
-                mapper.RunEventFromButton(action, false);
-            }
-            */
-            /*foreach (OutputActionData action in outputActions)
-            {
-                mapper.RunEventFromButton(action, false);
-            }
-            */
         }
 
         public override void SoftRelease(Mapper mapper, MapAction _,
@@ -1005,81 +789,6 @@ namespace DS4MapperTest.ButtonActions
                     ReleaseActions(mapper, resetState);
                 }
 
-                //if (resetState)
-                //{
-                //    stateData.Reset(true);
-                //}
-
-                //foreach (ActionFunc func in activeFuns)
-                //{
-                //    activeActions.AddRange(func.OutputActions);
-                //    func.Release(mapper);
-                //}
-
-                //activeFuns.Clear();
-
-                //OutputActionDataEnumerator activeActionsEnumerator =
-                //    new OutputActionDataEnumerator(activeActions);
-                //activeActionsEnumerator.MoveToEnd();
-                //while (activeActionsEnumerator.MovePrevious())
-                //{
-                //    OutputActionData action = activeActionsEnumerator.Current;
-                //    if (action.activatedEvent)
-                //    {
-                //        mapper.RunEventFromButton(action, false, false);
-                //        if (action.checkTick) action.Release();
-                //    }
-                //}
-
-                //activeActions.Clear();
-
-                //if (distanceFuns.Count > 0)
-                //{
-                //    ActionFuncEnumerator distanceFuncsEnumerator =
-                //        new ActionFuncEnumerator(distanceFuns);
-                //    distanceFuncsEnumerator.MoveToEnd();
-                //    while (distanceFuncsEnumerator.MovePrevious())
-                //    {
-                //        ActionFunc func = distanceFuncsEnumerator.Current;
-                //        if (!func.active) continue;
-                //        foreach (OutputActionData action in func.OutputActions)
-                //        {
-                //            if (action.activatedEvent)
-                //            {
-                //                mapper.RunEventFromButton(action, false, false);
-                //                if (action.checkTick) action.Release();
-                //            }
-
-                //            action.firstRun = true;
-                //        }
-                //    }
-
-                //    distanceFuns.Clear();
-                //}
-
-                /*foreach (ActionFunc func in activeFuns)
-                {
-                    func.Release(mapper);
-                }
-                */
-
-                //distanceFuns.Clear();
-                //actionFuncCandidates.Clear();
-
-                //pressFunc.Release(mapper);
-                /*outputActionEnumerator.MoveToEnd();
-                while (outputActionEnumerator.MovePrevious())
-                {
-                    OutputActionData action = outputActionEnumerator.Current;
-                    mapper.RunEventFromButton(action, false);
-                }
-                */
-                /*foreach (OutputActionData action in outputActions)
-                {
-                    mapper.RunEventFromButton(action, false);
-                }
-                */
-
 
                 actionFuncCandidates.Clear();
             }
@@ -1088,10 +797,6 @@ namespace DS4MapperTest.ButtonActions
             activeEvent = false;
             interruptFound = false;
             status = false;
-            //if (resetState)
-            //{
-            //    stateData.Reset(true);
-            //}
         }
 
         public override void PrepareAnalog(Mapper mapper, double axisValue, double axisUnit,
@@ -1159,22 +864,6 @@ namespace DS4MapperTest.ButtonActions
                     }
                 }
 
-                //if (!changedProperties.Contains(PropertyKeyStrings.NAME))
-                //{
-                //    name = parentBtnAction.name;
-                //}
-
-                //if (!changedProperties.Contains(PropertyKeyStrings.FUNCTIONS))
-                //{
-                //    actionFuncs.AddRange(parentBtnAction.actionFuncs);
-                //    useParentActions = true;
-                //}
-
-                /*if (!changedProperties.Contains(""))
-                {
-
-                }
-                */
             }
         }
 
@@ -1211,22 +900,6 @@ namespace DS4MapperTest.ButtonActions
                     }
                 }
 
-                //if (!changedProperties.Contains(PropertyKeyStrings.NAME))
-                //{
-                //    name = parentBtnAction.name;
-                //}
-
-                //if (!changedProperties.Contains(PropertyKeyStrings.FUNCTIONS))
-                //{
-                //    actionFuncs.AddRange(parentBtnAction.actionFuncs);
-                //    useParentActions = true;
-                //}
-
-                /*if (!changedProperties.Contains(""))
-                {
-
-                }
-                */
             }
         }
 
@@ -1242,26 +915,6 @@ namespace DS4MapperTest.ButtonActions
             {
                 // Determine the set with properties that should inherit
                 // from the parent action
-                /*IEnumerable<string> useParentProList = tempSrcBtnAction.changedProperties;
-
-                foreach (string parentPropType in useParentProList)
-                {
-                    switch (parentPropType)
-                    {
-                        case PropertyKeyStrings.NAME:
-                            name = tempSrcBtnAction.name;
-                            break;
-                        case PropertyKeyStrings.FUNCTIONS:
-                            foreach (ActionFunc func in tempSrcBtnAction.actionFuncs)
-                            {
-                                actionFuncs.Add(ActionFuncCopyFactory.CopyFunc(func));
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                */
                 name = tempSrcBtnAction.name;
                 foreach (ActionFunc func in tempSrcBtnAction.actionFuncs)
                 {
@@ -1341,28 +994,5 @@ namespace DS4MapperTest.ButtonActions
             return result;
         }
 
-        //public void CopyPropsTo(ButtonAction secondAction)
-        //{
-        //    base.CopyBaseProps(secondAction);
-        //}
-
-        //public void ShallowCopyBindingsTo(ButtonAction secondAction)
-        //{
-        //    foreach (ActionFunc func in actionFuncs)
-        //    {
-        //        secondAction.actionFuncs.Add(func);
-        //        //secondAction.ActionFuncs.Add(ActionFuncCopyFactory.CopyFunc(func));
-        //    }
-        //}
-
-        //public void CopyBindingsTo(ButtonAction secondAction)
-        //{
-        //    secondAction.ActionFuncs.Clear();
-
-        //    foreach(ActionFunc func in actionFuncs)
-        //    {
-        //        secondAction.ActionFuncs.Add(ActionFuncCopyFactory.CopyFunc(func));
-        //    }
-        //}
     }
 }

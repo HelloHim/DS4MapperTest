@@ -124,8 +124,6 @@ namespace DS4MapperTest.ActionUtil
                     {
                         turboStopwatch.Restart();
                     }
-                    // Execute system event
-                    //SendOutputEvent(mapper);
                 }
             }
         }

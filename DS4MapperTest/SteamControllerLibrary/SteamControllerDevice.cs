@@ -144,12 +144,6 @@ namespace DS4MapperTest.SteamControllerLibrary
         public double activeLeftAmpRatio = 0.0;
         public double activeRightAmpRatio = 0.0;
 
-        //private SteamControllerControllerOptions deviceOptions;
-        //public SteamControllerControllerOptions DeviceOptions
-        //{
-        //    get => deviceOptions;
-        //}
-
         private bool checkForSyncChange;
         public bool CheckForSyncChange
         {
@@ -275,17 +269,10 @@ namespace DS4MapperTest.SteamControllerLibrary
 
             byte[] retReportData = new byte[FEATURE_REPORT_LEN];
             hidDevice.readFeatureData(retReportData);
-            //Console.WriteLine("LKJDKJLLD: {0}", retReportData[1]);
 
             string baseS = System.Text.Encoding.Default.GetString(retReportData, 4, 12);
             string MACAddr = baseS.Replace("\0", string.Empty).ToUpper();
-            //List<string> tempStrList = new List<string>();
-            //for (int i=0; i < MACAddr.Length; i += 2)
-            //{
-            //    tempStrList.Add($"{MACAddr[i]}{MACAddr[i + 1]}");
-            //}
 
-            //serial = string.Join(":", tempStrList);
             serial = MACAddr;
         }
 
@@ -373,21 +360,9 @@ namespace DS4MapperTest.SteamControllerLibrary
             if (tempRatio != 0.0)
             {
                 amplitude = (ushort)((900 - 600) * tempRatio + 600);
-                //amplitude = (ushort)((1400 - 1000) * tempRatio + 1000);
-                //amplitude = 1000;
-                //amplitude = (ushort)((1200 - 100) * tempRatio + 100);
-                //amplitude = (ushort)((2000 - 1400) * tempRatio + 1400);
-                //amplitude = (ushort)((1400 - 2800) * tempRatio + 2800);
             }
-
-            /*if (tempRatio != 0.0)
-            {
-                amplitude = 500;
-            }
-            */
 
             ushort tmp_period_command = 15000;
-            //ushort period_command = 15000;
             ushort period_command = 0;
             if (tempRatio != 0.0)
             {
@@ -433,27 +408,12 @@ namespace DS4MapperTest.SteamControllerLibrary
             if (tempRatio != 0.0)
             {
                 amplitude = (ushort)((1200 - 200) * tempRatio + 200);
-                //amplitude = 800;
-                //amplitude = (ushort)((1400 - 1000) * tempRatio + 1000);
-                //amplitude = 1000;
-                //amplitude = (ushort)((1200 - 100) * tempRatio + 100);
-                //amplitude = (ushort)((2000 - 1400) * tempRatio + 1400);
-                //amplitude = (ushort)((1400 - 2800) * tempRatio + 2800);
             }
-
-            /*if (tempRatio != 0.0)
-            {
-                amplitude = 500;
-            }
-            */
 
             ushort tmp_period_command = 15000;
-            //ushort period_command = 15000;
             ushort period_command = 0;
             if (tempRatio != 0.0)
             {
-                //period_command = (ushort)((6000 - 25000) * tempRatio + 25000);
-                //period_command = 600;
                 period_command = 600;
             }
 
@@ -461,7 +421,6 @@ namespace DS4MapperTest.SteamControllerLibrary
             if (count == 0)
             {
                 double raw_period = period_command / STEAM_CONTROLLER_MAGIC_PERIOD_RATIO;
-                //raw_period = period_command;
                 double duration = (position == HAPTIC_POS_RIGHT) ? hapticInfo.durationRight : hapticInfo.durationLeft;
 
                 if (raw_period != 0)
@@ -470,8 +429,6 @@ namespace DS4MapperTest.SteamControllerLibrary
                         0x7FFF));
                 }
             }
-
-            //count = 1;
 
             buffer[1] = SCPacketType.PT_FEEDBACK;
             buffer[2] = SCPacketLength.PL_FEEDBACK;

@@ -225,11 +225,9 @@ namespace DS4MapperTest.TouchpadActions
             set => forceCenter = value;
         }
 
-        /* Possibly group values in a class */
         /// <summary>
         /// Virtual direction button that takes the vector magnitude as its value
         /// </summary>
-        //private AxisDirButton ringButton = new AxisDirButton(new OutputActionData(OutputActionData.ActionType.Keyboard, KeyInterop.VirtualKeyFromKey(Key.Z), 0));
         private AxisDirButton ringButton = new AxisDirButton();
         private AxisDirButton usedRingButton = null;
 
@@ -302,15 +300,6 @@ namespace DS4MapperTest.TouchpadActions
 
             deadMod.CalcOutValues(axisXDir, axisYDir, maxDirX, maxDirY, out xNorm, out yNorm);
 
-            //if (xNorm != 0.0 || yNorm != 0.0)
-            //{
-
-            //}
-            //xNorm = axisXDir / (double)maxDirX;
-            //yNorm = axisYDir / (double)maxDirY;
-
-            //if (xNegative) xNorm *= -1.0;
-            //if (yNegative) yNorm *= -1.0;
             bool inSafeZone = xNorm != 0.0 || yNorm != 0.0;
             touchingActive = touchFrame.Touch;
             if (touchingActive)
@@ -437,24 +426,14 @@ namespace DS4MapperTest.TouchpadActions
             }
 
             if (useRingButton && usedRingButton != null)
-            //if (checkRingButton)
             {
-                //Trace.WriteLine("IN CHECK");
-                //double dist = Math.Sqrt((xNorm * xNorm) + (yNorm * yNorm));
                 bool activeMod = outerRing ? (ringDistance > outerRingDeadZone ? true : false) :
                     (ringDistance > 0.0 && ringDistance <= outerRingDeadZone ? true : false);
                 double tempRingDistance = activeMod ? ringDistance : 0.0;
                 double tempRingUnit = activeMod ? 1.0 : 0.0;
 
-                //ringButton.PrepareAnalog(mapper, dist);
-                //if (ringButton.active)
-                //{
-                //    ringButton.Event(mapper);
-                //}
-
                 // Treat as boolean button for now
                 usedRingButton.PrepareAnalog(mapper, tempRingDistance, tempRingUnit);
-                //usedRingButton.PrepareAnalog(mapper, dist);
                 if (usedRingButton.active)
                 {
                     usedRingButton.Event(mapper);

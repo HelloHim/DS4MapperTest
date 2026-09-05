@@ -150,7 +150,6 @@ namespace DS4MapperTest.ViewModels
                 TickTimeChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        //public event EventHandler<double> TickTimeValueChanged;
         public event EventHandler TickTimeChanged;
 
         private bool showWheelTickOptions;
@@ -333,7 +332,6 @@ namespace DS4MapperTest.ViewModels
         }
         public event EventHandler SelectedSetChangeConditionIndexChanged;
 
-        // Camera Turn
         private const double DEFAULT_CAMERA_TURN_ANGLE = 180.0;
         private const double DEFAULT_CAMERA_TURN_DURATION_MS = 100.0;
 
@@ -1210,7 +1208,6 @@ namespace DS4MapperTest.ViewModels
                             if (revKeyCodeDict.TryGetValue(item.Data.OutputCodeAlias,
                                 out int keyInd))
                             {
-                                //int keyInd = revKeyCodeDict[item.Data.OutputCodeAlias];
                                 SelectedKeyboardIndex = keyInd;
                             }
                         }
@@ -1293,7 +1290,6 @@ namespace DS4MapperTest.ViewModels
                             {
                                 SelectedLayerChangeConditionIndex = 0;
                                 ShowLayerChangeConditions = false;
-                                //SelectedLayerChoiceIndex = -1;
                             }
                         }
                     }
@@ -1351,7 +1347,6 @@ namespace DS4MapperTest.ViewModels
                     tempData.Reset();
 
                     uint tempCode = ProfileSerializer.EventInputMapper.GetRealEventKey((uint)item.Code);
-                    //tempData = new OutputActionData(OutputActionData.ActionType.Keyboard, tempCode);
                     tempData.Prepare(OutputActionData.ActionType.Keyboard, (int)tempCode);
                     tempData.OutputCodeStr = item.CodeAlias;
                     tempData.OutputCodeAlias = tempCode;
@@ -1375,7 +1370,6 @@ namespace DS4MapperTest.ViewModels
             mapper.ProcessMappingChangeAction(() =>
             {
                 currentAction.Release(mapper, ignoreReleaseActions: true);
-                //currentAction.ActionFuncs[0].Release(mapper);
 
                 OutputActionData tempData = item.Data;
                 if (tempData.OutputType == OutputActionData.ActionType.GamepadControl)
@@ -1391,8 +1385,6 @@ namespace DS4MapperTest.ViewModels
 
                     tempData.OutputType = OutputActionData.ActionType.GamepadControl;
                     tempData.JoypadCode = temp;
-                    //tempData =
-                    //    new OutputActionData(OutputActionData.ActionType.GamepadControl, temp);
                 }
             });
 
@@ -1718,7 +1710,6 @@ namespace DS4MapperTest.ViewModels
                 func.OutputActions.Add(tempData);
             });
 
-            //PrepareControlsForSlot(item);
         }
 
         public void AssignUnbound()

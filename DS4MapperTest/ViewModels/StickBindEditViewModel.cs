@@ -112,8 +112,6 @@ namespace DS4MapperTest.ViewModels
                 case 5:
                     {
                         StickAbsMouse tempAction = new StickAbsMouse();
-                        //var joyDefaults = mapper.DeviceActionDefaults.GrabTouchActionPadDefaults();
-                        //joyDefaults.Process(tempAction);
                         result = tempAction;
                     }
 
@@ -194,15 +192,8 @@ namespace DS4MapperTest.ViewModels
             mapper.ProcessMappingChangeAction(() =>
             {
                 oldAction.Release(mapper, ignoreReleaseActions: true);
-                //int tempInd = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.FindIndex((item) => item == tempAction);
-                //if (tempInd >= 0)
                 {
-                    //mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.RemoveAt(tempInd);
-                    //mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.Insert(tempInd, newAction);
 
-                    //oldAction.Release(mapper, ignoreReleaseActions: true);
-
-                    //mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.AddTouchpadAction(this.action);
                     if (oldAction.Id != MapAction.DEFAULT_UNBOUND_ID)
                     {
                         mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.ReplaceStickAction(oldAction, newAction);

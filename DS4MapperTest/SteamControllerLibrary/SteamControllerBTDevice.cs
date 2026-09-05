@@ -68,11 +68,9 @@ namespace DS4MapperTest.SteamControllerLibrary
                     hidDevice.fileStream.Flush();
 
                     // Attempt to read again
-                    //Thread.Sleep(200);
                     hidDevice.readFeatureData(retReportData);
                 }
             }
-            //Console.WriteLine("LKJDKJLLD: {0}", retReportData[1]);
 
             string baseS = System.Text.Encoding.Default.GetString(retReportData, 6, 12);
             string MACAddr = baseS.Replace("\0", string.Empty).ToUpper();
@@ -100,7 +98,6 @@ namespace DS4MapperTest.SteamControllerLibrary
             int timeout = 600;
             int ledLevel = 50;
             bool result = false;
-            //for (int i = 20; i < 300; i++)
             {
                 byte[] gyroAndTimeoutFeatureData = new byte[FEATURE_REPORT_LEN];
                 gyroAndTimeoutFeatureData[0] = FEATURE_REPORT_ID;
@@ -108,8 +105,6 @@ namespace DS4MapperTest.SteamControllerLibrary
                 gyroAndTimeoutFeatureData[2] = SCPacketType.PT_CONFIGURE;
                 gyroAndTimeoutFeatureData[3] = SCPacketLength.PL_CONFIGURE_BT;
                 gyroAndTimeoutFeatureData[4] = SCConfigType.CT_CONFIGURE_BT;
-                //gyroAndTimeoutFeatureData[5] = 0x07;
-                //gyroAndTimeoutFeatureData[6] = 0x00;
                 //gyroAndTimeoutFeatureData[5] = 0; // Idle Timeout
                 //gyroAndTimeoutFeatureData[6] = 0; // Idle Timeout
                 //Unknown Header
@@ -119,12 +114,6 @@ namespace DS4MapperTest.SteamControllerLibrary
                 gyroAndTimeoutFeatureData[18] = 0x00; // Unknown
                 gyroAndTimeoutFeatureData[19] = 0x2E; // Unknown
                 result = hidDevice.WriteFeatureReport(gyroAndTimeoutFeatureData);
-                //hidDevice.fileStream.Flush();
-                //Trace.WriteLine($"{result} {21}");
-                //if (result)
-                //{
-                //    break;
-                //}
             }
 
             result = false;
@@ -136,11 +125,7 @@ namespace DS4MapperTest.SteamControllerLibrary
             ledsFeatureData[4] = SCConfigType.CT_LED;
             ledsFeatureData[5] = (byte)(Math.Min(Math.Max(ledLevel, 0), 100)); // LED Level (0-100?)
             result = hidDevice.WriteFeatureReport(ledsFeatureData);
-            //hidDevice.fileStream.Flush();
 
-            //byte[] buffer = new byte[64];
-            //bool result = NativeMethods.HidD_GetSerialNumberString(hidDevice.safeReadHandle.DangerousGetHandle(), buffer, 64);
-            //Trace.WriteLine($"{result}");
         }
 
         protected override void ChangeToLizardMode()
@@ -172,21 +157,9 @@ namespace DS4MapperTest.SteamControllerLibrary
             if (tempRatio != 0.0)
             {
                 amplitude = (ushort)((900 - 600) * tempRatio + 600);
-                //amplitude = (ushort)((1400 - 1000) * tempRatio + 1000);
-                //amplitude = 1000;
-                //amplitude = (ushort)((1200 - 100) * tempRatio + 100);
-                //amplitude = (ushort)((2000 - 1400) * tempRatio + 1400);
-                //amplitude = (ushort)((1400 - 2800) * tempRatio + 2800);
             }
-
-            /*if (tempRatio != 0.0)
-            {
-                amplitude = 500;
-            }
-            */
 
             ushort tmp_period_command = 15000;
-            //ushort period_command = 15000;
             ushort period_command = 0;
             if (tempRatio != 0.0)
             {

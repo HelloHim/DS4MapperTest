@@ -12,7 +12,7 @@ namespace DS4MapperTest.StickActions
 {
     // Port of JoyShockMapper's MOUSE_RING stick mode: the stick's angle
     // (direction only, not magnitude) places the cursor at a fixed point on a
-    // circle around screen center. Cursor position only updates while the
+    // circle around screen centre. Cursor position only updates while the
     // stick is outside its deadzone; it is left in place on release, exactly
     // matching JSM's behaviour.
     //

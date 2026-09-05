@@ -22,7 +22,6 @@ namespace DS4MapperUnitTests
         private string xinputProfileJson;
         private string darkMessiahProfileJson;
         private VirtualKBMMapping eventInputMapping;
-        //private TestMapper mapper;
 
         public MappingTests()
         {
@@ -1346,7 +1345,6 @@ namespace DS4MapperUnitTests
             string json = darkMessiahProfileJson;
             JsonConvert.PopulateObject(json, profileSerializer);
 
-            // Migrate profile data from serializer to Profile instance
             profileSerializer.PopulateProfile();
             tempProfile.ResetAliases();
             // Need list of currently bound actions
@@ -1416,7 +1414,6 @@ namespace DS4MapperUnitTests
             string json = xinputProfileJson;
             JsonConvert.PopulateObject(json, profileSerializer);
 
-            // Migrate profile data from serializer to Profile instance
             profileSerializer.PopulateProfile();
             tempProfile.ResetAliases();
             // Need list of currently bound actions

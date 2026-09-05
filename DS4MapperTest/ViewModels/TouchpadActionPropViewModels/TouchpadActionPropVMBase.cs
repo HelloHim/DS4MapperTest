@@ -79,7 +79,6 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 mapper.ProcessMappingChangeAction(() =>
                 {
                     this.baseAction.ParentAction.Release(mapper, ignoreReleaseActions: true);
-                    //this.baseAction.Release(mapper, ignoreReleaseActions: true);
 
                     mapper.EditLayer.AddTouchpadAction(this.baseAction);
                     if (mapper.EditActionSet.UsingCompositeLayer)

@@ -126,7 +126,6 @@ namespace DS4MapperUnitTests
 
                     if (tempLayer != null)
                     {
-                        //ActionLayer parentLayer = (mapping.ActionLayer > 0 && mapping.ActionLayer < tempLayer.LayerActions.Count) ? tempLayer : null;
                         ActionLayer parentLayer = tempLayer != tempSet.DefaultActionLayer ? tempSet.DefaultActionLayer : null;
                         foreach (LayerMapping layerMapping in mapping.LayerMappings)
                         {
@@ -134,7 +133,6 @@ namespace DS4MapperUnitTests
                                 tempLayer.LayerActions.Find((act) => act.Id == layerMapping.ActionIndex) : null;
                             if (tempAction != null)// layerMapping.ActionIndex < tempLayer.LayerActions.Count)
                             {
-                                //MapAction tempAction = tempLayer.LayerActions[layerMapping.ActionIndex];
                                 if (mapper.BindingDict.TryGetValue(layerMapping.InputBinding, out InputBindingMeta tempBind))
                                 {
                                     switch (tempBind.controlType)
@@ -142,31 +140,19 @@ namespace DS4MapperUnitTests
                                         case InputBindingMeta.InputControlType.Button:
                                             if (tempAction is ButtonMapAction)
                                             {
-                                                //tempAction.DefaultUnbound = false;
                                                 tempAction.MappingId = tempBind.id;
                                                 tempLayer.buttonActionDict[tempBind.id] = tempAction as ButtonMapAction;
                                                 if (parentLayer != null && parentLayer.buttonActionDict.TryGetValue(tempBind.id, out ButtonMapAction tempParentBtnAction) &&
                                                     MapAction.IsSameType(tempAction, tempParentBtnAction))
                                                 {
-                                                    //(tempAction as ButtonMapAction).SoftCopyFromParent(tempParentBtnAction);
-                                                    //(tempAction as ButtonMapAction).CopyAction(tempParentBtnAction);
                                                 }
 
-                                                //if (parentLayer != null && parentLayer.LayerActions[layerMapping.ActionIndex] is ButtonMapAction)
-                                                //{
-                                                //    tempLayer.buttonActionDict[tempBind.id] = (tempAction as ButtonMapAction).DuplicateAction();
-                                                //}
-                                                //else
-                                                //{
-                                                //    tempLayer.buttonActionDict[tempBind.id] = tempAction as ButtonMapAction;
-                                                //}
                                             }
 
                                             break;
                                         case InputBindingMeta.InputControlType.DPad:
                                             if (tempAction is DPadMapAction)
                                             {
-                                                //tempAction.DefaultUnbound = false;
                                                 tempAction.MappingId = tempBind.id;
                                                 tempLayer.dpadActionDict[tempBind.id] = tempAction as DPadMapAction;
                                                 if (parentLayer != null && parentLayer.dpadActionDict.TryGetValue(tempBind.id, out DPadMapAction tempParentDpadAction) &&
@@ -187,7 +173,6 @@ namespace DS4MapperUnitTests
                                                     tempStickAction.StickDefinition = tempDef;
                                                 }
 
-                                                //tempAction.DefaultUnbound = false;
                                                 tempAction.MappingId = tempBind.id;
                                                 tempLayer.stickActionDict[tempBind.id] = tempStickAction;
 
@@ -208,7 +193,6 @@ namespace DS4MapperUnitTests
                                                     triggerAct.TriggerDef = tempDef;
                                                 }
 
-                                                //tempAction.DefaultUnbound = false;
                                                 tempAction.MappingId = tempBind.id;
                                                 tempLayer.triggerActionDict[tempBind.id] = tempAction as TriggerMapAction;
                                                 if (parentLayer != null && parentLayer.triggerActionDict.TryGetValue(tempBind.id, out TriggerMapAction tempParentTrigAction) &&
@@ -228,7 +212,6 @@ namespace DS4MapperUnitTests
                                                     touchAct.TouchDefinition = tempDef;
                                                 }
 
-                                                //tempAction.DefaultUnbound = false;
                                                 tempAction.MappingId = tempBind.id;
                                                 tempLayer.touchpadActionDict[tempBind.id] = tempAction as TouchpadMapAction;
                                                 if (parentLayer != null && parentLayer.touchpadActionDict.TryGetValue(tempBind.id, out TouchpadMapAction tempParentTouchAction) &&
@@ -245,13 +228,11 @@ namespace DS4MapperUnitTests
                                             if (tempAction is GyroMapAction)
                                             {
                                                 GyroMapAction gyroAction = tempAction as GyroMapAction;
-                                                //if (tempBind.id == "Gyro")
                                                 if (mapper.KnownGyroSensDefinitions.TryGetValue(tempBind.id, out GyroSensDefinition tempDef))
                                                 {
                                                     gyroAction.GyroSensDefinition = tempDef;
                                                 }
 
-                                                //tempAction.DefaultUnbound = false;
                                                 tempAction.MappingId = tempBind.id;
                                                 tempLayer.gyroActionDict[tempBind.id] = tempAction as GyroMapAction;
                                                 if (parentLayer != null && parentLayer.gyroActionDict.TryGetValue(tempBind.id, out GyroMapAction tempParentGyroAction) &&
@@ -268,26 +249,14 @@ namespace DS4MapperUnitTests
                                 }
                                 else if (layerMapping.InputBinding == $"{ActionSet.ACTION_SET_ACTION_PREFIX}{mapping.ActionSet}" && tempAction is ButtonMapAction)
                                 {
-                                    //if (tempAction is ButtonMapAction)
                                     {
-                                        //tempAction.DefaultUnbound = false;
                                         tempAction.MappingId = $"{ActionSet.ACTION_SET_ACTION_PREFIX}{mapping.ActionSet}";
                                         tempLayer.actionSetActionDict[tempAction.MappingId] = tempAction as ButtonMapAction;
                                         if (parentLayer != null && parentLayer.actionSetActionDict.TryGetValue(tempAction.MappingId, out ButtonMapAction tempParentBtnAction) &&
                                             MapAction.IsSameType(tempAction, tempParentBtnAction))
                                         {
-                                            //(tempAction as ButtonMapAction).SoftCopyFromParent(tempParentBtnAction);
-                                            //(tempAction as ButtonMapAction).CopyAction(tempParentBtnAction);
                                         }
 
-                                        //if (parentLayer != null && parentLayer.LayerActions[layerMapping.ActionIndex] is ButtonMapAction)
-                                        //{
-                                        //    tempLayer.buttonActionDict[tempBind.id] = (tempAction as ButtonMapAction).DuplicateAction();
-                                        //}
-                                        //else
-                                        //{
-                                        //    tempLayer.buttonActionDict[tempBind.id] = tempAction as ButtonMapAction;
-                                        //}
                                     }
                                 }
                             }
@@ -315,7 +284,6 @@ namespace DS4MapperUnitTests
             // base ActionLayer references
             foreach (ActionSet set in tempProfile.ActionSets)
             {
-                //ActionLayer parentLayer = set.DefaultActionLayer;
                 set.ClearCompositeLayerActions();
                 set.PrepareCompositeLayer();
             }

@@ -586,20 +586,6 @@ namespace DS4MapperTest
         [JsonIgnore]
         public ChordedPressFunc ChorededPressFunc { get => chordedPressFunc; set => chordedPressFunc = value; }
 
-        // Can't decide if I want in Settings or inside main Func object
-        //public JoypadActionCodes Trigger
-        //{
-        //    get => chordedPressFunc.TriggerButton;
-        //    set
-        //    {
-        //        chordedPressFunc.TriggerButton = value;
-        //    }
-        //}
-        //public bool ShouldSerializeTrigger()
-        //{
-        //    return chordedPressFunc.TriggerButton != JoypadActionCodes.Empty;
-        //}
-
         private ChordedPressSettings settings;
         public ChordedPressSettings Settings
         {
@@ -920,8 +906,6 @@ namespace DS4MapperTest
                     JsonConvert.PopulateObject(j.ToString(), instance);
                     instance.ActionDataSerializers.RemoveAll((item) => item == null);
                     resultInstance = instance;
-                    //throw new JsonSerializationException();
-                    //return null;
                     break;
                 case "HoldPress":
                     HoldPressFuncSerializer holdInstance = new HoldPressFuncSerializer();
@@ -964,16 +948,12 @@ namespace DS4MapperTest
                     JsonConvert.PopulateObject(j.ToString(), analogInstance);
                     analogInstance.ActionDataSerializers.RemoveAll((item) => item == null);
                     resultInstance = analogInstance;
-                    //throw new JsonSerializationException();
-                    //return null;
                     break;
                 case "Distance":
                     DistanceFuncSerializer distanceInstance = new DistanceFuncSerializer();
                     JsonConvert.PopulateObject(j.ToString(), distanceInstance);
                     distanceInstance.ActionDataSerializers.RemoveAll((item) => item == null);
                     resultInstance = distanceInstance;
-                    //throw new JsonSerializationException();
-                    //return null;
                     break;
                 default:
                     break;

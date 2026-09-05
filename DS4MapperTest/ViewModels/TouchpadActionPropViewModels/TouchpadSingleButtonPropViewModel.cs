@@ -73,10 +73,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 TouchpadSingleButton baseLayerAction = mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as TouchpadSingleButton;
                 TouchpadSingleButton tempAction = new TouchpadSingleButton();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.EditLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
 
                 this.action = tempAction;
                 this.baseAction = this.action;

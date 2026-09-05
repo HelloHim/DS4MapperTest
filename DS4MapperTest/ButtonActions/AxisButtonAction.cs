@@ -45,8 +45,6 @@ namespace DS4MapperTest.ButtonActions
         public override void Prepare(Mapper mapper, bool status, bool alterState = true)
         {
             value = status ? 1.0 : 0.0;
-            //stateData.wasActive = stateData.state;
-            //stateData.state = status;
             if (alterState)
             {
                 stateData.axisNormValue = value;

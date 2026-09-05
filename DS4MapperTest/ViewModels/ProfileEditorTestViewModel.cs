@@ -623,12 +623,6 @@ namespace DS4MapperTest.ViewModels
                 tempProfile.LightbarSettings.SolidColor.red,
                 tempProfile.LightbarSettings.SolidColor.green,
                 tempProfile.LightbarSettings.SolidColor.blue);
-            //set
-            //{
-            //    tempProfile.LightbarSettings.SolidColor.red = value.R;
-            //    tempProfile.LightbarSettings.SolidColor.green = value.G;
-            //    tempProfile.LightbarSettings.SolidColor.blue = value.B;
-            //}
         }
 
         public string LightbarHexColor
@@ -912,8 +906,6 @@ namespace DS4MapperTest.ViewModels
                 actionSetItems.Add(tempItem);
             }
 
-            //selectedActionLayerIndex = 0;
-            //selectedActionSetIndex = 0;
             selectedActionLayerIndex = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
             selectedActionSetIndex = mapper.ActionProfile.CurrentActionSetIndex;
             PopulateLayerItems();
@@ -1082,8 +1074,6 @@ namespace DS4MapperTest.ViewModels
                 }
             }
 
-            //foreach (InputBindingMeta meta in
-            //    mapper.BindingList.Where((item) => item.controlType == InputBindingMeta.InputControlType.Button))
             {
                 if (tempProfile.CurrentActionSet.CurrentActionLayer.actionSetActionDict.
                     TryGetValue($"{tempProfile.CurrentActionSet.ActionButtonId}", out ButtonMapAction tempBtnAct))
@@ -1639,7 +1629,7 @@ namespace DS4MapperTest.ViewModels
                 return existing;
             }
 
-            // Only Steam Controller 2 exposes analog touchpad pressure - every other
+            // Only Steam Controller 2 exposes analogue touchpad pressure - every other
             // controller's touchpad click (DualSense, DS4, original Steam Controller) keeps
             // the plain Regular Press behaviour untouched.
             bool isTouchpadPressureCapable = mapper?.DeviceType == InputDeviceType.SteamControllerTriton &&
@@ -2600,12 +2590,6 @@ namespace DS4MapperTest.ViewModels
                 tempOutJson = JsonConvert.SerializeObject(profileSerializer, Formatting.Indented,
                     new JsonSerializerSettings()
                     {
-                        //Converters = new List<JsonConverter>()
-                        //{
-                        //    new MapActionSubTypeConverter(),
-                        //}
-                        //TypeNameHandling = TypeNameHandling.Objects
-                        //ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                     });
                 Trace.WriteLine(tempOutJson);
 
@@ -2642,14 +2626,7 @@ namespace DS4MapperTest.ViewModels
                     tempOutJson = JsonConvert.SerializeObject(profileSerializer, Formatting.Indented,
                         new JsonSerializerSettings()
                         {
-                            //Converters = new List<JsonConverter>()
-                            //{
-                            //    new MapActionSubTypeConverter(),
-                            //}
-                            //TypeNameHandling = TypeNameHandling.Objects
-                            //ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                         });
-                    //Trace.WriteLine(tempOutJson);
 
                     actionResetEvent.Set();
                 });
@@ -2949,9 +2926,7 @@ namespace DS4MapperTest.ViewModels
         public string BindingName
         {
             get => bindingName;
-            //set => bindingName = value;
         }
-        //public event EventHandler BindingNameChanged;
 
         public FaceButtonBindingItem TouchpadClickBinding { get; set; }
         public bool HasTouchpadClickBinding => TouchpadClickBinding != null;
@@ -3298,9 +3273,7 @@ namespace DS4MapperTest.ViewModels
         public string BindingName
         {
             get => bindingName;
-            //set => bindingName = value;
         }
-        //public event EventHandler BindingNameChanged;
 
         private ButtonMapAction mappedAction;
         public ButtonMapAction MappedAction
@@ -3413,9 +3386,7 @@ namespace DS4MapperTest.ViewModels
         public string BindingName
         {
             get => bindingName;
-            //set => bindingName = value;
         }
-        //public event EventHandler BindingNameChanged;
 
         private TriggerMapAction mappedAction;
         public TriggerMapAction MappedAction
@@ -3468,9 +3439,7 @@ namespace DS4MapperTest.ViewModels
         public string BindingName
         {
             get => bindingName;
-            //set => bindingName = value;
         }
-        //public event EventHandler BindingNameChanged;
 
         private StickMapAction mappedAction;
         public StickMapAction MappedAction
@@ -3523,9 +3492,7 @@ namespace DS4MapperTest.ViewModels
         public string BindingName
         {
             get => bindingName;
-            //set => bindingName = value;
         }
-        //public event EventHandler BindingNameChanged;
 
         private DPadMapAction mappedAction;
         public DPadMapAction MappedAction
@@ -3578,9 +3545,7 @@ namespace DS4MapperTest.ViewModels
         public string BindingName
         {
             get => bindingName;
-            //set => bindingName = value;
         }
-        //public event EventHandler BindingNameChanged;
 
         private GyroMapAction mappedAction;
         public GyroMapAction MappedAction

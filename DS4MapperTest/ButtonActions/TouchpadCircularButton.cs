@@ -22,7 +22,6 @@ namespace DS4MapperTest.ButtonActions
         {
             this.notches = notches;
             bool tempStatus = notches != 0.0;
-            //if (this.status != tempStatus)
             {
                 status = tempStatus;
 
@@ -55,7 +54,6 @@ namespace DS4MapperTest.ButtonActions
 
         public override void WrapNotchesProcess(OutputActionData action)
         {
-            //base.WrapTickProcess(action);
 
             switch (action.OutputType)
             {
@@ -90,8 +88,6 @@ namespace DS4MapperTest.ButtonActions
                 case OutputActionData.ActionType.MouseButton:
                 case OutputActionData.ActionType.GamepadControl:
                     {
-                        //action.currentNotches += this.notches;
-                        //double currentNotches = (int)action.currentNotches;
                         if (outputActive && !action.activatedEvent && action.currentNotches >= 1.0)
                         {
                             mapper.RunEventFromButton(action, true);

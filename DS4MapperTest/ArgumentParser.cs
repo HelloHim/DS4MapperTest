@@ -27,7 +27,6 @@ namespace DS4MapperTest
         public void Parse(string[] args)
         {
             errors.Clear();
-            //foreach (string arg in args)
             for (int i = 0; i < args.Length; i++)
             {
                 string arg = args[i];

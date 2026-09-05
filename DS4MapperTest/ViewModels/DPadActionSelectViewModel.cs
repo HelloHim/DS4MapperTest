@@ -44,10 +44,6 @@ namespace DS4MapperTest.ViewModels
                 case DPadAction:
                     selectedIndex = 2;
                     break;
-                // TODO: FIX
-                //case StickMouse:
-                //    selectedIndex = 3;
-                //    break;
                 default:
                     selectedIndex = -1;
                     break;

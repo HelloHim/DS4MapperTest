@@ -14,7 +14,6 @@ namespace DS4MapperUnitTests
     {
         private string daggerFallProfileStr;
         private string daggerFallGyroMouseProfileStr;
-        //private TestMapper mapper;
 
         public ProfileTests()
         {
@@ -1354,7 +1353,6 @@ namespace DS4MapperUnitTests
             string json = daggerFallProfileStr;
             JsonConvert.PopulateObject(json, profileSerializer);
 
-            // Migrate profile data from serializer to Profile instance
             profileSerializer.PopulateProfile();
             tempProfile.ResetAliases();
             // Need list of currently bound actions
@@ -1380,7 +1378,6 @@ namespace DS4MapperUnitTests
             string json = daggerFallProfileStr;
             JsonConvert.PopulateObject(json, profileSerializer);
 
-            // Migrate profile data from serializer to Profile instance
             profileSerializer.PopulateProfile();
             tempProfile.ResetAliases();
             // Need list of currently bound actions
@@ -1395,12 +1392,6 @@ namespace DS4MapperUnitTests
             string tempOutJson = JsonConvert.SerializeObject(profileSerializer, Formatting.Indented,
                 new JsonSerializerSettings()
                 {
-                    //Converters = new List<JsonConverter>()
-                    //{
-                    //    new MapActionSubTypeConverter(),
-                    //}
-                    //TypeNameHandling = TypeNameHandling.Objects
-                    //ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 });
 
             Assert.AreEqual(daggerFallProfileStr, tempOutJson);
@@ -1420,7 +1411,6 @@ namespace DS4MapperUnitTests
             string json = daggerFallProfileStr;
             JsonConvert.PopulateObject(json, profileSerializer);
 
-            // Migrate profile data from serializer to Profile instance
             profileSerializer.PopulateProfile();
             tempProfile.ResetAliases();
             tempMappings = profileSerializer.ActionMappings;
@@ -1440,7 +1430,6 @@ namespace DS4MapperUnitTests
             bool exists = currentLayer.LayerActions.Contains(oldAction);
             if (exists)
             {
-                // Reuse old action ID
                 mouseAction.Id = oldAction.Id;
                 currentLayer.ReplaceGyroAction(oldAction, mouseAction);
             }
@@ -1469,12 +1458,6 @@ namespace DS4MapperUnitTests
             string tempOutJson = JsonConvert.SerializeObject(profileSerializer, Formatting.Indented,
                 new JsonSerializerSettings()
                 {
-                    //Converters = new List<JsonConverter>()
-                    //{
-                    //    new MapActionSubTypeConverter(),
-                    //}
-                    //TypeNameHandling = TypeNameHandling.Objects
-                    //ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 });
 
             Assert.AreEqual(daggerFallGyroMouseProfileStr, tempOutJson);

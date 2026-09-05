@@ -30,7 +30,6 @@ namespace DS4MapperTest.StickModifiers
             }
 
             double r = Math.Atan2(axisYValue, axisXValue);
-            //Console.WriteLine(r);
             double maxOutXRatio = Math.Abs(Math.Cos(r));
             double maxOutYRatio = Math.Abs(Math.Sin(r));
             double capX = axisXValue >= 0.0 ? maxOutXRatio * 1.0 : maxOutXRatio * 1.0;
@@ -40,7 +39,6 @@ namespace DS4MapperTest.StickModifiers
             if (absSideY > capY) capY = absSideY;
             double tempRatioX = capX > 0 ? axisXValue / capX : 0;
             double tempRatioY = capY > 0 ? axisYValue / capY : 0;
-            //Console.WriteLine("{0} {1} {2}", axisYValue, tempRatioY, capY);
             double signX = tempRatioX >= 0.0 ? 1.0 : -1.0;
             double signY = tempRatioY >= 0.0 ? 1.0 : -1.0;
 

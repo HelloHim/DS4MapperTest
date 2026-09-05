@@ -167,10 +167,6 @@ namespace DS4MapperTest.Views
             {
                 e.UpdateActHandler?.Invoke(oldAction, newAction);
             };
-            //tempControl.ActionChanged += (sender, action) =>
-            //{
-            //    e.UpdateActHandler?.Invoke(null, action);
-            //};
 
             UserControl oldControl = touchBindEditVM.DisplayControl;
             touchpadSelectControl.Visibility = Visibility.Collapsed;
@@ -302,10 +298,6 @@ namespace DS4MapperTest.Views
             {
                 e.UpdateActHandler?.Invoke(oldAction, newAction);
             };
-            //tempControl.ActionChanged += (sender, action) =>
-            //{
-            //    e.UpdateActHandler?.Invoke(null, action);
-            //};
 
             UserControl oldControl = touchBindEditVM.DisplayControl;
             touchpadSelectControl.Visibility = Visibility.Collapsed;

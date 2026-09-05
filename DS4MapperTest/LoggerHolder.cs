@@ -26,7 +26,6 @@ namespace DS4MapperTest
             logger = LogManager.GetCurrentClassLogger();
 
             service.Debug += WriteToLog;
-            //DS4Windows.AppLogger.GuiLog += WriteToLog;
         }
 
         private void WriteToLog(object sender, DebugEventArgs e)

@@ -80,7 +80,6 @@ namespace DS4MapperTest
 
                 action.ChangedProperties.Add(TouchpadCircular.PropertyKeyStrings.HAPTICS_INTENSITY);
 
-                //action.ChangedProperties.Add(TouchpadCircular.PropertyKeyStrings.DEAD_ZONE);
             }
         }
 
@@ -171,7 +170,6 @@ namespace DS4MapperTest
 
                 action.ChangedProperties.Add(StickCircular.PropertyKeyStrings.HAPTICS_INTENSITY);
 
-                //action.ChangedProperties.Add(StickCircular.PropertyKeyStrings.DEAD_ZONE);
             }
         }
 

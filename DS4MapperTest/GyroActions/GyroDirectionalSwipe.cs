@@ -109,10 +109,6 @@ namespace DS4MapperTest.GyroActions
         private double yMotion;
         public GyroDirectionalSwipeParams swipeParams;
         private readonly GyroActivationHold activationHold = new GyroActivationHold();
-        //public GyroDirectionalSwipeParams SwipeParams
-        //{
-        //    get => swipeParams;
-        //}
 
         public ButtonAction[] UsedEventsButtonsX
         {
@@ -164,12 +160,10 @@ namespace DS4MapperTest.GyroActions
             if (!swipeParams.triggerActivates && triggerButtonActive)
             {
                 triggerActivated = false;
-                //previousTriggerActivated = triggerActivated;
             }
             else if (swipeParams.triggerActivates && !triggerButtonActive)
             {
                 triggerActivated = false;
-                //previousTriggerActivated = triggerActivated;
             }
 
             triggerActivated = activationHold.Update(triggerActivated,
@@ -249,7 +243,6 @@ namespace DS4MapperTest.GyroActions
                 }
             }
 
-            //active = triggerActivated;
             activeEvent = true;
         }
 

@@ -135,11 +135,6 @@ namespace DS4MapperTest
             pData.Free();
             return outputBufferData;
 
-            //int size = Marshal.SizeOf<DS4OutputBufferData>();
-            //IntPtr ptr = Marshal.AllocHGlobal(size);
-            //Marshal.Copy(rawOutputBuffer, 0, ptr, size);
-            //Marshal.PtrToStructure<DS4OutputBufferData>(ptr, outputBufferData);
-            //Marshal.FreeHGlobal(ptr);
         }
     }
 }

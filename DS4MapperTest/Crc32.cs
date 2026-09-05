@@ -292,16 +292,10 @@ namespace DS4MapperTest
         /// <returns></returns>
         public static unsafe uint CalculateFasterBT78Hash(ref uint seed, ref byte[] buffer, ref int start, ref int size)
         {
-            /*uint crc = seed;
-            for (int i = start; i < size + start; i++)
-                crc = (crc >> 8) ^ defaultTable[buffer[i] ^ crc & 0xff];
-            return crc;
-            */
 
             uint crc = seed;
             int i = start;
             int bufsize = size;
-            //while (bufsize >= 16)
             fixed (byte* byteP = buffer)
             fixed (uint* byteT = testLook)
             {
@@ -344,9 +338,6 @@ namespace DS4MapperTest
                     bufsize -= 16;
                 }
 
-                //while (bufsize >= 8)
-                //if (bufsize >= 8)
-
                 uint one8 = (byteP[i++] |
                             (uint)(byteP[i++] << 8) |
                             (uint)(byteP[i++] << 16) |
@@ -365,24 +356,10 @@ namespace DS4MapperTest
                     byteT[two8 >> 24];
 
                 bufsize -= 8;
-                /*crc ^= buffer[i++] |
-                            (uint)(buffer[i++] << 8) |
-                            (uint)(buffer[i++] << 16) |
-                            (uint)(buffer[i++] << 24);// i = i + 4;
-                //crc ^= buffer[i];
-                crc = secondLook[3, (crc & 0xFF)] ^
-                    secondLook[2, ((crc >> 8) & 0xFF)] ^
-                    secondLook[1, ((crc >> 16) & 0xFF)] ^
-                    defaultTable[crc >> 24];
-                bufsize -= 4;
-                */
 
 
-                //while (--bufsize >= 0)
-                //{
                 crc = (crc >> 8) ^ byteT[(crc & 0xFF) ^ byteP[i++]];// i++;
                 crc = (crc >> 8) ^ byteT[(crc & 0xFF) ^ byteP[i++]];// i++;
-                                                                            //}
             }
 
             return crc;

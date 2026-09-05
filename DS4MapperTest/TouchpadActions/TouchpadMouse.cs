@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Sensorit.Base;
-//using System.Diagnostics;
 using DS4MapperTest.Common;
 using DS4MapperTest.GyroActions;
 using DS4MapperTest.StickModifiers;
@@ -118,11 +117,9 @@ namespace DS4MapperTest.TouchpadActions
         private const int TRACKBALL_MASS = 45;
         private const double TRACKBALL_RADIUS = 0.0245;
         private const double TOUCHPAD_MOUSE_OFFSET = 0.375;
-        //private const double TOUCHPAD_COEFFICIENT = 0.012;
         private const double TOUCHPAD_COEFFICIENT = 0.012 * 1.1;
 
         private double TRACKBALL_INERTIA = 2.0 * (TRACKBALL_MASS * TRACKBALL_RADIUS * TRACKBALL_RADIUS) / 5.0;
-        //private double TRACKBALL_SCALE = 0.000023;
         private double TRACKBALL_SCALE = 0.000023;
         private const int TRACKBALL_BUFFER_LEN = 8;
 
@@ -252,7 +249,6 @@ namespace DS4MapperTest.TouchpadActions
                 CalcTrackAccel();
             }
         }
-        //private bool useParentTrackball;
 
         private int trackballFriction = TRACKBALL_INIT_FRICTION;
         public int TrackballFriction
@@ -298,7 +294,6 @@ namespace DS4MapperTest.TouchpadActions
             stabilityFilter = new TouchpadStabilityFilter(stabilitySettings);
             smoothingFilterSettings.Init();
             smoothingEnabled = DEFAULT_SMOOTHING_ENABLED;
-            //trackData.trackballAccel = TRACKBALL_RADIUS * TRACKBALL_JOY_FRICTION / TRACKBALL_INERTIA;
             trackData.trackballAccel = TRACKBALL_RADIUS * trackballFriction / TRACKBALL_INERTIA;
             deadZone = DEFAULT_DEADZONE;
         }
@@ -342,13 +337,12 @@ namespace DS4MapperTest.TouchpadActions
 
                 if (previousTouchFrame.Touch)
                 {
-                    // Process normal mouse
                     ProcessTouchMouse(mapper, ref touchFrame, ref previousTouchFrame);
                 }
             }
             else
             {
-                // Trackball disabled and finger not touching — stop all motion immediately
+                // Trackball disabled and finger not touching, so stop all motion immediately
                 xNorm = yNorm = 0.0;
                 xMotion = yMotion = 0.0;
             }
@@ -357,10 +351,6 @@ namespace DS4MapperTest.TouchpadActions
             {
                 active = activeEvent = true;
             }
-            //else if (previousXMotion != xMotion || previousYMotion != yMotion)
-            //{
-            //    active = activeEvent = true;
-            //}
             else
             {
                 // Add smoothing even when finger is not touching
@@ -374,7 +364,6 @@ namespace DS4MapperTest.TouchpadActions
         {
             if (xMotion != 0.0 || yMotion != 0.0)
             {
-                //mapper.MouseX = xMotion; mapper.MouseY = yMotion;
 
                 if (smoothingEnabled)
                 {
@@ -382,7 +371,6 @@ namespace DS4MapperTest.TouchpadActions
                         smoothingFilterSettings.filterY,
                         ref xMotion, ref yMotion);
                     mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
-                    //mapper.MouseEventFired = true;
                 }
                 else
                 {
@@ -404,7 +392,6 @@ namespace DS4MapperTest.TouchpadActions
                         smoothingFilterSettings.filterY,
                         ref xMotion, ref yMotion);
                     mapper.SetRouteRelativeMouseSync(MouseOutputRoute.Trackpad, true);
-                    //mapper.MouseEventFired = true;
                 }
                 else
                 {
@@ -414,8 +401,6 @@ namespace DS4MapperTest.TouchpadActions
 
                 mapper.AddRouteRelativeMouseMotion(MouseOutputRoute.Trackpad, xMotion, yMotion);
 
-                //mapper.MouseX = xMotion; mapper.MouseY = yMotion;
-                //mapper.MouseXRemainder = mapper.MouseYRemainder = 0.0;
             }
 
             activeEvent = false;
@@ -484,7 +469,6 @@ namespace DS4MapperTest.TouchpadActions
             {
                 if (trackData.trackballActive)
                 {
-                    //Trace.WriteLine("CHECKING HERE");
                 }
 
                 // Initial touch
@@ -498,13 +482,10 @@ namespace DS4MapperTest.TouchpadActions
                 trackData.trackballDXRemain = 0.0;
                 trackData.trackballDYRemain = 0.0;
 
-                //Trace.WriteLine("INITIAL");
             }
             else if (touchFrame.Touch && previousTouchFrame.Touch)
             {
-                // Process normal mouse
                 ProcessTouchMouse(mapper, ref touchFrame, ref previousTouchFrame);
-                //Console.WriteLine("NORMAL");
             }
             else if (!touchFrame.Touch && previousTouchFrame.Touch)
             {
@@ -532,19 +513,15 @@ namespace DS4MapperTest.TouchpadActions
                 {
                     trackData.trackballActive = true;
 
-                    //Debug.WriteLine("START TRACK {0}", dist);
                     ProcessTrackballFrame(mapper, ref touchFrame);
                 }
                 else
                 {
-                    //Debug.WriteLine("LESS THAN {0}", dist);
                     trackData.PurgeData();
                 }
             }
             else if (!touchFrame.Touch && trackData.trackballActive)
             {
-                //Console.WriteLine("CONTINUE TRACK");
-                // Trackball Running
                 ProcessTrackballFrame(mapper, ref touchFrame);
             }
             else if (!touchFrame.Touch)
@@ -572,9 +549,6 @@ namespace DS4MapperTest.TouchpadActions
                 dx = touchFrame.X - previousFrame.X;
                 dy = -(touchFrame.Y - previousFrame.Y);
             }
-            //int rawDeltaX = dx, rawDeltaY = dy;
-
-            //Console.WriteLine("DELTA X: {0} Y: {1}", dx, dy);
 
             if (trackballEnabled)
             {
@@ -593,9 +567,6 @@ namespace DS4MapperTest.TouchpadActions
 
         private void TouchMoveMouse(Mapper mapper, int dx, int dy, ref TouchEventFrame touchFrame)
         {
-            //const int deadZone = 18;
-            //const int deadZone = 12;
-            //const int deadZone = 8;
             int deadZone = this.deadZone;
 
             double tempAngle = Math.Atan2(-dy, dx);
@@ -614,10 +585,7 @@ namespace DS4MapperTest.TouchpadActions
                 coefficient *= swipesPer360;
             }
 
-            //double offset = TOUCHPAD_MOUSE_OFFSET;
             double offset = touchpadDefinition.mouseOffset;
-            // Base speed 8 ms
-            //double tempDouble = timeElapsed * touchpadDefinition.elapsedReference;
             double tempDouble = 1.0;
 
             int deadzoneX = (int)Math.Abs(normX * deadZone);
@@ -664,42 +632,24 @@ namespace DS4MapperTest.TouchpadActions
             {
                 double sensMulti = 1.0;
                 double distSquared = (movementX * movementX) + (movementY * movementY);
-                //Trace.WriteLine($"{Math.Sqrt(distSquared)}");
                 double testThreshold = touchpadDefinition.throttleRelMouseZone;
                 double testSquared = testThreshold * testThreshold;
 
                 if (distSquared != 0.0 && distSquared < testSquared)
-                //if (distSquared != 0.0)// && distSquared < testSquared)
                 {
                     double dist = Math.Sqrt(distSquared);
-                    //double alpha = (dist - 0.0) / testThreshold;
                     double alpha = 0.0;
                     double distPastMin = (dist - 0.0);
                     double baconator = distPastMin / testThreshold;
                     double ratio = distPastMin / testThreshold;
 
-                    /*
-                    // Experimental Natural Curve changes
-                    {
-                        double sensRange = 1.0 - 0.0;
-                        double temp = Math.Log(2.0) / 700.0;
-                        sensMulti = 1.0 - sensRange * Math.Exp(-temp * distPastMin);
-
-                        //Trace.WriteLine($"{distPastMin} {sensMulti} {Math.Exp(-temp * distPastMin)}");
-                    }
-                    */
-
-                    //double pastMinThreshold = dist - activeMinThreshold;
-                    //double ratio = pastMinThreshold / mouseParams.powerVRef;
                     double x = Math.Pow(ratio, touchpadDefinition.throttleRelMousePower);
                     alpha = 1.0 - Math.Exp(-x);
                     alpha = Math.Clamp(alpha, 0.0, 1.0);
-                    //alpha = alpha * alpha;
 
                     // Alpha will likely max out around 0.65. Change max sens value to compensate
                     sensMulti = 0.0 + (1.45 - 0.0) * alpha;
                     sensMulti = Math.Clamp(sensMulti, 0.0, 1.0);
-                    //Trace.WriteLine($"{baconator} {ratio} {alpha} {-x} {Math.Exp(-x)}");
 
                     finalCoefficientX = finalCoefficientY =
                         coefficient * sensMulti;
@@ -732,8 +682,6 @@ namespace DS4MapperTest.TouchpadActions
 
             double fakeXAng = movementX / (65535.0 / 360.0);
             double fakeYAng = movementY / (65535.0 / 360.0);
-
-            //Trace.WriteLine($"DX {dx} {fakeXAng}");
 
             double xMotion = movementX != 0 ? finalCoefficientX * (movementX * tempDouble)
                 + (normX * (offset * signX)) : 0;
@@ -791,12 +739,9 @@ namespace DS4MapperTest.TouchpadActions
             trackData.trackballXVel = xVNew;
             trackData.trackballYVel = yVNew;
 
-            //Console.WriteLine("DX: {0} DY: {1}", dx, dy);
-
             if (dx == 0 && dy == 0)
             {
                 trackData.trackballActive = false;
-                //Console.WriteLine("ENDING TRACK");
             }
             else
             {
@@ -927,7 +872,7 @@ namespace DS4MapperTest.TouchpadActions
         {
             if (trackballFriction >= 100)
             {
-                // Friction at ceiling — decay exceeds any realistic velocity in one tick
+                // Friction at ceiling: decay exceeds any realistic velocity in one tick
                 trackData.trackballAccel = 1e9;
             }
             else

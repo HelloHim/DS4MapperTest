@@ -102,9 +102,6 @@ namespace DS4MapperUnitTests
             // Populate Input Binding dictionary
             bindingList.ForEach((item) => bindingDict.Add(item.id, item));
 
-            //trackballAccel = TRACKBALL_RADIUS * TRACKBALL_INIT_FRICTION / TRACKBALL_INERTIA;
-            //trackballAccel = TRACKBALL_RADIUS * TRACKBALL_JOY_FRICTION / TRACKBALL_INERTIA;
-
             StickDefinition.StickAxisData lxAxis = new StickDefinition.StickAxisData
             {
                 min = -30000,
@@ -121,7 +118,6 @@ namespace DS4MapperUnitTests
                 hard_max = 32767,
                 hard_min = -32767,
             };
-            //StickDefinition lsDefintion = new StickDefinition(STICK_MIN, STICK_MAX, STICK_NEUTRAL, StickActionCodes.LS);
             lsDefintion = new StickDefinition(lxAxis, lyAxis, StickActionCodes.LS);
 
             TouchpadDefinition.TouchAxisData lpadXAxis = new TouchpadDefinition.TouchAxisData
@@ -259,7 +255,6 @@ namespace DS4MapperUnitTests
             out IntermediateState outputState)
         {
             ref SteamControllerState current = ref inputState;
-            //ref SteamControllerState previous = ref device.PreviousStateRef;
 
             // Copy state struct data for later mapper manipulation. Leave
             // device state instance alone
@@ -289,9 +284,7 @@ namespace DS4MapperUnitTests
                 }
 
                 StickMapAction mapAction = currentLayer.stickActionDict["Stick"];
-                //if ((currentMapperState.LX != previousMapperState.LX) || (currentMapperState.LY != previousMapperState.LY))
                 {
-                    //Trace.WriteLine($"{currentMapperState.LX} {currentMapperState.LY}");
                     int LX = Math.Clamp(currentMapperState.LX, STICK_MIN, STICK_MAX);
                     int LY = Math.Clamp(currentMapperState.LY, STICK_MIN, STICK_MAX);
                     mapAction.Prepare(this, LX, LY);
@@ -431,9 +424,7 @@ namespace DS4MapperUnitTests
                 if (tempBtnAct.active) tempBtnAct.Event(this);
 
                 TouchpadMapAction tempTouchAction = currentLayer.touchpadActionDict["LeftTouchpad"];
-                //if (currentMapperState.LeftPad.Touch || currentMapperState.LeftPad.Touch != previousMapperState.LeftPad.Touch)
                 {
-                    //Trace.WriteLine($"{currentMapperState.LeftPad.X} {currentMapperState.LeftPad.Y}");
                     TouchEventFrame eventFrame = new TouchEventFrame
                     {
                         X = Math.Clamp(currentMapperState.LeftPad.X, (short)-32768, (short)32767),
@@ -452,7 +443,6 @@ namespace DS4MapperUnitTests
 
                 {
                     tempTouchAction = currentLayer.touchpadActionDict["RightTouchpad"];
-                    //if (currentMapperState.RightPad.Touch || currentMapperState.RightPad.Touch != previousMapperState.RightPad.Touch)
                     TouchEventFrame eventFrame = new TouchEventFrame
                     {
                         X = Math.Clamp(currentMapperState.RightPad.X, (short)-32768, (short)32767),
@@ -471,7 +461,6 @@ namespace DS4MapperUnitTests
 
                 GyroMapAction gyroAct = currentLayer.gyroActionDict["Gyro"];
                 // Skip if duration is less than 10 ms
-                //if (currentMapperState.timeElapsed > 0.01)
                 {
                     GyroEventFrame mouseFrame = new GyroEventFrame
                     {
@@ -489,7 +478,6 @@ namespace DS4MapperUnitTests
                         AccelZG = currentMapperState.Motion.AccelZG,
                         timeElapsed = currentLatency,
                         elapsedReference = 125.0,
-                        //elapsedReference = device.BaseElapsedReference,
                     };
 
                     gyroAct.Prepare(this, ref mouseFrame);
@@ -501,8 +489,6 @@ namespace DS4MapperUnitTests
 
                 gamepadSync = intermediateState.Dirty;
 
-                //ProcessSyncEvents();
-
                 if (eventInputHandler != null && eventInputMapping != null)
                 {
                     SyncMouseButtons();
@@ -512,15 +498,10 @@ namespace DS4MapperUnitTests
 
                 ProcessActionSetLayerChecks();
 
-                // Make copy of state data as the previous state
                 previousMapperState = currentMapperState;
 
                 mapperActionActive = false;
 
-                //if (hasInputEvts)
-                //{
-                //    ProcessQueuedActions();
-                //}
             }
 
             outputState = intermediateState;

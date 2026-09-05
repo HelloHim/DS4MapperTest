@@ -132,8 +132,6 @@ namespace DS4MapperTest
 
         private void ButtonActionSerializer_ActionFuncSerializersChanged(object sender, EventArgs e)
         {
-            //if (buttonAction.ParentAction != null &&
-            //    actionFuncSerializers?.Count > 0)
             if (actionFuncSerializers?.Count > 0)
             {
                 buttonAction.ChangedProperties.Add(ButtonAction.PropertyKeyStrings.FUNCTIONS);
@@ -325,10 +323,8 @@ namespace DS4MapperTest
 
         private void Settings_PadModeChanged(object sender, EventArgs e)
         {
-            //if (mapAction.ParentAction != null)
             {
                 dPadAction.ChangedProperties.Add(DPadActions.DPadAction.PropertyKeyStrings.PAD_MODE);
-                //mapAction.ChangedProperties.Add("PadMode");
             }
         }
 
@@ -352,25 +348,18 @@ namespace DS4MapperTest
                 dirButton?.ActionFuncs.Clear();
             }
 
-            //foreach (KeyValuePair<DPadActions.DpadDirections, List<ActionFuncSerializer>> tempKeyPair in dictPadBindings)
             foreach (KeyValuePair<DPadActions.DpadDirections, DPadPadDirBinding> tempKeyPair in dictPadBindings)
             {
                 DPadActions.DpadDirections dir = tempKeyPair.Key;
                 List<ActionFuncSerializer> tempSerializers = tempKeyPair.Value.ActionFuncSerializers;
-                //List<ActionFuncSerializer> tempSerializers = tempKeyPair.Value;
 
-                //ButtonAction tempDirButton = dPadAction.EventCodes4[(int)dir];
-                //if (tempDirButton != null)
                 {
-                    //tempDirButton.Name = tempKeyPair.Value.ActionDirName;
                     ButtonAction dirButton = new ButtonAction();
                     dirButton.Name = tempKeyPair.Value.ActionDirName;
                     foreach (ActionFuncSerializer serializer in tempSerializers)
                     {
-                        //ButtonAction dirButton = dPadAction.EventCodes4[(int)dir];
                         serializer.PopulateFunc();
                         dirButton.ActionFuncs.Add(serializer.ActionFunc);
-                        //dPadAction.EventCodes4[(int)dir] = dirButton;
                     }
 
                     dPadAction.EventCodes4[(int)dir] = dirButton;
@@ -429,7 +418,6 @@ namespace DS4MapperTest
                     }
                 }
 
-                //dictPadBindings.Add(tempDir, tempFuncs);
                 dictPadBindings.Add(tempDir, new DPadPadDirBinding()
                 {
                     ActionDirName = dirButton.Name,
@@ -1145,7 +1133,6 @@ namespace DS4MapperTest
             if (mapAction is TriggerDualStageAction temp)
             {
                 triggerDualAction = temp;
-                //mapAction = triggerDualAction;
                 settings = new TriggerDualStageSettings(triggerDualAction);
 
                 softPullStageButton.ActionDirName = triggerDualAction.SoftPullActButton.Name;
@@ -1552,7 +1539,6 @@ namespace DS4MapperTest
 
         private void PopulateFuncs()
         {
-            //if (!buttonAction.UseParentActions)
             {
                 foreach (ActionFunc tempFunc in trigBtnAction.EventButton.ActionFuncs)
                 {
@@ -1571,12 +1557,6 @@ namespace DS4MapperTest
     {
         public class TouchPadDirBinding
         {
-            //private StickPadAction.DpadDirections direction;
-            //[JsonIgnore]
-            //public StickPadAction.DpadDirections Direction
-            //{
-            //    get => direction;
-            //}
 
             private string actionDirName;
             [JsonProperty("Name", Required = Required.Default)]
@@ -2347,7 +2327,6 @@ namespace DS4MapperTest
                     }
                 }
 
-                //dictPadBindings.Add(tempDir, tempFuncs);
                 dictPadBindings.Add(tempDir,
                     new TouchPadDirBinding()
                     {
@@ -2381,17 +2360,11 @@ namespace DS4MapperTest
             }
 
             foreach (KeyValuePair<TouchpadActionPad.DpadDirections, TouchPadDirBinding> tempKeyPair in dictPadBindings)
-            //foreach(KeyValuePair<StickPadAction.DpadDirections, List<ActionFuncSerializer>> tempKeyPair in dictPadBindings)
-            //foreach(DictionaryEntry entry in dictPadBindings)
             {
                 TouchpadActionPad.DpadDirections dir = tempKeyPair.Key;
                 List<ActionFuncSerializer> tempSerializers = tempKeyPair.Value.ActionFuncSerializers;
-                //List<ActionFuncSerializer> tempSerializers = tempKeyPair.Value;
-                //StickPadAction.DpadDirections dir = (StickPadAction.DpadDirections)entry.Key;
-                //List<ActionFuncSerializer> tempSerializers = entry.Value as List<ActionFuncSerializer>;
 
                 ButtonAction tempDirButton = null;
-                //foreach (AxisDirButton dirButton in stickPadAct.EventCodes4)
                 {
                     tempDirButton = touchActionPadAction.EventCodes4[(int)dir];
                     if (tempDirButton != null)
@@ -2424,7 +2397,6 @@ namespace DS4MapperTest
                 }
 
                 touchActionPadAction.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
-                //stickPadAct.RingButton.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
             }
 
             MigrateLegacyCounterMovementReleasePressFields();
@@ -4417,7 +4389,6 @@ namespace DS4MapperTest
             //public StickActionCodes OutputStick
             public string OutputStick
             {
-                //get => touchStickAction.OutputAction.StickCode;
                 get
                 {
                     return StickCodeHelper.Convert(touchStickAction.OutputAction.StickCode);
@@ -4963,7 +4934,6 @@ namespace DS4MapperTest
                 }
 
                 touchStickAction.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
-                //stickPadAct.RingButton.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
             }
         }
 
@@ -5328,7 +5298,6 @@ namespace DS4MapperTest
                 }
 
                 touchAbsAct.ChangedProperties.Add(TouchpadAbsAction.PropertyKeyStrings.OUTER_RING_BUTTON);
-                //stickPadAct.RingButton.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
             }
         }
     }
@@ -5432,22 +5401,12 @@ namespace DS4MapperTest
         private Dictionary<SwipeDirBinding.SwipeDir, SwipeDirBinding> dictDirBindings =
             new Dictionary<SwipeDirBinding.SwipeDir, SwipeDirBinding>();
 
-        //private Dictionary<TouchpadDirectionalSwipe.SwipeAxisYDir, SwipeDirBinding> dictDirYBindings =
-        //    new Dictionary<TouchpadDirectionalSwipe.SwipeAxisYDir, SwipeDirBinding>();
-
         [JsonProperty("Bindings", Required = Required.Always)]
         public Dictionary<SwipeDirBinding.SwipeDir, SwipeDirBinding> DictDirBindings
         {
             get => dictDirBindings;
             set => dictDirBindings = value;
         }
-
-        //[JsonProperty("YBindings", Required = Required.Always)]
-        //public Dictionary<TouchpadDirectionalSwipe.SwipeAxisYDir, SwipeDirBinding> DictDirYBindings
-        //{
-        //    get => dictDirYBindings;
-        //    set => dictDirYBindings = value;
-        //}
 
         private TouchpadDirectionalSwipe touchDirSwipeAction = new TouchpadDirectionalSwipe();
         private TouchpadDirSwipeSettings settings;
@@ -5528,21 +5487,6 @@ namespace DS4MapperTest
                 FlagBtnChangedDirection(dir);
             }
 
-            //foreach (KeyValuePair<GyroDirectionalSwipe.SwipeAxisYDir, SwipeDirBinding> pair in dictDirYBindings)
-            //{
-            //    GyroDirectionalSwipe.SwipeAxisYDir dir = pair.Key;
-            //    List<ActionFuncSerializer> tempSerializers = pair.Value.ActionFuncSerializers;
-            //    ButtonAction dirButton = new ButtonAction();
-            //    dirButton.Name = pair.Value.ActionDirName;
-            //    foreach (ActionFuncSerializer serializer in tempSerializers)
-            //    {
-            //        serializer.PopulateFunc();
-            //        dirButton.ActionFuncs.Add(serializer.ActionFunc);
-            //    }
-
-            //    gyroDirSwipeAction.UsedEventsButtonsY[(int)dir] = dirButton;
-            //    FlagBtnChangedYDirection(dir);
-            //}
         }
 
         private void FlagBtnChangedDirection(SwipeDirBinding.SwipeDir dir)
@@ -6662,12 +6606,6 @@ namespace DS4MapperTest
     {
         public class StickPadDirBinding
         {
-            //private StickPadAction.DpadDirections direction;
-            //[JsonIgnore]
-            //public StickPadAction.DpadDirections Direction
-            //{
-            //    get => direction;
-            //}
 
             private string actionDirName;
             [JsonProperty("Name", Required = Required.Default)]
@@ -7165,48 +7103,6 @@ namespace DS4MapperTest
             return stickPadAct.ChangedProperties.Contains(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
         }
 
-        //private List<StickPadBindings> padBindings =
-        //    new List<StickPadBindings>()
-        //    {
-        //        new StickPadBindings(StickPadAction.DpadDirections.Centered),
-        //        new StickPadBindings(StickPadAction.DpadDirections.Up),
-        //        new StickPadBindings(StickPadAction.DpadDirections.Right),
-        //        new StickPadBindings(StickPadAction.DpadDirections.UpRight),
-        //        new StickPadBindings(StickPadAction.DpadDirections.Down),
-        //        new StickPadBindings(StickPadAction.DpadDirections.Centered),
-        //        new StickPadBindings(StickPadAction.DpadDirections.DownRight),
-        //        new StickPadBindings(StickPadAction.DpadDirections.Centered),
-        //        new StickPadBindings(StickPadAction.DpadDirections.Left),
-        //        new StickPadBindings(StickPadAction.DpadDirections.UpLeft),
-        //        new StickPadBindings(StickPadAction.DpadDirections.Centered),
-        //        new StickPadBindings(StickPadAction.DpadDirections.Centered),
-        //        new StickPadBindings(StickPadAction.DpadDirections.DownLeft),
-        //    };
-        //[JsonProperty("Bindings")]
-        //public List<StickPadBindings> PadBindings
-        //{
-        //    get => padBindings;
-        //    set => padBindings = value;
-        //}
-
-        //private List<AxisDirButtonSerializer> axisDirButtons =
-        //    new List<AxisDirButtonSerializer>()
-        //    {
-        //        new AxisDirButtonSerializer(), new AxisDirButtonSerializer(),
-        //        new AxisDirButtonSerializer(), new AxisDirButtonSerializer(),
-        //        new AxisDirButtonSerializer(), new AxisDirButtonSerializer(),
-        //        new AxisDirButtonSerializer(), new AxisDirButtonSerializer(),
-        //        new AxisDirButtonSerializer(), new AxisDirButtonSerializer(),
-        //        new AxisDirButtonSerializer(), new AxisDirButtonSerializer(),
-        //        new AxisDirButtonSerializer()
-        //    };
-
-        //[JsonProperty("Up")]
-        //public AxisDirButtonSerializer UpButton
-        //{
-        //    get => axisDirButtons[(int)StickPadAction.DpadDirections.Up];
-        //}
-
         private StickPadActionSettings settings;
         public StickPadActionSettings Settings
         {
@@ -7457,7 +7353,6 @@ namespace DS4MapperTest
                     }
                 }
 
-                //dictPadBindings.Add(tempDir, tempFuncs);
                 dictPadBindings.Add(tempDir,
                     new StickPadDirBinding()
                     {
@@ -7491,17 +7386,11 @@ namespace DS4MapperTest
             }
 
             foreach (KeyValuePair<StickPadAction.DpadDirections, StickPadDirBinding> tempKeyPair in dictPadBindings)
-            //foreach(KeyValuePair<StickPadAction.DpadDirections, List<ActionFuncSerializer>> tempKeyPair in dictPadBindings)
-            //foreach(DictionaryEntry entry in dictPadBindings)
             {
                 StickPadAction.DpadDirections dir = tempKeyPair.Key;
                 List<ActionFuncSerializer> tempSerializers = tempKeyPair.Value.ActionFuncSerializers;
-                //List<ActionFuncSerializer> tempSerializers = tempKeyPair.Value;
-                //StickPadAction.DpadDirections dir = (StickPadAction.DpadDirections)entry.Key;
-                //List<ActionFuncSerializer> tempSerializers = entry.Value as List<ActionFuncSerializer>;
 
                 AxisDirButton tempDirButton = null;
-                //foreach (AxisDirButton dirButton in stickPadAct.EventCodes4)
                 {
                     tempDirButton = stickPadAct.EventCodes4[(int)dir];
                     if (tempDirButton != null)
@@ -7534,7 +7423,6 @@ namespace DS4MapperTest
                 }
 
                 stickPadAct.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
-                //stickPadAct.RingButton.ChangedProperties.Add(StickPadAction.PropertyKeyStrings.OUTER_RING_BUTTON);
             }
 
             MigrateLegacyCounterMovementReleasePressFields();
@@ -10284,7 +10172,6 @@ namespace DS4MapperTest
             public event EventHandler AccelCurveChanged;
             public bool ShouldSerializeAccelCurve()
             {
-                //return gyroMouseAction.ChangedProperties.Contains(GyroMouse.PropertyKeyStrings.ACCEL_CURVE);
                 return gyroMouseAction.mouseParams.accelCurve !=
                     GyroMouseParams.ACCEL_CURVE_DEFAULT;
             }
@@ -11492,22 +11379,12 @@ namespace DS4MapperTest
         private Dictionary<SwipeDirBinding.SwipeDir, SwipeDirBinding> dictDirBindings =
             new Dictionary<SwipeDirBinding.SwipeDir, SwipeDirBinding>();
 
-        //private Dictionary<GyroDirectionalSwipe.SwipeAxisYDir, SwipeDirBinding> dictDirYBindings =
-        //    new Dictionary<GyroDirectionalSwipe.SwipeAxisYDir, SwipeDirBinding>();
-
         [JsonProperty("Bindings", Required = Required.Always)]
         public Dictionary<SwipeDirBinding.SwipeDir, SwipeDirBinding> DictDirBindings
         {
             get => dictDirBindings;
             set => dictDirBindings = value;
         }
-
-        //[JsonProperty("YBindings", Required = Required.Always)]
-        //public Dictionary<GyroDirectionalSwipe.SwipeAxisYDir, SwipeDirBinding> DictDirYBindings
-        //{
-        //    get => dictDirYBindings;
-        //    set => dictDirYBindings = value;
-        //}
 
         private GyroDirectionalSwipe gyroDirSwipeAction = new GyroDirectionalSwipe();
         private GyroDirSwipeSettings settings;
@@ -11596,21 +11473,6 @@ namespace DS4MapperTest
                 FlagBtnChangedDirection(dir);
             }
 
-            //foreach (KeyValuePair<GyroDirectionalSwipe.SwipeAxisYDir, SwipeDirBinding> pair in dictDirYBindings)
-            //{
-            //    GyroDirectionalSwipe.SwipeAxisYDir dir = pair.Key;
-            //    List<ActionFuncSerializer> tempSerializers = pair.Value.ActionFuncSerializers;
-            //    ButtonAction dirButton = new ButtonAction();
-            //    dirButton.Name = pair.Value.ActionDirName;
-            //    foreach (ActionFuncSerializer serializer in tempSerializers)
-            //    {
-            //        serializer.PopulateFunc();
-            //        dirButton.ActionFuncs.Add(serializer.ActionFunc);
-            //    }
-
-            //    gyroDirSwipeAction.UsedEventsButtonsY[(int)dir] = dirButton;
-            //    FlagBtnChangedYDirection(dir);
-            //}
         }
 
         private void FlagBtnChangedDirection(SwipeDirBinding.SwipeDir dir)
@@ -11633,21 +11495,6 @@ namespace DS4MapperTest
                     break;
             }
         }
-
-        //private void FlagBtnChangedYDirection(GyroDirectionalSwipe.SwipeAxisYDir dir)
-        //{
-        //    switch(dir)
-        //    {
-        //        case GyroDirectionalSwipe.SwipeAxisYDir.Up:
-        //            //gyroDirSwipeAction.ChangedProperties.Add(GyroDirectionalSwipe.PropertyKeyStrings.)
-        //            break;
-        //        case GyroDirectionalSwipe.SwipeAxisYDir.Down:
-        //            //gyroDirSwipeAction.ChangedProperties.Add(GyroDirectionalSwipe.PropertyKeyStrings.)
-        //            break;
-        //        default:
-        //            break;
-        //    }
-        //}
 
         // Pre-serialize
         private void PopulateFuncs()
@@ -12455,7 +12302,6 @@ namespace DS4MapperTest
 
         private void Settings_PadModeChanged(object sender, EventArgs e)
         {
-            //if (mapAction.ParentAction != null)
             {
                 gyroPadAction.ChangedProperties.Add(GyroPadAction.PropertyKeyStrings.PAD_MODE);
             }
@@ -12481,25 +12327,18 @@ namespace DS4MapperTest
                 dirButton?.ActionFuncs.Clear();
             }
 
-            //foreach (KeyValuePair<GyroPadAction.DpadDirections, List<ActionFuncSerializer>> tempKeyPair in dictPadBindings)
             foreach (KeyValuePair<GyroPadAction.DpadDirections, GyroPadDirBinding> tempKeyPair in dictPadBindings)
             {
                 GyroPadAction.DpadDirections dir = tempKeyPair.Key;
                 List<ActionFuncSerializer> tempSerializers = tempKeyPair.Value.ActionFuncSerializers;
-                //List<ActionFuncSerializer> tempSerializers = tempKeyPair.Value;
 
-                //ButtonAction tempDirButton = dPadAction.EventCodes4[(int)dir];
-                //if (tempDirButton != null)
                 {
-                    //tempDirButton.Name = tempKeyPair.Value.ActionDirName;
                     AxisDirButton dirButton = new AxisDirButton();
                     dirButton.Name = tempKeyPair.Value.ActionDirName;
                     foreach (ActionFuncSerializer serializer in tempSerializers)
                     {
-                        //ButtonAction dirButton = dPadAction.EventCodes4[(int)dir];
                         serializer.PopulateFunc();
                         dirButton.ActionFuncs.Add(serializer.ActionFunc);
-                        //dPadAction.EventCodes4[(int)dir] = dirButton;
                     }
 
                     gyroPadAction.EventCodes4[(int)dir] = dirButton;
@@ -12558,7 +12397,6 @@ namespace DS4MapperTest
                     }
                 }
 
-                //dictPadBindings.Add(tempDir, tempFuncs);
                 dictPadBindings.Add(tempDir, new GyroPadDirBinding()
                 {
                     ActionDirName = dirButton.Name,
@@ -12621,7 +12459,6 @@ namespace DS4MapperTest
             MapActionSerializer current = existingValue as MapActionSerializer;
 
             string actionOutput = j["ActionMode"]?.ToString();
-            //bool status = int.TryParse(j["Index"]?.ToString(), out int ind);
             object resultInstance = null;
 
             // If action parsing fails, just skip it
@@ -12632,25 +12469,6 @@ namespace DS4MapperTest
                     case "ButtonAction":
                         ButtonActionSerializer instance = new ButtonActionSerializer();
                         ButtonAction tempAction = instance.ButtonAction;
-                        /*if (ActionSetSerializer.TopActionLayer != null)
-                        {
-                            //int ind = ActionLayerSerializer.CurrentActionIndex;
-                            bool status = int.TryParse(j["Id"]?.ToString(), out int parentId);
-                            int ind = status ? ActionSetSerializer.TopActionLayer.LayerActions.FindIndex((item) => item.Id == parentId) : -1;
-                            if (status && ind >= 0)
-                            //if (ind > 0 &&
-                            //    ind < ActionSetSerializer.TopActionLayer.LayerActions.Count)
-                            {
-                                MapAction tempMap =
-                                    ActionSetSerializer.TopActionLayer.LayerActions[ind];
-                                if (tempMap.IsSameType(tempMap, tempAction))
-                                {
-                                    instance.ButtonAction =
-                                        ((tempMap as ButtonAction).DuplicateAction() as ButtonAction);
-                                }
-                            }
-                        }
-                        */
 
                         JsonConvert.PopulateObject(j.ToString(), instance);
                         instance.ActionFuncSerializers.RemoveAll((item) => item == null);
@@ -12673,8 +12491,6 @@ namespace DS4MapperTest
                         JsonConvert.PopulateObject(j.ToString(), stickPadInstance);
                         foreach (StickPadAction.DpadDirections dir in stickPadInstance.DictPadBindings.Keys)
                         {
-                            //stickPadInstance.DictPadBindings[dir].RemoveAll((item) => item == null);
-                            //stickPadInstance.DictPadBindings[dir].RemoveAll((item) => item == null);
                             stickPadInstance.DictPadBindings[dir].ActionFuncSerializers.RemoveAll((item) => item == null);
                         }
 
@@ -12810,7 +12626,6 @@ namespace DS4MapperTest
                         JsonConvert.PopulateObject(j.ToString(), dpadActSerializer);
                         foreach (DPadActions.DpadDirections dir in dpadActSerializer.DictPadBindings.Keys)
                         {
-                            //dpadActSerializer.DictPadBindings[dir].RemoveAll((item) => item == null);
                             dpadActSerializer.DictPadBindings[dir].ActionFuncSerializers.RemoveAll((item) => item == null);
                         }
                         resultInstance = dpadActSerializer;
@@ -12859,11 +12674,6 @@ namespace DS4MapperTest
             }
 
             // No longer throw exception here if action type is unknown.
-            // Leaving old code here temporarily(?)
-            //if (resultInstance == null)
-            //{
-            //    throw new JsonException($"Failed to read invalid type of ({actionOutput})");
-            //}
 
             return resultInstance;
         }
@@ -13197,35 +13007,6 @@ namespace DS4MapperTest
             return result;
         }
 
-        //public static int ParseMouseButtonCodeString(string key)
-        //{
-        //    int result = 0;
-        //    switch(key)
-        //    {
-        //        case "LeftButton":
-        //        case "Left":
-        //            result = MouseButtonCodes.MOUSE_LEFT_BUTTON;
-        //            break;
-        //        case "RightButton":
-        //        case "Right":
-        //            result = MouseButtonCodes.MOUSE_RIGHT_BUTTON;
-        //            break;
-        //        case "MiddleButton":
-        //        case "Middle":
-        //            result = MouseButtonCodes.MOUSE_MIDDLE_BUTTON;
-        //            break;
-        //        case "XButton1":
-        //            result = MouseButtonCodes.MOUSE_XBUTTON1;
-        //            break;
-        //        case "XButton2":
-        //            result = MouseButtonCodes.MOUSE_XBUTTON2;
-        //            break;
-        //        default:
-        //            break;
-        //    }
-        //    return result;
-        //}
-
         public enum MouseButtonAliases : int
         {
             None,
@@ -13290,7 +13071,6 @@ namespace DS4MapperTest
                             tempInstance.OutputCode = (int)temp;
                             tempInstance.OutputCodeAlias = ProfileSerializer.EventInputMapper.GetRealEventKey(temp);
                             tempInstance.OutputCodeStr = tempKeyAlias;
-                            //tempInstance.OutputCode = temp;
                         }
                         else
                         {
@@ -13333,11 +13113,6 @@ namespace DS4MapperTest
                 case ActionType.RelativeMouse:
                     {
                         tempInstance.OutputType = checkType;
-                        //if (int.TryParse(j["Code"]?.ToString(), out int temp))
-                        //{
-                        //    tempInstance.OutputCode = temp;
-                        //    tempInstance.OutputCodeAlias = temp;
-                        //}
                         if (Enum.TryParse(j["Dir"]?.ToString(), out RelativeMouseDir temp))
                         {
                             tempInstance.mouseDir = temp;
@@ -13364,7 +13139,6 @@ namespace DS4MapperTest
                             if (Enum.TryParse(tempAlias,
                                 out OutputActionDataSerializer.MouseButtonAliases mButtonAlias))
                             {
-                                //temp = OutputActionDataSerializer.ParseMouseButtonCodeString(tempAlias);
                                 temp = (int)mButtonAlias;
                                 tempInstance.OutputCode = (int)temp;
                                 tempInstance.OutputCodeStr = tempAlias;
@@ -13377,7 +13151,6 @@ namespace DS4MapperTest
                     }
                 case ActionType.MouseWheel:
                     tempInstance.OutputType = checkType;
-                    //tempInstance.OutputCode = 128;
                     string tempWheelAlias = j["Code"]?.ToString() ?? string.Empty;
                     int wheelTemp = 0;
                     if (int.TryParse(tempWheelAlias, out wheelTemp))
@@ -13518,7 +13291,6 @@ namespace DS4MapperTest
                     resultInstance = new OutputActionDataSerializer(tempInstance);
                     break;
                 default:
-                    //throw new JsonException();
                     tempInstance.OutputType = ActionType.Empty;
                     resultInstance = new OutputActionDataSerializer(tempInstance);
                     break;
@@ -13532,10 +13304,6 @@ namespace DS4MapperTest
             OutputActionDataSerializer current = value as OutputActionDataSerializer;
 
             JObject tempJ = new JObject();
-
-            //writer.WriteStartObject();
-            //writer.WritePropertyName("type");
-            //writer.WriteValue(current.ActionType.ToString());
 
             tempJ.Add("Type", current.ActionType.ToString());
             switch (current.ActionType)
@@ -13581,7 +13349,6 @@ namespace DS4MapperTest
                     SerializeExtraJSONProperties(current.OutputData, tempJ);
                     break;
                 case ActionType.GamepadControl:
-                    //tempJ.Add("PadOutput", current.OutputData.JoypadCode.ToString());
                     tempJ.Add("PadOutput", OutputJoypadActionCodeHelper.Convert(current.OutputData.JoypadCode));
                     SerializeExtraJSONProperties(current.OutputData, tempJ);
                     break;
@@ -13591,7 +13358,6 @@ namespace DS4MapperTest
                     break;
                 case ActionType.SwitchActionLayer:
                     tempJ.Add("Layer", current.OutputData.ChangeToLayer);
-                    //SerializeExtraJSONProperties(current.OutputData, tempJ);
                     break;
                 case ActionType.ApplyActionLayer:
                     tempJ.Add("Layer", current.OutputData.ChangeToLayer);
@@ -13637,13 +13403,8 @@ namespace DS4MapperTest
                     break;
             }
 
-            //serializer.Serialize(new JTokenWriter(tempJ), value);
             serializer.Serialize(writer,tempJ);
 
-            //writer.WriteEndObject();
-            //JObject j = JObject.FromObject(value);
-            //j.WriteTo(writer);
-            //serializer.Serialize(writer, value);
         }
 
         private void DeserializeExtraJSONProperties(OutputActionData actionData, JObject jsonObject)
@@ -13714,10 +13475,6 @@ namespace DS4MapperTest
 
                     break;
                 case ActionType.HoldActionLayer:
-                    //if (Enum.TryParse(jsonObject["Settings"]?["ChangeCondition"]?.ToString(), out ActionLayerChangeCondition removeLayerCond))
-                    //{
-                    //    actionData.LayerChangeCondition = removeLayerCond;
-                    //}
 
                     break;
                 default:
@@ -13866,7 +13623,6 @@ namespace DS4MapperTest
                 }
 
                 serializer.Serialize(writer, tempList);
-                //serializer.Serialize(writer, value);
             }
         }
     }

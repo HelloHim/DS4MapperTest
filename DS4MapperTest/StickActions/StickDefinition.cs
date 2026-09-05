@@ -31,23 +31,10 @@ namespace DS4MapperTest.StickActions
             }
         };
 
-        /*public int axisMin;
-        public int axisMax;
-        public int axisMid;
-        */
         public StickAxisData xAxis;
         public StickAxisData yAxis;
         public StickActionCodes stickCode;
 
-        /*public StickDefinition(int axisMin, int axisMax, int axisMid,
-            StickActionCodes stickCode)
-        {
-            this.axisMin = axisMin;
-            this.axisMax = axisMax;
-            this.axisMid = axisMid;
-            this.stickCode = stickCode;
-        }
-        */
         public StickDefinition(StickAxisData xAxis, StickAxisData yAxis,
             StickActionCodes stickCode)
         {

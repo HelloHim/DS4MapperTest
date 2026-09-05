@@ -49,8 +49,6 @@ namespace DS4MapperTest.GyroActions
         public bool toggleAction;
         public bool smoothing;
         public SmoothingFilterSettings smoothingFilterSettings;
-        //public double oneEuroMinCutoff;
-        //public double oneEuroMinBeta;
 
         public event EventHandler OutputStickChanged;
     }
@@ -72,7 +70,6 @@ namespace DS4MapperTest.GyroActions
             public const string OUTPUT_STICK = "OuputStick";
             public const string MAX_OUTPUT = "MaxOutput";
             public const string MAX_OUTPUT_ENABLED = "MaxOutputEnabled";
-            //public const string OUTPUT_CURVE = "OutputCurve";
 
             public const string TRIGGER_BUTTONS = "Triggers";
             public const string TRIGGER_ACTIVATE = "TriggersActivate";
@@ -82,8 +79,6 @@ namespace DS4MapperTest.GyroActions
             public const string JITTER_COMPENSATION = "JitterCompensation";
             public const string SMOOTHING_ENABLED = "SmoothingEnabled";
             public const string SMOOTHING_FILTER = "SmoothingFilter";
-            //public const string SMOOTHING_MINCUTOFF = "SmoothingMinCutoff";
-            //public const string SMOOTHING_MINBETA = "SmoothingMinBeta";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -126,9 +121,6 @@ namespace DS4MapperTest.GyroActions
         private bool toggleActiveState;
         private readonly GyroActivationHold activationHold = new GyroActivationHold();
         private bool useParentSmoothingFilter;
-        //private OneEuroFilter smoothFilter = new OneEuroFilter(1.0, 1.0);
-
-        //private event EventHandler<NotifyPropertyChangeArgs> NotifyPropertyChanged;
 
         public GyroMouseJoystick()
         {
@@ -185,11 +177,6 @@ namespace DS4MapperTest.GyroActions
 
         public override void Prepare(Mapper mapper, ref GyroEventFrame gyroFrame, bool alterState = true)
         {
-            //const int deadzone = 24;
-            //const int deadzone = 24;
-            //const int maxZone = 600;
-            //const double antidead = 0.54;
-            //const double antidead = 0.45;
 
             double deadzone = mStickParams.deadZone;
             double maxZone = mStickParams.maxZone;
@@ -201,9 +188,7 @@ namespace DS4MapperTest.GyroActions
             bool triggerActivated = true;
 
             double currentRate = gyroFrame.CurrentRate;
-            //if (tempTriggerButton != JoypadActionCodes.Empty)
             {
-                //bool triggerButtonActive = mapper.IsButtonActive(mStickParms.gyroTriggerButton);
                 if (!mStickParams.triggerActivates && triggerButtonActive)
                 {
                     triggerActivated = false;
@@ -241,7 +226,6 @@ namespace DS4MapperTest.GyroActions
 
                 prevXNorm = xNorm; prevYNorm = yNorm;
                 xNorm = yNorm = 0.0;
-                //mapper.IntermediateStateRef.Dirty = true;
 
                 mStickParams.smoothingFilterSettings.filterX.Filter(0.0, currentRate);
                 mStickParams.smoothingFilterSettings.filterY.Filter(0.0, currentRate);
@@ -251,11 +235,7 @@ namespace DS4MapperTest.GyroActions
                 return;
             }
 
-            // Base speed 15 ms
-            //double tempDouble = timeElapsed * 66.67;
-            //double tempDouble = timeElapsed * gyroFrame.elapsedReference;
             double tempDouble = 1.0;
-            //Console.WriteLine("Elasped: ({0}) DOUBLE {1}", current.timeElapsed, tempDouble);
             int deltaX = mStickParams.useForXAxis == GyroMouseXAxisChoice.Yaw ?
                 gyroFrame.GyroYaw : gyroFrame.GyroRoll;
             int origDeltaY = gyroFrame.GyroPitch;
@@ -285,9 +265,6 @@ namespace DS4MapperTest.GyroActions
                 deltaAngVelX -= signX * deadzoneX;
                 deltaAngVelX = deltaAngVelX * tempDouble;
                 deltaAngVelX = Math.Clamp(deltaAngVelX, -maxZone, maxZone);
-                //deltaAngVelX = (deltaAngVelX < 0.0 && deltaAngVelX < maxValX) ? maxValX :
-                //    (deltaAngVelX > 0.0 && deltaAngVelX > maxValX) ? maxValX : deltaAngVelX;
-                //if (deltaAngVelX != maxValX) deltaAngVelX -= deltaAngVelX % (signX * GyroMouseFuzz);
             }
             else
             {
@@ -299,9 +276,6 @@ namespace DS4MapperTest.GyroActions
                 deltaAngVelY -= signY * deadzoneY;
                 deltaAngVelY = deltaAngVelY * tempDouble;
                 deltaAngVelY = Math.Clamp(deltaAngVelY, -maxZone, maxZone);
-                //deltaAngVelY = (deltaAngVelY < 0.0 && deltaAngVelY < maxValY) ? maxValY :
-                //    (deltaAngVelY > 0.0 && deltaAngVelY > maxValY) ? maxValY : deltaAngVelY;
-                //if (deltaAngVelY != maxValY) deltaAngVelY -= deltaAngVelY % (signY * GyroMouseFuzz);
             }
             else
             {
@@ -326,28 +300,6 @@ namespace DS4MapperTest.GyroActions
                     deltaAngVelY = (signY * Math.Pow(absY / thresholdF, 1.408) * threshold);
                 }
             }
-
-            //deltaAngVelX = mapper.MStickFilterX.Filter(deltaAngVelX, mapper.CurrentRate);
-            //deltaAngVelY = mapper.MStickFilterY.Filter(deltaAngVelY, mapper.CurrentRate);
-            /*if (mStickParams.smoothing)
-            {
-                deltaAngVelX = mStickParams.smoothingFilterSettings.filterX.Filter(deltaAngVelX * 1.001, currentRate);
-                deltaAngVelY = mStickParams.smoothingFilterSettings.filterY.Filter(deltaAngVelY * 1.001, currentRate);
-
-                // Filter does not go back to absolute zero for reasons. Check
-                // for low number and reset to zero
-                if (Math.Abs(deltaAngVelX) < 0.001) deltaAngVelX = 0.0;
-                if (Math.Abs(deltaAngVelY) < 0.001) deltaAngVelY = 0.0;
-
-                // Perform clamping
-                deltaAngVelX = Math.Clamp(deltaAngVelX, -maxZone, maxZone);
-                deltaAngVelY = Math.Clamp(deltaAngVelY, -maxZone, maxZone);
-
-                // Need to double check current signs
-                signX = Math.Sign(deltaAngVelX);
-                signY = Math.Sign(deltaAngVelY);
-            }
-            */
 
             double xratio = 0.0, yratio = 0.0;
             if (deltaAngVelX != 0.0 && maxValX != 0.0) xratio = deltaAngVelX / maxValX;
@@ -383,7 +335,6 @@ namespace DS4MapperTest.GyroActions
             }
 
             if (xNorm != 0.0 || yNorm != 0.0)
-            //if (xNorm != prevXNorm || yNorm != prevYNorm)
             {
                 active = true;
                 activeEvent = true;
@@ -411,13 +362,6 @@ namespace DS4MapperTest.GyroActions
 
         public override void Event(Mapper mapper)
         {
-            /*double tempX = xMotion, tempY = yMotion;
-            if (mouseParams.smoothing)
-            {
-                tempX = smoothFilter.Filter(xMotion, mapper.CurrentRate);
-                tempY = smoothFilter.Filter(yMotion, mapper.CurrentRate);
-            }
-            */
 
             double outXNorm = xNorm;
             double outYNorm = yNorm;
@@ -441,20 +385,6 @@ namespace DS4MapperTest.GyroActions
             }
 
             // Adjust sensitivity to work around rounding in filter method
-            /*outXNorm *= 1.0005;
-            outYNorm *= 1.0005;
-            double tempXNorm = mapper.MStickFilterX.Filter(outXNorm, mapper.CurrentRate);
-            double tempYNorm = mapper.MStickFilterY.Filter(outYNorm, mapper.CurrentRate);
-
-            // Filter does not go back to absolute zero for reasons. Check
-            // for low number and reset to zero
-            if (Math.Abs(tempXNorm) < 0.0001) tempXNorm = 0.0;
-            if (Math.Abs(tempYNorm) < 0.0001) tempYNorm = 0.0;
-
-            // Need to check bounds again
-            tempXNorm = Math.Clamp(tempXNorm, -1.0, 1.0);
-            tempYNorm = Math.Clamp(tempYNorm, -1.0, 1.0);
-            */
 
             if (mStickParams.invertX) tempXNorm = -1.0 * tempXNorm;
             if (mStickParams.invertY) tempYNorm = -1.0 * tempYNorm;
@@ -471,14 +401,7 @@ namespace DS4MapperTest.GyroActions
                 }
             }
 
-            //Trace.WriteLine($"HELP {tempXNorm} {tempYNorm}");
-
             mapper.GamepadFromStickInput(actionData, tempXNorm, tempYNorm, force: false);
-
-            //if (xNorm != 0.0 || yNorm != 0.0)
-            //{
-            //    active = true;
-            //}
 
             prevXNorm = xNorm;
             prevYNorm = yNorm;
@@ -488,7 +411,6 @@ namespace DS4MapperTest.GyroActions
 
         public override void Release(Mapper mapper, bool resetState = true, bool ignoreReleaseActions = false)
         {
-            //if (active)
             {
                 mapper.GamepadFromStickInput(actionData, 0.0, 0.0);
             }
@@ -498,13 +420,11 @@ namespace DS4MapperTest.GyroActions
             active = false;
             activeEvent = false;
             ResetToggleActiveState();
-            //smoothFilter.Reset();
             mStickParams.smoothingFilterSettings.ResetFilters();
         }
 
         public override void SoftRelease(Mapper mapper, MapAction checkAction, bool resetState = true)
         {
-            //if (active)
             {
                 mapper.GamepadFromStickInput(actionData, 0.0, 0.0);
             }
@@ -514,7 +434,6 @@ namespace DS4MapperTest.GyroActions
             active = false;
             activeEvent = false;
             ResetToggleActiveState();
-            //smoothFilter.Reset();
             if (!useParentSmoothingFilter)
             {
                 mStickParams.smoothingFilterSettings.ResetFilters();
@@ -538,7 +457,6 @@ namespace DS4MapperTest.GyroActions
                 IEnumerable<string> useParentProList =
                     fullPropertySet.Except(changedProperties);
 
-                //bool updateSmoothing = false;
                 foreach (string parentPropType in useParentProList)
                 {
                     switch (parentPropType)
@@ -604,7 +522,6 @@ namespace DS4MapperTest.GyroActions
                             break;
                         case PropertyKeyStrings.SMOOTHING_ENABLED:
                             mStickParams.smoothing = tempGyroStickAction.mStickParams.smoothing;
-                            //updateSmoothing = true;
                             break;
                         case PropertyKeyStrings.SMOOTHING_FILTER:
                             mStickParams.smoothingFilterSettings.minCutOff = tempGyroStickAction.mStickParams.smoothingFilterSettings.minCutOff;
@@ -612,23 +529,11 @@ namespace DS4MapperTest.GyroActions
                             mStickParams.smoothingFilterSettings.UpdateSmoothingFilters();
                             useParentSmoothingFilter = true;
                             break;
-                        //case PropertyKeyStrings.SMOOTHING_MINCUTOFF:
-                        //    mStickParms.oneEuroMinCutoff = tempGyroStickAction.mStickParms.oneEuroMinCutoff;
-                        //    updateSmoothing = true;
-                        //    break;
-                        //case PropertyKeyStrings.SMOOTHING_MINBETA:
-                        //    mStickParms.oneEuroMinBeta = tempGyroStickAction.mStickParms.oneEuroMinBeta;
-                        //    updateSmoothing = true;
-                        //    break;
                         default:
                             break;
                     }
                 }
 
-                //if (updateSmoothing)
-                //{
-                //    UpdateSmoothingFilter();
-                //}
             }
         }
 
@@ -651,7 +556,6 @@ namespace DS4MapperTest.GyroActions
             }
 
             GyroMouseJoystick tempGyroStickAction = parentAction as GyroMouseJoystick;
-            //bool updateSmoothing = false;
             switch (propertyName)
             {
                 case PropertyKeyStrings.NAME:
@@ -715,7 +619,6 @@ namespace DS4MapperTest.GyroActions
                     break;
                 case PropertyKeyStrings.SMOOTHING_ENABLED:
                     mStickParams.smoothing = tempGyroStickAction.mStickParams.smoothing;
-                    //updateSmoothing = true;
                     break;
                 case PropertyKeyStrings.SMOOTHING_FILTER:
                     mStickParams.smoothingFilterSettings.minCutOff = tempGyroStickAction.mStickParams.smoothingFilterSettings.minCutOff;
@@ -723,28 +626,15 @@ namespace DS4MapperTest.GyroActions
                     mStickParams.smoothingFilterSettings.UpdateSmoothingFilters();
                     useParentSmoothingFilter = true;
                     break;
-                //case PropertyKeyStrings.SMOOTHING_MINCUTOFF:
-                //    mStickParms.oneEuroMinCutoff = tempGyroStickAction.mStickParms.oneEuroMinCutoff;
-                //    updateSmoothing = true;
-                //    break;
-                //case PropertyKeyStrings.SMOOTHING_MINBETA:
-                //    mStickParms.oneEuroMinBeta = tempGyroStickAction.mStickParms.oneEuroMinBeta;
-                //    updateSmoothing = true;
-                //    break;
                 default:
                     break;
             }
 
-            //if (updateSmoothing)
-            //{
-            //    UpdateSmoothingFilter();
-            //}
         }
 
         public override void BlankEvent(Mapper mapper)
         {
             mapper.GamepadFromStickInput(actionData, 0.0, 0.0);
-            //mapper.ResetMouseJoystickData();
         }
 
         public override GyroMapAction DuplicateAction()
@@ -758,10 +648,5 @@ namespace DS4MapperTest.GyroActions
             previousTriggerActivated = false;
         }
 
-        //public void UpdateSmoothingFilter()
-        //{
-        //    smoothFilter = new OneEuroFilter(mStickParms.oneEuroMinCutoff,
-        //        mStickParms.oneEuroMinBeta);
-        //}
     }
 }

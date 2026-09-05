@@ -68,8 +68,6 @@ namespace DS4MapperTest.ViewModels
                 case 1:
                     {
                         DPadTranslate tempAction = new DPadTranslate();
-                        //var joyDefaults = mapper.DeviceActionDefaults.GrabTouchJoystickDefaults();
-                        //joyDefaults.Process(tempAction);
                         result = tempAction;
                     }
 
@@ -77,8 +75,6 @@ namespace DS4MapperTest.ViewModels
                 case 2:
                     {
                         DPadAction tempAction = new DPadAction();
-                        //var joyDefaults = mapper.DeviceActionDefaults.GrabTouchActionPadDefaults();
-                        //joyDefaults.Process(tempAction);
                         result = tempAction;
                     }
 
@@ -98,15 +94,8 @@ namespace DS4MapperTest.ViewModels
             mapper.ProcessMappingChangeAction(() =>
             {
                 oldAction.Release(mapper, ignoreReleaseActions: true);
-                //int tempInd = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.FindIndex((item) => item == tempAction);
-                //if (tempInd >= 0)
                 {
-                    //mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.RemoveAt(tempInd);
-                    //mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.Insert(tempInd, newAction);
 
-                    //oldAction.Release(mapper, ignoreReleaseActions: true);
-
-                    //mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.AddTouchpadAction(this.action);
                     if (oldAction.Id != MapAction.DEFAULT_UNBOUND_ID)
                     {
                         mapper.EditLayer.ReplaceDPadAction(oldAction, newAction);

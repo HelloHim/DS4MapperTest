@@ -93,14 +93,12 @@ namespace DS4MapperTest
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.Subtract), (ushort)KeyboardKey.KeypadSubtract);
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.Add), (ushort)KeyboardKey.KeypadAdd);
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.Separator), (ushort)KeyboardKey.KeypadDecimal);
-                //mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.Return), (ushort)KeyboardKey.KeypadEnter);
 
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.Escape), (ushort)KeyboardKey.Escape);
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.OemTilde), (ushort)KeyboardKey.Tilde);
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.Tab), (ushort)KeyboardKey.Tab);
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.OemMinus), (ushort)KeyboardKey.Subtract);
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.OemPlus), (ushort)KeyboardKey.Equals);
-                //Console.WriteLine("FINISH: {0}", KeyInterop.VirtualKeyFromKey(Key.LeftShift));
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.Back), (ushort)KeyboardKey.Backspace);
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.CapsLock), (ushort)KeyboardKey.CapsLock);
                 mappingPairs.Add((ushort)KeyInterop.VirtualKeyFromKey(Key.Enter), (ushort)KeyboardKey.Enter);

@@ -135,7 +135,6 @@ namespace DS4MapperTest.ViewModels.TriggerActionPropViewModels
         public event EventHandler ActionPropertyChanged;
         public event EventHandler<TriggerMapAction> ActionChanged;
 
-        //private bool replacedAction = false;
         private bool usingRealAction = true;
 
         public TriggerTranslatePropViewModel(Mapper mapper, TriggerMapAction action)
@@ -153,10 +152,8 @@ namespace DS4MapperTest.ViewModels.TriggerActionPropViewModels
                 TriggerTranslate baseLayerAction = mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as TriggerTranslate;
                 TriggerTranslate tempAction = new TriggerTranslate();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.EditLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
 
                 this.action = tempAction;
                 usingRealAction = false;
@@ -211,8 +208,6 @@ namespace DS4MapperTest.ViewModels.TriggerActionPropViewModels
                         mapper.EditActionSet.PrepareCompositeLayer();
                     }
                 });
-
-                //replacedAction = true;
 
                 ActionChanged?.Invoke(this, action);
             }

@@ -140,11 +140,9 @@ namespace DS4MapperTest.TouchpadActions
         private int[] tmpBtnDirs = new int[2];
         private List<ButtonAction> removeBtnCandidates = new List<ButtonAction>();
 
-        /* Possibly group values in a class */
         /// <summary>
         /// Virtual direction button that takes the vector magnitude as its value
         /// </summary>
-        //private AxisDirButton ringButton = new AxisDirButton(new OutputActionData(OutputActionData.ActionType.Keyboard, KeyInterop.VirtualKeyFromKey(Key.Z), 0));
         private AxisDirButton ringButton = new AxisDirButton();
         private AxisDirButton usedRingButton = null;
 
@@ -288,14 +286,6 @@ namespace DS4MapperTest.TouchpadActions
                 ringDistance = Math.Sqrt((fullXNorm * fullXNorm) + (fullYNorm * fullYNorm));
             }
 
-            //deadMod.CalcOutValues(axisXDir, axisYDir, maxDirX, maxDirY, out xNorm, out yNorm);
-            //xNorm = axisXVal / (double)maxDirX;
-            //yNorm = axisYVal / (double)maxDirY;
-
-            //if (xNegative) xNorm *= -1.0;
-            //if (yNegative) yNorm *= -1.0;
-
-            //if (currentMode == DPadMode.Standard || currentMode == DPadMode.EightWay)
             {
                 if (delayEnabled || deadInput)
                 {
@@ -341,24 +331,18 @@ namespace DS4MapperTest.TouchpadActions
             counterMovementReleasePress.FlushPendingReleases(mapper, usedFuncList);
 
             int previousDirNum = (int)previousDir;
-            //Console.WriteLine("DIRS: Previous: {0} Current: {1}", previousDir, currentDir);
 
             // Release old buttons
             if (previousDir != DpadDirections.Centered)
             {
                 bool onlyCardinal = previousDirNum % 3 != 0;
-                //Console.WriteLine("lkjdfslkjdfslkjdfs {0}", (previousDir & currentDir) != 0);
                 if (onlyCardinal)
                 {
-                    //OutputActionData data = null;
                     ButtonAction data = null;
-                    //double axisval = 0.0;
                     if (currentMode == DPadMode.Standard)
                     {
                         if ((previousDir & currentDir) == 0)
                         {
-                            //Console.WriteLine("REMOVE CARDINAL");
-                            //int code = eventCodes[previousDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                     }
@@ -375,28 +359,24 @@ namespace DS4MapperTest.TouchpadActions
                             (currentDir != DpadDirections.Up && currentDir != DpadDirections.UpRight))
                         {
                             // Map Up or UpRight to output Up direction
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if ((previousDir == DpadDirections.Right) &&
                             (currentDir != DpadDirections.Right && currentDir != DpadDirections.DownRight))
                         {
                             // Map Right or DownRight to output Right direction
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if ((previousDir == DpadDirections.Down) &&
                             (currentDir != DpadDirections.Down && currentDir != DpadDirections.DownLeft))
                         {
                             // Map Down or DownLeft to output Down direction
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if ((previousDir == DpadDirections.Left) &&
                             (currentDir != DpadDirections.Left && currentDir != DpadDirections.UpLeft))
                         {
                             // Map Left or UpLeft to output Left direction
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                     }
@@ -404,32 +384,26 @@ namespace DS4MapperTest.TouchpadActions
                     {
                         if (previousDir == DpadDirections.UpRight && currentDir != DpadDirections.UpRight)
                         {
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if (previousDir == DpadDirections.DownRight && currentDir != DpadDirections.DownRight)
                         {
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if (previousDir == DpadDirections.DownLeft && currentDir != DpadDirections.DownLeft)
                         {
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if (previousDir == DpadDirections.UpLeft && currentDir != DpadDirections.UpLeft)
                         {
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                     }
 
                     if (data != null)
                     {
-                        //data.PrepareAnalog(mapper, 0.0);
                         data.Prepare(mapper, false);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(data, false);
 
                         if (!data.active)
                         {
@@ -440,8 +414,6 @@ namespace DS4MapperTest.TouchpadActions
                 else if (!onlyCardinal)
                 {
                     int tempDir;
-                    //int* codes = stackalloc int[2];
-                    //tmpCodes[0] = tmpCodes[1] = null;
                     tmpBtnActions[0] = tmpBtnActions[1] = null;
                     int i = 0;
 
@@ -450,26 +422,22 @@ namespace DS4MapperTest.TouchpadActions
                         if ((previousDir & DpadDirections.Up) != 0 && (currentDir & DpadDirections.Up) == 0)
                         {
                             tempDir = (int)DpadDirections.Up;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if ((previousDir & DpadDirections.Down) != 0 && (currentDir & DpadDirections.Down) == 0)
                         {
                             tempDir = (int)DpadDirections.Down;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
 
                         if ((previousDir & DpadDirections.Left) != 0 && (currentDir & DpadDirections.Left) == 0)
                         {
                             tempDir = (int)DpadDirections.Left;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if ((previousDir & DpadDirections.Right) != 0 && (currentDir & DpadDirections.Right) == 0)
                         {
                             tempDir = (int)DpadDirections.Right;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                     }
@@ -477,45 +445,36 @@ namespace DS4MapperTest.TouchpadActions
                     {
                         if (previousDir != currentDir)
                         {
-                            //tmpCodes[i] = eventCodes[(int)previousDir]; i++;
                             tmpBtnActions[i] = usedFuncList[(int)previousDir]; i++;
                         }
                     }
                     else if (currentMode == DPadMode.FourWayCardinal)
                     {
-                        //if ((previousDir & DpadDirections.Up) != 0 && (currentDir & DpadDirections.Up) == 0)
                         if ((previousDir == DpadDirections.Up || previousDir == DpadDirections.UpRight) &&
                             (currentDir != DpadDirections.Up && currentDir != DpadDirections.UpRight))
                         {
                             // Map Up or UpRight to output Up direction
                             tempDir = (int)DpadDirections.Up;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
-                        //else if ((previousDir & DpadDirections.Down) != 0 && (currentDir & DpadDirections.Down) == 0)
                         else if ((previousDir == DpadDirections.Right || previousDir == DpadDirections.DownRight) &&
                             (currentDir != DpadDirections.Right && currentDir != DpadDirections.DownRight))
                         {
                             // Map Right or DownRight to output Right direction
                             tempDir = (int)DpadDirections.Right;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
-                        //if ((previousDir & DpadDirections.Left) != 0 && (currentDir & DpadDirections.Left) == 0)
                         else if ((previousDir == DpadDirections.Down || previousDir == DpadDirections.DownLeft) &&
                             (currentDir != DpadDirections.Down && currentDir != DpadDirections.DownLeft))
                         {
                             // Map Down or DownLeft to output Down direction
                             tempDir = (int)DpadDirections.Down;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
-                        //else if ((previousDir & DpadDirections.Right) != 0 && (currentDir & DpadDirections.Right) == 0)
                         else if ((previousDir == DpadDirections.Left || previousDir == DpadDirections.UpLeft) &&
                             (currentDir != DpadDirections.Left && currentDir != DpadDirections.UpLeft))
                         {
                             tempDir = (int)DpadDirections.Left;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                     }
@@ -523,39 +482,32 @@ namespace DS4MapperTest.TouchpadActions
                     {
                         if (previousDir == DpadDirections.UpRight && currentDir != DpadDirections.UpRight)
                         {
-                            //data = eventCodes2[currentDirNum];
                             tempDir = (int)DpadDirections.UpRight;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (previousDir == DpadDirections.DownRight && currentDir != DpadDirections.DownRight)
                         {
-                            //data = eventCodes2[currentDirNum];
                             tempDir = (int)DpadDirections.DownRight;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (previousDir == DpadDirections.DownLeft && currentDir != DpadDirections.DownLeft)
                         {
-                            //data = eventCodes2[currentDirNum];
                             tempDir = (int)DpadDirections.DownLeft;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (previousDir == DpadDirections.UpLeft && currentDir != DpadDirections.UpLeft)
                         {
-                            //data = eventCodes2[currentDirNum];
                             tempDir = (int)DpadDirections.UpLeft;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                     }
 
-                    //if (tmpCodes[0] != null)
                     ButtonAction data = null;
                     if (tmpBtnActions[0] != null)
                     {
                         data = tmpBtnActions[0];
                         data.Prepare(mapper, false);
-                        //data.PrepareAnalog(mapper, 0.0);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[0], false);
 
                         if (!data.active)
                         {
@@ -566,10 +518,8 @@ namespace DS4MapperTest.TouchpadActions
                     if (tmpBtnActions[1] != null)
                     {
                         data = tmpBtnActions[1];
-                        //data.PrepareAnalog(mapper, 0.0);
                         data.Prepare(mapper, false);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[1], false);
 
                         if (!data.active)
                         {
@@ -581,24 +531,14 @@ namespace DS4MapperTest.TouchpadActions
 
 
             if (useRingButton && usedRingButton != null)
-            //if (checkRingButton)
             {
-                //Trace.WriteLine("IN CHECK");
-                //double dist = Math.Sqrt((xNorm * xNorm) + (yNorm * yNorm));
                 bool activeMod = outerRing ? (ringDistance > outerRingDeadZone ? true : false) :
                     (ringDistance > 0.0 && ringDistance <= outerRingDeadZone ? true : false);
                 double tempRingDistance = activeMod ? ringDistance : 0.0;
                 double tempRingUnit = activeMod ? 1.0 : 0.0;
 
-                //ringButton.PrepareAnalog(mapper, dist);
-                //if (ringButton.active)
-                //{
-                //    ringButton.Event(mapper);
-                //}
-
                 // Treat as boolean button for now
                 usedRingButton.PrepareAnalog(mapper, tempRingDistance, tempRingUnit);
-                //usedRingButton.PrepareAnalog(mapper, dist);
                 if (usedRingButton.active)
                 {
                     usedRingButton.Event(mapper);
@@ -613,27 +553,17 @@ namespace DS4MapperTest.TouchpadActions
                 bool changedDir = previousDir != currentDir;
                 if (onlyCardinal)
                 {
-                    //Console.WriteLine("ACTIVATE CARDINAL");
-                    //int code = eventCodes[currentDirNum];
-                    //OutputActionData data = null;
                     ButtonAction data = null;
                     if (currentMode == DPadMode.Standard)
                     {
-                        //if ((previousDir & currentDir) == 0)
-                        //{
                         data = usedFuncList[currentDirNum];
-                        //}
                     }
                     else if (currentMode == DPadMode.EightWay)
                     {
-                        //if (currentDir != previousDir)
-                        //{
                         data = usedFuncList[currentDirNum];
-                        //}
                     }
                     else if (currentMode == DPadMode.FourWayCardinal)
                     {
-                        //if ((currentDirNum & btnAdd) != 0)
                         if (currentDir == DpadDirections.Up)// &&
                                                             //(previousDir != DpadDirections.Up && previousDir != DpadDirections.UpRight))
                         {
@@ -677,10 +607,8 @@ namespace DS4MapperTest.TouchpadActions
 
                     if (data != null)
                     {
-                        //data.PrepareAnalog(mapper, ButtonAxisValue(data));
                         data.Prepare(mapper, true);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(data, true);
 
                         if (changedDir && !tmpActiveBtns.ContainsKey(data))
                         {
@@ -691,7 +619,6 @@ namespace DS4MapperTest.TouchpadActions
                 else if (!onlyCardinal)
                 {
                     int tempDir;
-                    //int* codes = stackalloc int[2];
                     tmpBtnActions[0] = tmpBtnActions[1] = null;
                     int i = 0;
                     ButtonAction data = null;
@@ -701,14 +628,12 @@ namespace DS4MapperTest.TouchpadActions
                         if ((currentDir & DpadDirections.Up) != 0)// && (previousDir & DpadDirections.Up) == 0)
                         {
                             tempDir = (int)DpadDirections.Up;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if ((currentDir & DpadDirections.Down) != 0)// && (previousDir & DpadDirections.Down) == 0)
                         {
                             tempDir = (int)DpadDirections.Down;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
@@ -716,26 +641,20 @@ namespace DS4MapperTest.TouchpadActions
                         if ((currentDir & DpadDirections.Left) != 0)// && (previousDir & DpadDirections.Left) == 0)
                         {
                             tempDir = (int)DpadDirections.Left;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if ((currentDir & DpadDirections.Right) != 0)// && (previousDir & DpadDirections.Right) == 0)
                         {
                             tempDir = (int)DpadDirections.Right;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                     }
                     else if (currentMode == DPadMode.EightWay)
                     {
-                        //if (currentDir != previousDir)
-                        //{
-                        //tmpCodes[i] = eventCodes[(int)currentDir]; i++;
                         tmpBtnDirs[i] = (int)currentDir;
                         tmpBtnActions[i] = usedFuncList[(int)currentDir]; i++;
-                        //}
                     }
                     else if (currentMode == DPadMode.FourWayCardinal)
                     {
@@ -743,16 +662,13 @@ namespace DS4MapperTest.TouchpadActions
                         {
                             // Map Up or UpRight to output Up direction
                             tempDir = (int)DpadDirections.Up;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
-                        //else if ((currentDir & DpadDirections.Down) != 0)// && (previousDir & DpadDirections.Down) == 0)
                         else if (currentDir == DpadDirections.Right || currentDir == DpadDirections.DownRight)
                         {
                             // Map Right or DownRight to output Right direction
                             tempDir = (int)DpadDirections.Right;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
@@ -760,7 +676,6 @@ namespace DS4MapperTest.TouchpadActions
                         {
                             // Map Down or DownLeft to output Down direction
                             tempDir = (int)DpadDirections.Down;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
@@ -768,7 +683,6 @@ namespace DS4MapperTest.TouchpadActions
                         {
                             // Map Left or UpLeft to output Left direction
                             tempDir = (int)DpadDirections.Left;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
@@ -778,42 +692,35 @@ namespace DS4MapperTest.TouchpadActions
                         if (currentDir == DpadDirections.UpRight || currentDir == DpadDirections.UpRight)
                         {
                             tempDir = (int)DpadDirections.UpRight;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (currentDir == DpadDirections.DownRight)
                         {
                             tempDir = (int)DpadDirections.DownRight;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (currentDir == DpadDirections.DownLeft)
                         {
                             tempDir = (int)DpadDirections.DownLeft;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (currentDir == DpadDirections.UpLeft)
                         {
                             tempDir = (int)DpadDirections.UpLeft;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                     }
 
 
-                    //if (tmpCodes[0] != null)
                     if (tmpBtnActions[0] != null)
                     {
                         data = tmpBtnActions[0];
-                        //data.PrepareAnalog(mapper, ButtonAxisValue(data));
                         data.Prepare(mapper, true);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[0], true);
 
                         if (changedDir && !tmpActiveBtns.ContainsKey(data))
                         {
@@ -824,10 +731,8 @@ namespace DS4MapperTest.TouchpadActions
                     if (tmpBtnActions[1] != null)
                     {
                         data = tmpBtnActions[1];
-                        //data.PrepareAnalog(mapper, ButtonAxisValue(data));
                         data.Prepare(mapper, true);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[1], true);
 
                         if (changedDir && !tmpActiveBtns.ContainsKey(data))
                         {
@@ -843,8 +748,6 @@ namespace DS4MapperTest.TouchpadActions
                     ButtonAction data = pair.Key;
                     if (data != null)
                     {
-                        //data.PrepareAnalog(mapper, ButtonAxisValue(data));
-                        //data.PrepareAnalog(mapper, 0.0);
                         data.Prepare(mapper, false);
                         data.Event(mapper);
 
@@ -862,34 +765,12 @@ namespace DS4MapperTest.TouchpadActions
 
                 removeBtnCandidates.Clear();
             }
-            //else
-            //{
-            //    AxisDirButton data = null;
-            //    if (tmpBtnActions[0] != null)
-            //    {
-            //        data = tmpBtnActions[0];
-            //        data.PrepareAnalog(mapper, 0.0);
-            //        data.Event(mapper);
-            //        //mapper.RunEventFromButton(tmpCodes[0], false);
-            //    }
-
-            //    if (tmpBtnActions[1] != null)
-            //    {
-            //        data = tmpBtnActions[1];
-            //        data.PrepareAnalog(mapper, 0.0);
-            //        data.Event(mapper);
-            //        //mapper.RunEventFromButton(tmpCodes[1], false);
-            //    }
-            //}
 
             prevXNorm = xNorm; prevYNorm = yNorm;
             previousDir = currentDir;
 
             counterMovementReleasePress.EmitPulse(mapper, usedFuncList);
 
-            //bool ringBtnActive = usedRingButton != null && usedRingButton.active;
-            //active = currentDir != DpadDirections.Centered || ringBtnActive ||
-            //    tmpActiveBtns.Count > 0;
             active = currentDir != DpadDirections.Centered ||
                 tmpActiveBtns.Count > 0 ||
                 counterMovementReleasePress.HasActivePulse;
@@ -908,7 +789,6 @@ namespace DS4MapperTest.TouchpadActions
                 foreach (KeyValuePair<ButtonAction, DpadDirections> pair in tmpActiveBtns)
                 {
                     ButtonAction data = pair.Key;
-                    //DpadDirections dir = pair.Value;
 
                     if (data != null)
                     {
@@ -937,8 +817,6 @@ namespace DS4MapperTest.TouchpadActions
 
         public override void SoftRelease(Mapper mapper, MapAction checkAction, bool resetState = true)
         {
-            //Release(mapper, resetState);
-            //base.SoftRelease(mapper, checkAction, resetState);
             if (active || tmpActiveBtns.Count > 0)
             {
                 TouchpadActionPad checkStickAction = checkAction as TouchpadActionPad;
@@ -995,7 +873,6 @@ namespace DS4MapperTest.TouchpadActions
         {
             for (int i = 0; i < usedEventButtonsList.Length; i++)
             {
-                //if (tempDir != AxisDirButton.AxisDirection.None)
                 {
                     ButtonAction tempBtn = new ButtonAction();
                     usedEventButtonsList[i] = tempBtn;
@@ -1014,24 +891,9 @@ namespace DS4MapperTest.TouchpadActions
             {
                 if (currentMode != DPadMode.FourWayDiagonal)
                 {
-                    /*const double CARDINAL_RANGE = 45.0;
-                const double DIAGONAL_RANGE = 45.0;
-                //const double CARDINAL_HALF_RANGE = CARDINAL_RANGE / 2.0;
-                const double CARDINAL_HALF_RANGE = 22.5;
-
-                const double upLeftEnd = 360 - CARDINAL_HALF_RANGE;
-                const double upRightBegin = CARDINAL_HALF_RANGE;
-                const double rightBegin = upRightBegin + DIAGONAL_RANGE;
-                const double downRightBegin = rightBegin + CARDINAL_RANGE;
-                const double downBegin = downRightBegin + DIAGONAL_RANGE;
-                const double downLeftBegin = downBegin + CARDINAL_RANGE;
-                const double leftBegin = downLeftBegin + DIAGONAL_RANGE;
-                const double upLeftBegin = leftBegin + CARDINAL_RANGE;
-                */
 
                     double currentDiagonalRange = diagonalRange;
                     double currentCardinalRange = 90.0 - currentDiagonalRange;
-                    //const double CARDINAL_HALF_RANGE = currentCardinalRange / 2.0;
                     double CARDINAL_HALF_RANGE = currentCardinalRange / 2.0;
 
                     double upLeftEnd = 360 - CARDINAL_HALF_RANGE;
@@ -1046,7 +908,6 @@ namespace DS4MapperTest.TouchpadActions
                     double angleRad = Math.Atan2(xNorm, yNorm);
                     double angle = (angleRad >= 0 ? angleRad : (2 * Math.PI + angleRad)) * 180 / Math.PI;
 
-                    //Trace.WriteLine(angle);
                     if (angle == 0.0)
                     {
                         resultDir = DpadDirections.Up;
@@ -1088,7 +949,6 @@ namespace DS4MapperTest.TouchpadActions
                 {
                     double currentDiagonalRange = 90;
                     double currentCardinalRange = 90.0 - currentDiagonalRange;
-                    //const double CARDINAL_HALF_RANGE = currentCardinalRange / 2.0;
                     double CARDINAL_HALF_RANGE = currentCardinalRange / 2.0;
 
                     double upRightBegin = 0;
@@ -1124,7 +984,6 @@ namespace DS4MapperTest.TouchpadActions
 
             return resultDir;
 
-            //Trace.WriteLine(currentDir);
         }
 
         public override void SoftCopyFromParent(TouchpadMapAction parentAction)

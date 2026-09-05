@@ -43,13 +43,10 @@ namespace DS4MapperTest
             if (action.GetType() == typeof(ButtonAction))
             {
                 btnFuncEditVM.SelectedTransformIndex = 1;
-                //FuncBindingControl tempControl = new FuncBindingControl();
-                //DataContext = btnActionEditVM;
             }
             else if (action.GetType() == typeof(ButtonNoAction))
             {
                 btnFuncEditVM.IsTransformOutputVisible = true;
-                //DataContext = btnNoActVM;
             }
             SetupDisplayControl();
 
@@ -66,10 +63,6 @@ namespace DS4MapperTest
                     innerViewControl.DataContext = null;
 
                     btnActionEditVM = new ButtonActionViewModel(btnFuncEditVM.Mapper, btnFuncEditVM.Action);
-                    //if (btnActionEditVM.Action != btnFuncEditVM.Action)
-                    //{
-                    //    btnFuncEditVM.UpdateAction(btnActionEditVM.Action);
-                    //}
 
                     btnFuncEditVM.TempAction = btnActionEditVM.Action;
                     btnFuncEditVM.UsingRealAction = btnActionEditVM.UsingRealAction;
@@ -139,7 +132,6 @@ namespace DS4MapperTest
                     }
 
                     btnFuncEditVM.UpdateAction(tempAct);
-                    //tempAct.MappingId = oldAction.MappingId;
                     btnFuncEditVM.SwitchLayerAction(oldAction, tempAct);
                     SetupDisplayControl();
                 }
@@ -155,10 +147,6 @@ namespace DS4MapperTest
                 bindControl.RefreshView();
                 btnActionEditVM.DisplayControl = bindControl;
                 btnFuncEditVM.TopTransformPanelVisible = true;
-                //FuncBindingControl tempControl = new FuncBindingControl();
-                //tempControl.PostInit(btnFuncEditVM.Mapper, btnFuncEditVM.Action);
-                //tempControl.RequestBindingEditor += TempControl_RequestBindingEditor;
-                //btnFuncEditVM.DisplayControl = tempControl;
             };
 
             btnFuncEditVM.TopTransformPanelVisible = false;
@@ -167,10 +155,6 @@ namespace DS4MapperTest
 
         private void PrepareDefaultView(Mapper mapper, ButtonAction action)
         {
-            //FuncBindingControl tempControl = new FuncBindingControl();
-            //tempControl.PostInit(mapper, action);
-            //tempControl.RequestBindingEditor += TempControl_RequestBindingEditor;
-            //btnFuncEditVM.DisplayControl = tempControl;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

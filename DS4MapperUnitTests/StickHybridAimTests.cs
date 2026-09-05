@@ -251,7 +251,7 @@ namespace DS4MapperUnitTests
                 action.Event(mapper);
             }
 
-            // Ramp back down to center.
+            // Ramp back down to centre.
             int[] rampIn = { 24000, 18000, 12000, 6000, 0 };
             foreach (int axisValue in rampIn)
             {
@@ -259,7 +259,7 @@ namespace DS4MapperUnitTests
                 action.Event(mapper);
             }
 
-            // One more frame resting exactly at center: velocity is zero and the
+            // One more frame resting exactly at centre: velocity is zero and the
             // inner-deadzone branch has cleared edgePushAmount, so output should
             // have fully settled rather than leaving a residual flick.
             action.Prepare(mapper, 0, 0);

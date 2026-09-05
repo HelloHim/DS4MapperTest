@@ -163,10 +163,6 @@ namespace DS4MapperTest.Views
             {
                 bindControl.RefreshView();
                 trigBindEditVM.DisplayControl = oldControl;
-                //FuncBindingControl tempControl = new FuncBindingControl();
-                //tempControl.PostInit(btnFuncEditVM.Mapper, btnFuncEditVM.Action);
-                //tempControl.RequestBindingEditor += TempControl_RequestBindingEditor;
-                //btnFuncEditVM.DisplayControl = tempControl;
             };
 
             trigBindEditVM.DisplayControl = tempControl;

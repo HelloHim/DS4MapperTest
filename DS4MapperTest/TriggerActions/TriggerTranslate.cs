@@ -52,13 +52,11 @@ namespace DS4MapperTest.TriggerActions
             outputData = new OutputActionData(OutputActionData.ActionType.GamepadControl,
                 JoypadActionCodes.AxisLTrigger);
 
-            //deadMod = new AxisDeadZone(30 / 255.0, 1.0, 0.0);
             deadMod = new AxisDeadZone(0.0, 1.0, 0.0);
         }
 
         public override void Prepare(Mapper mapper, ref TriggerEventFrame eventFrame, bool alterState = true)
         {
-            //axisNorm = axisValue / 255.0;
             int maxDir = triggerDefinition.trigAxis.max;
             deadMod.CalcOutValues((int)eventFrame.axisValue, maxDir, out axisNorm);
             stateData.state = axisNorm != 0.0;

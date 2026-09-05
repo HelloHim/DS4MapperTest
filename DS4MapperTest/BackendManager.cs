@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-//using Nefarius.ViGEm.Client;
 using System.Windows.Threading;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
@@ -24,19 +23,15 @@ namespace DS4MapperTest
         protected DateTime m_Time = DateTime.Now;
         protected string message = string.Empty;
         protected bool warning = false;
-        //protected bool temporary = false;
-        //public DebugEventArgs(string message, bool warn, bool temporary = false)
         public DebugEventArgs(string message, bool warn)
         {
             this.message = message;
             warning = warn;
-            //this.temporary = temporary;
         }
 
         public DateTime Time => m_Time;
         public string Message => message;
         public bool Warning => warning;
-        //public bool Temporary => temporary;
     }
 
     public class BackendManager
@@ -62,7 +57,6 @@ namespace DS4MapperTest
         public event EventHandler PreServiceStop;
         public event EventHandler ServiceStopped;
         public event EventHandler PhysicalMouseStatusChanged;
-        //public event EventHandler HotplugFinished;
 
         private VirtualKBMBase virtualEventHandler;// = new FakerInputHandler();
         public VirtualKBMBase EventInputHandler => virtualEventHandler;
@@ -127,11 +121,8 @@ namespace DS4MapperTest
         private ReaderWriterLockSlim _hotplugLock = new ReaderWriterLockSlim();
 
         private AppGlobalData appGlobal;
-        //private DS4Enumerator enumerator;
         private DeviceEnumerator testEnumerator;
-        //private List<DeviceEnumeratorBase> enumeratorList;
 
-        //private ViGEmClient vigemTestClient = null;
         private ArgumentParser _argParser;
 
         public delegate void HotplugControllerHandler(InputDeviceBase device, int ind);
@@ -197,15 +188,8 @@ namespace DS4MapperTest
             ult2WirelessDeviceProfileList.Refresh();
             deviceProfileListDict.Add(InputDeviceType.EightBitDoUltimate2Wireless, ult2WirelessDeviceProfileList);
 
-            //enumeratorList = new List<DeviceEnumeratorBase>()
-            //{
-            //    new DS4Enumerator(),
-            //};
-
-            //enumerator = new DS4Enumerator();
             testEnumerator = new DeviceEnumerator();
 
-            // Initialize Crc32 table for app
             Crc32Algorithm.InitializeTable(Crc32Algorithm.DefaultPolynomial);
 
             using ManualResetEventSlim dispatcherReady = new ManualResetEventSlim(false);
@@ -332,7 +316,6 @@ namespace DS4MapperTest
             // to GUI thread
             vbusThr = new Thread(() =>
             {
-                //vigemTestClient = new ViGEmClient();
 
                 if (serverHandle == 0)
                 {
@@ -402,7 +385,6 @@ namespace DS4MapperTest
             if (!checkConnect)
             {
                 virtualEventHandler.Disconnect();
-                // Use fallback handler
                 virtualEventHandler = GetFallbackKBMHandler();
             }
 
@@ -773,13 +755,9 @@ namespace DS4MapperTest
             deviceReadersMap.Clear();
             deviceMapperMap.Clear();
             testEnumerator.StopControllers();
-            //enumerator.StopControllers();
             Array.Clear(controllerList, 0, CONTROLLER_LIMIT);
 
             appGlobal.activeProfiles.Clear();
-
-            //vigemTestClient?.Dispose();
-            //vigemTestClient = null;
 
             mouseOutputDispatcher?.Dispose();
             mouseOutputDispatcher = null;

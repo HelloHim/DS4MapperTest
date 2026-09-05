@@ -87,27 +87,6 @@ namespace DS4MapperTest
 
     public class ProfileSerializer
     {
-        //public class ProfileSettings
-        //{
-        //    private Profile tempProfile;
-
-        //    public int LeftStickRotation
-        //    {
-        //        get => tempProfile.LeftStickRotation;
-        //        set => tempProfile.LeftStickRotation = Math.Clamp(-180, value, 180);
-        //    }
-
-        //    public int RightStickRotation
-        //    {
-        //        get => tempProfile.RightStickRotation;
-        //        set => tempProfile.RightStickRotation = Math.Clamp(-180, value, 180);
-        //    }
-
-        //    public ProfileSettings(Profile tempProfile)
-        //    {
-        //        this.tempProfile = tempProfile;
-        //    }
-        //}
 
         private static VirtualKBMMapping eventInputMapper;
         public static VirtualKBMMapping EventInputMapper
@@ -115,8 +94,6 @@ namespace DS4MapperTest
             get
             {
                 return eventInputMapper;
-                //BackendManager manager = (App.Current as App).Manager;
-                //return manager.EventInputMapping;
             }
             set => eventInputMapper = value;
         }
@@ -229,20 +206,10 @@ namespace DS4MapperTest
         [JsonProperty("Mappings")]
         public List<ProfileActionsMapping> ActionMappings { get => actionMappings; set => actionMappings = value; }
 
-        //private ProfileDeviceSettings settings;
-        //private ProfileSettings settings;
-        //public ProfileSettings Settings
-        //{
-        //    get => settings;
-        //    set => settings = value;
-        //}
-
         public ProfileSerializer(Profile tempProfile)
         {
             this.tempProfile = tempProfile;
             this.lightbarSerializer = new LightbarSettingsSerializer(tempProfile.LightbarSettings);
-            //settings = new DS4ProfileDeviceSettings(tempProfile);
-            //settings = new ProfileSettings(tempProfile);
 
             foreach (CycleButton cycleBtn in tempProfile.CycleBindings.Values)
             {
@@ -301,8 +268,6 @@ namespace DS4MapperTest
                 }
 
                 tempProfile.CycleBindings.Add(serializer.CycleId, serializer.TempCycleButton);
-                //tempProfile.CycleBindings.Add(serializer.CycleId, serializer.)
-                //CycleButton tempBtn = new CycleButton(serializer.CycleId);
             }
 
             tempProfile.ActionSets.Clear();
@@ -314,7 +279,7 @@ namespace DS4MapperTest
 
             // If calibration was not in the JSON, seed it from the first GyroMouse or CameraTurn action.
             // Must iterate LayerActions (populated by PopulateLayer) not normalActionDict, which is
-            // still empty at this point — SyncActions() hasn't been called yet.
+            // still empty at this point, SyncActions() hasn't been called yet.
             if (!calibExplicitlySet)
             {
                 bool found = false;
@@ -415,7 +380,7 @@ namespace DS4MapperTest
             }
 
             // Push profile calibration to all GyroMouse and CameraTurn action instances.
-            // Must use LayerActions — normalActionDict is empty until SyncActions() runs after
+            // Must use LayerActions because normalActionDict is empty until SyncActions() runs after
             // this method returns.
             foreach (ActionSet set in tempProfile.ActionSets)
             {
@@ -559,7 +524,6 @@ namespace DS4MapperTest
             set => topActionLayer = value;
         }
 
-        //private Profile tempProfile;
         private ActionSet tempActionSet = new ActionSet(0, "");
         [JsonIgnore]
         public ActionSet TempActionSet { get => tempActionSet; }
@@ -591,7 +555,6 @@ namespace DS4MapperTest
 
         public ActionSetSerializer(Profile tempProfile, ActionSet tempActionSet)
         {
-            //this.tempProfile = tempProfile;
             this.tempActionSet = tempActionSet;
 
             foreach (ActionLayer tempActionLayer in tempActionSet.ActionLayers)
@@ -640,10 +603,6 @@ namespace DS4MapperTest
         private static ActionSet parentActionSet;
         [JsonIgnore]
         internal static ActionSet ParentActionSet => parentActionSet;
-
-        //private static ActionLayerSerializer currentSerializer;
-        //[JsonIgnore]
-        //internal static ActionLayerSerializer CurrentSerializer => currentSerializer;
 
 
         private ActionLayer actionLayer = new ActionLayer(0);
@@ -694,7 +653,6 @@ namespace DS4MapperTest
             List<MapAction> tempActionList = layer.LayerActions.OrderBy((item) => item.Id).ToList();
             foreach (MapAction action in tempActionList)
             {
-                //MapActionSerializer serializer = new MapActionSerializer(layer, action);
                 MapActionSerializer serializer = MapActionSerializerFactory.CreateSerializer(layer, action);
                 if (serializer != null)
                 {

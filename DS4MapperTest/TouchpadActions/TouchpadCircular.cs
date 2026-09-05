@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-//using System.Diagnostics;
 using DS4MapperTest.MapperUtil;
 using DS4MapperTest.StickModifiers;
 using DS4MapperTest.ButtonActions;
@@ -45,7 +44,6 @@ namespace DS4MapperTest.TouchpadActions
 
         private double startAngleRad;
         private double currentAngleRad;
-        //private double remainderAngle;
         private double travelAngleChangeRad;
         private double partialFeedAngleChangedRad;
         private bool partialAngleFeedEngage;
@@ -125,7 +123,6 @@ namespace DS4MapperTest.TouchpadActions
             });
 
             deadMod = new StickDeadZone(DEFAULT_DEADZONE, 1.0, 0.0);
-            //hapticsIntensityRatio = GetHapticsIntensityRatio(HapticsIntensity.Light);
             hapticsIntensityRatio = GetHapticsIntensityRatio(actionHapticsIntensity);
         }
 
@@ -175,7 +172,6 @@ namespace DS4MapperTest.TouchpadActions
                 double previousAngleRad = currentAngleRad;
 
                 double angleRad = Math.Atan2(axisXVal, axisYVal);
-                //double angleDeg = (angleRad >= 0 ? angleRad : (2 * Math.PI + angleRad)) * 180 / Math.PI;
 
                 currentAngleRad = angleRad;
 
@@ -183,12 +179,10 @@ namespace DS4MapperTest.TouchpadActions
                 // Negate wrapping between PI to -PI on lower portion of Touchpad
                 if (diffAngle > Math.PI)
                 {
-                    //Trace.WriteLine("POS FAR");
                     diffAngle -= 2 * Math.PI;
                 }
                 else if (diffAngle < -Math.PI)
                 {
-                    //Trace.WriteLine("NEG FAR");
                     diffAngle += 2 * Math.PI;
                 }
 
@@ -199,21 +193,13 @@ namespace DS4MapperTest.TouchpadActions
 
                 travelAngleChangeRad += diffAngle;
                 partialFeedAngleChangedRad = travelAngleChangeRad;
-                //Trace.WriteLine($"DIFF {diffAngle} RAD: {angleRad} Previous: {previousAngleRad} CURRENT ANG: {currentAngleRad} TRAVEL ANG: {travelAngleChangeRad}");
-                //if (Math.Abs(travelAngleChangeRad) > 5 * CLICK_RAD_THRESHOLD)
-                //{
-                //    Trace.WriteLine($"OUT OF WHACK {travelAngleChangeRad} {diffAngle}");
-                //}
 
                 if (Math.Abs(travelAngleChangeRad) >= CLICK_RAD_THRESHOLD)
                 {
-                    //Trace.WriteLine("UP IN HERE");
                     active = true;
                     activeTicks = true;
 
                     currentClickDir = diffAngle > 0 ? ClickDirection.Clockwise : ClickDirection.CounterClockwise;
-                    //travelAngleChangeRad = travelAngleChangeRad > 0 ?
-                    //    travelAngleChangeRad - CLICK_RAD_THRESHOLD : travelAngleChangeRad + CLICK_RAD_THRESHOLD;
                 }
                 else if (!partialAngleFeedEngage &&
                     Math.Abs(partialFeedAngleChangedRad) >= (CLICK_RAD_THRESHOLD * 0.9))
@@ -259,15 +245,6 @@ namespace DS4MapperTest.TouchpadActions
 
             if (activeTicks)
             {
-                //Trace.WriteLine($"OUTPUT EVENT {DateTime.UtcNow.ToString("fff")}");
-
-                //OutputActionData tempAction =
-                //    currentClickDir == ClickDirection.Clockwise ? clockwiseOutputAction : counterClockwiseOutputAction;
-
-                //int ticksSpeed = (int)(Math.Abs(travelAngleChangeRad) / CLICK_RAD_THRESHOLD);
-
-                //mapper.RunEventFromAnalog(tempAction, true, ticksSpeed);
-                //tempAction.activatedEvent = false;
 
                 TouchpadCircularButton tempBtn =
                     currentClickDir == ClickDirection.Clockwise ? clockwiseBtn : counterClockwiseBtn;

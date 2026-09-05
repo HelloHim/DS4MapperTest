@@ -98,10 +98,8 @@ namespace DS4MapperTest.ViewModels.TouchpadActionPropViewModels
                 TouchpadCircular baseLayerAction = mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as TouchpadCircular;
                 TouchpadCircular tempAction = new TouchpadCircular();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.EditLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
 
                 this.action = tempAction;
                 this.baseAction = this.action;

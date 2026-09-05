@@ -215,7 +215,6 @@ namespace DS4MapperTest
             temp.Data.Keyboard.Flags = KEYEVENTF_SCANCODE | curflags;
             temp.Data.Keyboard.Scan = scancode;
             temp.Data.Keyboard.Time = 0;
-            //temp.Data.Keyboard.Vk = (ushort)key;
             uint result = SendInput(1, tempInput, Marshal.SizeOf(tempInput[0]));
         }
 

@@ -36,7 +36,6 @@ namespace DS4MapperTest
         private ActionLayer recentAppliedLayer;
         public ActionLayer RecentAppliedLayer
         {
-            //get => appliedLayers.Last();
             get => recentAppliedLayer;
         }
         // Composite layer used when merging ActionLayer instances
@@ -52,7 +51,6 @@ namespace DS4MapperTest
         /// Will contain all mapped actions associated in the sets
         /// for all ActionLayer instances
         /// </summary>
-        //private List<MapAction> setActions = new List<MapAction>();
 
         private int index;
         public int Index { get => index; }
@@ -102,28 +100,6 @@ namespace DS4MapperTest
 
         public void SyncActions()
         {
-            //currentActionLayer.SyncActions();
-            /*theLawActions.Clear();
-            foreach (ButtonMapAction action in ButtonActionDict.Values)
-            {
-                theLawActions.Add(action);
-            }
-
-            foreach(DPadMapAction action in DpadActionDict.Values)
-            {
-                theLawActions.Add(action);
-            }
-
-            foreach(StickMapAction action in StickActionDict.Values)
-            {
-                theLawActions.Add(action);
-            }
-
-            foreach(GyroMapAction action in GyroActionDict.Values)
-            {
-                theLawActions.Add(action);
-            }
-            */
         }
 
         public void CompileActiveLayer()
@@ -153,15 +129,11 @@ namespace DS4MapperTest
                 HashSet<string> tempOverrideIds =
                         layer.normalActionDict.Keys.ToHashSet();
 
-                //IEnumerable<ActionLayer> revLayers =
-                //        appliedLayers.Reverse<ActionLayer>();
-
                 foreach (string mapId in tempOverrideIds)
                 {
                     {
                         MapAction currentMapAction = layer.normalActionDict[mapId];
                         // Some logic needed to check for transition (Release vs SoftRelease)
-                        //currentMapAction.Release(mapper);
 
                         if (mapId.StartsWith(ACTION_SET_ACTION_PREFIX))
                         {
@@ -223,7 +195,6 @@ namespace DS4MapperTest
                 if (appliedLayers.Count == 1)
                 {
                     currentActionLayer.CompareReleaseActions(mapper, defaultActionLayer);
-                    //currentActionLayer.ReleaseActions(mapper);
 
                     // Clear composite ActionLayer references and restore using default layer
                     activeCompositeLayer.ClearActions();
@@ -239,7 +210,6 @@ namespace DS4MapperTest
                     HashSet<string> tempOverrideIds =
                         layer.normalActionDict.Keys.ToHashSet();
 
-                    //int priorityId = 0;
                     IEnumerable<ActionLayer> revLayers =
                         appliedLayers.Reverse<ActionLayer>();
 
@@ -261,7 +231,6 @@ namespace DS4MapperTest
                         {
                             MapAction currentMapAction = layer.normalActionDict[mapId];
                             // Some logic needed to check for transition (Release vs SoftRelease)
-                            //currentMapAction.Release(mapper);
                             layer.CompareReleaseActions(mapper, currentMapAction, tempBaseAction);
 
                             if (mapId.StartsWith(ACTION_SET_ACTION_PREFIX))
@@ -296,7 +265,6 @@ namespace DS4MapperTest
                             }
                         }
                     }
-                    //foreach (ActionLayer tempLayer in appliedLayers)
                     
                     {
                         activeCompositeLayer.Name = revLayers.First().Name;
@@ -305,7 +273,6 @@ namespace DS4MapperTest
                         // Make composite ActionLayer the current layer
                         activeCompositeLayer.SyncActions();
                         currentActionLayer = activeCompositeLayer;
-                        //priorityId++;
                     }
                 }
             }
@@ -315,11 +282,6 @@ namespace DS4MapperTest
         {
             currentActionLayer.ReleaseActions(mapper, true,
                 ignoreReleaseActions: ignoreReleaseActions);
-            /*foreach(MapAction action in theLawActions)
-            {
-                action.Release(mapper);
-            }
-            */
         }
 
         public void SwitchActionLayer(Mapper mapper, int index)
@@ -327,7 +289,6 @@ namespace DS4MapperTest
             if (0 <= index && index < actionLayers.Count)
             {
                 ActionLayer changingLayer = actionLayers[index];
-                //tempLayer.CopyParentStates();
 
                 currentActionLayer.CompareReleaseActions(mapper, changingLayer, false);
 
@@ -348,7 +309,6 @@ namespace DS4MapperTest
                     // Skip resetting composite layer if switching from base
                     if (appliedLayers.Count > 1)
                     {
-                        //appliedLayers.Remove(currentActionLayer);
                         appliedLayers.RemoveRange(1, appliedLayers.Count - 1);
 
                         // Clear composite ActionLayer references and restore using default layer
@@ -424,98 +384,8 @@ namespace DS4MapperTest
                     currentActionLayer = activeCompositeLayer;
                 }
 
-                //currentActionLayer.SoftReleaseActions(mapper, false);
-                //currentActionLayer.ReleaseActions(mapper, false);
-                //if (index == 0)
-                //{
-                //    currentActionLayer.ReleaseActions(mapper, false);
-                //}
-                //else
-                //{
-                //    currentActionLayer.SoftReleaseActions(mapper, false);
-                //}
-
-                //currentActionLayer = changingLayer;
             }
         }
-
-        /*public void CreateEmptyActionLayer()
-        {
-            ActionLayer tempLayer = new ActionLayer(actionLayers.Count);
-            actionLayers.Add(tempLayer);
-        }
-
-        public void CreateDupActionLayer()
-        {
-            ActionLayer tempLayer = new ActionLayer(actionLayers.Count);
-            actionLayers.Add(tempLayer);
-
-            foreach (KeyValuePair<string, ButtonMapAction> pair in defaultActionLayer.actionSetActionDict)
-            {
-                //Trace.WriteLine(pair.Key);
-                tempLayer.actionSetActionDict.Add(pair.Key,
-                    pair.Value.DuplicateAction());
-                //tempLayer.buttonActionDict.Add(pair.Key, pair.Value);
-                //theLawActions.Add(action);
-            }
-
-            foreach (KeyValuePair<string, ButtonMapAction> pair in defaultActionLayer.buttonActionDict)
-            {
-                Trace.WriteLine(pair.Key);
-                tempLayer.buttonActionDict.Add(pair.Key,
-                    pair.Value.DuplicateAction());
-                //tempLayer.buttonActionDict.Add(pair.Key, pair.Value);
-                //theLawActions.Add(action);
-            }
-
-            //Trace.WriteLine("TEST IT NOW PUNK");
-            //AxisDirButton testActionnow = new AxisDirButton();
-            //ButtonMapAction testGeneric = testActionnow as ButtonMapAction;
-            //testGeneric.DuplicateAction();
-
-            foreach (KeyValuePair<string, DPadMapAction> pair in defaultActionLayer.dpadActionDict)
-            {
-                Trace.WriteLine(pair.Key);
-                tempLayer.dpadActionDict.Add(pair.Key,
-                    pair.Value.DuplicateAction());
-                //tempLayer.dpadActionDict.Add(pair.Key, pair.Value);
-                //theLawActions.Add(action);
-            }
-
-            foreach (KeyValuePair<string, StickMapAction> pair in defaultActionLayer.stickActionDict)
-            {
-                tempLayer.stickActionDict.Add(pair.Key,
-                    pair.Value.DuplicateAction());
-                //tempLayer.stickActionDict.Add(pair.Key, pair.Value);
-                //theLawActions.Add(action);
-            }
-
-            foreach (KeyValuePair<string, GyroMapAction> pair in defaultActionLayer.gyroActionDict)
-            {
-                tempLayer.gyroActionDict.Add(pair.Key,
-                    pair.Value.DuplicateAction());
-                //tempLayer.gyroActionDict.Add(pair.Key, pair.Value);
-                //theLawActions.Add(action);
-            }
-        }
-        
-
-        public void RemoveActionLayer(Mapper mapper, int index)
-        {
-            ActionLayer tempLayer = actionLayers[index];
-            if (tempLayer != null && tempLayer != defaultActionLayer)
-            {
-                tempLayer.ReleaseActions(mapper);
-
-                if (tempLayer == currentActionLayer)
-                {
-                    currentActionLayer = defaultActionLayer;
-                }
-
-                actionLayers.RemoveAt(index);
-            }
-        }
-        */
 
         public void ResetAliases()
         {
@@ -548,25 +418,10 @@ namespace DS4MapperTest
         {
             if (appliedLayers.Count == 1)
             {
-                // Clear composite ActionLayer references and restore using default layer
-                //activeCompositeLayer.ClearActions();
-                //PrepareCompositeLayer();
 
                 return;
             }
 
-            // Skip resetting composite layer if switching from base
-            //if (appliedLayers.Count > 1)
-            //{
-            //    //appliedLayers.Remove(currentActionLayer);
-            //    appliedLayers.RemoveRange(1, appliedLayers.Count - 1);
-
-            //    // Clear composite ActionLayer references and restore using default layer
-            //    activeCompositeLayer.ClearActions();
-            //    PrepareCompositeLayer();
-            //}
-
-            //ActionLayer lastAppliedLayer = appliedLayers.Last();
             ActionLayer lastAppliedLayer = recentAppliedLayer;
 
             HashSet<string> tempOverrideIds =

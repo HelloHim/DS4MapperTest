@@ -133,8 +133,6 @@ namespace DS4MapperTest.ViewModels
                 case 7:
                     {
                         TouchpadAbsAction tempAction = new TouchpadAbsAction();
-                        //var joyDefaults = mapper.DeviceActionDefaults.GrabTouchMouseDefaults();
-                        //joyDefaults.Process(tempAction);
                         result = tempAction;
                     }
 
@@ -175,17 +173,9 @@ namespace DS4MapperTest.ViewModels
             mapper.ProcessMappingChangeAction(() =>
             {
                 oldAction.Release(mapper, ignoreReleaseActions: true);
-                //int tempInd = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.FindIndex((item) => item == tempAction);
-                //if (tempInd >= 0)
                 {
-                    //mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.RemoveAt(tempInd);
-                    //mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.LayerActions.Insert(tempInd, newAction);
 
-                    //oldAction.Release(mapper, ignoreReleaseActions: true);
-
-                    //mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.AddTouchpadAction(this.action);
                     bool exists = mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.LayerActions.Contains(oldAction);
-                    //if (oldAction.Id != MapAction.DEFAULT_UNBOUND_ID)
                     if (exists)
                     {
                         mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.ReplaceTouchpadAction(oldAction, newAction);

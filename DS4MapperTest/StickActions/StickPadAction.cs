@@ -132,8 +132,6 @@ namespace DS4MapperTest.StickActions
         public const string ACTION_TYPE_NAME = "StickPadAction";
 
         // Cardinal direction codes. Use 0 for Centered and intermediate diagonals
-        //private OutputActionData[] eventCodes = new OutputActionData[13];
-        //private ActionFunc[] eventCodes3 = new ActionFunc[13];
         private AxisDirButton[] eventCodes4 = new AxisDirButton[13];
         private AxisDirButton[] usedFuncList;
 
@@ -141,28 +139,21 @@ namespace DS4MapperTest.StickActions
         private AxisDirButton[] usedEventButtonsList = new AxisDirButton[13];
 
         private StickDeadZone deadMod;
-        //private StickDefinition stickDefinition;
         private DPadMode currentMode = DPadMode.Standard;
         private double xNorm = 0.0, yNorm = 0.0;
         private double prevXNorm = 0.0, prevYNorm = 0.0;
-        //public bool active;
-        //public bool activeEvent;
         private DpadDirections currentDir;
         private DpadDirections previousDir;
         // Specify the input state of the button
         private bool inputStatus;
-        //private OutputActionData[] tmpCodes = new OutputActionData[2];
-        //private ActionFunc[] tmpFuncs = new ActionFunc[2];
         private AxisDirButton[] tmpBtnActions = new AxisDirButton[2];
         private Dictionary<AxisDirButton, DpadDirections> tmpActiveBtns = new Dictionary<AxisDirButton, DpadDirections>();
         private int[] tmpBtnDirs = new int[2];
         private List<AxisDirButton> removeBtnCandidates = new List<AxisDirButton>();
 
-        /* Possibly group values in a class */
         /// <summary>
         /// Virtual direction button that takes the vector magnitude as its value
         /// </summary>
-        //private AxisDirButton ringButton = new AxisDirButton(new OutputActionData(OutputActionData.ActionType.Keyboard, KeyInterop.VirtualKeyFromKey(Key.Z), 0));
         private AxisDirButton ringButton = new AxisDirButton();
         private AxisDirButton usedRingButton = null;
 
@@ -193,8 +184,6 @@ namespace DS4MapperTest.StickActions
         public CounterMovementReleasePressProcessor CounterMovementReleasePress { get => counterMovementReleasePress; }
 
         public StickDeadZone DeadMod { get => deadMod; }
-        //public OutputActionData[] EventCodes { get => eventCodes; }
-        //public ActionFunc[] EventCodes3 { get => eventCodes3; }
         public DPadMode CurrentMode { get => currentMode; set => currentMode = value; }
         public AxisDirButton[] EventCodes4 { get => eventCodes4; set => eventCodes4 = value; }
 
@@ -226,7 +215,6 @@ namespace DS4MapperTest.StickActions
             actionTypeName = ACTION_TYPE_NAME;
             stickDefinition = new StickDefinition(new StickDefinition.StickAxisData(), new StickDefinition.StickAxisData(), StickActionCodes.Empty);
             deadMod = new StickDeadZone(0.30, 1.0, 0.0);
-            //deadMod.CircleDead = true;
             deadMod.DeadZoneType = StickDeadZone.DeadZoneTypes.Radial;
             FillDirectionButtons();
         }
@@ -236,7 +224,6 @@ namespace DS4MapperTest.StickActions
             actionTypeName = ACTION_TYPE_NAME;
             this.stickDefinition = stickDefinition;
             deadMod = new StickDeadZone(0.30, 1.0, 0.0);
-            //deadMod.CircleDead = true;
             deadMod.DeadZoneType = StickDeadZone.DeadZoneTypes.Radial;
             FillDirectionButtons();
         }
@@ -249,7 +236,6 @@ namespace DS4MapperTest.StickActions
                 this.parentAction = parentAction;
                 parentAction.hasLayeredAction = true;
                 parentPadAction = parentAction;
-                //this.stickDefinition = parentAction.stickDefinition;
                 this.stickDefinition = new StickDefinition(parentAction.stickDefinition);
                 this.deadMod = new StickDeadZone(parentAction.deadMod);
                 mappingId = parentAction.mappingId;
@@ -278,7 +264,6 @@ namespace DS4MapperTest.StickActions
                 counterMovementReleasePress.CounterPressStartDelayMaximumMs = parentAction.counterMovementReleasePress.CounterPressStartDelayMaximumMs;
                 counterMovementReleasePress.MinimumHoldMs = parentAction.counterMovementReleasePress.MinimumHoldMs;
                 counterMovementReleasePress.ArmingThreshold = parentAction.counterMovementReleasePress.ArmingThreshold;
-                //usedFuncList = usedEventButtonsList;
             }
         }
 
@@ -295,7 +280,6 @@ namespace DS4MapperTest.StickActions
             for (int i = 0; i < eventCodes4.Length; i++)
             {
                 AxisDirButton.AxisDirection tempDir = axisDirs[i];
-                //if (tempDir != AxisDirButton.AxisDirection.None)
                 {
                     AxisDirButton tempBtn = new AxisDirButton();
                     tempBtn.Direction = axisDirs[i];
@@ -327,21 +311,12 @@ namespace DS4MapperTest.StickActions
 
             if (inSafeZone)
             {
-                //Trace.WriteLine($"IN SAFE ZONE {deadMod.DeadZone}");
-                //Console.WriteLine("SHEIT: {0} ({1}) {2} ({3}", axisXVal, xNorm, axisYVal, yNorm);
-                //if (currentMode == DPadMode.Standard || currentMode == DPadMode.EightWay)
                 {
                     DetermineDirection();
-                    //Console.WriteLine(currentDir.ToString());
                 }
-                //else
-                //{
-
-                //}
 
                 if (useParentActions)
                 {
-                    //usedFuncList = parentPadAction.eventCodes4;
                     usedFuncList = eventCodes4;
                     usedRingButton = parentPadAction.ringButton;
                 }
@@ -353,7 +328,6 @@ namespace DS4MapperTest.StickActions
             }
             else
             {
-                // Console.WriteLine("CENTER THIS");
                 currentDir = DpadDirections.Centered;
 
             }
@@ -365,9 +339,7 @@ namespace DS4MapperTest.StickActions
             // applies the selected D-Pad sub-mode and hysteresis/diagonal range logic.
             currentDir = counterMovementReleasePress.Prepare(mapper, axisXDir, axisYDir, maxDirX, maxDirY, currentDir);
 
-            //if (currentDir != previousDir)
             {
-                //Console.WriteLine("ACTIVATE EVENT");
                 active = true;
                 activeEvent = true;
                 inputStatus = currentDir != DpadDirections.Centered;
@@ -377,24 +349,18 @@ namespace DS4MapperTest.StickActions
         public override unsafe void Event(Mapper mapper)
         {
             int previousDirNum = (int)previousDir;
-            //Console.WriteLine("DIRS: Previous: {0} Current: {1}", previousDir, currentDir);
 
             // Release old buttons
             if (previousDir != DpadDirections.Centered)
             {
                 bool onlyCardinal = previousDirNum % 3 != 0;
-                //Console.WriteLine("lkjdfslkjdfslkjdfs {0}", (previousDir & currentDir) != 0);
                 if (onlyCardinal)
                 {
-                    //OutputActionData data = null;
                     AxisDirButton data = null;
-                    //double axisval = 0.0;
                     if (currentMode == DPadMode.Standard)
                     {
                         if ((previousDir & currentDir) == 0)
                         {
-                            //Console.WriteLine("REMOVE CARDINAL");
-                            //int code = eventCodes[previousDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                     }
@@ -411,28 +377,24 @@ namespace DS4MapperTest.StickActions
                             (currentDir != DpadDirections.Up && currentDir != DpadDirections.UpRight))
                         {
                             // Map Up or UpRight to output Up direction
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if ((previousDir == DpadDirections.Right) &&
                             (currentDir != DpadDirections.Right && currentDir != DpadDirections.DownRight))
                         {
                             // Map Right or DownRight to output Right direction
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if ((previousDir == DpadDirections.Down) &&
                             (currentDir != DpadDirections.Down && currentDir != DpadDirections.DownLeft))
                         {
                             // Map Down or DownLeft to output Down direction
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if ((previousDir == DpadDirections.Left) &&
                             (currentDir != DpadDirections.Left && currentDir != DpadDirections.UpLeft))
                         {
                             // Map Left or UpLeft to output Left direction
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                     }
@@ -440,22 +402,18 @@ namespace DS4MapperTest.StickActions
                     {
                         if (previousDir == DpadDirections.UpRight && currentDir != DpadDirections.UpRight)
                         {
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if (previousDir == DpadDirections.DownRight && currentDir != DpadDirections.DownRight)
                         {
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if (previousDir == DpadDirections.DownLeft && currentDir != DpadDirections.DownLeft)
                         {
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                         else if (previousDir == DpadDirections.UpLeft && currentDir != DpadDirections.UpLeft)
                         {
-                            //data = eventCodes2[currentDirNum];
                             data = usedFuncList[previousDirNum];
                         }
                     }
@@ -464,7 +422,6 @@ namespace DS4MapperTest.StickActions
                     {
                         data.PrepareAnalog(mapper, 0.0, 0.0);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(data, false);
 
                         if (!data.active)
                         {
@@ -475,8 +432,6 @@ namespace DS4MapperTest.StickActions
                 else if (!onlyCardinal)
                 {
                     int tempDir;
-                    //int* codes = stackalloc int[2];
-                    //tmpCodes[0] = tmpCodes[1] = null;
                     tmpBtnActions[0] = tmpBtnActions[1] = null;
                     int i = 0;
 
@@ -485,26 +440,22 @@ namespace DS4MapperTest.StickActions
                         if ((previousDir & DpadDirections.Up) != 0 && (currentDir & DpadDirections.Up) == 0)
                         {
                             tempDir = (int)DpadDirections.Up;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if ((previousDir & DpadDirections.Down) != 0 && (currentDir & DpadDirections.Down) == 0)
                         {
                             tempDir = (int)DpadDirections.Down;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
 
                         if ((previousDir & DpadDirections.Left) != 0 && (currentDir & DpadDirections.Left) == 0)
                         {
                             tempDir = (int)DpadDirections.Left;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if ((previousDir & DpadDirections.Right) != 0 && (currentDir & DpadDirections.Right) == 0)
                         {
                             tempDir = (int)DpadDirections.Right;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                     }
@@ -512,45 +463,36 @@ namespace DS4MapperTest.StickActions
                     {
                         if (previousDir != currentDir)
                         {
-                            //tmpCodes[i] = eventCodes[(int)previousDir]; i++;
                             tmpBtnActions[i] = usedFuncList[(int)previousDir]; i++;
                         }
                     }
                     else if (currentMode == DPadMode.FourWayCardinal)
                     {
-                        //if ((previousDir & DpadDirections.Up) != 0 && (currentDir & DpadDirections.Up) == 0)
                         if ((previousDir == DpadDirections.Up || previousDir == DpadDirections.UpRight) &&
                             (currentDir != DpadDirections.Up && currentDir != DpadDirections.UpRight))
                         {
                             // Map Up or UpRight to output Up direction
                             tempDir = (int)DpadDirections.Up;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
-                        //else if ((previousDir & DpadDirections.Down) != 0 && (currentDir & DpadDirections.Down) == 0)
                         else if ((previousDir == DpadDirections.Right || previousDir == DpadDirections.DownRight) &&
                             (currentDir != DpadDirections.Right && currentDir != DpadDirections.DownRight))
                         {
                             // Map Right or DownRight to output Right direction
                             tempDir = (int)DpadDirections.Right;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
-                        //if ((previousDir & DpadDirections.Left) != 0 && (currentDir & DpadDirections.Left) == 0)
                         else if ((previousDir == DpadDirections.Down || previousDir == DpadDirections.DownLeft) &&
                             (currentDir != DpadDirections.Down && currentDir != DpadDirections.DownLeft))
                         {
                             // Map Down or DownLeft to output Down direction
                             tempDir = (int)DpadDirections.Down;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
-                        //else if ((previousDir & DpadDirections.Right) != 0 && (currentDir & DpadDirections.Right) == 0)
                         else if ((previousDir == DpadDirections.Left || previousDir == DpadDirections.UpLeft) &&
                             (currentDir != DpadDirections.Left && currentDir != DpadDirections.UpLeft))
                         {
                             tempDir = (int)DpadDirections.Left;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                     }
@@ -558,38 +500,32 @@ namespace DS4MapperTest.StickActions
                     {
                         if (previousDir == DpadDirections.UpRight && currentDir != DpadDirections.UpRight)
                         {
-                            //data = eventCodes2[currentDirNum];
                             tempDir = (int)DpadDirections.UpRight;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (previousDir == DpadDirections.DownRight && currentDir != DpadDirections.DownRight)
                         {
-                            //data = eventCodes2[currentDirNum];
                             tempDir = (int)DpadDirections.DownRight;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (previousDir == DpadDirections.DownLeft && currentDir != DpadDirections.DownLeft)
                         {
-                            //data = eventCodes2[currentDirNum];
                             tempDir = (int)DpadDirections.DownLeft;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (previousDir == DpadDirections.UpLeft && currentDir != DpadDirections.UpLeft)
                         {
-                            //data = eventCodes2[currentDirNum];
                             tempDir = (int)DpadDirections.UpLeft;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                     }
 
-                    //if (tmpCodes[0] != null)
                     AxisDirButton data = null;
                     if (tmpBtnActions[0] != null)
                     {
                         data = tmpBtnActions[0];
                         data.PrepareAnalog(mapper, 0.0, 0.0);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[0], false);
 
                         if (!data.active)
                         {
@@ -602,7 +538,6 @@ namespace DS4MapperTest.StickActions
                         data = tmpBtnActions[1];
                         data.PrepareAnalog(mapper, 0.0, 0.0);
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[1], false);
 
                         if (!data.active)
                         {
@@ -612,29 +547,14 @@ namespace DS4MapperTest.StickActions
                 }
             }
 
-            //bool checkRingButton = useRingButton;
-            //if (parentAction != null)
-            //{
-            //    checkRingButton = parentPadAction.useRingButton;
-            //}
-
             if (useRingButton && usedRingButton != null)
-            //if (checkRingButton)
             {
-                //Trace.WriteLine("IN CHECK");
                 double dist = Math.Sqrt((xNorm * xNorm) + (yNorm * yNorm));
                 bool activeMod = outerRing ? (dist > outerRingDeadZone ? true : false) :
                     (dist > 0.0 && dist <= outerRingDeadZone ? true : false);
 
-                //ringButton.PrepareAnalog(mapper, dist);
-                //if (ringButton.active)
-                //{
-                //    ringButton.Event(mapper);
-                //}
-
                 // Treat as boolean button for now
                 usedRingButton.Prepare(mapper, activeMod);
-                //usedRingButton.PrepareAnalog(mapper, dist);
                 if (usedRingButton.active)
                 {
                     usedRingButton.Event(mapper);
@@ -649,27 +569,17 @@ namespace DS4MapperTest.StickActions
                 bool changedDir = previousDir != currentDir;
                 if (onlyCardinal)
                 {
-                    //Console.WriteLine("ACTIVATE CARDINAL");
-                    //int code = eventCodes[currentDirNum];
-                    //OutputActionData data = null;
                     AxisDirButton data = null;
                     if (currentMode == DPadMode.Standard)
                     {
-                        //if ((previousDir & currentDir) == 0)
-                        //{
                             data = usedFuncList[currentDirNum];
-                        //}
                     }
                     else if (currentMode == DPadMode.EightWay)
                     {
-                        //if (currentDir != previousDir)
-                        //{
                             data = usedFuncList[currentDirNum];
-                        //}
                     }
                     else if (currentMode == DPadMode.FourWayCardinal)
                     {
-                        //if ((currentDirNum & btnAdd) != 0)
                         if (currentDir == DpadDirections.Up)// &&
                             //(previousDir != DpadDirections.Up && previousDir != DpadDirections.UpRight))
                         {
@@ -715,7 +625,6 @@ namespace DS4MapperTest.StickActions
                     {
                         data.PrepareAnalog(mapper, ButtonAxisValue(data), ButtonAxisUnitValue(data));
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(data, true);
 
                         if (changedDir && !tmpActiveBtns.ContainsKey(data))
                         {
@@ -726,7 +635,6 @@ namespace DS4MapperTest.StickActions
                 else if (!onlyCardinal)
                 {
                     int tempDir;
-                    //int* codes = stackalloc int[2];
                     tmpBtnActions[0] = tmpBtnActions[1] = null;
                     int i = 0;
                     AxisDirButton data = null;
@@ -736,14 +644,12 @@ namespace DS4MapperTest.StickActions
                         if ((currentDir & DpadDirections.Up) != 0)// && (previousDir & DpadDirections.Up) == 0)
                         {
                             tempDir = (int)DpadDirections.Up;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if ((currentDir & DpadDirections.Down) != 0)// && (previousDir & DpadDirections.Down) == 0)
                         {
                             tempDir = (int)DpadDirections.Down;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
@@ -751,26 +657,20 @@ namespace DS4MapperTest.StickActions
                         if ((currentDir & DpadDirections.Left) != 0)// && (previousDir & DpadDirections.Left) == 0)
                         {
                             tempDir = (int)DpadDirections.Left;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if ((currentDir & DpadDirections.Right) != 0)// && (previousDir & DpadDirections.Right) == 0)
                         {
                             tempDir = (int)DpadDirections.Right;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                     }
                     else if (currentMode == DPadMode.EightWay)
                     {
-                        //if (currentDir != previousDir)
-                        //{
-                            //tmpCodes[i] = eventCodes[(int)currentDir]; i++;
                             tmpBtnDirs[i] = (int)currentDir;
                             tmpBtnActions[i] = usedFuncList[(int)currentDir]; i++;
-                        //}
                     }
                     else if (currentMode == DPadMode.FourWayCardinal)
                     {
@@ -778,16 +678,13 @@ namespace DS4MapperTest.StickActions
                         {
                             // Map Up or UpRight to output Up direction
                             tempDir = (int)DpadDirections.Up;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
-                        //else if ((currentDir & DpadDirections.Down) != 0)// && (previousDir & DpadDirections.Down) == 0)
                         else if (currentDir == DpadDirections.Right || currentDir == DpadDirections.DownRight)
                         {
                             // Map Right or DownRight to output Right direction
                             tempDir = (int)DpadDirections.Right;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
@@ -795,7 +692,6 @@ namespace DS4MapperTest.StickActions
                         {
                             // Map Down or DownLeft to output Down direction
                             tempDir = (int)DpadDirections.Down;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
@@ -803,7 +699,6 @@ namespace DS4MapperTest.StickActions
                         {
                             // Map Left or UpLeft to output Left direction
                             tempDir = (int)DpadDirections.Left;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
@@ -813,41 +708,35 @@ namespace DS4MapperTest.StickActions
                         if (currentDir == DpadDirections.UpRight || currentDir == DpadDirections.UpRight)
                         {
                             tempDir = (int)DpadDirections.UpRight;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (currentDir == DpadDirections.DownRight)
                         {
                             tempDir = (int)DpadDirections.DownRight;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (currentDir == DpadDirections.DownLeft)
                         {
                             tempDir = (int)DpadDirections.DownLeft;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                         else if (currentDir == DpadDirections.UpLeft)
                         {
                             tempDir = (int)DpadDirections.UpLeft;
-                            //tmpCodes[i] = eventCodes[tempDir]; i++;
                             tmpBtnDirs[i] = tempDir;
                             tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                         }
                     }
 
 
-                    //if (tmpCodes[0] != null)
                     if (tmpBtnActions[0] != null)
                     {
                         data = tmpBtnActions[0];
                         data.PrepareAnalog(mapper, ButtonAxisValue(data), ButtonAxisUnitValue(data));
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[0], true);
 
                         if (changedDir && !tmpActiveBtns.ContainsKey(data))
                         {
@@ -860,7 +749,6 @@ namespace DS4MapperTest.StickActions
                         data = tmpBtnActions[1];
                         data.PrepareAnalog(mapper, ButtonAxisValue(data), ButtonAxisUnitValue(data));
                         data.Event(mapper);
-                        //mapper.RunEventFromButton(tmpCodes[1], true);
 
                         if (changedDir && !tmpActiveBtns.ContainsKey(data))
                         {
@@ -876,7 +764,6 @@ namespace DS4MapperTest.StickActions
                     AxisDirButton data = pair.Key;
                     if (data != null)
                     {
-                        //data.PrepareAnalog(mapper, ButtonAxisValue(data));
                         data.PrepareAnalog(mapper, 0.0, 0.0);
                         data.Event(mapper);
 
@@ -894,25 +781,6 @@ namespace DS4MapperTest.StickActions
 
                 removeBtnCandidates.Clear();
             }
-            //else
-            //{
-            //    AxisDirButton data = null;
-            //    if (tmpBtnActions[0] != null)
-            //    {
-            //        data = tmpBtnActions[0];
-            //        data.PrepareAnalog(mapper, 0.0);
-            //        data.Event(mapper);
-            //        //mapper.RunEventFromButton(tmpCodes[0], false);
-            //    }
-
-            //    if (tmpBtnActions[1] != null)
-            //    {
-            //        data = tmpBtnActions[1];
-            //        data.PrepareAnalog(mapper, 0.0);
-            //        data.Event(mapper);
-            //        //mapper.RunEventFromButton(tmpCodes[1], false);
-            //    }
-            //}
 
             counterMovementReleasePress.Event(mapper, eventCodes4);
 
@@ -939,7 +807,6 @@ namespace DS4MapperTest.StickActions
                 foreach (KeyValuePair<AxisDirButton, DpadDirections> pair in tmpActiveBtns)
                 {
                     AxisDirButton data = pair.Key;
-                    //DpadDirections dir = pair.Value;
 
                     if (data != null)
                     {
@@ -974,14 +841,11 @@ namespace DS4MapperTest.StickActions
                     if (currentMode == DPadMode.Standard ||
                         currentMode == DPadMode.EightWay)
                     {
-                        //int code = eventCodes[currentDirNum];
-                        //OutputActionData data = eventCodes[currentDirNum];
                         AxisDirButton data = usedFuncList[currentDirNum];
                         if (data != null)
                         {
                             data.PrepareAnalog(mapper, 0.0, 0.0);
                             data.Event(mapper);
-                            //mapper.RunEventFromButton(data, false);
                         }
                     }
                     else if (currentMode == DPadMode.FourWayCardinal)
@@ -1003,8 +867,6 @@ namespace DS4MapperTest.StickActions
                             data.PrepareAnalog(mapper, 0.0, 0.0);
                             data.Event(mapper);
                         }
-                        //OutputActionData data = eventCodes[currentDirNum];
-                        //mapper.RunEventFromButton(data, false);
                     }
                     else if (currentMode == DPadMode.FourWayCardinal)
                     {
@@ -1099,21 +961,17 @@ namespace DS4MapperTest.StickActions
                     if (currentMode == DPadMode.Standard ||
                         currentMode == DPadMode.EightWay)
                     {
-                        //int code = eventCodes[currentDirNum];
-                        //OutputActionData data = eventCodes[currentDirNum];
                         AxisDirButton data = usedFuncList[currentDirNum];
                         if (data != null && !useParentDataDraft2[currentDirNum])
                         {
                             data.PrepareAnalog(mapper, 0.0, 0.0);
                             data.Event(mapper);
-                            //mapper.RunEventFromButton(data, false);
                         }
                         else if (data != null && checkStickAction != null &&
                             checkStickAction.usedFuncList[currentDirNum] != data)
                         {
                             data.PrepareAnalog(mapper, 0.0, 0.0);
                             data.Event(mapper);
-                            //mapper.RunEventFromButton(data, false);
                         }
                     }
                     else if (currentMode == DPadMode.FourWayCardinal)
@@ -1142,8 +1000,6 @@ namespace DS4MapperTest.StickActions
                             data.Event(mapper);
                         }
 
-                        //OutputActionData data = eventCodes[currentDirNum];
-                        //mapper.RunEventFromButton(data, false);
                     }
                     else if (currentMode == DPadMode.FourWayCardinal)
                     {
@@ -1161,27 +1017,22 @@ namespace DS4MapperTest.StickActions
             }
         }
 
-        //private unsafe void ReleaseStandardDiagonalEvents(Mapper mapper)
         private void ReleaseStandardDiagonalEvents(Mapper mapper, bool checkSoft=false,
             StickPadAction checkStickAction = null)
         {
             int tempDir;
             int outDir = 0; int outDir2 = 0;
-            //int* codes = stackalloc int[2];
-            //tmpCodes[0] = tmpCodes[1] = null;
             tmpBtnActions[0] = tmpBtnActions[1] = null;
             int i = 0;
             if ((currentDir & DpadDirections.Up) != 0)
             {
                 tempDir = (int)DpadDirections.Up;
-                //tmpCodes[i] = eventCodes[tempDir]; i++;
                 tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                 outDir = tempDir;
             }
             else if ((currentDir & DpadDirections.Down) != 0)
             {
                 tempDir = (int)DpadDirections.Down;
-                //tmpCodes[i] = eventCodes[tempDir]; i++;
                 tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                 outDir = tempDir;
             }
@@ -1189,7 +1040,6 @@ namespace DS4MapperTest.StickActions
             if ((currentDir & DpadDirections.Left) != 0)
             {
                 tempDir = (int)DpadDirections.Left;
-                //tmpCodes[i] = eventCodes[tempDir]; i++;
                 tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                 if (i == 0)
                 {
@@ -1203,7 +1053,6 @@ namespace DS4MapperTest.StickActions
             else if ((currentDir & DpadDirections.Right) != 0)
             {
                 tempDir = (int)DpadDirections.Right;
-                //tmpCodes[i] = eventCodes[tempDir]; i++;
                 tmpBtnActions[i] = usedFuncList[tempDir]; i++;
                 if (i == 0)
                 {
@@ -1224,18 +1073,15 @@ namespace DS4MapperTest.StickActions
                 {
                     data.PrepareAnalog(mapper, 0.0, 0.0);
                     data.Event(mapper);
-                    //mapper.RunEventFromButton(tmpCodes[0], false);
                 }
                 else if (checkSoft && checkStickAction != null &&
                     checkStickAction.usedFuncList[outDir] != data)
                 {
                     data.PrepareAnalog(mapper, 0.0, 0.0);
                     data.Event(mapper);
-                    //mapper.RunEventFromButton(tmpCodes[0], false);
                 }
             }
 
-            //if (tmpCodes[1] != null)
             if (tmpBtnActions[1] != null)
             {
                 data = tmpBtnActions[1];
@@ -1244,14 +1090,12 @@ namespace DS4MapperTest.StickActions
                 {
                     data.PrepareAnalog(mapper, 0.0, 0.0);
                     data.Event(mapper);
-                    //mapper.RunEventFromButton(tmpCodes[1], false);
                 }
                 else if (checkSoft && checkStickAction != null &&
                     checkStickAction.usedFuncList[outDir2] != data)
                 {
                     data.PrepareAnalog(mapper, 0.0, 0.0);
                     data.Event(mapper);
-                    //mapper.RunEventFromButton(tmpCodes[1], false);
                 }
             }
         }
@@ -1288,14 +1132,12 @@ namespace DS4MapperTest.StickActions
                 {
                     data.PrepareAnalog(mapper, 0.0, 0.0);
                     data.Event(mapper);
-                    //mapper.RunEventFromButton(data, false);
                 }
                 else if (checkSoft && checkStickAction != null &&
                     checkStickAction.usedFuncList[outDir] != data)
                 {
                     data.PrepareAnalog(mapper, 0.0, 0.0);
                     data.Event(mapper);
-                    //mapper.RunEventFromButton(data, false);
                 }
             }
         }
@@ -1310,24 +1152,9 @@ namespace DS4MapperTest.StickActions
             {
                 if (currentMode != DPadMode.FourWayDiagonal)
                 {
-                    /*const double CARDINAL_RANGE = 45.0;
-                const double DIAGONAL_RANGE = 45.0;
-                //const double CARDINAL_HALF_RANGE = CARDINAL_RANGE / 2.0;
-                const double CARDINAL_HALF_RANGE = 22.5;
-
-                const double upLeftEnd = 360 - CARDINAL_HALF_RANGE;
-                const double upRightBegin = CARDINAL_HALF_RANGE;
-                const double rightBegin = upRightBegin + DIAGONAL_RANGE;
-                const double downRightBegin = rightBegin + CARDINAL_RANGE;
-                const double downBegin = downRightBegin + DIAGONAL_RANGE;
-                const double downLeftBegin = downBegin + CARDINAL_RANGE;
-                const double leftBegin = downLeftBegin + DIAGONAL_RANGE;
-                const double upLeftBegin = leftBegin + CARDINAL_RANGE;
-                */
 
                     double currentDiagonalRange = diagonalRange;
                     double currentCardinalRange = 90.0 - currentDiagonalRange;
-                    //const double CARDINAL_HALF_RANGE = currentCardinalRange / 2.0;
                     double CARDINAL_HALF_RANGE = currentCardinalRange / 2.0;
 
                     double upLeftEnd = 360 - CARDINAL_HALF_RANGE;
@@ -1342,7 +1169,6 @@ namespace DS4MapperTest.StickActions
                     double angleRad = Math.Atan2(xNorm, yNorm);
                     double angle = (angleRad >= 0 ? angleRad : (2 * Math.PI + angleRad)) * 180 / Math.PI;
 
-                    //Trace.WriteLine(angle);
                     if (angle == 0.0)
                     {
                         currentDir = DpadDirections.Up;
@@ -1384,7 +1210,6 @@ namespace DS4MapperTest.StickActions
                 {
                     double currentDiagonalRange = 90;
                     double currentCardinalRange = 90.0 - currentDiagonalRange;
-                    //const double CARDINAL_HALF_RANGE = currentCardinalRange / 2.0;
                     double CARDINAL_HALF_RANGE = currentCardinalRange / 2.0;
 
                     double upRightBegin = 0;
@@ -1418,7 +1243,6 @@ namespace DS4MapperTest.StickActions
                 }
             }
 
-            //Trace.WriteLine(currentDir);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1686,14 +1510,6 @@ namespace DS4MapperTest.StickActions
                 }
 
                 // Grab references to parentAction AxisDirButton instances
-                /*int tempDir = (int)DpadDirections.Centered;
-                foreach (AxisDirButton tempAction in parentAction.eventCodes4)
-                {
-                    usedEventButtonsList[tempDir] = tempAction;
-                    tempDir++;
-                }
-                usedFuncList = usedEventButtonsList;
-                */
             }
         }
 

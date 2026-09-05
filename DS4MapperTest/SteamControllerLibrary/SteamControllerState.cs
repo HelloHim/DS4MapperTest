@@ -31,7 +31,6 @@ namespace DS4MapperTest.SteamControllerLibrary
             public const double D_ACC_RES_PER_G = ACC_RES_PER_G;
             public const int GYRO_RES_IN_DEG_SEC_NUMER = 2000;
             // Not sure I agree with the ratio used for steam-gyro-for-cemuhook. Use different denom
-            //public const double GYRO_RES_IN_DEG_SEC_RATIO = GYRO_RES_IN_DEG_SEC_NUMER / 65535.0;
             // Using denom given in SDL 3 source code. Straight from Valve
             public const double GYRO_RES_IN_DEG_SEC_RATIO = GYRO_RES_IN_DEG_SEC_NUMER / 32768.0;
 

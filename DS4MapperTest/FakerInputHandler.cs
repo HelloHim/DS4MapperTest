@@ -70,12 +70,10 @@ namespace DS4MapperTest
         {
             eventLock.EnterWriteLock();
 
-            //mouseReport.ResetMousePos();
             mouseReport.Reset();
             pendingMouseX = 0;
             pendingMouseY = 0;
             syncRelativeMouse = true;
-            //fakerInput.UpdateRelativeMouse(mouseReport);
 
             absoluteMouseReport.Reset();
             syncAbsoluteMouse = true;
@@ -93,12 +91,9 @@ namespace DS4MapperTest
             pressedKeys.Clear();
 
             syncKeyboard = true;
-            //fakerInput.UpdateKeyboard(keyReport);
 
             mediaKeyReport.EnhancedKeys = 0;
-            //mediaKeyReport.MediaKeys = 0;
             syncEnhancedKeyboard = true;
-            //fakerInput.UpdateKeyboardEnhanced(mediaKeyReport);
 
             eventLock.ExitWriteLock();
 
@@ -108,7 +103,6 @@ namespace DS4MapperTest
 
         public override void MoveRelativeMouse(int x, int y)
         {
-            //Console.WriteLine("RAW MOUSE {0} {1}", x, y);
             eventLock.EnterWriteLock();
 
             // Accumulate rather than overwrite so multiple independently timed
@@ -140,7 +134,6 @@ namespace DS4MapperTest
 
         public override void PerformKeyPress(uint key)
         {
-            //Console.WriteLine("PerformKeyPress {0}", key);
             eventLock.EnterWriteLock();
 
             if (key < MODIFIER_MASK)
@@ -179,7 +172,6 @@ namespace DS4MapperTest
         /// <param name="key"></param>
         public override void PerformKeyPressAlt(uint key)
         {
-            //Console.WriteLine("PerformKeyPressAlt {0}", key);
             eventLock.EnterWriteLock();
 
             if (key < MODIFIER_MASK)
@@ -214,7 +206,6 @@ namespace DS4MapperTest
 
         public override void PerformKeyRelease(uint key)
         {
-            //Console.WriteLine("PerformKeyRelease {0}", key);
             eventLock.EnterWriteLock();
 
             if (key < MODIFIER_MASK)
@@ -253,7 +244,6 @@ namespace DS4MapperTest
         /// <param name="key"></param>
         public override void PerformKeyReleaseAlt(uint key)
         {
-            //Console.WriteLine("PerformKeyReleaseAlt {0}", key);
             eventLock.EnterWriteLock();
 
             if (key < MODIFIER_MASK)
@@ -291,8 +281,6 @@ namespace DS4MapperTest
             MouseButton temp = (MouseButton)mouseButton;
             eventLock.EnterWriteLock();
 
-            //mouseReport.ResetMousePos();
-
             if (!mouseReport.HeldButtons.Contains(temp))
             {
                 mouseReport.ButtonDown(temp);
@@ -317,8 +305,6 @@ namespace DS4MapperTest
             MouseButton temp = (MouseButton)mouseButton;
             eventLock.EnterWriteLock();
 
-            //mouseReport.ResetMousePos();
-
             if (!mouseReport.HeldButtons.Contains(temp))
             {
                 mouseReport.ButtonDown(temp);
@@ -341,11 +327,9 @@ namespace DS4MapperTest
         public override void PerformMouseWheelEvent(int vertical, int horizontal)
         {
             eventLock.EnterWriteLock();
-            //mouseReport.ResetMousePos();
             mouseReport.WheelPosition = (byte)vertical;
             mouseReport.HWheelPosition = (byte)horizontal;
             syncRelativeMouse = true;
-            //fakerInput.UpdateRelativeMouse(mouseReport);
             eventLock.ExitWriteLock();
         }
 
@@ -371,7 +355,6 @@ namespace DS4MapperTest
             MouseButton tempButton = (MouseButton)mouseButton;
             if (!mouseReport.HeldButtons.Contains(tempButton))
             {
-                //mouseReport.ResetMousePos();
                 mouseReport.ButtonDown(tempButton);
                 syncRelativeMouse = true;
             }
@@ -386,7 +369,6 @@ namespace DS4MapperTest
             MouseButton tempButton = (MouseButton)mouseButton;
             if (mouseReport.HeldButtons.Contains(tempButton))
             {
-                //mouseReport.ResetMousePos();
                 mouseReport.ButtonUp(tempButton);
                 syncRelativeMouse = true;
             }

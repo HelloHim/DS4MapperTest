@@ -720,7 +720,7 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.CounterPressActive, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_A));
 
-            // Deliberately push A (left) — the same key the release press is already holding.
+            // Deliberately push A (left), the same key the release press is already holding.
             for (int i = 0; i < 6; i++)
             {
                 Report(mapper, -FULL, 0);
@@ -784,7 +784,7 @@ namespace DS4MapperUnitTests
         {
             var (mapper, padAction) = LoadMapper();
 
-            // First-ever report already holds the stick — no neutral warm-up.
+            // First-ever report already holds the stick, so no neutral warm-up.
             HoldUp(mapper, 30);
             Assert.AreEqual(CounterMovementReleasePressProcessor.CounterMovementReleasePressState.Unprimed, padAction.CounterMovementReleasePress.State);
             Assert.IsTrue(KeyDown(VK_W), "Normal output must continue while Unprimed.");

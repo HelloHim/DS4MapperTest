@@ -309,7 +309,6 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void SpeedActive_ScalesLinearlyBetweenDeadzoneAndThreshold()
         {
-            // r = f/2 => progress 0.5 => speedActive = a + (1-a)*0.5
             double result = AnalogEmulationMath.ComputeSpeedActive(0.40, 0.15, 0.80);
             Assert.AreEqual(0.15 + (0.85 * 0.5), result, TOL);
         }

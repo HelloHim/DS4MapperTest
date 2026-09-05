@@ -189,7 +189,6 @@ namespace DS4MapperUnitTests
         }
 
         // The universal layer carries gyro in radians per second, x = pitch,
-        // y = yaw, z = roll.
         private static UniversalControllerStateSnapshot GyroSnapshot(
             long sequence, double yawDegrees, double pitchDegrees, double rollDegrees)
         {

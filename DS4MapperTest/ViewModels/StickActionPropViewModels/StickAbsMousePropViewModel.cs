@@ -229,10 +229,8 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 StickAbsMouse baseLayerAction = mapper.EditActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as StickAbsMouse;
                 StickAbsMouse tempAction = new StickAbsMouse();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.EditLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
 
                 this.action = tempAction;
                 usingRealAction = false;
@@ -387,7 +385,6 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 ReplaceExistingLayerAction(this, EventArgs.Empty);
             }
 
-            //ExecuteInMapperThread(() =>
             mapper.ProcessMappingChangeAction(() =>
             {
                 if (oldAction != null)
@@ -397,7 +394,6 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
                 }
 
                 action.ChangedProperties.Add(StickAbsMouse.PropertyKeyStrings.OUTER_RING_BUTTON);
-                //action.UseParentRingButton = false;
             });
         }
     }

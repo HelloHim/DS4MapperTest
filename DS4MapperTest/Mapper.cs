@@ -1350,9 +1350,7 @@ namespace DS4MapperTest
 
         public void ChangeProfile(string profilePath)
         {
-            //if (!inMapperEvent)
             {
-                // Reset actions from current profile
                 actionProfile.CurrentActionSet.ReleaseActions(this, true);
 
                 // Relay changes to event systems
@@ -1370,7 +1368,6 @@ namespace DS4MapperTest
 
                 OutputContType oldContType = outputControlType;
 
-                // Change profile path
                 profileFile = profilePath;
                 loggedFirstVirtualState = false;
 
@@ -3067,9 +3064,6 @@ namespace DS4MapperTest
                 applyQueuedActionLayer = false;
                 switchQueuedActionLayer = false;
 
-                /*RequestOSD?.Invoke(this,
-                    new RequestOSDArgs($"#{actionProfile.CurrentActionSet.CurrentActionLayer.Index}: {actionProfile.CurrentActionSet.CurrentActionLayer.Name}"));
-                */
             }
         }
 
@@ -3200,12 +3194,10 @@ namespace DS4MapperTest
 
             if (gamepadSync && intermediateState.Dirty)
             {
-                //if (outputController != null)
                 {
                     if (outputControlType == OutputContType.Xbox360)
                     {
                         PopulateXbox();
-                        //outputController?.SubmitReport();
                     }
                     else if (outputControlType == OutputContType.DualShock4)
                     {
@@ -3335,24 +3327,6 @@ namespace DS4MapperTest
         /// <param name="tempAct">Action to call when mapping routine is not running.</param>
         public void ProcessMappingChangeAction(Action tempAct)
         {
-            /*using (WriteLocker locker = new WriteLocker(mapperActiveEditLock))
-            {
-                // Set flag to halt mapper when entered
-                pauseMapper = true;
-
-                // Make sure mapper is not active
-                while (mapperActionActive)
-                {
-                    Thread.SpinWait(500);
-                }
-
-                // Run call
-                tempAct.Invoke();
-
-                // Let mapper continue
-                pauseMapper = false;
-            }
-            */
 
             // BaseReader is null for mappers with no live device reader to halt
             // (e.g. UniversalActionContentEditorSession's offline UniversalMapper) -

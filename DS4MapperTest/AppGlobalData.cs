@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-//using SteamControllerTest.SteamControllerLibrary;
 using static DS4MapperTest.Util;
 using System.Runtime.InteropServices;
 using WpfScreenHelper;
@@ -94,8 +93,6 @@ namespace DS4MapperTest
 
         public Rect absDisplayBounds = new Rect(0, 0, 2, 2);
         public Rect fullDesktopBounds = new Rect(0, 0, 2, 2);
-        //public Rect absDisplayBounds = new Rect(800, 0, 1024, 768);
-        //public Rect fullDesktopBounds = new Rect(0, 0, 3840, 2160);
         public bool absUseAllMonitors = true;
         public Dictionary<int, string> activeProfiles = new Dictionary<int, string>();
         private ReaderWriterLockSlim _controllerStoreLocker = new ReaderWriterLockSlim();
@@ -478,7 +475,6 @@ namespace DS4MapperTest
 
         public static bool IsRunningSupportedViGEmBus()
         {
-            //return vigemInstalled;
             return vigemInstalled &&
                 minSupportedViGEmBusVersionInfo.CompareTo(vigemBusVersionInfo) <= 0;
         }
@@ -572,7 +568,6 @@ namespace DS4MapperTest
             }
 
             // Iterate over list and find most recent version number
-            //IEnumerable<ViGEmBusInfo> tempResults = tempViGEmBusInfoList.Where(item => minSupportedViGEmBusVersionInfo.CompareTo(item.deviceVersion) <= 0);
             Version latestKnown = new Version(BLANK_VIGEMBUS_VERSION);
             string deviceInstanceId = string.Empty;
             foreach (ViGEmBusInfo item in tempViGEmBusInfoList)
@@ -625,13 +620,11 @@ namespace DS4MapperTest
 
         private static string FakerInputVersion()
         {
-            // Start with BLANK_FAKERINPUT_VERSION for result
             string result = BLANK_FAKERINPUT_VERSION;
             IntPtr deviceInfoSet = NativeMethods.SetupDiGetClassDevs(ref Util.fakerInputGuid, null, 0, NativeMethods.DIGCF_DEVICEINTERFACE);
             NativeMethods.SP_DEVINFO_DATA deviceInfoData = new NativeMethods.SP_DEVINFO_DATA();
             deviceInfoData.cbSize = System.Runtime.InteropServices.Marshal.SizeOf(deviceInfoData);
             bool foundDev = false;
-            //bool success = NativeMethods.SetupDiEnumDeviceInfo(deviceInfoSet, 0, ref deviceInfoData);
             for (int i = 0; !foundDev && NativeMethods.SetupDiEnumDeviceInfo(deviceInfoSet, i, ref deviceInfoData); i++)
             {
                 ulong devPropertyType = 0;
@@ -689,8 +682,6 @@ namespace DS4MapperTest
                     dataBuffer, dataBuffer.Length, ref requiredSize, 0))
                 {
                     string hardwareId = dataBuffer.ToUTF16String();
-                    //if (hardwareIds.Contains("Virtual Gamepad Emulation Bus"))
-                    //    result = true;
                     if (hardwareId.Equals(searchHardwareId))
                         result = true;
                 }
@@ -741,7 +732,6 @@ namespace DS4MapperTest
                     string devType = store.DeviceType.ToString();
                     if (controllerObj.TryGetValue("LastProfile", out JToken tempToken) &&
                         tempToken.Type == JTokenType.String)
-                    //if (activeProfiles.TryGetValue(testDev.Index, out string currentProfile))
                     {
                         string lastProfile = tempToken.Value<string>();
                         if (!string.IsNullOrEmpty(lastProfile))
@@ -754,7 +744,6 @@ namespace DS4MapperTest
                             activeProfiles[testDev.Index] = lastProfile;
                         }
                     }
-                    //string settings = controllerObj["Settings"].ToString();
                     store.LoadSettings(controllerObj);
                 }
                 catch (JsonReaderException)
@@ -808,7 +797,6 @@ namespace DS4MapperTest
                                 // Found existing item. Update properties and replace object
                                 JObject controllerObj = token.ToObject<JObject>();
                                 string macAddr = testDev.Serial;
-                                //string devType = InputDeviceType.SteamController.ToString();
                                 string devType = testDev.DeviceType.ToString();
 
                                 controllerObj["Mac"] = macAddr;
@@ -843,9 +831,7 @@ namespace DS4MapperTest
                                 }";
 
                                 JObject controllerObj = JObject.Parse(controllerJson);
-                                //JObject controllerObj = new JObject();
                                 string macAddr = testDev.Serial;
-                                //string devType = InputDeviceType.SteamController.ToString();
                                 string devType = testDev.DeviceType.ToString();
                                 controllerObj["Mac"] = testDev.Serial;
                                 controllerObj["Type"] = devType;
@@ -1032,12 +1018,6 @@ namespace DS4MapperTest
             string tempOutJson = JsonConvert.SerializeObject(profileSerializer, Formatting.Indented,
                 new JsonSerializerSettings()
                 {
-                        //Converters = new List<JsonConverter>()
-                        //{
-                        //    new MapActionSubTypeConverter(),
-                        //}
-                        //TypeNameHandling = TypeNameHandling.Objects
-                        //ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 });
             Trace.WriteLine(tempOutJson);
 
@@ -1046,24 +1026,6 @@ namespace DS4MapperTest
                 AtomicFileWriter.WriteJson(blankProfilePath, JObject.Parse(tempOutJson));
             }
 
-            //using (FileStream fs = new FileStream(blankProfilePath,
-            //   FileMode.Truncate, FileAccess.Write))
-            //{
-            //    string tempProfileName = Path.GetFileNameWithoutExtension(blankProfilePath);
-
-            //    //if (tempRootJObj != null)
-            //    //{
-            //    //    using (StreamWriter swriter = new StreamWriter(fs))
-            //    //    using (JsonTextWriter jwriter = new JsonTextWriter(swriter))
-            //    //    {
-            //    //        jwriter.Formatting = Formatting.Indented;
-            //    //        jwriter.Indentation = 2;
-            //    //        string temp = tempRootJObj.ToString();
-            //    //        //Trace.WriteLine(temp);
-            //    //        tempRootJObj.WriteTo(jwriter);
-            //    //    }
-            //    //}
-            //}
         }
 
         public string GetDeviceProfileFolderLocation(InputDeviceType deviceType)
@@ -1195,7 +1157,6 @@ namespace DS4MapperTest
 
     public class ViGEmBusInfo
     {
-        //public string path;
         public string instanceId;
         public string deviceName;
         public string deviceVersionStr;

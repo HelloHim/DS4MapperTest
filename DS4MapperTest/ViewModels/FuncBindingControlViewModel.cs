@@ -92,9 +92,6 @@ namespace DS4MapperTest.ViewModels
                 currentBindItemIndex = 0;
             }
 
-            //realAction = action.ParentAction == null;
-
-            //thing.Add(new FuncBindItem(action, null, tempInd++));
         }
 
         public FuncBindItem AddTempBindItem()
@@ -265,37 +262,6 @@ namespace DS4MapperTest.ViewModels
 
         public void SwitchAction(ButtonAction oldAction, ButtonAction newAction)
         {
-            /*ManualResetEventSlim resetEvent = new ManualResetEventSlim(false);
-
-            mapper.ProcessMappingChangeAction(() =>
-            {
-                oldAction.Release(mapper, ignoreReleaseActions: true);
-
-                newAction.CopyBaseProps(oldAction);
-
-                if (newAction.Id != MapAction.DEFAULT_UNBOUND_ID)
-                {
-                    mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.ReplaceButtonAction(oldAction, newAction);
-                }
-                else
-                {
-                    // Need to create new ID for action
-                    newAction.Id =
-                        mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.FindNextAvailableId();
-
-                    mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.AddButtonMapAction(newAction);
-                }
-
-                if (mapper.ActionProfile.CurrentActionSet.UsingCompositeLayer)
-                {
-                    mapper.ActionProfile.CurrentActionSet.RecompileCompositeLayer(mapper);
-                }
-
-                resetEvent.Set();
-            });
-
-            resetEvent.Wait();
-            */
 
             this.action = newAction;
         }

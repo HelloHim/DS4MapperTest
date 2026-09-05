@@ -69,7 +69,6 @@ namespace DS4MapperTest.StickActions
         private double squareStickRoundness = 5.0;
         private SquareStick squaredStick = new SquareStick();
 
-        //private StickDefinition stickDefinition;
         private double xNorm = 0.0, yNorm = 0.0;
         private double prevXNorm = 0.0, prevYNorm = 0.0;
         private StickTranslate parentTranslateAction;
@@ -175,19 +174,6 @@ namespace DS4MapperTest.StickActions
                     stickDefinition, out axisXVal, out axisYVal);
             }
 
-            //int inputX = axisXVal;
-            //int inputY = axisYVal;
-
-            //if (stickDefinition.stickCode == StickActionCodes.LS)
-            //{
-            //    StickMethods.RotatedCoordinates(8, axisXVal, axisYVal, stickDefinition, out axisXVal, out axisYVal);
-            //    //Trace.WriteLine($"Input X ({inputX}) Y ({inputY}) | Output X ({axisXVal}) Y ({axisYVal})");
-            //}
-            //else if (stickDefinition.stickCode == StickActionCodes.RS)
-            //{
-            //    StickMethods.RotatedCoordinates(-8, axisXVal, axisYVal, stickDefinition, out axisXVal, out axisYVal);
-            //}
-
             int axisXMid = stickDefinition.xAxis.mid, axisYMid = stickDefinition.yAxis.mid;
             int axisXDir = axisXVal - axisXMid, axisYDir = axisYVal - axisYMid;
             bool xNegative = axisXDir < 0;
@@ -199,15 +185,6 @@ namespace DS4MapperTest.StickActions
 
             if (xNorm != 0.0 || yNorm != 0.0)
             {
-                //if (stickDefinition.xAxis.invert)
-                //{
-                //    xNorm = -1.0 * xNorm;
-                //}
-
-                //if (stickDefinition.yAxis.invert)
-                //{
-                //    yNorm = -1.0 * yNorm;
-                //}
 
                 if (outputCurve != StickOutCurve.Curve.Linear)
                 {

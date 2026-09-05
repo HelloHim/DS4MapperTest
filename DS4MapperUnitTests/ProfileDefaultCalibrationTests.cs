@@ -35,7 +35,6 @@ namespace DS4MapperUnitTests
         [TestMethod]
         public void DefaultCalibration_IsInternallyConsistent()
         {
-            // RWC = Counts x InGameSens / 360 (per the app's own calibration formula).
             Profile profile = new Profile();
             double expectedRwc = profile.CalibCounts * profile.CalibInGameSens / 360.0;
             Assert.AreEqual(expectedRwc, profile.CalibRwc, 1e-9);

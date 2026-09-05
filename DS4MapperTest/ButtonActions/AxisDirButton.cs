@@ -79,7 +79,6 @@ namespace DS4MapperTest.ButtonActions
                 stateData.axisNormValue = axisNorm;
             }
 
-            //base.Prepare(mapper, currentValue != 0.0);
             if (previousStatus != status && status)
             {
                 // AxisDirButton drives the soft/full stages of a dual-stage
@@ -100,7 +99,7 @@ namespace DS4MapperTest.ButtonActions
                     actionFuncCandidates.AddRange(actionFuncs);
                 }
 
-                // Keep analog directions and trigger stages on the same
+                // Keep analogue directions and trigger stages on the same
                 // interruptable regular-press timing path as digital buttons.
                 ConfigureRegularPressInterruptDelay(actionFuncCandidates);
             }
@@ -115,8 +114,6 @@ namespace DS4MapperTest.ButtonActions
                     double temp = Math.Abs(lastWheelDistance - currentValue);
                     if (temp >= 0.1)
                     {
-                        //action.firstRun = true;
-                        //EffectiveDurationMs = (int)(action.DurationMs / ButtonDistance);
                         lastWheelDistance = currentValue;
                         long currentElapsed = action.Elapsed.ElapsedMilliseconds;
                         long newTime = (long)(action.DurationMs / ButtonDistance);

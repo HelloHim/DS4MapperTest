@@ -25,7 +25,6 @@ namespace DS4MapperTest.TriggerActions
             public const string FORCE_HIP_FIRE_TIME = "ForceHipFireTime";
             public const string SOFT_PULL_HAPTICS_INTENSITY = "SoftPullHapticsIntensity";
             public const string FULL_PULL_HAPTICS_INTENSITY = "FullPullHapticsIntensity";
-            //public const string OUTPUT_TRIGGER = "OutputTrigger";
         }
 
         private HashSet<string> fullPropertySet = new HashSet<string>()
@@ -202,13 +201,7 @@ namespace DS4MapperTest.TriggerActions
                 this.fullPullActActive = fullPullActActive;
             }
 
-            //if (mappingId == "RT" && axisNorm != 1.0 && currentStageBtns.HasFlag(ActiveZoneButtons.FullPull))
-            //{
-            //    Trace.WriteLine($"AXIS NORM {axisNorm} | BTNS {currentStageBtns.ToString()} | {actionStateMode}");
-            //}
-
             currentActiveButtons = currentStageBtns;
-            //outputActive = currentStageBtns != ActiveZoneButtons.None;
             active = true;
             activeEvent = true;
         }

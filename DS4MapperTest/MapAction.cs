@@ -96,13 +96,6 @@ namespace DS4MapperTest
 
         // Need a way to destinguish default created unbound binding from
         // explicitly created version. MIGHT REMOVE AND USE -1 FOR Id INSTEAD
-        /*protected bool defaultUnbound = true;
-        public bool DefaultUnbound
-        {
-            get => defaultUnbound;
-            set => defaultUnbound = value;
-        }
-        */
 
 
         protected ActionFuncStateData stateData = new ActionFuncStateData();
@@ -125,8 +118,6 @@ namespace DS4MapperTest
                 state = true,
                 axisNormValue = 1.0,
             };
-
-        //protected ActionFuncStateData actionStateData = new ActionFuncStateData();
 
         protected bool onlyOnPrimary = false;
         public bool OnlyOnPrimary

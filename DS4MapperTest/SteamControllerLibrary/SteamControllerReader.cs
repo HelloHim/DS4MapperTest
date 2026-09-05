@@ -53,8 +53,6 @@ namespace DS4MapperTest.SteamControllerLibrary
 
         private void PrepareSyncedDevice()
         {
-            //NativeMethods.HidD_SetNumInputBuffers(device.HidDevice.safeReadHandle.DangerousGetHandle(),
-            //    2);
 
             device.SetOperational();
         }
@@ -88,7 +86,6 @@ namespace DS4MapperTest.SteamControllerLibrary
             Report = null;
             device.PurgeRemoval();
             device.HidDevice.CancelIO();
-            //inputThread.Interrupt();
             if (inputThread != null && inputThread.IsAlive &&
                 Thread.CurrentThread != inputThread)
             {
@@ -126,9 +123,7 @@ namespace DS4MapperTest.SteamControllerLibrary
                     HidDevice.ReadStatus res = device.HidDevice.ReadWithFileStream(inputReportBuffer);
                     if (res == HidDevice.ReadStatus.Success)
                     {
-                        //Trace.WriteLine(string.Format("{0}", string.Join(" ", inputReportBuffer)));
                         tempByte = inputReportBuffer[3];
-                        //Trace.WriteLine($"{inputReportBuffer[0]} {inputReportBuffer[2]} {inputReportBuffer[3]} {inputReportBuffer[4]}");
 
                         readWaitEv.Wait();
                         readWaitEv.Reset();
@@ -170,31 +165,10 @@ namespace DS4MapperTest.SteamControllerLibrary
                         }
                         else if (tempByte == SteamControllerDevice.SCPacketType.PT_BATTERY)
                         {
-                            //Trace.WriteLine($"IDLE {inputReportBuffer[4]}");
                             byte batt = inputReportBuffer[15];
                             device.Battery = batt;
                             continue;
                         }
-                        /*
-                        else if (tempByte == SteamControllerDevice.SCPacketType.PT_IDLE && !firstReport)
-                        {
-                            tempByte = 0;
-
-                            // Repeat previously grabbed state with updated timestamp
-                            currentTime = Stopwatch.GetTimestamp();
-                            deltaElapsed = currentTime - previousTime;
-                            lastElapsed = deltaElapsed * (1.0 / Stopwatch.Frequency) * 1000.0;
-                            tempTimeElapsed = lastElapsed * .001;
-
-                            current.timeElapsed = tempTimeElapsed;
-                            previousTime = currentTime;
-
-                            Report?.Invoke(this, device);
-                            device.SyncStates();
-
-                            continue;
-                        }
-                        */
                         else if (firstReport && tempByte == SteamControllerDevice.SCPacketType.PT_INPUT)
                         {
                             Console.WriteLine("CAN READ REPORTS. NICE");
@@ -203,11 +177,6 @@ namespace DS4MapperTest.SteamControllerLibrary
                             gyroCalibrationUtil.ResetContinuousCalibration();
                         }
 
-                        //Console.WriteLine("Got unexpected input report id 0x{0:X2}. Try again",
-                        //        inputReportBuffer[3]);
-
-                        //ref SteamControllerState current = ref device.CurrentStateRef;
-                        //ref SteamControllerState previous = ref device.PreviousStateRef;
                         tempByte = 0;
 
                         currentTime = Stopwatch.GetTimestamp();
@@ -217,24 +186,6 @@ namespace DS4MapperTest.SteamControllerLibrary
 
                         current.timeElapsed = tempTimeElapsed;
                         previousTime = currentTime;
-
-                        /*if (inputReportBuffer[3] != SteamControllerDevice.SCPacketType.PT_INPUT)
-                        {
-                            Console.WriteLine("GOT INPUT REPORT {0} 0x{1:X2}", res, inputReportBuffer[3]);
-                        }
-                        */
-
-                        /*
-                        if (!firstReport)
-                        {
-                            Console.WriteLine("Poll Time: {0}", tempTimeElapsed);
-                        }
-                        //*/
-
-                        //Console.WriteLine("BUTTONS?: {0} {1} {2} {3}", inputReportBuffer[8], inputReportBuffer[9], inputReportBuffer[10], inputReportBuffer[11]);
-
-                        // ???
-                        //tempByte = inputReportBuffer[8];
 
                         // Buttons
                         tempByte = inputReportBuffer[9];
@@ -246,12 +197,6 @@ namespace DS4MapperTest.SteamControllerLibrary
                         current.B = (tempByte & 0x20) != 0;
                         current.X = (tempByte & 0x40) != 0;
                         current.A = (tempByte & 0x80) != 0;
-
-                        /*if (inputReportBuffer[3] != SteamControllerDevice.SCPacketType.PT_IDLE)
-                        {
-                            Console.WriteLine("LKJDLKDLK: {0}", current.A);
-                        }
-                        */
 
                         // Buttons
                         tempByte = inputReportBuffer[10];
@@ -276,9 +221,6 @@ namespace DS4MapperTest.SteamControllerLibrary
 
                         current.LT = inputReportBuffer[12];
                         current.RT = inputReportBuffer[13];
-
-                        //Console.WriteLine(current.LT);
-                        //Console.WriteLine(current.RT);
 
                         tempAxisX = (short)((inputReportBuffer[18] << 8) | inputReportBuffer[17]);
                         tempAxisY = (short)((inputReportBuffer[20] << 8) | inputReportBuffer[19]);
@@ -326,8 +268,6 @@ namespace DS4MapperTest.SteamControllerLibrary
                         current.RightPad.X = (short)((inputReportBuffer[22] << 8) | inputReportBuffer[21]);
                         current.RightPad.Y = (short)((inputReportBuffer[24] << 8) | inputReportBuffer[23]);
 
-                        //Trace.WriteLine(string.Format("X: {0} Y: {1} {2}", current.RightPad.X, current.RightPad.Y, current.RightPad.Touch));
-
                         current.Motion.AccelX = (short)(-1 * ((inputReportBuffer[30] << 8) | inputReportBuffer[29]));
                         current.Motion.AccelY = (short)((inputReportBuffer[32] << 8) | inputReportBuffer[31]);
                         current.Motion.AccelZ = (short)((inputReportBuffer[34] << 8) | inputReportBuffer[33]);
@@ -357,9 +297,6 @@ namespace DS4MapperTest.SteamControllerLibrary
                         current.Motion.AngGyroPitch = current.Motion.GyroPitch * SteamControllerState.SteamControllerMotion.GYRO_RES_IN_DEG_SEC_RATIO;
                         current.Motion.AngGyroRoll = current.Motion.GyroRoll * SteamControllerState.SteamControllerMotion.GYRO_RES_IN_DEG_SEC_RATIO;
                         current.Motion.AngGyroYaw = current.Motion.GyroYaw * SteamControllerState.SteamControllerMotion.GYRO_RES_IN_DEG_SEC_RATIO;
-
-                        //Trace.WriteLine($"TEST: {inputReportBuffer[41]}");
-                        //Trace.WriteLine(string.Format("Yaw: {0}", current.Motion.GyroYaw));
 
                         current.Motion.QuaternionX = (short)(-1 * ((inputReportBuffer[42] << 8) | inputReportBuffer[41]));
                         current.Motion.QuaternionY = (short)(-1 * ((inputReportBuffer[44] << 8) | inputReportBuffer[43]));
@@ -407,10 +344,6 @@ namespace DS4MapperTest.SteamControllerLibrary
 
         public void WriteHapticsReport()
         {
-            //if (device.hapticInfo != device.previousHapticInfo)
-            //{
-
-            //}
 
             // Send Left Haptic rumble
             device.PrepareHapticsData(hapticsReportBuffer, SteamControllerDevice.HAPTIC_POS_LEFT);
@@ -423,7 +356,6 @@ namespace DS4MapperTest.SteamControllerLibrary
             device.hapticInfo.dirty = false;
             device.previousHapticInfo = device.hapticInfo;
 
-            //device.hapticInfo = new SteamControllerDevice.HapticFeedbackInfo();
         }
     }
 }

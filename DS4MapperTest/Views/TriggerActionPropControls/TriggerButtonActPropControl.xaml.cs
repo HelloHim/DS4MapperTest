@@ -66,8 +66,6 @@ namespace DS4MapperTest.Views.TriggerActionPropControls
         public void RefreshView()
         {
             // Force re-eval of all bindings
-            //DataContext = null;
-            //DataContext = trigBtnActVM;
             btnEditOpenTest.GetBindingExpression(Button.ContentProperty).UpdateTarget();
         }
 

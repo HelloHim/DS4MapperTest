@@ -25,31 +25,6 @@ namespace DS4MapperTest.StickActions
             outXVal = Math.Clamp(rotX + stickDefinition.xAxis.mid, stickDefinition.xAxis.min, stickDefinition.xAxis.max);
             outYVal = Math.Clamp(rotY + stickDefinition.yAxis.mid, stickDefinition.yAxis.min, stickDefinition.yAxis.max);
 
-            //double xRange = stickDefinition.xAxis.max - stickDefinition.xAxis.min;
-            //double yRange = stickDefinition.yAxis.max - stickDefinition.yAxis.min;
-
-            //Trace.WriteLine($"BALLER ALERT {tempX}");
-
-            //outXVal = outYVal = 0;
-
-            //double xNorm = (axisXVal - stickDefinition.xAxis.min) / xRange;
-            //double yNorm = (axisYVal - stickDefinition.yAxis.min) / yRange;
-
-            //int xNow = (int)(xNorm * xRange);
-            //Trace.WriteLine($"BALLER ALERT {xNow}");
-
-            //xNorm -= 0.5;
-            //yNorm -= 0.5;
-
-            //double outXNorm = xNorm * cosAngle - yNorm * sinAngle;
-            //double outYNorm = xNorm * sinAngle + yNorm * cosAngle;
-
-            //xNorm += 0.5; yNorm += 0.5;
-            //outXNorm += 0.5;
-            //outYNorm += 0.5;
-
-            //outXVal = (int)Math.Clamp(outXNorm * xRange + stickDefinition.xAxis.min, stickDefinition.xAxis.min, stickDefinition.xAxis.max);
-            //outYVal = (int)Math.Clamp(outYNorm * yRange + stickDefinition.yAxis.min, stickDefinition.yAxis.min, stickDefinition.yAxis.max);
         }
     }
 }

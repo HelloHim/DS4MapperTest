@@ -77,12 +77,6 @@ namespace DS4MapperTest.TouchpadActions
 
         public override void Prepare(Mapper mapper, ref TouchEventFrame touchFrame, bool alterState = true)
         {
-            //active = touchFrame.Touch;
-            //if (touchFrame.Touch != inputStatus)
-            //{
-            //    inputStatus = touchFrame.Touch;
-            //    active = true;
-            //}
 
             active = false;
             xNorm = 0.0; yNorm = 0.0;

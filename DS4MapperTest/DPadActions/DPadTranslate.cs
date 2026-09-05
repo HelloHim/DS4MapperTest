@@ -134,15 +134,6 @@ namespace DS4MapperTest.DPadActions
                     }
                 }
 
-                //if (!changedProperties.Contains(PropertyKeyStrings.NAME))
-                //{
-                //    name = tempTranslateAction.name;
-                //}
-
-                //if (!changedProperties.Contains(PropertyKeyStrings.OUTPUT_PAD))
-                //{
-                //    outputAction.DpadCode = tempTranslateAction.outputAction.DpadCode;
-                //}
             }
         }
 

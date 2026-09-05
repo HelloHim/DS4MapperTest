@@ -106,7 +106,7 @@ namespace DS4MapperTest.MapperUtil
         public double currentNotches;
         public bool processOutput;
 
-        // Camera Turn parameters — positive angle = right, negative = left
+        // Camera Turn parameters: positive angle = right, negative = left
         public double cameraTurnAngle = 180.0;
         public double cameraTurnDurationMs = 100.0;
         public double cameraTurnCounts360 = 1800.0; // mouse counts for one full 360° at your actual in-game sensitivity
@@ -139,7 +139,7 @@ namespace DS4MapperTest.MapperUtil
             }
         }
 
-        // Adjustable duration to use for analog actions. Should mostly
+        // Adjustable duration to use for analogue actions. Should mostly
         // be the same value as durationMs
         private int effectiveDurationMs = 100;
         public int EffectiveDurationMs
@@ -368,7 +368,6 @@ namespace DS4MapperTest.MapperUtil
         public bool ProcessTick()
         {
             bool active = activatedEvent;
-            //bool result = false;
             switch(outputType)
             {
                 case ActionType.MouseWheel:
@@ -400,29 +399,6 @@ namespace DS4MapperTest.MapperUtil
 
                     break;
                 }
-                /*case ActionType.Wait:
-                {
-                    if (!tickTimerActive)
-                    {
-                        elapsed.Restart();
-                        tickTimerActive = true;
-                    }
-
-                    if (elapsed.ElapsedMilliseconds >= effectiveDurationMs)
-                    {
-                        elapsed.Reset();
-                        active = true;
-                        breakSequence = false;
-                    }
-                    else
-                    {
-                        active = false;
-                        breakSequence = true;
-                    }
-
-                    break;
-                }
-                */
                 default: break;
             }
 
@@ -496,9 +472,7 @@ namespace DS4MapperTest.MapperUtil
             switch (outputType)
             {
                 case ActionType.Keyboard:
-                    //result = OutputDataAliasUtil.GetStringForKeyboardKey(outputCodeAlias);
                     result = OutputDataAliasUtil.GetDisplayStringForKeyboardKey((uint)outputCode);
-                    //result = OutputCodeStr;
                     break;
                 case ActionType.MouseButton:
                     result = OutputDataAliasUtil.GetStringForMouseButton(outputCode);
@@ -562,18 +536,6 @@ namespace DS4MapperTest.MapperUtil
                     break;
                 case ActionType.RemoveActionLayer:
                     {
-                        /*string tempLayerName = $"{changeToLayer}";
-                        if (changeToLayer >= 0 && changeToLayer < mapper.ActionProfile.CurrentActionSet.ActionLayers.Count)
-                        {
-                            ActionLayer tempLayer = mapper.ActionProfile.CurrentActionSet.ActionLayers[changeToLayer];
-                            if (tempLayer != null)
-                            {
-                                tempLayerName = tempLayer.Name;
-                            }
-                        }
-
-                        result = $"Remove Layer ({tempLayerName})";
-                        */
                         result = $"Remove Layer";
                     }
 

@@ -403,22 +403,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler SmoothingBetaChanged;
 
-        //private List<GyroOutputCurveItem> outputCurveItems = new List<GyroOutputCurveItem>();
-        //public List<GyroOutputCurveItem> OutputCurveItems => outputCurveItems;
-
-        //private int outputCurveIndex = -1;
-        //public int OutputCurveIndex
-        //{
-        //    get => outputCurveIndex;
-        //    set
-        //    {
-        //        outputCurveIndex = value;
-        //        OutputCurveIndexChanged?.Invoke(this, EventArgs.Empty);
-        //        ActionPropertyChanged?.Invoke(this, EventArgs.Empty);
-        //    }
-        //}
-        //public event EventHandler OutputCurveIndexChanged;
-
         public bool HighlightName
         {
             get => action.ParentAction == null ||
@@ -525,13 +509,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
         }
         public event EventHandler HighlightSmoothingFilterChanged;
 
-        //public bool HighlightOutputCurve
-        //{
-        //    get => action.ParentAction == null ||
-        //        action.ChangedProperties.Contains(GyroMouseJoystick.PropertyKeyStrings.ANTIDEAD_ZONE_Y);
-        //}
-        //public event EventHandler HighlightOutputCurveChanged;
-
         public override event EventHandler ActionPropertyChanged;
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -554,10 +531,8 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
                 GyroMouseJoystick baseLayerAction = mapper.ActionProfile.CurrentActionSet.DefaultActionLayer.normalActionDict[action.MappingId] as GyroMouseJoystick;
                 GyroMouseJoystick tempAction = new GyroMouseJoystick();
                 tempAction.SoftCopyFromParent(baseLayerAction);
-                //int tempLayerId = mapper.ActionProfile.CurrentActionSet.CurrentActionLayer.Index;
                 int tempId = mapper.ActionProfile.CurrentActionSet.RecentAppliedLayer.FindNextAvailableId();
                 tempAction.Id = tempId;
-                //tempAction.MappingId = this.action.MappingId;
 
                 this.action = tempAction;
                 this.baseAction = this.action;
@@ -813,15 +788,6 @@ namespace DS4MapperTest.ViewModels.GyroActionPropViewModels
             outputStickIndex =
                 outputStickHolder.StickAliasIndex(action.mStickParams.outputStick);
 
-            //outputCurveItems.AddRange(new GyroOutputCurveItem[]
-            //{
-            //    new GyroOutputCurveItem("Linear", StickOutCurve.Curve.Linear),
-            //    new GyroOutputCurveItem("Enhanced Precision", StickOutCurve.Curve.EnhancedPrecision),
-            //    new GyroOutputCurveItem("Quadratic", StickOutCurve.Curve.Quadratic),
-            //    new GyroOutputCurveItem("Cubic", StickOutCurve.Curve.Cubic),
-            //    new GyroOutputCurveItem("Easeout Quadratic", StickOutCurve.Curve.EaseoutQuad),
-            //    new GyroOutputCurveItem("Easeout Cubic", StickOutCurve.Curve.EaseoutCubic),
-            //});
         }
 
         private void GyroTriggerItem_EnabledChanged(object sender, EventArgs e)

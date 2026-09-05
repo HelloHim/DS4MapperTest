@@ -55,17 +55,6 @@ namespace DS4MapperTest.SteamControllerLibrary
             device.SetOperational();
         }
 
-        //public override void StartUpdate()
-        //{
-        //    PrepareDevice();
-
-        //    inputThread = new Thread(ReadInput);
-        //    inputThread.IsBackground = true;
-        //    inputThread.Priority = ThreadPriority.AboveNormal;
-        //    inputThread.Name = "Steam Controller Reader Thread";
-        //    inputThread.Start();
-        //}
-
         protected override void ReadInput()
         {
             activeInputLoop = true;
@@ -96,7 +85,6 @@ namespace DS4MapperTest.SteamControllerLibrary
 
                     HidDevice.ReadStatus res = HidDevice.ReadStatus.NoDataRead;
                     {
-                        //res = device.HidDevice.ReadWithFileStream(inputReportBuffer, out bytesRead, 0, 20);
                         res = device.HidDevice.ReadWithFileStream(tempInputReportBuffer);
                     }
 
@@ -120,10 +108,6 @@ namespace DS4MapperTest.SteamControllerLibrary
                         byte checkPayloadByte = tempInputReportBuffer[1];
                         currentPacketNum = checkPayloadByte & 0x0F;
 
-                        //string tempOutPartStr = BitConverter.ToString(tempInputReportBuffer);
-                        ////Trace.WriteLine(string.Join(", ", inputReportBuffer));
-                        //Trace.WriteLine(tempOutPartStr.Replace("-", ", "));
-
                         if (inLongPacket)
                         {
                             // Copy data from second portion of packet to full input report data buffer.
@@ -140,7 +124,6 @@ namespace DS4MapperTest.SteamControllerLibrary
                         inLongPacket = !endPayload;
                         processPayload = endPayload;
 
-                        //if (oldInLongPacket && endPayload)
                         if (endPayload)
                         {
                             resetDataBuffer = true;
@@ -150,26 +133,19 @@ namespace DS4MapperTest.SteamControllerLibrary
                         byte longPacketByte = inputReportBuffer[1];
                         uint packetTypeByte = (uint)((inputReportBuffer[3] << 8) | inputReportBuffer[2]);
 
-                        //if (longPacketByte == 0xC1 || longPacketByte == 0xC2)
                         if (longPacketByte != 0x80 && longPacketByte != 0xC0)
                         {
                             Trace.WriteLine($"SECOND PART IN ERROR. LONG: {longPacket} {longPacketByte}");
                             string tempOutStr3 = BitConverter.ToString(inputReportBuffer);
-                            ////Trace.WriteLine(string.Join(", ", inputReportBuffer));
                             Trace.WriteLine(tempOutStr3.Replace("-", ", "));
                         }
 
-                        //Trace.WriteLine(packetTypeByte);
                         if (!processPayload)
                         {
-                            //Trace.WriteLine(string.Join(", ", inputReportBuffer));
-                            //longPacket = true;
-                            //Trace.WriteLine("FOUND LONG");
                             continue;
                         }
                         else
                         {
-                            //Trace.WriteLine("LONG END");
                             longPacket = false;
                         }
 
@@ -187,32 +163,11 @@ namespace DS4MapperTest.SteamControllerLibrary
                         // Need to set previous time here before potential PING packet processing
                         previousTime = currentTime;
 
-                        /*if ((packetTypeByte & 0x05) == 0x05)
-                        {
-                            Trace.WriteLine($"PING {packetTypeByte}");
-                            continue;
-                        }
-                        */
-
                         if ((packetTypeByte & BtInputPakcetType.PING) == BtInputPakcetType.PING)
                         {
-                            //Trace.WriteLine($"PING {packetTypeByte}");
-
-                            /*string tempOutStr3 = BitConverter.ToString(inputReportBuffer);
-                            ////Trace.WriteLine(string.Join(", ", inputReportBuffer));
-                            Trace.WriteLine(tempOutStr3.Replace("-", ", "));
-                            */
-
-                            //if (resetDataBuffer)
-                            //{
-                            //    Array.Clear(inputReportBuffer, 0, inputReportBuffer.Length);
-                            //}
 
                             uint batt = (uint)((inputReportBuffer[14] << 8) | inputReportBuffer[13]);
-                            //Trace.WriteLine($"{batt} {inputReportBuffer[13]:X2} {inputReportBuffer[14]:X2}");
-                            // Percentage / Voltage (mV)
                             const double BATSLOPE = (100.0 - 0.0) / (3500.0 - 2000.0);
-                            //uint tempBat = Math.Clamp(batt / 35, 0, 100);
                             uint tempBat = (uint)Math.Clamp((int)(batt * BATSLOPE - 133.34), 0, 100);
                             device.Battery = tempBat;
                             continue;
@@ -221,13 +176,9 @@ namespace DS4MapperTest.SteamControllerLibrary
                         // Got INPUT packet. Modify state timeElapsed
                         current.timeElapsed = tempTimeElapsed;
 
-                        //Trace.WriteLine(tempTimeElapsed);
-
                         int dataIdx = 4;
                         if ((packetTypeByte & BtInputPakcetType.BUTTONS) == BtInputPakcetType.BUTTONS)
                         {
-                            //Trace.Write("IN BUTTONS ");
-                            // Buttons
                             tempByte = inputReportBuffer[dataIdx];
                             current.RTClick = (tempByte & 0x01) != 0;
                             current.LTClick = (tempByte & 0x02) != 0;
@@ -257,80 +208,45 @@ namespace DS4MapperTest.SteamControllerLibrary
                             current.LeftPad.Touch = (tempByte & 0x08) != 0;
                             current.RightPad.Touch = (tempByte & 0x10) != 0;
                             current.LSClick = (tempByte & 0x40) != 0;
-                            //lsCoorConflict = (tempByte & 0x80) != 0;
 
                             dataIdx += 3;
 
-                            /*Trace.WriteLine($"BUTTONS {inputReportBuffer[4]} {current.A} {packetTypeByte}");
-
-                            string tempOutStr4 = BitConverter.ToString(inputReportBuffer);
-                            //Trace.WriteLine(string.Join(", ", inputReportBuffer));
-                            Trace.WriteLine($"DSP {tempOutStr4.Replace("-", ", ")}");
-                            */
-
-                            /*if (current.LGrip)
-                            {
-                                //Trace.WriteLine($"LGRIP {inputReportBuffer[5]}");
-                                //string tempOutStr4 = BitConverter.ToString(inputReportBuffer);
-                                ////Trace.WriteLine(string.Join(", ", inputReportBuffer));
-                                //Trace.WriteLine(tempOutStr4.Replace("-", ", "));
-                            }
-                            */
                         }
 
                         if ((packetTypeByte & BtInputPakcetType.TRIGGERS) == BtInputPakcetType.TRIGGERS)
                         {
-                            //Trace.Write("IN TRIGGERS ");
                             current.LT = inputReportBuffer[dataIdx];
                             current.RT = inputReportBuffer[dataIdx + 1];
 
-                            //Trace.WriteLine($"TRIGGERS: {inputReportBuffer[dataIdx]}");
                             dataIdx += 2;
                         }
 
                         if ((packetTypeByte & BtInputPakcetType.STICK) == BtInputPakcetType.STICK)
                         {
-                            //Trace.Write("IN STICK ");
                             current.LX = (short)((inputReportBuffer[dataIdx + 1] << 8) | inputReportBuffer[dataIdx]);
                             current.LY = (short)((inputReportBuffer[dataIdx + 3] << 8) | inputReportBuffer[dataIdx + 2]);
 
-                            //Trace.WriteLine($"STICK {inputReportBuffer[dataIdx]} {current.LY}");
                             dataIdx += 4;
                         }
 
                         if ((packetTypeByte & BtInputPakcetType.LPAD) == BtInputPakcetType.LPAD)
                         {
-                            //Trace.Write("IN LPAD ");
                             current.LeftPad.X = (short)((inputReportBuffer[dataIdx + 1] << 8) | inputReportBuffer[dataIdx]);
                             current.LeftPad.Y = (short)((inputReportBuffer[dataIdx + 3] << 8) | inputReportBuffer[dataIdx + 2]);
 
-                            //Trace.WriteLine($"LPAD {inputReportBuffer[dataIdx]} {current.LeftPad.X}");
                             dataIdx += 4;
                         }
-                        //else if (!current.LeftPad.Touch)
-                        //{
-                        //    current.LeftPad.X = 0;
-                        //    current.LeftPad.Y = 0;
-                        //}
 
                         if ((packetTypeByte & BtInputPakcetType.RPAD) == BtInputPakcetType.RPAD)
                         {
-                            //Trace.Write("IN RPAD ");
                             current.RightPad.X = (short)((inputReportBuffer[dataIdx + 1] << 8) | inputReportBuffer[dataIdx]);
                             current.RightPad.Y = (short)((inputReportBuffer[dataIdx + 3] << 8) | inputReportBuffer[dataIdx + 2]);
 
-                            //Trace.WriteLine($"RPAD {inputReportBuffer[dataIdx]} {current.RightPad.X} {dataIdx}");
                             dataIdx += 4;
                         }
-                        //else if (!current.RightPad.Touch)
-                        //{
-                        //    current.RightPad.X = 0;
-                        //    current.RightPad.Y = 0;
-                        //}
 
                         if ((packetTypeByte & BtInputPakcetType.GYRO) == BtInputPakcetType.GYRO)
                         {
-                            //Trace.Write("IN GYRO ");
                             current.Motion.AccelX = (short)(-1 * ((inputReportBuffer[dataIdx + 1] << 8) | inputReportBuffer[dataIdx]));
                             current.Motion.AccelY = (short)((inputReportBuffer[dataIdx + 3] << 8) | inputReportBuffer[dataIdx + 2]);
                             current.Motion.AccelZ = (short)((inputReportBuffer[dataIdx + 5] << 8) | inputReportBuffer[dataIdx + 4]);
@@ -366,16 +282,8 @@ namespace DS4MapperTest.SteamControllerLibrary
                             current.Motion.QuaternionZ = (short)(-1 * ((inputReportBuffer[dataIdx + 17] << 8) | inputReportBuffer[dataIdx + 16]));
                             current.Motion.QuaternionW = (short)(-1 * ((inputReportBuffer[dataIdx + 19] << 8) | inputReportBuffer[dataIdx + 18]));
 
-                            //Trace.WriteLine($"GYRO {inputReportBuffer[dataIdx]} {current.Motion.AccelX}");
                             dataIdx += 20;
                         }
-
-                        //Trace.WriteLine("");
-                        //Trace.WriteLine(string.Join(", ", inputReportBuffer));
-                        /*string tempOutStrEnd = BitConverter.ToString(inputReportBuffer);
-                        ////Trace.WriteLine(string.Join(", ", inputReportBuffer));
-                        Trace.WriteLine(tempOutStrEnd.Replace("-", ", "));
-                        */
 
                         if (fireReport)
                         {

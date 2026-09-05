@@ -464,7 +464,6 @@ namespace HidLibrary
                 if (fileStream != null && fileStream.CanWrite && !safeReadHandle.IsInvalid)
                 {
                     Task writeTask = fileStream.WriteAsync(outputBuffer, 0, outputBuffer.Length);
-                    //fileStream.Write(outputBuffer, 0, outputBuffer.Length);
                     return true;
                 }
                 else
@@ -557,8 +556,6 @@ namespace HidLibrary
         {
             string MACAddr = string.Empty;
 
-            //AppLogger.LogToGui($"WARNING: Failed to read serial# from a gamepad ({this._deviceAttributes.VendorHexId}/{this._deviceAttributes.ProductHexId}). Generating MAC address from a device path. From now on you should connect this gamepad always into the same USB port or BT pairing host to keep the same device path.", true);
-
             try
             {
                 // Substring: \\?\hid#vid_054c&pid_09cc&mi_03#7&1f882A25&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030} -> \\?\hid#vid_054c&pid_09cc&mi_03#7&1f882A25&0&0001#
@@ -591,7 +588,6 @@ namespace HidLibrary
             }
             catch (Exception e)
             {
-                //AppLogger.LogToGui($"ERROR: Failed to generate runtime MAC address from device path {this.DevicePath}. {e.Message}", true);
                 serial = BLANK_SERIAL;
             }
 

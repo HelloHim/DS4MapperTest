@@ -147,10 +147,8 @@ namespace DS4MapperTest
         {
             foreach (MapAction action in mappedActions)
             {
-                //bool foundInputId = reverseActionDict.TryGetValue(action, out string mappedId);
                 string mappedId = action.MappingId;
                 MapAction changingAction;
-                //if (foundInputId &&
                 if (changeLayer.normalActionDict.TryGetValue(mappedId, out changingAction))
                 {
                     bool hasParentAction = action.ParentAction != null;
@@ -173,7 +171,6 @@ namespace DS4MapperTest
                 else
                 {
                     // No applicable action in changing ActionLayer found. Perform Release
-                    //action.Release(mapper, resetState);
                 }
             }
         }
@@ -181,10 +178,6 @@ namespace DS4MapperTest
         public void CompareReleaseActions(Mapper mapper, MapAction action,
             MapAction changingAction, bool resetState = true, bool ignoreReleaseActions = false)
         {
-            //bool foundInputId = reverseActionDict.TryGetValue(action, out string mappedId);
-            //string mappedId = action.MappingId;
-            //if (foundInputId &&
-            //if (changeLayer.normalActionDict.TryGetValue(mappedId, out changingAction))
             {
                 bool hasParentAction = action.ParentAction != null;
                 if (hasParentAction && changingAction == action.ParentAction)
@@ -202,7 +195,6 @@ namespace DS4MapperTest
                     if (MapAction.IsSameType(action, changingAction))
                     {
                         // Changing between ActionLayer instances with identical actions. Perform SoftRelease
-                        //Trace.WriteLine($"SAME SAME: PERFORMING SOFTRELEASE {changingAction.MappingId} {changingAction.Name}");
                         action.SoftRelease(mapper, changingAction, resetState);
                     }
                     else
@@ -212,23 +204,10 @@ namespace DS4MapperTest
                     }
                 }
             }
-            //else
-            //{
-            //    // No applicable action in changing ActionLayer found. Perform Release
-            //    //action.Release(mapper, resetState);
-            //}
         }
 
         public void CopyParentStates()
         {
-            /*foreach(MapAction action in mappedActions)
-            {
-                if (action.ParentAction != null)
-                {
-                    action.StateData = action.ParentAction.StateData;
-                }
-            }
-            */
         }
 
         public void MergeLayerActions(ActionLayer secondLayer)
@@ -269,7 +248,6 @@ namespace DS4MapperTest
             {
                 if (!secondLayer.triggerActionDict.TryGetValue(pair.Key, out TriggerMapAction _))
                 {
-                    //secondLayer.triggerActionDict.Add(pair.Key, pair.Value.DuplicateAction());
                 }
             }
 
@@ -277,7 +255,6 @@ namespace DS4MapperTest
             {
                 if (!secondLayer.touchpadActionDict.TryGetValue(pair.Key, out TouchpadMapAction _))
                 {
-                    //secondLayer.touchpadActionDict.Add(pair.Key, pair.Value.DuplicateAction());
                 }
             }
 
@@ -294,7 +271,6 @@ namespace DS4MapperTest
         {
             foreach (KeyValuePair<string, ButtonMapAction> pair in actionSetActionDict)
             {
-                //if (!secondLayer.actionSetActionDict.TryGetValue(pair.Key, out ButtonMapAction _))
                 {
                     secondLayer.actionSetActionDict.Add(pair.Key, pair.Value);
                 }
@@ -302,7 +278,6 @@ namespace DS4MapperTest
 
             foreach (KeyValuePair<string, ButtonMapAction> pair in buttonActionDict)
             {
-                //if (!secondLayer.buttonActionDict.TryGetValue(pair.Key, out ButtonMapAction _))
                 {
                     secondLayer.buttonActionDict.Add(pair.Key, pair.Value);
                 }
@@ -310,7 +285,6 @@ namespace DS4MapperTest
 
             foreach (KeyValuePair<string, DPadMapAction> pair in dpadActionDict)
             {
-                //if (!secondLayer.dpadActionDict.TryGetValue(pair.Key, out DPadMapAction _))
                 {
                     secondLayer.dpadActionDict.Add(pair.Key, pair.Value);
                 }
@@ -318,7 +292,6 @@ namespace DS4MapperTest
 
             foreach (KeyValuePair<string, StickMapAction> pair in stickActionDict)
             {
-                //if (!secondLayer.stickActionDict.TryGetValue(pair.Key, out StickMapAction _))
                 {
                     secondLayer.stickActionDict.Add(pair.Key, pair.Value);
                 }
@@ -326,7 +299,6 @@ namespace DS4MapperTest
 
             foreach (KeyValuePair<string, TriggerMapAction> pair in triggerActionDict)
             {
-                //if (!secondLayer.stickActionDict.TryGetValue(pair.Key, out TriggerMapAction _))
                 {
                     secondLayer.triggerActionDict.Add(pair.Key, pair.Value);
                 }
@@ -334,7 +306,6 @@ namespace DS4MapperTest
 
             foreach (KeyValuePair<string, TouchpadMapAction> pair in touchpadActionDict)
             {
-                //if (!secondLayer.touchpadActionDict.TryGetValue(pair.Key, out TouchpadMapAction _))
                 {
                     secondLayer.touchpadActionDict.Add(pair.Key, pair.Value);
                 }
@@ -342,7 +313,6 @@ namespace DS4MapperTest
 
             foreach (KeyValuePair<string, GyroMapAction> pair in gyroActionDict)
             {
-                //if (!secondLayer.gyroActionDict.TryGetValue(pair.Key, out GyroMapAction _))
                 {
                     secondLayer.gyroActionDict.Add(pair.Key, pair.Value);
                 }
@@ -404,7 +374,6 @@ namespace DS4MapperTest
         public void AddButtonMapAction(ButtonMapAction action)
         {
             layerActions.Add(action);
-            //mappedActions.Add(action);
             buttonActionDict[action.MappingId] = action;
 
             normalActionDict[action.MappingId] = action;
@@ -451,7 +420,6 @@ namespace DS4MapperTest
         public void AddActionSetButtonMapAction(ButtonMapAction action)
         {
             layerActions.Add(action);
-            //mappedActions.Add(action);
             actionSetActionDict[action.MappingId] = action;
 
             normalActionDict[action.MappingId] = action;
@@ -498,7 +466,6 @@ namespace DS4MapperTest
         public void AddTriggerAction(TriggerMapAction action)
         {
             layerActions.Add(action);
-            //mappedActions.Add(action);
             triggerActionDict[action.MappingId] = action;
 
             normalActionDict[action.MappingId] = action;
@@ -545,7 +512,6 @@ namespace DS4MapperTest
         public void AddStickAction(StickMapAction action)
         {
             layerActions.Add(action);
-            //mappedActions.Add(action);
             stickActionDict[action.MappingId] = action;
 
             normalActionDict[action.MappingId] = action;
@@ -592,7 +558,6 @@ namespace DS4MapperTest
         public void AddDPadAction(DPadMapAction action)
         {
             layerActions.Add(action);
-            //mappedActions.Add(action);
             dpadActionDict[action.MappingId] = action;
 
             normalActionDict[action.MappingId] = action;
@@ -639,7 +604,6 @@ namespace DS4MapperTest
         public void AddGyroAction(GyroMapAction action)
         {
             layerActions.Add(action);
-            //mappedActions.Add(action);
             gyroActionDict[action.MappingId] = action;
 
             normalActionDict[action.MappingId] = action;
@@ -681,7 +645,6 @@ namespace DS4MapperTest
         public void AddTouchpadAction(TouchpadMapAction action)
         {
             layerActions.Add(action);
-            //mappedActions.Add(action);
             touchpadActionDict[action.MappingId] = action;
 
             normalActionDict[action.MappingId] = action;

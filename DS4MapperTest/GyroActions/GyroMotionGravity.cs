@@ -109,7 +109,6 @@ namespace DS4MapperTest.GyroActions
                 shakiness = Math.Max(shakiness, (inAccel - smoothAccel).Length());
                 smoothAccel = inAccel.Lerp(smoothAccel, smoothFactor);
 
-                // Update grav by rotation.
                 grav *= rotation.Inverse();
 
                 // Close the gap between grav and raw acceleration.

@@ -15,7 +15,7 @@ namespace DS4MapperTest.StickActions
     // Port of JoyShockMapper's HYBRID_AIM stick mode: a deflection-proportional
     // "turn rate" term added to a raw stick-delta "mouselike" term, with an
     // edge-push sustain while pegged at the outer deadzone and a return-deadzone
-    // that damps output while the stick is snapping back toward center.
+    // that damps output while the stick is snapping back toward centre.
     //
     // Both terms are authored in degrees of in-game camera rotation and converted
     // to mouse counts through the profile's angle calibration, exactly like

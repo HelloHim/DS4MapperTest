@@ -54,15 +54,12 @@ namespace DS4MapperTest.TouchpadActions
 
         public class FlickStickMappingData
         {
-            //public const double DEFAULT_MINCUTOFF = 0.4;
-            //public const double DEFAULT_BETA = 0.4;
 
             public const double DEFAULT_FLICK_PROGRESS = 0.0;
             public const double DEFAULT_FLICK_SIZE = 0.0;
             public const double DEFAULT_FLICK_ANGLE_REMAINDER = 0.0;
             public const double DEFAULT_FLICK_TIME_ACTUAL = 0.0;
 
-            //public OneEuroFilter flickFilter = new OneEuroFilter(DEFAULT_MINCUTOFF, DEFAULT_BETA);
             public double flickProgress = DEFAULT_FLICK_PROGRESS;
             public double flickSize = DEFAULT_FLICK_SIZE;
             public double flickAngleRemainder = DEFAULT_FLICK_ANGLE_REMAINDER;
@@ -108,7 +105,6 @@ namespace DS4MapperTest.TouchpadActions
 
             public void Reset()
             {
-                //flickFilter = new OneEuroFilter(DEFAULT_MINCUTOFF, DEFAULT_BETA);
                 flickProgress = DEFAULT_FLICK_PROGRESS;
                 flickSize = DEFAULT_FLICK_SIZE;
                 flickAngleRemainder = DEFAULT_FLICK_ANGLE_REMAINDER;
@@ -275,8 +271,6 @@ namespace DS4MapperTest.TouchpadActions
             if (lsangle != 0.0)
             {
                 tempFlickData.flickAngleRemainder = 0.0;
-                //flickAngleRemainder = lsangle - (int)lsangle;
-                //lsangle = (int)lsangle;
                 tempMouseDeltaX += lsangle * realWorldCalibration / inGameSens;
             }
 
@@ -542,7 +536,6 @@ namespace DS4MapperTest.TouchpadActions
                         }
                         flickData.flickTimeActual = flickTime * Math.Pow(Math.Abs(flickData.flickSize) / Math.PI, flickTimeExponent);
                         flickData.ResetRotationSmoothing();
-                        //flickData.flickFilter.Filter(0.0, mapper.CurrentLatency);
                     }
                 }
                 else
@@ -558,9 +551,6 @@ namespace DS4MapperTest.TouchpadActions
                         angleChange += 2 * Math.PI;
                     }
                     angleChange -= Math.PI;
-                    //Trace.WriteLine(string.Format("ANGLE CHANGE: {0} {1} {2}", stickAngle, lastStickAngle, rawAngleChange));
-                    //Trace.WriteLine(string.Format("{0} {1} | {2} {3}", axisXVal, prevXVal, axisYVal, prevYVal));
-                    //angleChange = flickData.flickFilter.Filter(angleChange, mapper.CurrentLatency);
                     // Flick Only deliberately preserves the initial flick but blocks
                     // the camera rotation caused by sweeping a held touch.
                     if (subMode != FlickStickSubMode.FlickOnly)
@@ -589,8 +579,6 @@ namespace DS4MapperTest.TouchpadActions
             }
             else
             {
-                // Cleanup
-                //flickData.flickFilter.Filter(0.0, mapper.CurrentLatency);
                 result = 0.0;
             }
 
@@ -608,7 +596,6 @@ namespace DS4MapperTest.TouchpadActions
 
                 double warpedLastPerOne = WarpEaseOut(lastPerOne);
                 double warpedThisPerone = WarpEaseOut(thisPerOne);
-                //Trace.WriteLine(string.Format("{0} {1}", warpedThisPerone, warpedLastPerOne));
 
                 result += (warpedThisPerone - warpedLastPerOne) * flickData.flickSize;
             }

@@ -88,7 +88,6 @@ namespace DS4MapperTest.Views
                         propControl.ActionTypeIndexChanged += PropControl_ActionTypeIndexChanged;
                         propControl.RequestFuncEditor += StickCircularPropControl_RequestFuncEditor;
                         stickBindEditVM.DisplayControl = propControl;
-                        //stickBindEditVM.ActionBaseDisplayControl = propControl;
                     }
 
                     break;
@@ -155,7 +154,6 @@ namespace DS4MapperTest.Views
             };
             tempControl.ActionChanged += (sender, action) =>
             {
-                //e.UpdateActHandler?.Invoke(null, action);
                 StickPadActionControl stickDisplayControl =
                     oldControl as StickPadActionControl;
 

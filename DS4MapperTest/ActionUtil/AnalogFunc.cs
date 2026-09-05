@@ -10,7 +10,6 @@ namespace DS4MapperTest.ActionUtil
         public const double DEFAULT_MAX_OUTPUT = 1.0;
 
         private bool inputStatus;
-        //private JoypadActionCodes outputAxis;
         private double minOutput = DEFAULT_MIN_OUTPUT;
         private double maxOutput = DEFAULT_MAX_OUTPUT;
         private OutputActionData analogActionData =

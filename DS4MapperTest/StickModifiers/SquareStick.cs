@@ -44,7 +44,6 @@ namespace DS4MapperTest.StickModifiers
             if (angle <= PiOverFour || angle > 7.0 * PiOverFour)
             {
                 double tempVal = 1.0 / cosAng;
-                //Trace.WriteLine("1 ANG: {0} | TEMP: {1}", angle, tempVal);
                 squared.x = current.x * tempVal;
                 squared.y = current.y * tempVal;
             }
@@ -52,7 +51,6 @@ namespace DS4MapperTest.StickModifiers
             else if (angle > PiOverFour && angle <= 3.0 * PiOverFour)
             {
                 double tempVal = 1.0 / Math.Sin(angle);
-                //Trace.WriteLine("2 ANG: {0} | TEMP: {1}", angle, tempVal);
                 squared.x = current.x * tempVal;
                 squared.y = current.y * tempVal;
             }
@@ -60,7 +58,6 @@ namespace DS4MapperTest.StickModifiers
             else if (angle > 3.0 * PiOverFour && angle <= 5.0 * PiOverFour)
             {
                 double tempVal = -1.0 / cosAng;
-                //Trace.WriteLine("3 ANG: {0} | TEMP: {1}", angle, tempVal);
                 squared.x = current.x * tempVal;
                 squared.y = current.y * tempVal;
             }
@@ -68,21 +65,15 @@ namespace DS4MapperTest.StickModifiers
             else if (angle > 5.0 * PiOverFour && angle <= 7.0 * PiOverFour)
             {
                 double tempVal = -1.0 / Math.Sin(angle);
-                //Trace.WriteLine("4 ANG: {0} | TEMP: {1}", angle, tempVal);
                 squared.x = current.x * tempVal;
                 squared.y = current.y * tempVal;
             }
             else return;
 
-            //double lengthOld = Math.Sqrt((x * x) + (y * y));
             double length = current.x / cosAng;
-            //Trace.WriteLine("LENGTH TEST ({0}) ({1}) {2}", lengthOld, length, (lengthOld == length).ToString());
             double factor = Math.Pow(length, roundness);
-            //double ogX = current.x, ogY = current.y;
             current.x += (squared.x - current.x) * factor;
             current.y += (squared.y - current.y) * factor;
-            //Trace.WriteLine("INPUT: {0} {1} | {2} {3} | {4} {5} | {6} {7}",
-            //    ogX, ogY, current.x, current.y, squared.x, squared.y, length, factor);
         }
     }
 }
