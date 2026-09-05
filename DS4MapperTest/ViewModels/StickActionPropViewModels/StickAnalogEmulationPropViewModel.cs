@@ -301,10 +301,10 @@ namespace DS4MapperTest.ViewModels.StickActionPropViewModels
 
                 if (value)
                 {
-                    // Enabling always lands on Time Variance (%) mode and the CS2
+                    // Enabling always lands on Time Variance (Range) mode and the CS2
                     // preset, so turning this on never surfaces stale/legacy press-length
                     // values or a stale mode as an unexpected "Custom".
-                    action.CounterMovementReleasePress.CounterPressLengthMode = DS4MapperTest.StickActions.CounterPressLengthMode.WaitVariancePercentage;
+                    action.CounterMovementReleasePress.CounterPressLengthMode = DS4MapperTest.StickActions.CounterPressLengthMode.MinimumAndMaximum;
                     action.CounterMovementReleasePress.ApplyCs2Preset();
                     CounterPressLengthModeChanged?.Invoke(this, EventArgs.Empty);
                     CounterPressLengthModeDescriptionChanged?.Invoke(this, EventArgs.Empty);

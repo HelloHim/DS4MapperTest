@@ -928,7 +928,7 @@ namespace DS4MapperUnitTests
 
             StickPadAction padAction = tempProfile.ActionSets[0].ActionLayers[0].stickActionDict["Stick"] as StickPadAction;
 
-            Assert.AreEqual(CounterPressLengthMode.WaitVariancePercentage, padAction.CounterMovementReleasePress.CounterPressLengthMode);
+            Assert.AreEqual(CounterPressLengthMode.MinimumAndMaximum, padAction.CounterMovementReleasePress.CounterPressLengthMode);
             Assert.AreEqual(84, padAction.CounterMovementReleasePress.CounterPressLengthMs);
             Assert.AreEqual(7, padAction.CounterMovementReleasePress.CounterPressLengthVariancePercent);
             Assert.AreEqual(CounterPressStartDelayMode.Fixed, padAction.CounterMovementReleasePress.CounterPressStartDelayMode);

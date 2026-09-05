@@ -277,7 +277,7 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void EnablingForTheFirstTime_AlwaysLandsOnWaitVariancePercentageAndCs2()
+        public void EnablingForTheFirstTime_AlwaysLandsOnMinimumAndMaximumAndCs2()
         {
             var (mapper, padAction) = LoadMapper();
             StickPadActionPropViewModel vm = new StickPadActionPropViewModel(mapper, padAction);
@@ -287,17 +287,17 @@ namespace DS4MapperUnitTests
             // genuine off-to-on transition rather than a same-value no-op.
             vm.CounterMovementReleasePressEnabled = false;
 
-            // Perturb the mode and values away from the CS2/Wait Variance Percentage
+            // Perturb the mode and values away from the CS2/Time Variance (Range)
             // combination before enabling, to prove enabling forces both back regardless of
             // whatever was previously configured.
-            vm.CounterPressLengthMode = CounterPressLengthMode.MinimumAndMaximum;
+            vm.CounterPressLengthMode = CounterPressLengthMode.Fixed;
             vm.CounterPressLengthMinimumMs = 40;
             vm.CounterPressLengthMaximumMs = 60;
 
             vm.CounterMovementReleasePressEnabled = true;
 
-            Assert.AreEqual(CounterPressLengthMode.WaitVariancePercentage, vm.CounterPressLengthMode,
-                "Enabling for the first time must always land on Wait Variance Percentage mode.");
+            Assert.AreEqual(CounterPressLengthMode.MinimumAndMaximum, vm.CounterPressLengthMode,
+                "Enabling for the first time must always land on Time Variance (Range) mode.");
             Assert.AreEqual(CounterMovementPressLengthPreset.CS2, vm.PressLengthPreset);
             Assert.AreEqual(84, vm.CounterPressLengthMs);
             Assert.AreEqual(7, vm.CounterPressLengthVariancePercent);

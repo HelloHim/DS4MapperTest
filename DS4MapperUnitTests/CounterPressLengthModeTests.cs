@@ -15,12 +15,12 @@ namespace DS4MapperUnitTests
         // --- Defaults ---------------------------------------------------------------
 
         [TestMethod]
-        public void NewProcessor_DefaultsToWaitVariancePercentageWithCs2Values()
+        public void NewProcessor_DefaultsToMinimumAndMaximumWithCs2Values()
         {
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
 
             Assert.IsFalse(processor.Enabled);
-            Assert.AreEqual(CounterPressLengthMode.WaitVariancePercentage, processor.CounterPressLengthMode);
+            Assert.AreEqual(CounterPressLengthMode.MinimumAndMaximum, processor.CounterPressLengthMode);
             Assert.AreEqual(CounterMovementPressLengthPreset.CS2, processor.EffectivePressLengthPreset);
             Assert.AreEqual(84, processor.CounterPressLengthMs);
             Assert.AreEqual(7, processor.CounterPressLengthVariancePercent);
@@ -29,12 +29,12 @@ namespace DS4MapperUnitTests
         }
 
         [TestMethod]
-        public void NewTouchpadCounterMovementReleasePress_DefaultsToWaitVariancePercentageWithCs2Values()
+        public void NewTouchpadCounterMovementReleasePress_DefaultsToMinimumAndMaximumWithCs2Values()
         {
             TouchpadCounterMovementReleasePress releasePress = new TouchpadCounterMovementReleasePress();
 
             Assert.IsFalse(releasePress.Enabled);
-            Assert.AreEqual(CounterPressLengthMode.WaitVariancePercentage, releasePress.CounterPressLengthMode);
+            Assert.AreEqual(CounterPressLengthMode.MinimumAndMaximum, releasePress.CounterPressLengthMode);
             Assert.AreEqual(CounterMovementPressLengthPreset.CS2, releasePress.EffectivePressLengthPreset);
             Assert.AreEqual(84, releasePress.CounterPressLengthMs);
             Assert.AreEqual(7, releasePress.CounterPressLengthVariancePercent);
@@ -48,7 +48,7 @@ namespace DS4MapperUnitTests
             CounterMovementReleasePressProcessor processor = new CounterMovementReleasePressProcessor();
             processor.Enabled = true;
 
-            Assert.AreEqual(CounterPressLengthMode.WaitVariancePercentage, processor.CounterPressLengthMode);
+            Assert.AreEqual(CounterPressLengthMode.MinimumAndMaximum, processor.CounterPressLengthMode);
             Assert.AreEqual(84, processor.CounterPressLengthMs);
             Assert.AreEqual(7, processor.CounterPressLengthVariancePercent);
             Assert.AreEqual(78, processor.CounterPressLengthMinimumMs);
