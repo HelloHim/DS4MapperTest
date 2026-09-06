@@ -16,9 +16,9 @@
          the game is using. -->
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
-    <AssemblyVersion>0.0.34</AssemblyVersion>
-    <FileVersion>0.0.34</FileVersion>
-    <Version>0.0.34</Version>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
+    <Version>1.0.0-beta</Version>
     <ApplicationIcon>images\DS4MapperTestAppIcon.ico</ApplicationIcon>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
