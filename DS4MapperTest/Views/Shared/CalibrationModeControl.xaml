@@ -59,12 +59,19 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="{Binding MasterCalibrationLabel}" Style="{StaticResource JsmccLabelText}"/>
-                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9999" DecimalPlaces="4" Increment="1000"
+                <!-- Both of these, and the derived field below, bind the same values and so
+                     have to share one range. The hidden one still holds a live TwoWay binding,
+                     and a NumericUpDown clamps whatever it is given to its own Maximum before
+                     writing it back: at the old 999999.9999 ceiling, a Counts total past a
+                     million (a preset picked at a sensitivity it was not measured at, say)
+                     came back clamped from the field that was not even on screen. Counts is
+                     the field that needs the headroom; RWC never approaches it. -->
+                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="99999999.9999" DecimalPlaces="4" Increment="1000"
                                   ValueFormat="0.0###"
                                   Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                   Visibility="{Binding IsCountsMode, Converter={StaticResource BoolToVis}}"
                                   Value="{Binding MasterCalibrationValue, UpdateSourceTrigger=PropertyChanged}"/>
-                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9999" DecimalPlaces="4" Increment="1.0"
+                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="99999999.9999" DecimalPlaces="4" Increment="1.0"
                                   ValueFormat="0.0###"
                                   Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                   Visibility="{Binding IsRwcMode, Converter={StaticResource BoolToVis}}"
@@ -94,7 +101,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="{Binding DerivedLabel}" Style="{StaticResource JsmccLabelText}"/>
-                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="999999.9999" DecimalPlaces="4"
+                <hc:NumericUpDown Grid.Column="1" Minimum="0" Maximum="99999999.9999" DecimalPlaces="4"
                                   ValueFormat="0.0###" IsEnabled="False" Focusable="False"
                                   Width="90" Style="{StaticResource JsmccNumericUpDownStyle}"
                                   Value="{Binding DerivedValue, Mode=OneWay}"/>

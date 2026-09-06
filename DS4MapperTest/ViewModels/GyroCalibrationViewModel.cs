@@ -17,7 +17,7 @@ namespace DS4MapperTest.ViewModels
     // the calibration section of GyroMouseActionPropViewModel/StickFlickStickPropViewModel,
     // but is not tied to any single bound action, so it can be surfaced once for
     // the whole profile on the Gyro subsection.
-    public class GyroCalibrationViewModel : INotifyPropertyChanged
+    public class GyroCalibrationViewModel : INotifyPropertyChanged, ICalibrationPanelViewModel
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -117,10 +117,17 @@ namespace DS4MapperTest.ViewModels
                 mapper.ActionProfile.CalibRwc = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
                 _syncingProfile = true;
                 try
                 {
+                    // Counts is the derived half in RWC mode and has to be recomputed from the
+                    // new RWC right here. ActionProfile_CalibValuesChanged is suppressed while
+                    // this instance is writing the profile, so nothing else refreshes the
+                    // cached fullTurnCounts: the panel would keep showing the pre-edit Counts,
+                    // and a later switch to Counts mode re-derives RWC from that stale number,
+                    // silently reverting the edit.
+                    if (IsRwcMode) CalculateCountsFromRwc();
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
                     SyncCalibToProfile();
                     UpdatePresetFromCurrentRwc();
                 }
@@ -166,9 +173,11 @@ namespace DS4MapperTest.ViewModels
                 _applyingPreset = true;
                 if (IsCountsMode)
                 {
-                    // Counts is this mode's fixed master: keep it as-is and let sensitivity
-                    // move to whatever value reproduces the preset's RWC at that Counts.
-                    if (FullTurnCounts > 0.0) InGameSens = next.RWC * 360.0 / FullTurnCounts;
+                    // A preset only ever names an RWC, and In-Game Sensitivity is the player's
+                    // own game setting, so it stays exactly as they had it in either mode.
+                    // From Counts mode that means moving Counts to whatever reproduces the
+                    // preset's RWC at that sensitivity.
+                    if (InGameSens > 0.0) FullTurnCounts = next.RWC * 360.0 / InGameSens;
                 }
                 else
                 {
@@ -186,18 +195,25 @@ namespace DS4MapperTest.ViewModels
             fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0
                 ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
 
-            mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
-            mapper.ActionProfile.CalibRwcChanged += ActionProfile_CalibValuesChanged;
-            mapper.ActionProfile.CalibInGameSensChanged += ActionProfile_CalibValuesChanged;
-            mapper.ActionProfile.CalibCountsChanged += ActionProfile_CalibValuesChanged;
-            mapper.ActionProfile.CalibPresetNameChanged += ActionProfile_CalibPresetNameChanged;
+            // Profile subscriptions are owned by CalibrationModeControl's Loaded/Unloaded
+            // (see AttachProfileCalibEvents), not by this constructor: the profile outlives
+            // every panel that shows it, so subscribing here left one dead ViewModel wired
+            // to it per panel rebuild.
+            BeginPanelInit();
+        }
 
-            // HandyControl's NumericUpDown fires ValueChanged(Minimum) during
-            // control init before the binding has populated the control with
-            // the real value, which would corrupt the profile calibration
-            // fields. _modelReady is set via a low-priority dispatcher post
-            // that runs after all Loaded-priority control events, mirroring
-            // GyroMouseActionPropViewModel/StickFlickStickPropViewModel.
+        // HandyControl's NumericUpDown fires ValueChanged(Minimum) during
+        // control init before the binding has populated the control with
+        // the real value, which would corrupt the profile calibration
+        // fields. _modelReady is set via a low-priority dispatcher post
+        // that runs after all Loaded-priority control events, mirroring
+        // GyroMouseActionPropViewModel/StickFlickStickPropViewModel.
+        // Run once per control, not once per ViewModel: this instance is cached by its
+        // panel and can outlive the control showing it, and the replacement control
+        // initialises its fields all over again.
+        public void BeginPanelInit()
+        {
+            _modelReady = false;
             double savedRwc = mapper.ActionProfile.CalibRwc;
             double savedInGameSens = mapper.ActionProfile.CalibInGameSens;
             double savedCounts = fullTurnCounts;
@@ -227,6 +243,55 @@ namespace DS4MapperTest.ViewModels
                             RaiseCalibModePropertyChanges();
                         }));
                 }));
+        }
+
+        // Reference counted so the several panels that bind one shared instance (the three
+        // stick side sections, for example) can each attach and detach independently.
+        private int _panelAttachCount = 0;
+
+        public void AttachProfileCalibEvents()
+        {
+            _panelAttachCount++;
+            if (_panelAttachCount == 1)
+            {
+                mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
+                mapper.ActionProfile.CalibRwcChanged += ActionProfile_CalibValuesChanged;
+                mapper.ActionProfile.CalibInGameSensChanged += ActionProfile_CalibValuesChanged;
+                mapper.ActionProfile.CalibCountsChanged += ActionProfile_CalibValuesChanged;
+                mapper.ActionProfile.CalibPresetNameChanged += ActionProfile_CalibPresetNameChanged;
+            }
+
+            // Calibration is one profile-wide setting, so anything another panel changed
+            // while this one was off screen is the current truth: pull it back in before
+            // this panel is shown, rather than displaying (and later writing back) the
+            // values it happened to be holding when it was detached. BeginPanelInit then
+            // holds the fields read-only until the control showing them has settled.
+            RefreshFromProfile();
+            BeginPanelInit();
+        }
+
+        public void DetachProfileCalibEvents()
+        {
+            if (_panelAttachCount == 0) return;
+            _panelAttachCount--;
+            if (_panelAttachCount > 0) return;
+
+            mapper.ActionProfile.CalibModeChanged -= ActionProfile_CalibModeChanged;
+            mapper.ActionProfile.CalibRwcChanged -= ActionProfile_CalibValuesChanged;
+            mapper.ActionProfile.CalibInGameSensChanged -= ActionProfile_CalibValuesChanged;
+            mapper.ActionProfile.CalibCountsChanged -= ActionProfile_CalibValuesChanged;
+            mapper.ActionProfile.CalibPresetNameChanged -= ActionProfile_CalibPresetNameChanged;
+        }
+
+        private void RefreshFromProfile()
+        {
+            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0
+                ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPreset)));
+            RaiseCalibModePropertyChanges();
         }
 
         private void CalculateRwcFromCounts()
@@ -336,13 +401,7 @@ namespace DS4MapperTest.ViewModels
         private void ActionProfile_CalibValuesChanged(object sender, EventArgs e)
         {
             if (_syncingProfile) return;
-            fullTurnCounts = mapper.ActionProfile.CalibCounts > 0.0
-                ? mapper.ActionProfile.CalibCounts : fullTurnCounts;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RealWorldCalibration)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InGameSens)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullTurnCounts)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
+            RefreshFromProfile();
         }
     }
 }

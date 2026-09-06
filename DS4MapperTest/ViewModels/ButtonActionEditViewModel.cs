@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace DS4MapperTest.ViewModels
 {
-    public class ButtonActionEditViewModel : INotifyPropertyChanged
+    public class ButtonActionEditViewModel : INotifyPropertyChanged, ICalibrationPanelViewModel
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public enum ActionComboBoxTypes
@@ -422,9 +422,11 @@ namespace DS4MapperTest.ViewModels
                 _applyingCameraTurnPreset = true;
                 if (IsCountsMode)
                 {
-                    // Counts is this mode's fixed master: keep it as-is and let sensitivity
-                    // move to whatever value reproduces the preset's RWC at that Counts.
-                    if (CameraTurnCounts360 > 0.0) CameraTurnInGameSens = next.RWC * 360.0 / CameraTurnCounts360;
+                    // A preset only ever names an RWC, and In-Game Sensitivity is the player's
+                    // own game setting, so it stays exactly as they had it in either mode.
+                    // From Counts mode that means moving Counts to whatever reproduces the
+                    // preset's RWC at that sensitivity.
+                    if (CameraTurnInGameSens > 0.0) CameraTurnCounts360 = next.RWC * 360.0 / CameraTurnInGameSens;
                 }
                 else
                 {
@@ -529,6 +531,11 @@ namespace DS4MapperTest.ViewModels
             get => IsCountsMode ? CameraTurnCounts360 : CameraTurnRWC;
             set
             {
+                // Same reason CameraTurnInGameSens and the preset check it: HandyControl's
+                // NumericUpDown fires ValueChanged(Minimum) while it initialises, before the
+                // binding has handed it the real number. Unguarded, that init write pushed a
+                // zeroed RWC/Counts straight into the profile the moment this panel appeared.
+                if (!_cameraTurnReady) return;
                 if (IsCountsMode) CameraTurnCounts360 = value;
                 else CameraTurnRWC = value;
             }
@@ -562,6 +569,78 @@ namespace DS4MapperTest.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MasterCalibrationValue)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedLabel)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DerivedValue)));
+        }
+
+        // Reference counted for the same reason as GyroCalibrationViewModel's copy: the
+        // Angle Calibration panel attaches while it is on screen and detaches when it goes,
+        // so this editor never holds a subscription to a profile that outlives it.
+        private int _calibPanelAttachCount = 0;
+
+        public void AttachProfileCalibEvents()
+        {
+            _calibPanelAttachCount++;
+            if (_calibPanelAttachCount == 1)
+            {
+                mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
+                mapper.ActionProfile.CalibPresetNameChanged += ActionProfile_CalibPresetNameChanged;
+                mapper.ActionProfile.CalibRwcChanged += ActionProfile_CalibValuesChanged;
+                mapper.ActionProfile.CalibInGameSensChanged += ActionProfile_CalibValuesChanged;
+                mapper.ActionProfile.CalibCountsChanged += ActionProfile_CalibValuesChanged;
+            }
+
+            // Calibration is one profile-wide setting, so whatever another panel left in the
+            // profile is the current truth. BeginPanelInit reloads it and holds the fields
+            // read-only until the freshly built control has finished initialising.
+            BeginPanelInit();
+        }
+
+        // Reloads the profile-wide calibration and keeps this panel's fields from writing
+        // back until the control settles; see ICalibrationPanelViewModel.BeginPanelInit.
+        public void BeginPanelInit()
+        {
+            _cameraTurnReady = false;
+            LoadCameraTurnCalibFromProfile(updateSelectedSlot: true);
+            RaiseCameraTurnCalibPropertiesChanged();
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Background,
+                new Action(() =>
+                {
+                    LoadCameraTurnCalibFromProfile(updateSelectedSlot: true);
+                    RaiseCameraTurnCalibPropertiesChanged();
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                        System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                        new Action(() =>
+                        {
+                            LoadCameraTurnCalibFromProfile(updateSelectedSlot: true);
+                            _cameraTurnReady = true;
+                            RaiseCameraTurnCalibPropertiesChanged();
+                        }));
+                }));
+        }
+
+        public void DetachProfileCalibEvents()
+        {
+            if (_calibPanelAttachCount == 0) return;
+            _calibPanelAttachCount--;
+            if (_calibPanelAttachCount > 0) return;
+
+            mapper.ActionProfile.CalibModeChanged -= ActionProfile_CalibModeChanged;
+            mapper.ActionProfile.CalibPresetNameChanged -= ActionProfile_CalibPresetNameChanged;
+            mapper.ActionProfile.CalibRwcChanged -= ActionProfile_CalibValuesChanged;
+            mapper.ActionProfile.CalibInGameSensChanged -= ActionProfile_CalibValuesChanged;
+            mapper.ActionProfile.CalibCountsChanged -= ActionProfile_CalibValuesChanged;
+        }
+
+        // A gyro, stick or touchpad panel changed the profile-wide calibration. Take those
+        // values as they are: this editor shows the same setting, and its cached copy would
+        // otherwise be written back over them the next time anything here is edited.
+        // Skipped while this ViewModel is the one writing the profile, since its own
+        // multi-field write leaves the profile briefly inconsistent between steps.
+        private void ActionProfile_CalibValuesChanged(object sender, EventArgs e)
+        {
+            if (_syncingProfileCalib) return;
+            LoadCameraTurnCalibFromProfile(updateSelectedSlot: true);
+            RaiseCameraTurnCalibPropertiesChanged();
         }
 
         private void ActionProfile_CalibModeChanged(object sender, EventArgs e)
@@ -602,24 +681,7 @@ namespace DS4MapperTest.ViewModels
                 showCameraTurnOptions = value;
                 if (value)
                 {
-                    _cameraTurnReady = false;
-                    LoadCameraTurnCalibFromProfile(updateSelectedSlot: true);
-                    RaiseCameraTurnCalibPropertiesChanged();
-                    System.Windows.Application.Current.Dispatcher.BeginInvoke(
-                        System.Windows.Threading.DispatcherPriority.Background,
-                        new Action(() =>
-                        {
-                            LoadCameraTurnCalibFromProfile(updateSelectedSlot: true);
-                            RaiseCameraTurnCalibPropertiesChanged();
-                            System.Windows.Application.Current.Dispatcher.BeginInvoke(
-                                System.Windows.Threading.DispatcherPriority.ApplicationIdle,
-                                new Action(() =>
-                                {
-                                    LoadCameraTurnCalibFromProfile(updateSelectedSlot: true);
-                                    _cameraTurnReady = true;
-                                    RaiseCameraTurnCalibPropertiesChanged();
-                                }));
-                        }));
+                    BeginPanelInit();
                 }
                 ShowCameraTurnOptionsChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -730,8 +792,9 @@ namespace DS4MapperTest.ViewModels
                 CameraTurnRWC = cameraTurnCalculatedRWC;
             });
 
-            mapper.ActionProfile.CalibModeChanged += ActionProfile_CalibModeChanged;
-            mapper.ActionProfile.CalibPresetNameChanged += ActionProfile_CalibPresetNameChanged;
+            // The calibration subscriptions belong to the Angle Calibration panel's own
+            // Loaded/Unloaded (see AttachProfileCalibEvents), so this editor follows the
+            // profile-wide values exactly while that panel is on screen.
             mapper.ActionProfile.OutputGamepadSettings.OutputGamepadChanged += OutputGamepadSettings_OutputGamepadChanged;
 
             SetupEvents();
@@ -1863,20 +1926,39 @@ namespace DS4MapperTest.ViewModels
             mapper.ActionProfile.CalibPresetName = matchedName;
         }
 
+        private bool _syncingProfileCalib = false;
+
         private void SyncCalibFromCameraTurnToProfile()
         {
             double counts = cameraTurnCounts360;
             double inGameSens = cameraTurnInGameSens;
             double rwc = inGameSens > 0.0 ? inGameSens * counts / 360.0 : 0.0;
-            mapper.ActionProfile.CalibCounts = counts;
-            mapper.ActionProfile.CalibInGameSens = inGameSens;
-            mapper.ActionProfile.CalibRwc = rwc;
+            // Guards ActionProfile_CalibValuesChanged against this instance's own writes:
+            // the three profile fields are written one at a time, so reloading from the
+            // profile between them would pull back a half-updated calibration.
+            _syncingProfileCalib = true;
+            try
+            {
+                mapper.ActionProfile.CalibCounts = counts;
+                mapper.ActionProfile.CalibInGameSens = inGameSens;
+                mapper.ActionProfile.CalibRwc = rwc;
+            }
+            finally { _syncingProfileCalib = false; }
             mapper.ProcessMappingChangeAction(() =>
             {
                 foreach (var set in mapper.ActionProfile.ActionSets)
                     foreach (var layer in set.ActionLayers)
                         foreach (var mapAction in layer.normalActionDict.Values)
                         {
+                            // Gyro Mouse reads the same profile calibration as the flick stick
+                            // and camera turn outputs, so an edit made from this panel has to
+                            // reach its live params too; leaving it out kept gyro aiming on the
+                            // pre-edit calibration until the profile was reloaded.
+                            if (mapAction is GyroMouse gyroMouse)
+                            {
+                                gyroMouse.mouseParams.realWorldCalibration = rwc;
+                                gyroMouse.mouseParams.inGameSens = inGameSens;
+                            }
                             if (mapAction is ButtonAction ba)
                                 foreach (var func in ba.ActionFuncs)
                                     foreach (var data in func.OutputActions)
