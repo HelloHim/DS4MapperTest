@@ -483,6 +483,45 @@ namespace DS4MapperUnitTests
             Assert.AreEqual(1, api.ClosedInstances.Count);
         }
 
+        // UniversalControllerManager answers ControllersChanged by taking its
+        // own lock and reading Controllers back off every backend. If this
+        // backend raises the event with its lock still held, that pairing runs
+        // backend-then-manager while the manager refreshing its list on any
+        // other thread runs manager-then-backend, and the two orders wedge the
+        // process: the mapping loop stops polling and the controller goes dead.
+        [TestMethod]
+        public void SdlBackendRaisesControllersChangedWithoutHoldingItsLock()
+        {
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            using SdlUniversalControllerBackend backend = new SdlUniversalControllerBackend(api);
+            Assert.IsTrue(backend.Start(out string error), error);
+
+            int raised = 0;
+            bool readBlocked = false;
+            backend.ControllersChanged += (sender, e) =>
+            {
+                raised++;
+                if (!Task.Run(() => backend.Controllers.Count)
+                    .Wait(TimeSpan.FromSeconds(5)))
+                {
+                    readBlocked = true;
+                }
+            };
+
+            api.AddDevice(CreateSdlDevice(91));
+            api.QueueEvent(new SdlDiagnosticEvent
+            {
+                Kind = SdlDiagnosticInputEventKind.DeviceAdded,
+                InstanceId = 91,
+            });
+            backend.Refresh();
+
+            Assert.AreNotEqual(0, raised, "Adding a device raised no ControllersChanged.");
+            Assert.IsFalse(readBlocked,
+                "Controllers could not be read from another thread during " +
+                "ControllersChanged, so the event was raised under the backend lock.");
+        }
+
         [TestMethod]
         public void SdlBackendReconcilesDelayedEnumeration()
         {

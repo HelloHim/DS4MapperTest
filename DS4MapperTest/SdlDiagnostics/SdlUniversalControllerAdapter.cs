@@ -748,6 +748,22 @@ namespace DS4MapperTest.SdlDiagnostics
             Array.Empty<IUniversalController>();
         private bool connectedSnapshotStale = true;
 
+        // ControllersChanged must never be raised while syncRoot is held.
+        //
+        // UniversalControllerManager handles it by taking its own lock and then
+        // reading Controllers back off every backend, which takes syncRoot
+        // again. Raising the event from under the lock therefore created the
+        // pairing syncRoot then manager lock, while the manager refreshing its
+        // list on any other thread holds the manager lock and then wants
+        // syncRoot. Two threads reaching those in opposite orders wedge the
+        // process: the mapping loop stops polling, so the controller goes
+        // completely dead rather than merely missing a hotplug.
+        //
+        // Open/CloseDevice run under the lock, so they record that the set
+        // moved and the public entry points raise a single coalesced event
+        // after releasing it, which is what Start and Stop already did by hand.
+        private bool controllersChangedPending;
+
         public string BackendName => UniversalControllerBackendIds.Sdl3;
         public IReadOnlyList<IUniversalController> Controllers
         {
@@ -775,6 +791,30 @@ namespace DS4MapperTest.SdlDiagnostics
         private void InvalidateConnectedSnapshot()
         {
             connectedSnapshotStale = true;
+        }
+
+        // Records that the connected set moved. Callers run under syncRoot, so
+        // the event itself is left for RaisePendingControllersChanged.
+        private void QueueControllersChanged()
+        {
+            controllersChangedPending = true;
+        }
+
+        // Raises at most one ControllersChanged for everything queued since the
+        // last call. Must only be called with syncRoot released.
+        private void RaisePendingControllersChanged()
+        {
+            bool pending;
+            lock (syncRoot)
+            {
+                pending = controllersChangedPending;
+                controllersChangedPending = false;
+            }
+
+            if (pending)
+            {
+                ControllersChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public event EventHandler ControllersChanged;
@@ -812,7 +852,8 @@ namespace DS4MapperTest.SdlDiagnostics
             nextEnumerationReconcileUtc = utcNow().Add(EnumerationReconcileInterval);
 
             error = enumError ?? string.Empty;
-            ControllersChanged?.Invoke(this, EventArgs.Empty);
+            controllersChangedPending = true;
+            RaisePendingControllersChanged();
             return true;
         }
 
@@ -821,6 +862,8 @@ namespace DS4MapperTest.SdlDiagnostics
             ThrowIfDisposed();
             lock (syncRoot)
             {
+                // Nothing can be queued while stopped: Start and Stop both
+                // drain on their way past, so returning here skips no event.
                 if (!started) return;
 
                 api.RefreshGamepads();
@@ -876,6 +919,8 @@ namespace DS4MapperTest.SdlDiagnostics
                     }
                 }
             }
+
+            RaisePendingControllersChanged();
         }
 
         public void Stop()
@@ -893,9 +938,10 @@ namespace DS4MapperTest.SdlDiagnostics
                 suppressedInstanceIds.Clear();
                 started = false;
                 api.Shutdown();
+                controllersChangedPending = true;
             }
 
-            ControllersChanged?.Invoke(this, EventArgs.Empty);
+            RaisePendingControllersChanged();
         }
 
         private void HandleEvent(SdlDiagnosticEvent diagnosticEvent)
@@ -1087,7 +1133,7 @@ namespace DS4MapperTest.SdlDiagnostics
             InvalidateConnectedSnapshot();
 
             logger.Info($"SDL universal backend opened instance {instanceId} ({reason}): {info.Name}");
-            ControllersChanged?.Invoke(this, EventArgs.Empty);
+            QueueControllersChanged();
         }
 
         private void RebuildDevice(uint instanceId)
@@ -1143,7 +1189,7 @@ namespace DS4MapperTest.SdlDiagnostics
             InvalidateConnectedSnapshot();
             suppressedInstanceIds.Remove(instanceId);
             logger.Info($"SDL universal backend closed instance {instanceId} ({reason})");
-            ControllersChanged?.Invoke(this, EventArgs.Empty);
+            QueueControllersChanged();
         }
 
         private void ThrowIfDisposed()
