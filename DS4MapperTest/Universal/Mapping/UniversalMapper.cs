@@ -24,10 +24,10 @@ namespace DS4MapperTest.Universal.Mapping
         // that switch is what IsButtonActive polls at runtime.
         //
         // This list intentionally omits inputs with no JoypadActionCodes to
-        // carry them (rear tertiary, grip touch, stick touch, mute, quick
-        // access, misc buttons/axes) rather than widening JoypadActionCodes
-        // for them - that enum is serialised into saved profiles and used in
-        // exhaustive switches well beyond activation triggers.
+        // carry them (rear tertiary, grip touch, mute, quick access, misc
+        // buttons/axes) rather than widening JoypadActionCodes for them -
+        // that enum is serialised into saved profiles and used in exhaustive
+        // switches well beyond activation triggers.
         private static readonly (JoypadActionCodes Code, UniversalInputId Input)[] ActivationCandidates =
         {
             (JoypadActionCodes.BtnSouth, UniversalInputId.FaceButtonSouth),
@@ -46,6 +46,8 @@ namespace DS4MapperTest.Universal.Mapping
             (JoypadActionCodes.BtnRGrip2, UniversalInputId.RightRearSecondary),
             (JoypadActionCodes.BtnThumbL, UniversalInputId.LeftStickClick),
             (JoypadActionCodes.BtnThumbR, UniversalInputId.RightStickClick),
+            (JoypadActionCodes.LSTouch, UniversalInputId.LeftStickTouch),
+            (JoypadActionCodes.RSTouch, UniversalInputId.RightStickTouch),
             (JoypadActionCodes.BtnLSideL, UniversalInputId.LeftSidePrimary),
             (JoypadActionCodes.BtnLSideR, UniversalInputId.LeftSideSecondary),
             (JoypadActionCodes.BtnRSideL, UniversalInputId.RightSidePrimary),
@@ -70,11 +72,18 @@ namespace DS4MapperTest.Universal.Mapping
         // identical rows in every activation list. Name them the way the rest of
         // the editor names that pad, and keep the touch/click distinction the
         // left and right region entries already spell out.
+        //
+        // The stick touch sensors need the same treatment for a different
+        // reason: SDL publishes them as plain misc buttons, so their native
+        // label is a meaningless "Misc3"/"Misc4" rather than anything a user
+        // could match to a thumbstick.
         private static readonly IReadOnlyDictionary<JoypadActionCodes, string> ActivationLabelOverrides =
             new Dictionary<JoypadActionCodes, string>
             {
                 [JoypadActionCodes.CenterPadTouch] = "Center Touchpad Touch",
                 [JoypadActionCodes.CenterPadClick] = "Center Touchpad Click",
+                [JoypadActionCodes.LSTouch] = "Left Stick Touch",
+                [JoypadActionCodes.RSTouch] = "Right Stick Touch",
             };
 
         private UniversalControllerStateSnapshot currentSnapshot =

@@ -57,6 +57,11 @@ namespace DS4MapperTest.MapperUtil
         Btn34, CenterPadTouch = Btn34,
         Btn35, CenterPadClick = Btn35, DS4_TOUCH_CLICK = Btn35,
 
+        // Capacitive stick touch sensors. Appended after the existing codes so
+        // the numeric values saved in older profiles keep their meaning.
+        Btn36, LSTouch = Btn36,
+        Btn37, RSTouch = Btn37,
+
         BtnMax = 255,
 
         Axis1 = 1 << 8, AxisLX = Axis1, X360_LX = Axis1,
