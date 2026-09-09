@@ -84,13 +84,19 @@
                                         Click="AddExtraBindingButton_Click"
                                         Style="{StaticResource JsmccButtonStyle}">
                                     <Button.ContextMenu>
+                                        <!-- Every item whose header swaps between press and
+                                             click terminology needs a local style to carry the
+                                             DataTrigger, and a local style replaces the theme's
+                                             implicit one outright. Each must therefore be based
+                                             on the implicit style, or the item keeps the WPF
+                                             default black foreground over the dark menu. -->
                                         <ContextMenu>
                                             <MenuItem Header="Hold Press"
                                                       Tag="Hold"
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddHoldPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click">
                                                 <MenuItem.Style>
-                                                    <Style TargetType="MenuItem">
+                                                    <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                                                         <Setter Property="Header" Value="Hold Press"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
@@ -105,7 +111,7 @@
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddDoublePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click">
                                                 <MenuItem.Style>
-                                                    <Style TargetType="MenuItem">
+                                                    <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                                                         <Setter Property="Header" Value="Double Press"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
@@ -120,7 +126,7 @@
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddChordedPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click">
                                                 <MenuItem.Style>
-                                                    <Style TargetType="MenuItem">
+                                                    <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                                                         <Setter Property="Header" Value="Chorded Press"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
@@ -135,7 +141,7 @@
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddSimultaneousPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click">
                                                 <MenuItem.Style>
-                                                    <Style TargetType="MenuItem">
+                                                    <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                                                         <Setter Property="Header" Value="Simultaneous Press"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
@@ -150,7 +156,7 @@
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddStartPress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click">
                                                 <MenuItem.Style>
-                                                    <Style TargetType="MenuItem">
+                                                    <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                                                         <Setter Property="Header" Value="Start Press"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
@@ -165,7 +171,7 @@
                                                       IsEnabled="{Binding PlacementTarget.DataContext.CanAddReleasePress, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       Click="AddExtraBindingMenuItem_Click">
                                                 <MenuItem.Style>
-                                                    <Style TargetType="MenuItem">
+                                                    <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                                                         <Setter Property="Header" Value="Release Press"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding UseClickTerminology, RelativeSource={RelativeSource AncestorType=views:SharedButtonKeybindsControl}}" Value="True">
