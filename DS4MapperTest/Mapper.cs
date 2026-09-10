@@ -399,6 +399,7 @@ namespace DS4MapperTest
                     }
 
                     outputControlType = OutputContType.Xbox360;
+                    Universal.VirtualOutputPadRegistry.AddXbox360Pad();
                     logger.Info($"Created VIIPER Xbox 360 device. Handle={deviceHandle} Bus={viiperBusId}");
                 }
                 else if (desiredType == OutputContType.DualShock4)
@@ -492,6 +493,7 @@ namespace DS4MapperTest
             if (outputControlType == OutputContType.Xbox360)
             {
                 LibVIIPER.RemoveXbox360Device(deviceHandle);
+                Universal.VirtualOutputPadRegistry.RemoveXbox360Pad();
             }
             else if (outputControlType == OutputContType.DualShock4)
             {

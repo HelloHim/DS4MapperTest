@@ -306,6 +306,22 @@ namespace DS4MapperTest.SdlDiagnostics
                 (info.ProductId.HasValue && info.ProductId.Value != 0);
         }
 
+        // Our own Xbox 360 output pad as SDL sees it: vendor and product of a real
+        // Microsoft pad, and an XInput slot in place of a device path. A genuine
+        // Xbox 360 controller is identical on all three counts, so this narrows
+        // the field to candidates and cannot decide ownership by itself. The
+        // caller settles that against VirtualOutputPadRegistry.
+        private const ushort MicrosoftVendorId = 0x045E;
+        private const ushort Xbox360ProductId = 0x028E;
+
+        public static bool LooksLikeXInputXbox360Pad(SdlRawGamepadInfo info)
+        {
+            return info != null &&
+                info.VendorId.HasValue && info.VendorId.Value == MicrosoftVendorId &&
+                info.ProductId.HasValue && info.ProductId.Value == Xbox360ProductId &&
+                (info.DevicePath ?? string.Empty).StartsWith("XInput", StringComparison.OrdinalIgnoreCase);
+        }
+
         private static bool IsVirtualDevicePath(string devicePath)
         {
             if (string.IsNullOrWhiteSpace(devicePath))
@@ -730,6 +746,13 @@ namespace DS4MapperTest.SdlDiagnostics
         private readonly object syncRoot = new object();
         private readonly Dictionary<uint, TrackedDevice> devices = new Dictionary<uint, TrackedDevice>();
         private readonly HashSet<uint> suppressedInstanceIds = new HashSet<uint>();
+
+        // Instances recognised as this process's own virtual output pad. Held so
+        // a device stays recognised across the enumeration reconcile that would
+        // otherwise re-test it, and so the number of instances claimed can never
+        // exceed the number of pads we actually plugged in: with a real Xbox 360
+        // controller connected as well, the surplus one is still ours to use.
+        private readonly HashSet<uint> claimedVirtualOutputInstanceIds = new HashSet<uint>();
         private static readonly TimeSpan EnumerationReconcileInterval = TimeSpan.FromMilliseconds(100);
         private const int MissedEnumerationsBeforeClose = 3;
         private DateTimeOffset nextEnumerationReconcileUtc = DateTimeOffset.MinValue;
@@ -936,6 +959,7 @@ namespace DS4MapperTest.SdlDiagnostics
                 devices.Clear();
                 InvalidateConnectedSnapshot();
                 suppressedInstanceIds.Clear();
+                claimedVirtualOutputInstanceIds.Clear();
                 started = false;
                 api.Shutdown();
                 controllersChangedPending = true;
@@ -1043,6 +1067,7 @@ namespace DS4MapperTest.SdlDiagnostics
             }
 
             suppressedInstanceIds.RemoveWhere(item => !enumerated.Contains(item));
+            claimedVirtualOutputInstanceIds.RemoveWhere(item => !enumerated.Contains(item));
 
             if (!string.IsNullOrWhiteSpace(enumError))
             {
@@ -1094,7 +1119,8 @@ namespace DS4MapperTest.SdlDiagnostics
                 return;
             }
 
-            if (translator.ShouldSuppressForNativeSteamController(info))
+            if (translator.ShouldSuppressForNativeSteamController(info) ||
+                IsOwnVirtualOutputPad(instanceId, info))
             {
                 try
                 {
@@ -1134,6 +1160,35 @@ namespace DS4MapperTest.SdlDiagnostics
 
             logger.Info($"SDL universal backend opened instance {instanceId} ({reason}): {info.Name}");
             QueueControllersChanged();
+        }
+
+        // Whether this instance is the virtual pad this process plugged in for its
+        // own gamepad output, rather than a controller the user wants to map.
+        //
+        // Nothing SDL reports can answer that: our Xbox 360 pad is meant to be
+        // indistinguishable from a real one and succeeds. What settles it is that
+        // we know how many we plugged in, and that the pads a user already has
+        // connected are enumerated before any profile gets far enough to create
+        // one. So a matching device that turns up while we hold an unclaimed pad
+        // is ours, and once every pad we own is accounted for, matching devices
+        // beyond that are real hardware and are left alone.
+        //
+        // Always called with syncRoot held.
+        private bool IsOwnVirtualOutputPad(uint instanceId, SdlRawGamepadInfo info)
+        {
+            if (claimedVirtualOutputInstanceIds.Contains(instanceId))
+            {
+                return true;
+            }
+
+            if (!SdlUniversalStateTranslator.LooksLikeXInputXbox360Pad(info) ||
+                claimedVirtualOutputInstanceIds.Count >= VirtualOutputPadRegistry.Xbox360PadCount)
+            {
+                return false;
+            }
+
+            claimedVirtualOutputInstanceIds.Add(instanceId);
+            return true;
         }
 
         private void RebuildDevice(uint instanceId)
@@ -1188,6 +1243,7 @@ namespace DS4MapperTest.SdlDiagnostics
             devices.Remove(instanceId);
             InvalidateConnectedSnapshot();
             suppressedInstanceIds.Remove(instanceId);
+            claimedVirtualOutputInstanceIds.Remove(instanceId);
             logger.Info($"SDL universal backend closed instance {instanceId} ({reason})");
             QueueControllersChanged();
         }

@@ -522,6 +522,91 @@ namespace DS4MapperUnitTests
                 "ControllersChanged, so the event was raised under the backend lock.");
         }
 
+        // Our own Xbox 360 output pad reaches SDL through XInput, which reports no
+        // device path to walk and the vendor and product of a real Microsoft pad,
+        // so the app used to adopt the pad it had just plugged in as an input and
+        // map a controller against its own output.
+        [TestMethod]
+        public void SdlBackendSuppressesTheVirtualOutputPadItPluggedIn()
+        {
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            using SdlUniversalControllerBackend backend = new SdlUniversalControllerBackend(api);
+            Assert.IsTrue(backend.Start(out string error), error);
+
+            VirtualOutputPadRegistry.AddXbox360Pad();
+            try
+            {
+                api.AddDevice(CreateVirtualXbox360Pad(70));
+                api.QueueEvent(new SdlDiagnosticEvent
+                {
+                    Kind = SdlDiagnosticInputEventKind.DeviceAdded,
+                    InstanceId = 70,
+                });
+                backend.Refresh();
+
+                Assert.AreEqual(0, backend.Controllers.Count,
+                    "The backend adopted this process's own output pad as an input.");
+                CollectionAssert.Contains(api.ClosedInstances, 70u);
+            }
+            finally
+            {
+                VirtualOutputPadRegistry.RemoveXbox360Pad();
+            }
+        }
+
+        // A real Xbox 360 controller is indistinguishable from the pad we plug in,
+        // so ownership is settled by count: claim no more instances than pads this
+        // process actually created and the surplus stays available to map.
+        [TestMethod]
+        public void SdlBackendKeepsARealXbox360PadAlongsideItsOwn()
+        {
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            using SdlUniversalControllerBackend backend = new SdlUniversalControllerBackend(api);
+            Assert.IsTrue(backend.Start(out string error), error);
+
+            VirtualOutputPadRegistry.AddXbox360Pad();
+            try
+            {
+                foreach (uint instanceId in new uint[] { 71, 72 })
+                {
+                    api.AddDevice(CreateVirtualXbox360Pad(instanceId));
+                    api.QueueEvent(new SdlDiagnosticEvent
+                    {
+                        Kind = SdlDiagnosticInputEventKind.DeviceAdded,
+                        InstanceId = instanceId,
+                    });
+                }
+
+                backend.Refresh();
+
+                Assert.AreEqual(1, backend.Controllers.Count,
+                    "Owning one output pad should account for exactly one device.");
+            }
+            finally
+            {
+                VirtualOutputPadRegistry.RemoveXbox360Pad();
+            }
+        }
+
+        [TestMethod]
+        public void SdlBackendKeepsXbox360PadsWhenItHasPluggedInNone()
+        {
+            FakeSdlDiagnosticApi api = new FakeSdlDiagnosticApi();
+            using SdlUniversalControllerBackend backend = new SdlUniversalControllerBackend(api);
+            Assert.IsTrue(backend.Start(out string error), error);
+
+            api.AddDevice(CreateVirtualXbox360Pad(73));
+            api.QueueEvent(new SdlDiagnosticEvent
+            {
+                Kind = SdlDiagnosticInputEventKind.DeviceAdded,
+                InstanceId = 73,
+            });
+            backend.Refresh();
+
+            Assert.AreEqual(1, backend.Controllers.Count,
+                "With no output pad of our own, an Xbox 360 pad is the user's hardware.");
+        }
+
         [TestMethod]
         public void SdlBackendReconcilesDelayedEnumeration()
         {
@@ -933,6 +1018,17 @@ namespace DS4MapperUnitTests
                 IsMappedGamepad = true,
                 IdentityNotes = "test identity",
             };
+        }
+
+        // Modelled on what SDL actually reports for the pad this app plugs in for
+        // Xbox 360 output, captured from a running session: an XInput slot in
+        // place of a device path, and Microsoft's own vendor and product.
+        private static SdlRawGamepadInfo CreateVirtualXbox360Pad(uint instanceId)
+        {
+            SdlRawGamepadInfo info = CreateSdlDevice(instanceId, 0x045E, 0x028E);
+            info.Name = "Xbox 360 Controller";
+            info.DevicePath = "XInput#0";
+            return info;
         }
 
         private static IUniversalController CreateController(
